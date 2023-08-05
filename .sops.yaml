@@ -1,0 +1,11 @@
+keys:
+  - &users
+    - &clover age1znwvqazshlpucwszxwt9ggrsgm02ntdtrys7700mcqufyuy62ansmr9yjv
+  - &hosts
+    - &auberon age1va0nsla36lc2twze2sejw5mepdc8arvfn56xmnrktxu7vyuaqyasllyama
+creation_rules:
+  - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
+    key_groups:
+      - age:
+          - *clover
+          - *auberon

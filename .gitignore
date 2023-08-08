@@ -4,3 +4,4 @@
 
 # Nix build folder
 /result
+/scripts/result

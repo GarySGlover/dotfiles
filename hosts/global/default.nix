@@ -1,6 +1,8 @@
+{ pkgs, ...}:
+
 {
   # Default sops config
-  sops. defaultSopsFile = ../../secrets/global.yaml;
+  sops.defaultSopsFile = ../../secrets/global.yaml;
 
   # Nix flakes
   nix.extraOptions = ''

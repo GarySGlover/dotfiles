@@ -60,6 +60,19 @@ Revert the buffer to the on disk file contents when they are changed outside of 
   (global-auto-revert-mode 1)
 #+end_src
 
+* Core Utils
+Utilities for emacs that support further parts of the configuration.
+
+** Hydra
+Install Hydra ready or use later. Hydra can be used to group related commands
+under a common prefix and in use will lock the prefix until a command outside
+of the hydra is called.
+
+#+begin_src emacs-lisp
+  (use-package hydra
+    :commands defhydra)
+#+end_src
+
 * Visual
 ** Alert notification
 When emacs reports an exception the default action is to play a bell sound. This
@@ -90,6 +103,38 @@ Required system packages:
 		      :height 100)
 
   (load-theme 'doom-dracula t)
+#+end_src
+
+** Transparency
+Set default transparency of frames and creation of hydra function for adjusting alpha.
+
+#+begin_src emacs-lisp
+  (defun set-frame-alpha (value)
+    (set-frame-parameter nil 'alpha-background value))
+
+  (defun get-frame-alpha ()
+    (frame-parameter nil 'alpha-background))
+
+  (defun change-frame-alpha-by (value)
+    (let ((newAlpha (+ value (get-frame-alpha))))
+      (if (> newAlpha (get-frame-alpha))
+	  (if (> newAlpha 100)
+	      (set-frame-alpha 100)
+	    (set-frame-alpha newAlpha))
+	  (if (< newAlpha 0)
+	      (set-frame-alpha 0)
+	    (set-frame-alpha newAlpha)))))
+
+  (set-frame-alpha 50)
+  (add-to-list 'default-frame-alist '(alpha-background . 50))
+
+  (defhydra hydra-transparent (global-map "C-c t")
+	    "Transparency"
+	    ("<down>" (change-frame-alpha-by 5) "Decrease")
+	    ("<up>" (change-frame-alpha-by -5) "Increase")
+	    ("<right>" (set-frame-alpha 0) "Max")
+	    ("<left>" (set-frame-alpha 100) "Min")
+	    ("m" (set-frame-alpha 50) "Mid"))
 #+end_src
 
 * Project Management

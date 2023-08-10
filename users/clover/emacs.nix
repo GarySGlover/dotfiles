@@ -6,13 +6,14 @@ let
     fira-code
   ];
   emacsPackages = with pkgs.emacsPackages; [
+    hydra
     no-littering
     magit
   ];
 in {
   programs.emacs = {
     enable = true;
-    package = pkgs.emacs29;
+    package = pkgs.emacs29-pgtk;
     extraPackages = epkgs: with epkgs; [
       all-the-icons
       doom-themes

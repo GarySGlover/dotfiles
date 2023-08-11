@@ -2,9 +2,10 @@
   description = "Start of the system configuration flake";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-23.05";
+    nixpkgs.url = "nixpkgs/master";
+    unstable.url = "nixpkgs/nixos-unstable";
     home-manager = {
-      url = "github:nix-community/home-manager/release-23.05";
+      url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     sops-nix = {
@@ -13,30 +14,37 @@
     };
   };
 
-  outputs = { nixpkgs, home-manager, sops-nix, ... }:
+  outputs = inputs@{ nixpkgs, ... }:
   let
     system = "x86_64-linux";
     pkgs = import nixpkgs {
       inherit system;
-      config = { allowUnfree = true; };
+      config.allowUnfree = true;
     };
     lib = nixpkgs.lib;
+    pkgs-unstable = import inputs.unstable {
+      inherit system;
+      config.allowUnfree = true;
+    };
   in {
     nixosConfigurations = {
       auberon = lib.nixosSystem {
         inherit system;
 	modules = [
 	  ./hosts/auberon
-	  sops-nix.nixosModules.sops
+	  inputs.sops-nix.nixosModules.sops
 	];
       };
     };
 
-    homeConfigurations.clover = home-manager.lib.homeManagerConfiguration {
+    homeConfigurations.clover = inputs.home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
       modules = [
         ./users/clover/home.nix
       ];
+      extraSpecialArgs = {
+        inherit pkgs-unstable;
+      };
     };
   };
 }

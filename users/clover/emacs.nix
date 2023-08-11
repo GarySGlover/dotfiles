@@ -3,7 +3,6 @@
 let
   packages = with pkgs; [
     emacs-all-the-icons-fonts
-    fira-code
   ];
   emacsPackages = with pkgs.emacsPackages; [
     hydra
@@ -23,7 +22,11 @@ in {
       (org-babel-load-file (expand-file-name "emacs-config.org" "~/.config/emacs"))
     '';
   };
-  services.emacs.enable = true;
+  services.emacs = {
+    enable = true;
+    defaultEditor = true;
+  };
+
   xdg.configFile."emacs/emacs-config.org".source = ./emacs-config.org;
 
   home.packages = packages ++ emacsPackages;

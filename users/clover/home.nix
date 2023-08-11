@@ -9,8 +9,10 @@
   home.stateVersion = "23.05";
 
   imports = [
+    ./fonts.nix
     ./emacs.nix
     ./hyprland.nix
+    ./terminal.nix
   ];
 
   home.packages = with pkgs; [
@@ -18,7 +20,7 @@
     git pre-commit
     go python311
     wlr-randr
-    alacritty
+
     age sops ssh-to-age # Nix-sops secrets management
   ];
 }

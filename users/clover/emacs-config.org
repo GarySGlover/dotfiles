@@ -125,16 +125,17 @@ Set default transparency of frames and creation of hydra function for adjusting 
 	      (set-frame-alpha 0)
 	    (set-frame-alpha newAlpha)))))
 
-  (set-frame-alpha 50)
-  (add-to-list 'default-frame-alist '(alpha-background . 50))
+  (set-frame-alpha 85)
+  (add-to-list 'default-frame-alist '(alpha-background . 85))
 
   (defhydra hydra-transparent (global-map "C-c t")
 	    "Transparency"
-	    ("<down>" (change-frame-alpha-by 5) "Decrease")
-	    ("<up>" (change-frame-alpha-by -5) "Increase")
-	    ("<right>" (set-frame-alpha 0) "Max")
-	    ("<left>" (set-frame-alpha 100) "Min")
-	    ("m" (set-frame-alpha 50) "Mid"))
+	    ("<up>" (change-frame-alpha-by 1) "Increase")
+	    ("<down>" (change-frame-alpha-by -1) "Decrease")
+	    ("<left>" (set-frame-alpha 0) "Min")
+	    ("<right>" (set-frame-alpha 100) "Max")
+	    ("m" (set-frame-alpha 50) "Mid")
+	    ("d" (set-frame-alpha 85) "Default"))
 #+end_src
 
 * Project Management

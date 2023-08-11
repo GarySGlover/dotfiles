@@ -1,7 +1,7 @@
-{config, pkgs, ...}:
+{config, pkgs, pkgs-unstable, ...}:
 
 {
-  # Home manager instal and configure self
+  # Home manager install and configure self
   programs.home-manager.enable = true;
 
   home.username = "clover";
@@ -10,6 +10,7 @@
 
   imports = [
     ./emacs.nix
+    ./hyprland.nix
   ];
 
   home.packages = with pkgs; [
@@ -20,6 +21,4 @@
     alacritty
     age sops ssh-to-age # Nix-sops secrets management
   ];
-
-  fonts.fontconfig.enable = true;
 }

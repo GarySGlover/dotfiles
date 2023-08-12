@@ -1,21 +1,16 @@
 {pkgs, ...}:
 
-let
-  packages = with pkgs; [
-    emacs-all-the-icons-fonts
-  ];
-  emacsPackages = with pkgs.emacsPackages; [
-    hydra
-    no-littering
-    magit
-  ];
-in {
+{
   programs.emacs = {
     enable = true;
     package = pkgs.emacs29-pgtk;
     extraPackages = epkgs: with epkgs; [
       all-the-icons
       doom-themes
+      fira-code-mode
+      hydra
+      no-littering
+      magit
     ];
     extraConfig = ''
       (delete-file (expand-file-name "emacs-config.el" "~/.config/emacs"))
@@ -29,5 +24,7 @@ in {
 
   xdg.configFile."emacs/emacs-config.org".source = ./emacs-config.org;
 
-  home.packages = packages ++ emacsPackages;
+  home.packages = with pkgs; [
+    emacs-all-the-icons-fonts
+  ];
 }

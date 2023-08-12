@@ -66,7 +66,7 @@
     "$mainMod" = "SUPER";
 
     bind = [
-      "$mainMod, Q, exec, alacritty"
+      "$mainMod, Q, exec, kitty"
       "$mainMod, C, killactive,"
       "$mainMod, M, exit,"
       "$mainMod, V, togglefloating,"

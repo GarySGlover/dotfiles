@@ -91,18 +91,19 @@ replaces the sound with a double flash on the modeline background.
 
 ** Theme
 Setup the main theme and fonts used within this emacs configuration.
-Required emacs packages:
-  all-the-icons
-  doom-themes
-Required system packages:
-  fira-code
-  emacs-all-the-icons-fonts
+
 #+begin_src elisp
   (set-face-attribute 'default nil
-		      :font "Fira Code"
+		      :font "FiraCode Nerd Font"
 		      :height 100)
 
   (load-theme 'doom-dracula t)
+#+end_src
+
+Enables the fira code ligatures globally
+#+begin_src emacs-lisp
+  (use-package fira-code-mode
+    :config (global-fira-code-mode))
 #+end_src
 
 ** Transparency

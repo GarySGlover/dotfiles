@@ -54,6 +54,12 @@
       ];
     };
 
+    windowrulev2 = [
+      "float,title:(emacs-run-launcher)"
+      "size 300, 600,title:(emacs-run-launcher)"
+      "center,title:(emacs-run-launcher)"
+    ];
+
     dwindle = {
       pseudotile = "yes";
       preserve_split = "yes";

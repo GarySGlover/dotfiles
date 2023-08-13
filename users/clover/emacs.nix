@@ -6,6 +6,7 @@
     package = pkgs.emacs29-pgtk;
     extraPackages = epkgs: with epkgs; [
       all-the-icons
+      counsel
       doom-themes
       fira-code-mode
       hydra
@@ -24,7 +25,14 @@
 
   xdg.configFile."emacs/emacs-config.org".source = ./emacs-config.org;
 
+  # Hide emacs from application menu
+  xdg.desktopEntries.emacs = {
+    name = "Emacs";
+    noDisplay = true;
+  };
+
   home.packages = with pkgs; [
+    gtk3
     emacs-all-the-icons-fonts
   ];
 }

@@ -152,3 +152,58 @@ the diff window as well, those buffers open in a seperate window.
     :custom (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
     :bind ("C-c g" . magit-status))
 #+end_src
+* Search
+** Counsel
+#+begin_src emacs-lisp
+  (use-package counsel
+    :defer t
+    :config
+    (when
+	(fboundp 'emacs-run-launcher-directories)
+      (emacs-run-launcher-directories)))
+#+end_src
+* System
+This area is for system utilities and system functions such as the app
+launcher for the desktop environment.
+** App Launcher
+Counsel-linux app configuration to improve formatting
+#+begin_src emacs-lisp
+  (defun emacs-run-launcher-format-function
+      (name comment exec)
+    "Formatter for the app launcher. NAME is the name of the application,
+  COMMENT is the applications comment and EXEC is the command to launch"
+    (format "% -25s %s"
+	    (propertize name 'face 'font-lock-buitlin-face)
+	    (or comment "")))
+  (setq counsel-linux-app-format-function #'emacs-run-launcher-format-function)
+#+end_src
+App launcher using counsel-linux-app
+
+Filter app launcher directories to allow overriding of desktop files.
+#+begin_src emacs-lisp
+  (defun emacs-run-launcher-directories ()
+    "Update the directories used by counsel-linux-app"
+    (setq counsel-linux-apps-directories
+	  (seq-remove
+	   (lambda
+	     (x)
+	     (string-prefix-p "/nix/store/" x))
+	   counsel-linux-apps-directories)))
+  ;;(setq counsel-linux-apps-directories '("/home/clover/.nix-profile/share/applications"))
+#+end_src
+Run launcher in own frame with title set to be picked up by window manager.
+#+begin_src emacs-lisp
+  (defun emacs-run-launcher
+      ()
+    "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Run counsel-linux-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+    (interactive)
+    (with-selected-frame
+	(make-frame
+	 '((name . "emacs-run-launcher")
+	   (minibuffer . only)
+	   (width . 120)
+	   (height . 11)))
+      (unwind-protect
+	  (counsel-linux-app)
+	(delete-frame))))
+#+end_src

@@ -54,6 +54,12 @@
       ];
     };
 
+    windowrulev2 = [
+      "float,title:(emacs-run-launcher)"
+      "size 600 300,title:(emacs-run-launcher)"
+      "center,title:(emacs-run-launcher)"
+    ];
+
     dwindle = {
       pseudotile = "yes";
       preserve_split = "yes";
@@ -66,13 +72,15 @@
     "$mainMod" = "SUPER";
 
     bind = [
-      "$mainMod, Q, exec, kitty"
+      "$mainMod, A, exec, emacsclient -e -r '(emacs-run-launcher)'"
       "$mainMod, C, killactive,"
-      "$mainMod, M, exit,"
-      "$mainMod, V, togglefloating,"
-      "$mainMod, R, exec, wofi --show drun"
-      "$mainMod, P, pseudo,"
+      "$mainMod, E, exec, emacsclient -c"
+      "$mainMod, F, exec, firefox"
       "$mainMod, J, togglesplit,"
+      "$mainMod, M, exit,"
+      "$mainMod, P, pseudo,"
+      "$mainMod, Q, exec, kitty"
+      "$mainMod, V, togglefloating,"
 
       # Move focus with mainMod + arrow keys
       "$mainMod, left, movefocus, l"
@@ -103,10 +111,6 @@
       "$mainMod SHIFT, 8, movetoworkspace, 8"
       "$mainMod SHIFT, 9, movetoworkspace, 9"
       "$mainMod SHIFT, 0, movetoworkspace, 10"
-
-      # Programs
-      "$mainMod, F, exec, firefox"
-      "$mainMod, E, exec, emacsclient -c"
 
       # Volume Mute
       ", XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"

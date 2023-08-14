@@ -15,26 +15,29 @@ in {
     ./emacs.nix
     ./hyprland.nix
     ./terminal.nix
+    ./git.nix
   ];
 
   home.packages = with pkgs; [
     firefox
-    git pre-commit
+    pre-commit
     go python311
     wlr-randr
 
-    age sops ssh-to-age # Nix-sops secrets management
+    age sops ssh-to-age git-crypt # Secrets management
   ];
 
-  programs.ssh.enable = true;
-  programs.ssh.matchBlocks = {
-    "dev.azure.com" = {
-      hostname = "dev.azure.com";
-      identityFile = "${homeDir}/.ssh/id_ed25519_dev.azure.com";
-    };
-    "github.com" = {
-      hostname = "github.com";
-      identityFile = "${homeDir}/.ssh/id_ed25519_github.com";
+  programs.ssh = {
+    enable = true;
+    matchBlocks = {
+     "dev.azure.com" = {
+        hostname = "dev.azure.com";
+        identityFile = "${homeDir}/.ssh/id_ed25519_dev.azure.com";
+      };
+      "github.com" = {
+        hostname = "github.com";
+        identityFile = "${homeDir}/.ssh/id_ed25519_github.com";
+      };
     };
   };
 }

@@ -68,6 +68,12 @@ Revert the buffer to the on disk file contents when they are changed outside of 
     (exec-path-from-shell-copy-env "SSH_AUTH_SOCK"))
 #+end_src
 
+** Tabs are evil
+So we disable the horrible things
+#+begin_src emacs-lisp
+  (setq-default indent-tabs-mode nil)
+#+end_src
+
 * Core Utils
 Utilities for emacs that support further parts of the configuration.
 ** Transient

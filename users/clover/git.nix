@@ -1,4 +1,8 @@
+{ lib, ...}:
+
 let
+  inherit (lib.lists)
+    forEach;
   secrets = import ../../secrets/clover-secrets.nix;
   homeDir = "/home/clover";
 in {
@@ -23,15 +27,13 @@ in {
 	templateDir = "${homeDir}/git/templates/hooks/pre-commit";
       };
     };
-    includes = [
-      {
-        condition = "hasconfig:remote.*.url:${secrets.repo1.condition}";
-        contents = {
-          user = {
-            email = "${secrets.repo1.email}";
-          };
-	};
-      }
-    ];
+    includes = forEach secrets.repos_emails (x: {
+      condition = "hasconfig:remote.*.url:${x.condition}";
+      contents = {
+        user = {
+          email = "${x.email}";
+        };
+      };
+    });
   };
 }

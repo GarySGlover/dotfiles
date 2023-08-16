@@ -12,6 +12,7 @@
       hydra
       no-littering
       magit
+      posframe
     ];
     extraConfig = ''
       (delete-file (expand-file-name "emacs-config.el" "~/.config/emacs"))

@@ -1,10 +1,9 @@
-{ lib, ...}:
+{ lib, config, ...}:
 
 let
   inherit (lib.lists)
     forEach;
   secrets = import ../../secrets/clover-secrets.nix;
-  homeDir = "/home/clover";
 in {
   xdg.configFile."git/templates/hooks/pre-commit".text = ''
     #!/usr/bin/env bash
@@ -24,7 +23,10 @@ in {
     userName = "${secrets.git_username}";
     extraConfig = {
       init = {
-	templateDir = "${homeDir}/git/templates/hooks/pre-commit";
+	templateDir = "${config.xdg.configHome}/git/templates/hooks/pre-commit";
+      };
+      github = {
+        user = "${secrets.github_user}";
       };
     };
     includes = forEach secrets.repos_emails (x: {

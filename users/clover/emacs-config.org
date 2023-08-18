@@ -189,6 +189,9 @@ the diff window as well, those buffers open in a seperate window.
     :commands magit-status
     :custom (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
     :bind ("C-c g" . magit-status))
+
+  (use-package forge
+    :after magit)
 #+end_src
 * Search
 ** Counsel

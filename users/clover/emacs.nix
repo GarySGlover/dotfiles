@@ -1,6 +1,8 @@
-{pkgs, ...}:
+{pkgs, config, ...}:
 
-{
+let
+  secrets = import ../../secrets/clover-secrets.nix;
+in {
   programs.emacs = {
     enable = true;
     package = pkgs.emacs29-pgtk;
@@ -8,7 +10,7 @@
       all-the-icons
       counsel
       doom-themes
-      fira-code-mode
+      forge
       hydra
       no-littering
       magit
@@ -38,4 +40,12 @@
     gtk3
     emacs-all-the-icons-fonts
   ];
+
+  home.file.authinfo = {
+    target = ".authinfo";
+    text = ''
+      machine api.github.com login ${secrets.github_user}^forge password ${secrets.github_magit_forge_token}
+    '';
+  };
+
 }

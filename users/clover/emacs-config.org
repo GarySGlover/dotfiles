@@ -79,6 +79,38 @@ Better popup frames
     :commands defhydra)
 #+end_src
 
+** Which key
+Popup to show available shortcut keys in current mode
+#+begin_src emacs-lisp
+  (use-package which-key
+    :demand
+    :config
+    (which-key-mode)
+    (which-key-add-keymap-based-replacements org-mode-map
+      "C-c C-v" "Org babel"
+      "C-c C-x" "Org extra")
+    :bind (:map help-map
+                ("C-h" . which-key-C-h-dispatch)
+                ("M-w" . which-key-show-top-level)
+                ("M-m" . which-key-show-major-mode))
+    :custom
+    (which-key-show-early-on-C-h t "Press C-h to show commands")
+    (which-key-idle-delay 1 "Delay which key normal display")
+    (which-key-idle-secondary-delay 0.05 "Quicker which-key subsequest display")
+    (which-key-max-display-columns 3)
+    (which-key-show-remaining-keys t))
+
+  (use-package which-key-posframe
+    :after (which-key posframe)
+    :config
+    (defun which-key-posframe--max-dimensions-override (x)
+      (cons (min 10 (pop x)) x))
+    (advice-add 'which-key-posframe--max-dimensions :filter-return #'which-key-posframe--max-dimensions-override)
+    (setq which-key-posframe-poshandler 'posframe-poshandler-frame-center)
+    (which-key-posframe-mode))
+
+#+end_src
+
 * Visual
 ** Alert notification
 When emacs reports an exception the default action is to play a bell sound. This

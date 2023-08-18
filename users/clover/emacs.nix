@@ -13,6 +13,8 @@
       no-littering
       magit
       posframe
+      which-key
+      which-key-posframe
     ];
     extraConfig = ''
       (delete-file (expand-file-name "emacs-config.el" "~/.config/emacs"))

@@ -8,13 +8,17 @@ in {
     package = pkgs.emacs29-pgtk;
     extraPackages = epkgs: with epkgs; [
       all-the-icons
+      consult
       counsel
       doom-themes
       forge
       hydra
-      no-littering
       magit
+      no-littering
+      orderless
+      popper
       posframe
+      vertico
       which-key
       which-key-posframe
     ];

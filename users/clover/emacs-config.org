@@ -248,3 +248,60 @@ Run launcher in own frame with title set to be picked up by window manager.
 	  (counsel-linux-app)
 	(delete-frame))))
 #+end_src
+* Window  Management
+** Popper
+#+begin_src emacs-lisp
+  (use-package popper
+    :bind (("C-c p l" . popper-toggle-latest)
+           ("C-c p c" . popper-cycle)
+           ("C-c p t" . popper-toggle-type)
+           ("C-c p k" . popper-kill-latest-popup))
+    :config
+    (setq popper-display-control nil)
+    :init
+    (setq popper-reference-buffers
+          '(messages-buffer-mode
+            help-mode
+            complilation-mode
+            magit-status-mode
+            magit-process-mode))
+    (setq popper-group-function nil)
+    (popper-mode 1)
+    (popper-echo-mode 1))
+#+end_src
+** Display buffer rules
+*** Helper functions
+#+begin_src emacs-lisp
+  (defun clover--buffer-left-side ()
+    '((display-buffer-in-side-window)
+     (side . left)
+     (window-width . 100)
+     (body-function . select-window)))
+  (defun clover--buffer-right-side ()
+    '((display-buffer-in-side-window)
+     (side . right)
+     (window-width . 100)
+     (body-function . select-window)))
+#+end_src
+*** Help buffer
+#+begin_src emacs-lisp
+  (add-to-list 'display-buffer-alist
+               (append '((major-mode . help-mode))
+                       (clover--buffer-right-side)))
+#+end_src
+*** Messages buffer
+#+begin_src emacs-lisp
+  (add-to-list 'display-buffer-alist
+               (append '((major-mode . messages-buffer-mode))
+                       (clover--buffer-right-side)))
+#+end_src
+*** Magit
+#+begin_src emacs-lisp
+  (add-to-list 'display-buffer-alist
+               (append '((major-mode . magit-status-mode))
+                       (clover--buffer-left-side)))
+
+  (add-to-list 'display-buffer-alist
+               (append '((major-mode . magit-process-mode))
+                       (clover--buffer-left-side)))
+#+end_src

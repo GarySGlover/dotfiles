@@ -70,21 +70,14 @@ Revert the buffer to the on disk file contents when they are changed outside of 
 
 * Core Utils
 Utilities for emacs that support further parts of the configuration.
-
-** Hydra
-Install Hydra ready or use later. Hydra can be used to group related commands
-under a common prefix and in use will lock the prefix until a command outside
-of the hydra is called.
-
+** Transient
+#+begin_src emacs-lisp
+  (use-package transient)
+#+end_src
 ** Posframe
 Better popup frames
 #+begin_src emacs-lisp
   (use-package posframe)
-#+end_src
-
-#+begin_src emacs-lisp
-  (use-package hydra
-    :commands defhydra)
 #+end_src
 
 ** Which key
@@ -160,24 +153,45 @@ Set default transparency of frames and creation of hydra function for adjusting 
   (defun change-frame-alpha-by (value)
     (let ((newAlpha (+ value (get-frame-alpha))))
       (if (> newAlpha (get-frame-alpha))
-	  (if (> newAlpha 100)
-	      (set-frame-alpha 100)
-	    (set-frame-alpha newAlpha))
-	  (if (< newAlpha 0)
-	      (set-frame-alpha 0)
-	    (set-frame-alpha newAlpha)))))
-
+          (if (> newAlpha 100)
+              (set-frame-alpha 100)
+            (set-frame-alpha newAlpha))
+          (if (< newAlpha 0)
+              (set-frame-alpha 0)
+            (set-frame-alpha newAlpha)))))
   (set-frame-alpha 85)
   (add-to-list 'default-frame-alist '(alpha-background . 85))
 
-  (defhydra hydra-transparent (global-map "C-c t")
-	    "Transparency"
-	    ("<up>" (change-frame-alpha-by 1) "Increase")
-	    ("<down>" (change-frame-alpha-by -1) "Decrease")
-	    ("<left>" (set-frame-alpha 0) "Min")
-	    ("<right>" (set-frame-alpha 100) "Max")
-	    ("m" (set-frame-alpha 50) "Mid")
-	    ("d" (set-frame-alpha 85) "Default"))
+  (transient-define-suffix clover--transient-transparency-increase-frame-alpha ()
+    :key "i" :description "Increase"
+    (interactive)
+    (change-frame-alpha-by 1))
+  (transient-define-suffix clover--transient-transparency-decrease-frame-alpha ()
+    :key "d" :description "Decrease"
+    (interactive)
+    (change-frame-alpha-by -1))
+  (transient-define-suffix clover--transient-transparency-frame-alpha-low ()
+    :key "l" :description "Low"
+    (interactive)
+    (set-frame-alpha 0))
+  (transient-define-suffix clover--transient-transparency-frame-alpha-high ()
+    :key "h" :description "High"
+    (interactive)
+    (set-frame-alpha 100))
+  (transient-define-suffix clover--transient-transparency-frame-alpha-reset ()
+    :key "r" :description "r"
+    (interactive)
+    (set-frame-alpha 85))
+
+  (transient-define-prefix ct-transparency ()
+    :transient-suffix 'transient--do-stay
+    :transient-non-suffix 'transient--do-exit
+    [(clover--transient-transparency-increase-frame-alpha)
+     (clover--transient-transparency-decrease-frame-alpha)
+     (clover--transient-transparency-frame-alpha-low)
+     (clover--transient-transparency-frame-alpha-high)
+     (clover--transient-transparency-frame-alpha-reset)])
+  (bind-key "C-c t" 'ct-transparency)
 #+end_src
 
 * Project Management

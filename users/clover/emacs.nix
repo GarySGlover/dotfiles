@@ -11,6 +11,7 @@ in {
       consult
       counsel
       doom-themes
+      exec-path-from-shell
       forge
       hydra
       magit

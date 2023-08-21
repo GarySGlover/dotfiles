@@ -29,6 +29,9 @@ in {
 
   programs.ssh = {
     enable = true;
+    extraConfig = "AddKeysToAgent yes";
+    forwardAgent = true;
+    compression = true;
     matchBlocks = {
      "dev.azure.com" = {
         hostname = "dev.azure.com";
@@ -40,4 +43,6 @@ in {
       };
     };
   };
+
+  services.ssh-agent.enable = true;
 }

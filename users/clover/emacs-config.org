@@ -220,6 +220,24 @@ the diff window as well, those buffers open in a seperate window.
 	(fboundp 'emacs-run-launcher-directories)
       (emacs-run-launcher-directories)))
 #+end_src
+
+** Helpful
+#+begin_src emacs-lisp
+  (use-package helpful
+    :commands
+    (helpful-callable
+     helpful-command
+     helpful-key
+     helpful-variable
+     helpful-at-point)
+    :bind
+    ([remap describe-function] . helpful-callable)
+    ([remap describe-command] . helpful-command)
+    ([remap describe-variable] . helpful-variable)
+    ([remap describe-key] . helpful-key)
+    ([remap Info-goto-emacs-command-node] . helpful-function)
+    ("C-h M-p" . helpful-at-point))
+    #+end_src
 * System
 This area is for system utilities and system functions such as the app
 launcher for the desktop environment.

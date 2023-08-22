@@ -13,11 +13,10 @@ in {
       doom-themes
       exec-path-from-shell
       forge
-      hydra
+      helpful
       magit
       no-littering
       orderless
-      popper
       posframe
       vertico
       which-key

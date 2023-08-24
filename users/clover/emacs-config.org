@@ -303,8 +303,9 @@ Run launcher in own frame with title set to be picked up by window manager.
                  (side . right)
                  (slot . 0)))
 
+
   (add-to-list 'display-buffer-alist
-               '("magit:\\|magit-revision\\|forge:\\|COMMIT_EDITMSG"
+               '("magit.*:\\|magit-revision\\|forge:\\|COMMIT_EDITMSG"
                  (display-buffer-in-side-window)
                  (window-width . 82)
                  (side . left)
@@ -316,5 +317,26 @@ Run launcher in own frame with title set to be picked up by window manager.
                (window-width . 82)
                (side . left)
                (slot . 1)))
-
+#+end_src
+* Editing
+** Visual Tansient
+#+begin_src emacs-lisp
+  (transient-define-prefix ct-visual-buffer ()
+    :transient-suffix 'transient--do-stay
+    :transient-non-suffix 'transient--do-exit
+    [("c" "Column Indicator" display-fill-column-indicator-mode)
+     (clover--transient-visual-buffer-column-right)
+     ("w" "Whitespace" whitespace-mode)])
+  (bind-key "C-c v" 'ct-visual-buffer)
+#+end_src
+** Vertical Ruler
+#+begin_src emacs-lisp
+  (transient-define-suffix clover--transient-visual-buffer-column-right ()
+    :key "i" :description "Column right"
+    (interactive)
+    (setq display-fill-column-indicator-column 100))
+  (setq display-fill-column-indicator-column 80)
+  (setq global-display-fill-column-indicator-modes t)
+  (setq display-fil-lcolumn-indicator-character #xf0689)
+  (global-display-fill-column-indicator-mode 1)
 #+end_src

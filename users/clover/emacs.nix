@@ -19,6 +19,7 @@ in {
       orderless
       posframe
       vertico
+      vertico-posframe
       which-key
       which-key-posframe
     ];

@@ -68,6 +68,12 @@ Revert the buffer to the on disk file contents when they are changed outside of 
     (exec-path-from-shell-copy-env "SSH_AUTH_SOCK"))
 #+end_src
 
+** Tabs are evil
+So we disable the horrible things
+#+begin_src emacs-lisp
+  (setq-default indent-tabs-mode nil)
+#+end_src
+
 * Core Utils
 Utilities for emacs that support further parts of the configuration.
 ** Transient
@@ -125,7 +131,7 @@ replaces the sound with a double flash on the modeline background.
       (run-with-timer (* 2 flash-sec) nil #'invert-face 'mode-line)
       (run-with-timer (* 3 flash-sec) nil #'invert-face 'mode-line)))
   (setq visible-bell nil
-	ring-bell-function 'double-flash-modeline)
+        ring-bell-function 'double-flash-modeline)
 #+end_src
 
 ** Theme
@@ -212,13 +218,40 @@ the diff window as well, those buffers open in a seperate window.
     :after magit)
 #+end_src
 * Search
+** Vertico
+#+begin_src emacs-lisp
+  (use-package vertico
+    :init
+    (vertico-mode))
+
+  (use-package vertico-posframe
+    :init
+    (vertico-posframe-mode 1))
+#+end_src
+** Consult
+#+begin_src emacs-lisp
+  (use-package consult
+    :bind
+    ("C-s" . consult-line))
+#+end_src
+** Orderless
+#+begin_src emacs-lisp
+  (use-package orderless
+    :config
+    (add-to-list 'completion-styles 'orderless)
+    :custom
+    (completion-category-defaults nil)
+    (completion-category-overrides '((file (styles basic partial-completion)))))
+
+#+end_src
+
 ** Counsel
 #+begin_src emacs-lisp
   (use-package counsel
     :defer t
     :config
     (when
-	(fboundp 'emacs-run-launcher-directories)
+        (fboundp 'emacs-run-launcher-directories)
       (emacs-run-launcher-directories)))
 #+end_src
 
@@ -250,8 +283,8 @@ Counsel-linux app configuration to improve formatting
     "Formatter for the app launcher. NAME is the name of the application,
   COMMENT is the applications comment and EXEC is the command to launch"
     (format "% -25s %s"
-	    (propertize name 'face 'font-lock-buitlin-face)
-	    (or comment "")))
+            (propertize name 'face 'font-lock-buitlin-face)
+            (or comment "")))
   (setq counsel-linux-app-format-function #'emacs-run-launcher-format-function)
 #+end_src
 App launcher using counsel-linux-app
@@ -261,11 +294,11 @@ Filter app launcher directories to allow overriding of desktop files.
   (defun emacs-run-launcher-directories ()
     "Update the directories used by counsel-linux-app"
     (setq counsel-linux-apps-directories
-	  (seq-remove
-	   (lambda
-	     (x)
-	     (string-prefix-p "/nix/store/" x))
-	   counsel-linux-apps-directories)))
+          (seq-remove
+           (lambda
+             (x)
+             (string-prefix-p "/nix/store/" x))
+           counsel-linux-apps-directories)))
   ;;(setq counsel-linux-apps-directories '("/home/clover/.nix-profile/share/applications"))
 #+end_src
 Run launcher in own frame with title set to be picked up by window manager.
@@ -275,14 +308,14 @@ Run launcher in own frame with title set to be picked up by window manager.
     "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Run counsel-linux-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
     (interactive)
     (with-selected-frame
-	(make-frame
-	 '((name . "emacs-run-launcher")
-	   (minibuffer . only)
-	   (width . 120)
-	   (height . 11)))
+        (make-frame
+         '((name . "emacs-run-launcher")
+           (minibuffer . only)
+           (width . 120)
+           (height . 11)))
       (unwind-protect
-	  (counsel-linux-app)
-	(delete-frame))))
+          (counsel-linux-app)
+        (delete-frame))))
 #+end_src
 * Window  Management
 ** Display Buffer rules

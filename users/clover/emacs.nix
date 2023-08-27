@@ -8,8 +8,8 @@ in {
     package = pkgs.emacs29-pgtk;
     extraPackages = epkgs: with epkgs; [
       all-the-icons
-      consult
       counsel
+      consult
       doom-themes
       exec-path-from-shell
       forge
@@ -22,6 +22,8 @@ in {
       vertico-posframe
       which-key
       which-key-posframe
+      orderless
+      vertico
     ];
     extraConfig = ''
       (delete-file (expand-file-name "emacs-config.el" "~/.config/emacs"))
@@ -43,7 +45,6 @@ in {
 
   home.packages = with pkgs; [
     gtk3
-    emacs-all-the-icons-fonts
   ];
 
   home.file.authinfo = {

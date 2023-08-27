@@ -223,6 +223,10 @@ the diff window as well, those buffers open in a seperate window.
   (use-package vertico
     :init
     (vertico-mode))
+
+  (use-package vertico-posframe
+    :init
+    (vertico-posframe-mode 1))
 #+end_src
 ** Consult
 #+begin_src emacs-lisp

@@ -377,8 +377,41 @@ Run launcher in own frame with title set to be picked up by window manager.
     :key "i" :description "Column right"
     (interactive)
     (setq display-fill-column-indicator-column 100))
-  (setq display-fill-column-indicator-column 80)
-  (setq global-display-fill-column-indicator-modes t)
-  (setq display-fil-lcolumn-indicator-character #xf0689)
   (global-display-fill-column-indicator-mode 1)
+  (setq-default display-fill-column-indicator-column 80)
+  (setq-default global-display-fill-column-indicator-modes t)
+  (setq-default display-fil-lcolumn-indicator-character #xf0689)
+#+end_src
+* Programming
+** Eglot
+#+begin_src emacs-lisp
+  (use-package eglot
+    :hook
+    (prog-mode . eglot-ensure))
+#+end_src
+** Nix
+#+begin_src emacs-lisp
+  (use-package nix-mode
+    :mode "\\.nix\\'"
+    :hook
+    (nix-mode . (lambda ()
+                  (setq-local format-all-formatters '(("Nix" alejandra)))))
+    (nix-mode . format-all-mode))
+#+end_src
+** Python
+#+begin_src emacs-lisp
+
+  (use-package python
+    :hook
+    (python-mode .
+                 (lambda
+                   ()
+                   (setq-local format-all-formatters
+                               '(("Python" black)))
+                   (setq-local python-flymake-command
+                               '("flake8" "-"))
+                   (setq-default eglot-workspace-configuration
+                                 '(:python.\analysis
+                                    (:typeCheckingMode "strict")))))
+        (python-mode . format-all-mode))
 #+end_src

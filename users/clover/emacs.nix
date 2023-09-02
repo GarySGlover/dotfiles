@@ -23,6 +23,7 @@ in {
         no-littering
         orderless
         posframe
+        treesit-grammars.with-all-grammars
         vertico
         vertico-posframe
         which-key

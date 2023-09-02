@@ -10,9 +10,9 @@
     '';
   };
   home.packages = with pkgs; [
+    nodePackages.pyright
     python311
     python311Packages.black
     python311Packages.flake8
-    nodePackages.pyright
   ];
 }

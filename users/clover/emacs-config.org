@@ -398,20 +398,26 @@ Run launcher in own frame with title set to be picked up by window manager.
                   (setq-local format-all-formatters '(("Nix" alejandra)))))
     (nix-mode . format-all-mode))
 #+end_src
+** Treesitter
+#+begin_src emacs-lisp
+  (customize-set-variable 'treesit-font-lock-level 4)
+#+end_src
 ** Python
 #+begin_src emacs-lisp
-
   (use-package python
-    :hook
-    (python-mode .
-                 (lambda
-                   ()
-                   (setq-local format-all-formatters
-                               '(("Python" black)))
-                   (setq-local python-flymake-command
-                               '("flake8" "-"))
-                   (setq-default eglot-workspace-configuration
-                                 '(:python.\analysis
-                                    (:typeCheckingMode "strict")))))
-        (python-mode . format-all-mode))
+    :init
+    (setf (cdr (rassoc 'python-mode auto-mode-alist)) 'python-ts-mode)
+    (setf (cdr (rassoc 'python-mode interpreter-mode-alist)) 'python-ts-mode)
+      :hook
+      (python-ts-mode .
+                   (lambda
+                     ()
+                     (setq-local format-all-formatters
+                                 '(("Python" black)))
+                     (setq-local python-flymake-command
+                                 '("flake8" "-"))
+                     (setq-default eglot-workspace-configuration
+                                   '(:python.\analysis
+                                      (:typeCheckingMode "strict")))))
+          (python-ts-mode . format-all-mode))
 #+end_src

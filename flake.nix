@@ -12,15 +12,19 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    ags.url = "github:Aylur/ags";
   };
 
-  outputs = inputs@{ nixpkgs, ... }:
-  let
+  outputs = inputs @ {nixpkgs, ...}: let
     system = "x86_64-linux";
-    pkgs = import nixpkgs {
-      inherit system;
-      config.allowUnfree = true;
-    };
+    pkgs =
+      import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      }
+      // {
+        ags = inputs.ags.packages.${system}.default;
+      };
     lib = nixpkgs.lib;
     pkgs-unstable = import inputs.unstable {
       inherit system;
@@ -30,10 +34,10 @@
     nixosConfigurations = {
       auberon = lib.nixosSystem {
         inherit system;
-	modules = [
-	  ./hosts/auberon
-	  inputs.sops-nix.nixosModules.sops
-	];
+        modules = [
+          ./hosts/auberon
+          inputs.sops-nix.nixosModules.sops
+        ];
       };
     };
 
@@ -43,7 +47,7 @@
         ./users/clover/home.nix
       ];
       extraSpecialArgs = {
-        inherit pkgs-unstable;
+        inherit pkgs-unstable pkgs;
       };
     };
   };

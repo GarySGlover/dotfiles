@@ -32,6 +32,8 @@ in {
     sops
     ssh-to-age
     git-crypt # Secrets management
+
+    ags
   ];
 
   programs.ssh = {

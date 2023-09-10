@@ -1,6 +1,8 @@
-{config, pkgs, pkgs-unstable, ...}:
-
 {
+  config,
+  pkgs,
+  ...
+}: {
   wayland.windowManager.hyprland.enable = true;
   wayland.windowManager.hyprland.settings = {
     monitor = [
@@ -28,10 +30,12 @@
 
     decoration = {
       rounding = "10";
-      blur = "yes";
-      blur_size = "3";
-      blur_passes = "1";
-      blur_new_optimizations = "on";
+      blur = {
+        enabled = true;
+        size = "3";
+        passes = "1";
+        new_optimizations = true;
+      };
 
       drop_shadow = "yes";
       shadow_range = "4";
@@ -129,6 +133,6 @@
   };
 
   home.packages = with pkgs; [
-    pkgs-unstable.swww # Animated wallpapers
+    swww # Animated wallpapers
   ];
 }

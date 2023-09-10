@@ -1,6 +1,4 @@
-{ pkgs, ...}:
-
-{
+{pkgs, ...}: {
   # Default sops config
   sops.defaultSopsFile = ../../secrets/global.yaml;
 
@@ -28,6 +26,9 @@
 
   # Force users to be configured by nix
   users.mutableUsers = false;
+
+  # Kernel
+  boot.kernelPackages = pkgs.linuxPackages_zen;
 
   system.stateVersion = "23.05";
 }

@@ -1,6 +1,8 @@
-{config, pkgs, pkgs-unstable, ...}:
-
-let
+{
+  config,
+  pkgs,
+  ...
+}: let
   homeDir = "/home/clover";
 in {
   # Home manager install and configure self
@@ -21,10 +23,14 @@ in {
   home.packages = with pkgs; [
     firefox
     pre-commit
-    go python311
+    go
+    python311
     wlr-randr
 
-    age sops ssh-to-age git-crypt # Secrets management
+    age
+    sops
+    ssh-to-age
+    git-crypt # Secrets management
   ];
 
   programs.ssh = {
@@ -33,7 +39,7 @@ in {
     forwardAgent = true;
     compression = true;
     matchBlocks = {
-     "dev.azure.com" = {
+      "dev.azure.com" = {
         hostname = "dev.azure.com";
         identityFile = "${homeDir}/.ssh/id_ed25519_dev.azure.com";
       };

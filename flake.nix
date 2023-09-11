@@ -29,6 +29,13 @@
           inputs.sops-nix.nixosModules.sops
         ];
       };
+      belisarius = lib.nixosSystem {
+        inherit system;
+        modules = [
+          ./hosts/belisarius
+          inputs.sops-nix.nixosModules.sops
+        ];
+      };
     };
 
     homeConfigurations.clover = inputs.home-manager.lib.homeManagerConfiguration {

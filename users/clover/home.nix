@@ -18,6 +18,7 @@ in {
     ./hyprland.nix
     ./terminal.nix
     ./git.nix
+    ./languages/python.nix
   ];
 
   home.packages = with pkgs; [

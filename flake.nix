@@ -24,6 +24,7 @@
     nixosConfigurations = {
       auberon = lib.nixosSystem {
         inherit system;
+        inherit pkgs;
         modules = [
           ./hosts/auberon
           inputs.sops-nix.nixosModules.sops
@@ -31,6 +32,7 @@
       };
       belisarius = lib.nixosSystem {
         inherit system;
+        inherit pkgs;
         modules = [
           ./hosts/belisarius
           inputs.sops-nix.nixosModules.sops

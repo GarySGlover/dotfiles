@@ -1,11 +1,8 @@
-{ pkgs, ... }:
-
-{
+{pkgs, ...}: {
   # Default sops config
-  sops.age.sshKeyPaths = [ "/etc/ssh/ssh_belisarius_ed25519" ];
+  sops.age.sshKeyPaths = ["/etc/ssh/ssh_belisarius_ed25519"];
 
-  imports =
-  [
+  imports = [
     ./hardware-configuration.nix
     ../global
     ../global/wifi.nix
@@ -22,4 +19,13 @@
 
   # Enable touchpad support (enabled default in most desktopManager).
   services.xserver.libinput.enable = true;
+
+  # Enable Steam for gaming
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true;
+  };
+
+  # ASUS Services
+  services.asusd.enable = true;
 }

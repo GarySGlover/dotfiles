@@ -21,7 +21,7 @@
   i18n.defaultLocale = "en_GB.UTF-8";
   console = {
     font = "Lat2-Terminus16";
-    keyMap = "en";
+    keyMap = "uk";
   };
 
   # Force users to be configured by nix
@@ -29,6 +29,13 @@
 
   # Kernel
   boot.kernelPackages = pkgs.linuxPackages_zen;
+
+  # Extra system packages
+  environment.systemPackages = with pkgs; [
+    pciutils
+  ];
+
+  # https://github.com/NixOS/nixpkgs/issues/162562
 
   system.stateVersion = "23.05";
 }

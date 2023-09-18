@@ -6,10 +6,7 @@
 
   services.xserver = {
     enable = true;
-    displayManager.gdm = {
-      enable = true;
-      wayland = true;
-    };
+    displayManager.startx.enable = true;
   };
 
   # Configure keymap in X11

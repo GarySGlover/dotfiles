@@ -15,7 +15,7 @@ in {
   imports = [
     ./fonts.nix
     ./emacs.nix
-    ./hyprland.nix
+    ./hypr/main.nix
     ./terminal.nix
     ./git.nix
     ./languages/python.nix

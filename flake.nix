@@ -11,14 +11,19 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    ags.url = "github:Aylur/ags";
   };
 
   outputs = inputs @ {nixpkgs, ...}: let
     system = "x86_64-linux";
-    pkgs = import nixpkgs {
-      inherit system;
-      config.allowUnfree = true;
-    };
+    pkgs =
+      import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      }
+      // {
+        ags = inputs.ags.packages.${system}.default;
+      };
     lib = nixpkgs.lib;
   in {
     nixosConfigurations = {
@@ -40,10 +45,18 @@
       };
     };
 
-    homeConfigurations.clover = inputs.home-manager.lib.homeManagerConfiguration {
+    homeConfigurations."clover@belisarius" = inputs.home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
+      extraSpecialArgs = {inherit inputs pkgs;};
       modules = [
-        ./users/clover/home.nix
+        ./hosts/belisarius/clover_belisarius.nix
+      ];
+    };
+    homeConfigurations."clover@auberon" = inputs.home-manager.lib.homeManagerConfiguration {
+      inherit pkgs;
+      extraSpecialArgs = {inherit inputs pkgs;};
+      modules = [
+        ./hosts/auberon/clover_auberon.nix
       ];
     };
   };

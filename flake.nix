@@ -14,50 +14,109 @@
     ags.url = "github:Aylur/ags";
   };
 
-  outputs = inputs @ {nixpkgs, ...}: let
-    system = "x86_64-linux";
+  outputs = {
+    self,
+    nixpkgs,
+    home-manager,
+    ags,
+    sops-nix,
+    ...
+  }: let
+    system =
+      if builtins ? currentSystem
+      then builtins.currentSystem
+      else "x86_64-linux";
+
     pkgs =
       import nixpkgs {
         inherit system;
         config.allowUnfree = true;
       }
       // {
-        ags = inputs.ags.packages.${system}.default;
+        ags = ags.packages.${system}.default;
       };
+
     lib = nixpkgs.lib;
-  in {
-    nixosConfigurations = {
-      auberon = lib.nixosSystem {
-        inherit system;
+
+    mkHomeCfg = name: let
+      username = "${builtins.head (builtins.match "(.+)@.+" name)}";
+      hostname = "${builtins.head (builtins.match ".+@(.+)" name)}";
+      homeDir = "/home/${username}";
+    in {
+      inherit name;
+      value = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         modules = [
-          ./hosts/auberon
-          inputs.sops-nix.nixosModules.sops
+          (./users + "/${username}")
+          ({...}: {
+            home.username = username;
+            home.homeDirectory = homeDir;
+          })
         ];
-      };
-      belisarius = lib.nixosSystem {
-        inherit system;
-        inherit pkgs;
-        modules = [
-          ./hosts/belisarius
-          inputs.sops-nix.nixosModules.sops
-        ];
+        extraSpecialArgs = {inherit homeDir pkgs hostname username;};
       };
     };
 
-    homeConfigurations."clover@belisarius" = inputs.home-manager.lib.homeManagerConfiguration {
-      inherit pkgs;
-      extraSpecialArgs = {inherit inputs pkgs;};
-      modules = [
-        ./hosts/belisarius/clover_belisarius.nix
-      ];
+    mkNixOsCfg = {
+      host,
+      users,
+    }: let
+      userHome = builtins.listToAttrs (
+        lib.lists.forEach users (
+          user: {
+            name = "${user}";
+            value = {pkgs, ...}: {
+              home.username = "${user}";
+              home.homeDirectory = "/home/${user}";
+              imports = [
+                ./users/clover
+              ];
+            };
+          }
+        )
+      );
+    in
+      lib.nixosSystem {
+        inherit system;
+        inherit pkgs;
+        modules = [
+          ./hosts/${host}
+          sops-nix.nixosModules.sops
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users = userHome;
+              extraSpecialArgs = {hostname = host;};
+            };
+          }
+        ];
+      };
+
+    hostCfgs = {
+      belisarius = ["clover"];
+      auberon = ["clover" "work"];
     };
-    homeConfigurations."clover@auberon" = inputs.home-manager.lib.homeManagerConfiguration {
-      inherit pkgs;
-      extraSpecialArgs = {inherit inputs pkgs;};
-      modules = [
-        ./hosts/auberon/clover_auberon.nix
-      ];
-    };
+
+    homeCfgs = lib.lists.flatten (
+      builtins.attrValues (
+        builtins.mapAttrs (host: users:
+          lib.lists.forEach users (
+            user: "${user}@${host}"
+          ))
+        hostCfgs
+      )
+    );
+  in {
+    nixosConfigurations = builtins.mapAttrs (host: users:
+      mkNixOsCfg {inherit host users;})
+    hostCfgs;
+
+    homeConfigurations = builtins.listToAttrs (
+      lib.lists.forEach homeCfgs (
+        name: mkHomeCfg name
+      )
+    );
   };
 }

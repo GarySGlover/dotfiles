@@ -9,7 +9,6 @@
     ../global/efi-bootloader.nix
     ../global/desktop.nix
     ../global/gaming.nix
-    ./users.nix
   ];
 
   # Hostname

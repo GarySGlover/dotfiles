@@ -1,4 +1,8 @@
 {pkgs, ...}: {
+  imports = [
+    ./users.nix
+  ];
+
   # Default sops config
   sops.defaultSopsFile = ../../secrets/global.yaml;
 
@@ -28,7 +32,16 @@
   users.mutableUsers = false;
 
   # Kernel
-  boot.kernelPackages = pkgs.linuxPackages_zen;
+  boot.kernelPackages = pkgs.linuxPackagesFor (pkgs.linux_latest.override {
+    argsOverride = rec {
+      src = pkgs.fetchurl {
+        url = "mirror://kernel/linux/kernel/v6.x/linux-6.5.2.tar.xz";
+        sha256 = "sha256-ICfhQFfVaK093BANrfTIhTpJsDEnBHimHYj2ARVyZQ8=";
+      };
+      version = "6.5.2";
+      modDirVersion = "6.5.2";
+    };
+  });
 
   # Extra system packages
   environment.systemPackages = with pkgs; [

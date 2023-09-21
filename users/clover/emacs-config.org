@@ -140,11 +140,16 @@ Setup the main theme and fonts used within this emacs configuration.
 #+begin_src emacs-lisp
   (set-face-attribute 'default nil
                       :font "FiraCode Nerd Font"
-                      :height 120)
+                      :height 100)
   (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font"))
 
   (load-theme 'doom-dracula t)
 #+end_src
+
+(setq-default window-divider-mode t)
+(setq-default window-divider-default-places t)
+(set-face-foreground 'vertical-border "black")
+(set-face-background 'vertical-border (face-foreground 'vertical-border))
 
 ** Transparency
 Set default transparency of frames and creation of hydra function for adjusting alpha.

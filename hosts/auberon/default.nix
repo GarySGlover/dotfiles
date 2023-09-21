@@ -1,17 +1,13 @@
-{ pkgs, ... }:
-
-{
+{pkgs, ...}: {
   # Default sops config
-  sops.age.sshKeyPaths = [ "/etc/ssh/ssh_auberon_ed25519" ];
+  sops.age.sshKeyPaths = ["/etc/ssh/ssh_auberon_ed25519"];
 
-  imports =
-  [
+  imports = [
     ./hardware-configuration.nix
     ../global
     ../global/wifi.nix
     ../global/efi-bootloader.nix
     ../global/desktop.nix
-    ./users.nix
   ];
 
   # Hostname

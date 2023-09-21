@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  hostname,
   ...
 }: {
   wayland.windowManager.hyprland = {
@@ -12,8 +13,8 @@
     '';
   };
 
-  home.file."${config.xdg.configHome}/hypr/main.conf".source = ../hypr/main.conf;
-
+  home.file."${config.xdg.configHome}/hypr/main.conf".source = ./main.conf;
+  home.file."${config.xdg.configHome}/hypr/host.conf".source = ../../../hosts + "/${hostname}/hypr.conf";
   home.packages = with pkgs; [
     swww # Animated wallpapers
   ];

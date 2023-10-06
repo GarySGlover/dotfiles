@@ -47,13 +47,14 @@
       value = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         modules = [
-          (./users + "/${username}")
           ({...}: {
             home.username = username;
             home.homeDirectory = homeDir;
+            clover.hostname = hostname;
           })
+          (./users + "/${username}")
         ];
-        extraSpecialArgs = {inherit homeDir pkgs hostname username;};
+        extraSpecialArgs = {inherit homeDir pkgs;};
       };
     };
 
@@ -88,7 +89,6 @@
               useGlobalPkgs = true;
               useUserPackages = true;
               users = userHome;
-              extraSpecialArgs = {hostname = host;};
             };
           }
         ];
@@ -97,6 +97,7 @@
     hostCfgs = {
       belisarius = ["clover"];
       auberon = ["clover" "work"];
+      clover-z270pd3 = ["clover"];
     };
 
     homeCfgs = lib.lists.flatten (

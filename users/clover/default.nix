@@ -3,7 +3,7 @@
   pkgs,
   ...
 }: let
-  homeDir = "/home/clover";
+  homeDir = config.home.homeDirectory;
 in {
   # Home manager install and configure self
   programs.home-manager.enable = true;

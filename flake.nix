@@ -38,23 +38,35 @@
 
     lib = nixpkgs.lib;
 
+    userModules = builtins.attrNames (
+      lib.filterAttrs (n: v: v == "directory")
+      (builtins.readDir modules/users)
+    );
+
     mkHomeCfg = name: let
       username = "${builtins.head (builtins.match "(.+)@.+" name)}";
       hostname = "${builtins.head (builtins.match ".+@(.+)" name)}";
-      homeDir = "/home/${username}";
+      userLegacyModule = ./users + "/${username}";
     in {
       inherit name;
       value = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        modules = [
-          ({...}: {
-            home.username = username;
-            home.homeDirectory = homeDir;
-            clover.hostname = hostname;
-          })
-          (./users + "/${username}")
-        ];
-        extraSpecialArgs = {inherit homeDir pkgs;};
+        modules =
+          [
+            ({...}: {
+              home.username = username;
+              home.homeDirectory = "/home/${username}";
+              wolf.hostname = hostname;
+            })
+            ./modules/users
+          ]
+          ++ userModules
+          ++ (
+            if builtins.pathExists userLegacyModule
+            then [userLegacyModule]
+            else []
+          );
+        extraSpecialArgs = {inherit pkgs;};
       };
     };
 
@@ -70,7 +82,7 @@
               home.username = "${user}";
               home.homeDirectory = "/home/${user}";
               imports = [
-                ./users/clover
+                ./users/${user}
               ];
             };
           }
@@ -89,6 +101,14 @@
               useGlobalPkgs = true;
               useUserPackages = true;
               users = userHome;
+              sharedModules =
+                [
+                  ({...}: {
+                    wolf.hostname = host;
+                  })
+                  ./modules/users
+                ]
+                ++ userModules;
             };
           }
         ];

@@ -30,7 +30,6 @@
     pkgs =
       import nixpkgs {
         inherit system;
-        config.allowUnfree = true;
       }
       // {
         ags = ags.packages.${system}.default;
@@ -44,9 +43,9 @@
     );
 
     mkHomeCfg = name: let
-      username = "${builtins.head (builtins.match "(.+)@.+" name)}";
-      hostname = "${builtins.head (builtins.match ".+@(.+)" name)}";
-      userLegacyModule = ./users + "/${username}";
+      user = "${builtins.head (builtins.match "(.+)@.+" name)}";
+      host = "${builtins.head (builtins.match ".+@(.+)" name)}";
+      userLegacyModule = ./users + "/${user}";
     in {
       inherit name;
       value = home-manager.lib.homeManagerConfiguration {
@@ -54,9 +53,9 @@
         modules =
           [
             ({...}: {
-              home.username = username;
-              home.homeDirectory = "/home/${username}";
-              wolf.hostname = hostname;
+              home.username = user;
+              home.homeDirectory = "/home/${user}";
+              wolf.host = host;
             })
             ./modules/users
           ]
@@ -88,30 +87,37 @@
           }
         )
       );
+      hostLegacyModule = (
+        if builtins.pathExists ./hosts/${host}
+        then [./hosts/${host}]
+        else []
+      );
     in
       lib.nixosSystem {
         inherit system;
         inherit pkgs;
-        modules = [
-          ./hosts/${host}
-          sops-nix.nixosModules.sops
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              users = userHome;
-              sharedModules =
-                [
-                  ({...}: {
-                    wolf.hostname = host;
-                  })
-                  ./modules/users
-                ]
-                ++ userModules;
-            };
-          }
-        ];
+        modules =
+          [
+            ./modules/hosts
+            sops-nix.nixosModules.sops
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                users = userHome;
+                sharedModules =
+                  [
+                    ({...}: {
+                      wolf.host = host;
+                    })
+                    ./modules/users
+                  ]
+                  ++ userModules;
+              };
+            }
+          ]
+          ++ hostLegacyModule;
       };
 
     hostCfgs = {

@@ -12,7 +12,7 @@
     home = "/home/clover";
     uid = 1000;
     extraGroups = ["wheel"]; # Enable ‘sudo’ for the user.
-    passwordFile = config.sops.secrets.clover-password.path;
+    hashedPasswordFile = config.sops.secrets.clover-password.path;
     shell = pkgs.fish;
   };
 }

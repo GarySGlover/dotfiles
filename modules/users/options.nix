@@ -2,7 +2,7 @@
 with lib; {
   options = {
     wolf = {
-      hostname = mkOption {
+      host = mkOption {
         type = types.str;
       };
     };

@@ -14,7 +14,7 @@
     };
 
     home.file."${config.xdg.configHome}/hypr/main.conf".source = ./main.conf;
-    home.file."${config.xdg.configHome}/hypr/host.conf".source = ../../../hosts + "/${config.wolf.hostname}/hypr.conf";
+    home.file."${config.xdg.configHome}/hypr/host.conf".source = ../../../hosts + "/${config.wolf.host}/hypr.conf";
     home.packages = with pkgs; [
       swww # Animated wallpapers
     ];

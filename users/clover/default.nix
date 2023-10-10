@@ -26,7 +26,6 @@ in {
     python311
     wlr-randr
 
-    netflix
     brave
 
     rofi

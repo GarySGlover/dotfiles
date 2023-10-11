@@ -1,7 +1,4 @@
 {pkgs, ...}: {
-  # Default sops config
-  sops.age.sshKeyPaths = ["/etc/ssh/ssh_belisarius_ed25519"];
-
   imports = [
     ./hardware-configuration.nix
     ../global

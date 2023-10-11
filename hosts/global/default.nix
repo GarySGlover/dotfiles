@@ -15,7 +15,7 @@
   nix.gc = {
     automatic = true;
     dates = "weekly";
-    options = "--delete-older-than 7d";
+    options = "--delete-older-than 31d";
   };
 
   # Set your time zone.
@@ -32,16 +32,7 @@
   users.mutableUsers = false;
 
   # Kernel
-  boot.kernelPackages = pkgs.linuxPackagesFor (pkgs.linux_latest.override {
-    argsOverride = rec {
-      src = pkgs.fetchurl {
-        url = "mirror://kernel/linux/kernel/v6.x/linux-6.5.2.tar.xz";
-        sha256 = "sha256-ICfhQFfVaK093BANrfTIhTpJsDEnBHimHYj2ARVyZQ8=";
-      };
-      version = "6.5.2";
-      modDirVersion = "6.5.2";
-    };
-  });
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # Extra system packages
   environment.systemPackages = with pkgs; [

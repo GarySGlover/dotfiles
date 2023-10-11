@@ -30,17 +30,18 @@
     pkgs =
       import nixpkgs {
         inherit system;
+        config.allowUnfreePredicate = pkg:
+          builtins.elem (lib.getName pkg) [
+            "steam"
+            "steam-original"
+            "steam-run"
+          ];
       }
       // {
         ags = ags.packages.${system}.default;
       };
 
     lib = nixpkgs.lib;
-
-    userModules = builtins.attrNames (
-      lib.filterAttrs (n: v: v == "directory")
-      (builtins.readDir modules/users)
-    );
 
     mkHomeCfg = name: let
       user = "${builtins.head (builtins.match "(.+)@.+" name)}";
@@ -59,7 +60,6 @@
             })
             ./modules/users
           ]
-          ++ userModules
           ++ (
             if builtins.pathExists userLegacyModule
             then [userLegacyModule]
@@ -106,14 +106,12 @@
                 useGlobalPkgs = true;
                 useUserPackages = true;
                 users = userHome;
-                sharedModules =
-                  [
-                    ({...}: {
-                      wolf.host = host;
-                    })
-                    ./modules/users
-                  ]
-                  ++ userModules;
+                sharedModules = [
+                  ({...}: {
+                    wolf.host = host;
+                  })
+                  ./modules/users
+                ];
               };
             }
           ]

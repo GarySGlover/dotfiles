@@ -1,4 +1,5 @@
-#+PROPRTY: header-args:emacs-list :results silent
+#+PROPRTY: header-args :results silent
+
 * Initialisation
 This section contains basic configurations for emacs to tidy up the interface and
 set some defaults for the inbuilt modules that don't fit into other categories.
@@ -7,7 +8,7 @@ set some defaults for the inbuilt modules that don't fit into other categories.
 Remove elpa from the package archives so that no packages will be automtically
 downloaded. All packages will be installed using the nix package manager.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (setq package-archives nil)
 #+end_src
 
@@ -15,7 +16,7 @@ downloaded. All packages will be installed using the nix package manager.
 Remove some of the default GUI display components that are typically used with
 mouse rather than keyboard.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (scroll-bar-mode -1)
   (tool-bar-mode -1)
   (tooltip-mode -1)
@@ -29,14 +30,14 @@ Emacs has disabled some inbuilt functions by default as a safety measure. Replac
 the function that is called prior to running these enables all these commands without
 further confirmation.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (setq disabled-command-function nil)
 #+end_src
 
 ** Use short answers
 Allow use of y/n instead of yes/no for interactive command confirmations.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (setq use-short-answers t)
 #+end_src
 
@@ -45,7 +46,7 @@ Tell emacs not to create lock files as everthing being edited is single user so
 should have no conflicts over files. Use of no-littering to reduce other files
 being scattered in the filesystem and keep the emacs folder clean.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package no-littering
     :demand t
     :config
@@ -56,12 +57,12 @@ being scattered in the filesystem and keep the emacs folder clean.
 ** Buffer auto revert
 Revert the buffer to the on disk file contents when they are changed outside of emacs.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (global-auto-revert-mode 1)
 #+end_src
 
 ** Environment Variable import
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package exec-path-from-shell
     :config
     (exec-path-from-shell-copy-env "SSH_AGENT_PID")
@@ -70,25 +71,25 @@ Revert the buffer to the on disk file contents when they are changed outside of 
 
 ** Tabs are evil
 So we disable the horrible things
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (setq-default indent-tabs-mode nil)
 #+end_src
 
 * Core Utils
 Utilities for emacs that support further parts of the configuration.
 ** Transient
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package transient)
 #+end_src
 ** Posframe
 Better popup frames
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package posframe)
 #+end_src
 
 ** Which key
 Popup to show available shortcut keys in current mode
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package which-key
     :demand
     :config
@@ -113,7 +114,7 @@ Popup to show available shortcut keys in current mode
     (defun which-key-posframe--max-dimensions-override (x)
       (cons (min 10 (pop x)) x))
     (advice-add 'which-key-posframe--max-dimensions :filter-return #'which-key-posframe--max-dimensions-override)
-    (setq which-key-posframe-poshandler 'posframe-poshandler-frame-center)
+    (setq which-key-posframe-poshandler 'posframe-poshandler-frame-top-center)
     (which-key-posframe-mode))
 
 #+end_src
@@ -123,7 +124,7 @@ Popup to show available shortcut keys in current mode
 When emacs reports an exception the default action is to play a bell sound. This
 replaces the sound with a double flash on the modeline background.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (defun double-flash-modeline ()
     (let ((flash-sec (/ 1.0 20)))
       (invert-face 'mode-line)
@@ -137,7 +138,7 @@ replaces the sound with a double flash on the modeline background.
 ** Theme
 Setup the main theme and fonts used within this emacs configuration.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (set-face-attribute 'default nil
                       :font "FiraCode Nerd Font"
                       :height 100)
@@ -154,7 +155,7 @@ Setup the main theme and fonts used within this emacs configuration.
 ** Transparency
 Set default transparency of frames and creation of hydra function for adjusting alpha.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (defun set-frame-alpha (value)
     (set-frame-parameter nil 'alpha-background value))
 
@@ -212,7 +213,7 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
 open a new one for all operations possible. As some operations such as commit open
 the diff window as well, those buffers open in a seperate window.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package magit
     :commands 'magit-status
     :config
@@ -224,17 +225,19 @@ the diff window as well, those buffers open in a seperate window.
 #+end_src
 * Search
 ** Vertico
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package vertico
     :init
     (vertico-mode))
 
   (use-package vertico-posframe
     :init
-    (vertico-posframe-mode 1))
+    (vertico-posframe-mode 1)
+    (setq vertico-posframe-poshandler #'posframe-poshandler-frame-top-center)
+  )
 #+end_src
 ** Consult
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package consult
     :init
     (define-prefix-command 'consult)
@@ -249,7 +252,7 @@ the diff window as well, those buffers open in a seperate window.
     ("C-c s m" . consult-imenu-multi))
 #+end_src
 ** Orderless
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package orderless
     :config
     (add-to-list 'completion-styles 'orderless)
@@ -259,18 +262,8 @@ the diff window as well, those buffers open in a seperate window.
 
 #+end_src
 
-** Counsel
-#+begin_src emacs-lisp
-  (use-package counsel
-    :defer t
-    :config
-    (when
-        (fboundp 'emacs-run-launcher-directories)
-      (emacs-run-launcher-directories)))
-#+end_src
-
 ** Helpful
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package helpful
     :commands
     (helpful-callable
@@ -286,54 +279,9 @@ the diff window as well, those buffers open in a seperate window.
     ([remap Info-goto-emacs-command-node] . helpful-function)
     ("C-h M-p" . helpful-at-point))
     #+end_src
-* System
-This area is for system utilities and system functions such as the app
-launcher for the desktop environment.
-** App Launcher
-Counsel-linux app configuration to improve formatting
-#+begin_src emacs-lisp
-  (defun emacs-run-launcher-format-function
-      (name comment exec)
-    "Formatter for the app launcher. NAME is the name of the application,
-  COMMENT is the applications comment and EXEC is the command to launch"
-    (format "% -25s %s"
-            (propertize name 'face 'font-lock-buitlin-face)
-            (or comment "")))
-  (setq counsel-linux-app-format-function #'emacs-run-launcher-format-function)
-#+end_src
-App launcher using counsel-linux-app
-
-Filter app launcher directories to allow overriding of desktop files.
-#+begin_src emacs-lisp
-  (defun emacs-run-launcher-directories ()
-    "Update the directories used by counsel-linux-app"
-    (setq counsel-linux-apps-directories
-          (seq-remove
-           (lambda
-             (x)
-             (string-prefix-p "/nix/store/" x))
-           counsel-linux-apps-directories)))
-  ;;(setq counsel-linux-apps-directories '("/home/clover/.nix-profile/share/applications"))
-#+end_src
-Run launcher in own frame with title set to be picked up by window manager.
-#+begin_src emacs-lisp
-  (defun emacs-run-launcher
-      ()
-    "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Run counsel-linux-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
-    (interactive)
-    (with-selected-frame
-        (make-frame
-         '((name . "emacs-run-launcher")
-           (minibuffer . only)
-           (width . 120)
-           (height . 11)))
-      (unwind-protect
-          (counsel-linux-app)
-        (delete-frame))))
-#+end_src
 * Window  Management
 ** Display Buffer rules
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
     (setq display-buffer-base-action
     '((display-buffer-reuse-window
        display-buffer--maybe-same-window
@@ -367,7 +315,7 @@ Run launcher in own frame with title set to be picked up by window manager.
 #+end_src
 * Editing
 ** Visual Tansient
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (transient-define-prefix ct-visual-buffer ()
     :transient-suffix 'transient--do-stay
     :transient-non-suffix 'transient--do-exit
@@ -377,7 +325,7 @@ Run launcher in own frame with title set to be picked up by window manager.
   (bind-key "C-c v" 'ct-visual-buffer)
 #+end_src
 ** Vertical Ruler
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (transient-define-suffix clover--transient-visual-buffer-column-right ()
     :key "i" :description "Column right"
     (interactive)
@@ -387,15 +335,20 @@ Run launcher in own frame with title set to be picked up by window manager.
   (setq-default global-display-fill-column-indicator-modes t)
   (setq-default display-fil-lcolumn-indicator-character #xf0689)
 #+end_src
+* System
+** Dired
+#+begin_src emacs-lisp :tangle yes
+  
+#+end_src
 * Programming
 ** Eglot
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package eglot
     :hook
     (prog-mode . eglot-ensure))
 #+end_src
 ** Nix
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle (if (string= (getenv "WOLF_LANGUAGE_NIX") "true") "yes" "no")
   (use-package nix-mode
     :mode "\\.nix\\'"
     :hook
@@ -404,11 +357,11 @@ Run launcher in own frame with title set to be picked up by window manager.
     (nix-mode . format-all-mode))
 #+end_src
 ** Treesitter
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (customize-set-variable 'treesit-font-lock-level 4)
 #+end_src
 ** Python
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package python
     :init
     (setf (cdr (rassoc 'python-mode auto-mode-alist)) 'python-ts-mode)

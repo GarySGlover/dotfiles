@@ -5,6 +5,9 @@ with lib; {
       host = mkOption {
         type = types.str;
       };
+      secretsPath = mkOption {
+        type = types.path;
+      };
     };
   };
 }

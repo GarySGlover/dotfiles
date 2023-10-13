@@ -12,7 +12,6 @@ in {
 
   imports = [
     ./fonts.nix
-    ./emacs.nix
     ./hypr/main.nix
     ./terminal.nix
     ./git.nix

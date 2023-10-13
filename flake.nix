@@ -27,6 +27,19 @@
       then builtins.currentSystem
       else "x86_64-linux";
 
+    listNixFilesRecursive = dir:
+      lib.flatten (lib.mapAttrsToList (name: type: let
+        path = dir + "/${name}";
+      in
+        if type == "directory"
+        then
+          if lib.pathExists (dir + "/${name}/default.nix")
+          then path
+          else listNixFilesRecursive path
+        else if lib.hasSuffix ".nix" name
+        then path
+        else []) (builtins.readDir dir));
+
     pkgs =
       import nixpkgs {
         inherit system;
@@ -57,9 +70,10 @@
               home.username = user;
               home.homeDirectory = "/home/${user}";
               wolf.host = host;
+              wolf.secretsPath = ./secrets;
             })
-            ./modules/users
           ]
+          ++ (listNixFilesRecursive ./modules/users)
           ++ (
             if builtins.pathExists userLegacyModule
             then [userLegacyModule]
@@ -80,6 +94,7 @@
             value = {pkgs, ...}: {
               home.username = "${user}";
               home.homeDirectory = "/home/${user}";
+              wolf.secretsPath = ./secrets;
               imports = [
                 ./users/${user}
               ];
@@ -98,7 +113,6 @@
         inherit pkgs;
         modules =
           [
-            ./modules/hosts
             sops-nix.nixosModules.sops
             home-manager.nixosModules.home-manager
             {
@@ -106,15 +120,17 @@
                 useGlobalPkgs = true;
                 useUserPackages = true;
                 users = userHome;
-                sharedModules = [
-                  ({...}: {
-                    wolf.host = host;
-                  })
-                  ./modules/users
-                ];
+                sharedModules =
+                  [
+                    ({...}: {
+                      wolf.host = host;
+                    })
+                  ]
+                  ++ (listNixFilesRecursive ./modules/users);
               };
             }
           ]
+          ++ (listNixFilesRecursive ./modules/hosts)
           ++ hostLegacyModule;
       };
 

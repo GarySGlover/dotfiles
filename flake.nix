@@ -27,28 +27,32 @@
       then builtins.currentSystem
       else "x86_64-linux";
 
-    listNixFilesRecursive = dir:
-      lib.flatten (lib.mapAttrsToList (name: type: let
-        path = dir + "/${name}";
-      in
-        if type == "directory"
-        then
-          if lib.pathExists (dir + "/${name}/default.nix")
+    listNixFilesRecursive = with builtins;
+    with lib;
+      dir:
+        flatten (mapAttrsToList (name: type: let
+          path = dir + "/${name}";
+        in
+          if type == "directory"
+          then
+            if pathExists (dir + "/${name}/default.nix")
+            then path
+            else listNixFilesRecursive path
+          else if hasSuffix ".nix" name
           then path
-          else listNixFilesRecursive path
-        else if lib.hasSuffix ".nix" name
-        then path
-        else []) (builtins.readDir dir));
+          else []) (readDir dir));
 
     pkgs =
       import nixpkgs {
         inherit system;
-        config.allowUnfreePredicate = pkg:
-          builtins.elem (lib.getName pkg) [
-            "steam"
-            "steam-original"
-            "steam-run"
-          ];
+        config.allowUnfreePredicate = with builtins;
+        with lib;
+          pkg:
+            elem (getName pkg) [
+              "steam"
+              "steam-original"
+              "steam-run"
+            ];
       }
       // {
         ags = ags.packages.${system}.default;
@@ -64,7 +68,8 @@
       inherit name;
       value = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        modules =
+        modules = with builtins;
+        with lib.lists;
           [
             ({...}: {
               home.username = user;
@@ -73,12 +78,8 @@
               wolf.secretsPath = ./secrets;
             })
           ]
-          ++ (listNixFilesRecursive ./modules/users)
-          ++ (
-            if builtins.pathExists userLegacyModule
-            then [userLegacyModule]
-            else []
-          );
+          ++ listNixFilesRecursive ./modules/users
+          ++ optionals (pathExists userLegacyModule) userLegacyModule;
         extraSpecialArgs = {inherit pkgs;};
       };
     };
@@ -87,26 +88,25 @@
       host,
       users,
     }: let
-      userHome = builtins.listToAttrs (
-        lib.lists.forEach users (
-          user: {
-            name = "${user}";
-            value = {pkgs, ...}: {
-              home.username = "${user}";
-              home.homeDirectory = "/home/${user}";
-              wolf.secretsPath = ./secrets;
-              imports = [
-                ./users/${user}
-              ];
-            };
-          }
-        )
-      );
-      hostLegacyModule = (
-        if builtins.pathExists ./hosts/${host}
-        then [./hosts/${host}]
-        else []
-      );
+      userHome = with builtins;
+      with lib.lists;
+        listToAttrs (
+          forEach users (
+            user: {
+              name = "${user}";
+              value = {pkgs, ...}: {
+                home.username = "${user}";
+                home.homeDirectory = "/home/${user}";
+                wolf.secretsPath = ./secrets;
+                imports = [
+                  ./users/${user}
+                ];
+              };
+            }
+          )
+        );
+      hostLegacyModule = with builtins;
+      with lib.lists; optionals (pathExists ./hosts/${host}) [./hosts/${host}];
     in
       lib.nixosSystem {
         inherit system;
@@ -140,24 +140,29 @@
       clover-z270pd3 = ["clover"];
     };
 
-    homeCfgs = lib.lists.flatten (
-      builtins.attrValues (
-        builtins.mapAttrs (host: users:
-          lib.lists.forEach users (
-            user: "${user}@${host}"
-          ))
-        hostCfgs
-      )
-    );
+    homeCfgs = with builtins;
+    with lib.lists;
+      flatten (
+        attrValues (
+          mapAttrs (host: users:
+            forEach users (
+              user: "${user}@${host}"
+            ))
+          hostCfgs
+        )
+      );
   in {
-    nixosConfigurations = builtins.mapAttrs (host: users:
-      mkNixOsCfg {inherit host users;})
-    hostCfgs;
+    nixosConfigurations = with builtins;
+      mapAttrs (host: users:
+        mkNixOsCfg {inherit host users;})
+      hostCfgs;
 
-    homeConfigurations = builtins.listToAttrs (
-      lib.lists.forEach homeCfgs (
-        name: mkHomeCfg name
-      )
-    );
+    homeConfigurations = with builtins;
+    with lib.lists;
+      listToAttrs (
+        forEach homeCfgs (
+          name: mkHomeCfg name
+        )
+      );
   };
 }

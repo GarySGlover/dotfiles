@@ -7,11 +7,10 @@
 with lib; let
   secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
 in {
-  options = {
-    wolf.editors.emacs = {
+  options.wolf = {
+    editors.emacs = {
       enable = mkOption {
         type = types.bool;
-        default = false;
       };
     };
   };
@@ -56,10 +55,6 @@ in {
       name = "Emacs";
       noDisplay = true;
     };
-
-    home.packages = with pkgs; [
-      alejandra
-    ];
 
     home.file.authinfo = {
       target = ".authinfo";

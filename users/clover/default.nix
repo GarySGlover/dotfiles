@@ -14,15 +14,10 @@ in {
     ./fonts.nix
     ./hypr/main.nix
     ./terminal.nix
-    ./git.nix
-    ./languages/python.nix
   ];
 
   home.packages = with pkgs; [
     firefox
-    pre-commit
-    go
-    python311
     wlr-randr
 
     brave

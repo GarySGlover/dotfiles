@@ -21,8 +21,6 @@ in {
       package = pkgs.emacs29-gtk3;
       extraPackages = epkgs:
         with epkgs; [
-          all-the-icons
-          consult
           doom-themes
           exec-path-from-shell
           forge
@@ -30,11 +28,8 @@ in {
           helpful
           magit
           no-littering
-          orderless
           posframe
           treesit-grammars.with-all-grammars
-          vertico
-          vertico-posframe
           which-key
           which-key-posframe
         ];

@@ -72,7 +72,7 @@ Revert the buffer to the on disk file contents when they are changed outside of 
 ** Tabs are evil
 So we disable the horrible things
 #+begin_src emacs-lisp :tangle yes
-  (setq-default indent-tabs-mode nil)
+  (setopt indent-tabs-mode nil)
 #+end_src
 
 * Core Utils
@@ -143,15 +143,18 @@ Setup the main theme and fonts used within this emacs configuration.
                       :font "FiraCode Nerd Font"
                       :height 100)
   (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font"))
+  (setopt nerd-icons-font-family "FiraCode Nerd Font")
 
   (load-theme 'doom-dracula t)
 #+end_src
 
-(setq-default window-divider-mode t)
-(setq-default window-divider-default-places t)
-(set-face-foreground 'vertical-border "black")
-(set-face-background 'vertical-border (face-foreground 'vertical-border))
-
+Window splitting
+#+begin_src emacs-lisp :tangle yes
+  (setopt window-divider-mode t)
+  (setopt window-divider-default-places t)
+  (set-face-foreground 'vertical-border "black")
+  (set-face-background 'vertical-border (face-foreground 'vertical-border))
+#+end_src
 ** Transparency
 Set default transparency of frames and creation of hydra function for adjusting alpha.
 
@@ -244,7 +247,6 @@ the diff window as well, those buffers open in a seperate window.
     :bind
     ("C-s" . consult-line)
     ("C-x b" . consult-buffer)
-    ("C-y" . consult-yank-from-kill-ring)
     ("M-y". consult-yank-pop)
     ("C-c s" . consult)
     ("C-c s g" . consult-grep)
@@ -259,7 +261,6 @@ the diff window as well, those buffers open in a seperate window.
     :custom
     (completion-category-defaults nil)
     (completion-category-overrides '((file (styles basic partial-completion)))))
-
 #+end_src
 
 ** Helpful
@@ -288,7 +289,6 @@ the diff window as well, those buffers open in a seperate window.
        display-buffer-in-previous-window
        display-buffer-use-some-window)))
 
-  ;;(setq display-buffer-mark-dedicated t)
   (setq display-buffer-alist nil)
 
   (add-to-list 'display-buffer-alist
@@ -297,7 +297,6 @@ the diff window as well, those buffers open in a seperate window.
                  (window-width . 82)
                  (side . right)
                  (slot . 0)))
-
 
   (add-to-list 'display-buffer-alist
                '("magit.*:\\|magit-revision\\|forge:\\|COMMIT_EDITMSG"
@@ -331,16 +330,79 @@ the diff window as well, those buffers open in a seperate window.
     (interactive)
     (setq display-fill-column-indicator-column 100))
   (global-display-fill-column-indicator-mode 1)
-  (setq-default display-fill-column-indicator-column 80)
-  (setq-default global-display-fill-column-indicator-modes t)
-  (setq-default display-fil-lcolumn-indicator-character #xf0689)
+  (setopt display-fill-column-indicator-column 80)
+  (setopt global-display-fill-column-indicator-mode t)
+  (setopt display-fil-lcolumn-indicator-character #xf0689)
 #+end_src
 * System
 ** Dired
+Change dired listing mode to not show full details by default.
+Change listing options to hide . & .. and group directories first.
+Add keybind for creating new files.
 #+begin_src emacs-lisp :tangle yes
-  
+  (use-package dired
+    :init
+    (setopt dired-listing-switches "-Alh --group-directories-first")
+    (setopt dired-hide-details-hide-symlink-targets nil)
+    :bind (:map dired-mode-map ("C-+" . dired-create-empty-file))
+    :hook (dired-mode . dired-hide-details-mode))
+#+end_src
+
+Make Dired find file and create emtpy file aware of subdirectory
+#+begin_src emacs-lisp :tangle yes
+  (defun dired-subdir-aware (orig-fun &rest args)
+    (if (eq major-mode 'dired-mode)
+        (let ((default-directory (dired-current-directory)))
+          (apply orig-fun args))
+      (apply orig-fun args)))
+
+  (advice-add 'find-file-read-args :around 'dired-subdir-aware)
+  (advice-add 'read-file-name :around 'dired-subdir-aware)
+#+end_src
+
+Dired subtree package for allowing tree style insertion and removal of
+subdirectories.
+#+begin_src emacs-lisp :tangle yes
+  (use-package dired-subtree
+    :after dired
+    :init
+    ;; FIx ford nerd icons in dired with subtree
+    (defun dired-subtree-add-nerd-icons ()
+      (interactive)
+      (revert-buffer))
+    (advice-add 'dired-subtree-toggle :after 'dired-subtree-add-nerd-icons)
+    (advice-add 'dired-subtree-cycle :after 'dired-subtree-add-nerd-icons)
+    (advice-add 'dired-subtree-remove :after 'dired-subtree-add-nerd-icons)
+    :bind (:map dired-mode-map
+                ("<tab>" . dired-subtree-toggle)
+                ("C-<tab>" . dired-subtree-cycle)
+                ("<backtab>" . dired-subtree-remove)))
+
+#+end_src
+
+Dired nerd icons to show icons for files and folders
+#+begin_src emacs-lisp :tangle yes
+  (use-package nerd-icons-dired
+    :after dired
+    :hook
+    (dired-mode . nerd-icons-dired-mode))
 #+end_src
 * Programming
+** Completion
+#+begin_src emacs-lisp :tangle yes
+  (use-package corfu
+    :init
+    (global-corfu-mode)
+    (setopt corfu-popupinfo-mode t)
+    (defun corfu-enable-in-minibuffer ()
+      "Enable Corfu in the minibuffer if `completion-at-point' is bound."
+      (when (where-is-internal #'completion-at-point (list (current-local-map)))
+        (setq-local corfu-auto t) ;; Enable/disable auto completion
+        (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
+                    corfu-popupinfo-delay nil)
+        (corfu-mode 1)))
+    :hook (minibuffer-setup . corfu-enable-in-minibuffer))
+#+end_src
 ** Eglot
 #+begin_src emacs-lisp :tangle yes
   (use-package eglot
@@ -374,7 +436,7 @@ the diff window as well, those buffers open in a seperate window.
                                  '(("Python" black)))
                      (setq-local python-flymake-command
                                  '("flake8" "-"))
-                     (setq-default eglot-workspace-configuration
+                     (setopt eglot-workspace-configuration
                                    '(:python.\analysis
                                       (:typeCheckingMode "strict")))))
           (python-ts-mode . format-all-mode))

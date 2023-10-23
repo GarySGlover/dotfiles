@@ -24,10 +24,11 @@ in {
   config = mkMerge [
     (mkIf (opt.enable && opt.autoInstall)
       {
-        xdg.configFile."git/templates/hooks/pre-commit".text = ''
+        xdg.configFile."git/templates/hooks/pre-commit" = {
+          text = ''
           #!/usr/bin/env bash
           # start templated
-          INSTALL_PYTHON=/usr/bin/env python3
+          INSTALL_PYTHON=python3
           ARGS=(hook-impl --config=.pre-commit-config.yaml --hook-type=pre-commit --skip-on-missing-config)
           # end templated
 
@@ -35,7 +36,9 @@ in {
           ARGS+=(--hook-dir "$HERE" -- "$@")
 
           exec /usr/bin/env pre-commit "''${ARGS[@]}"
-        '';
+          '';
+          executable = true;
+        };
       })
     (
       mkIf opt.enable {
@@ -52,7 +55,7 @@ in {
         userName = "${secrets.git_username}";
         extraConfig = {
           init = mkIf (config.wolf.git.precommit.enable && config.wolf.git.precommit.autoInstall) {
-            templateDir = "${config.xdg.configHome}/git/templates/hooks/pre-commit";
+            templateDir = "${config.xdg.configHome}/git/templates";
           };
           github = {
             user = "${secrets.github_user}";

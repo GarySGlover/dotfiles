@@ -45,14 +45,7 @@
     pkgs =
       import nixpkgs {
         inherit system;
-        config.allowUnfreePredicate = with builtins;
-        with lib;
-          pkg:
-            elem (getName pkg) [
-              "steam"
-              "steam-original"
-              "steam-run"
-            ];
+        config = import ./config.nix {inherit lib;};
       }
       // {
         ags = ags.packages.${system}.default;
@@ -73,13 +66,13 @@
           [
             ({...}: {
               home.username = user;
-              home.homeDirectory = "/home/${user}";
+              home.homeDirectory = lib.mkForce "/home/${user}";
               wolf.host = host;
               wolf.secretsPath = ./secrets;
             })
           ]
           ++ listNixFilesRecursive ./modules/users
-          ++ optionals (pathExists userLegacyModule) userLegacyModule;
+          ++ optionals (pathExists userLegacyModule) [userLegacyModule];
         extraSpecialArgs = {inherit pkgs;};
       };
     };
@@ -96,7 +89,7 @@
               name = "${user}";
               value = {pkgs, ...}: {
                 home.username = "${user}";
-                home.homeDirectory = "/home/${user}";
+                home.homeDirectory = lib.mkForce "/home/${user}";
                 wolf.secretsPath = ./secrets;
                 imports = [
                   ./users/${user}
@@ -135,17 +128,26 @@
       };
 
     hostCfgs = {
-      belisarius = ["clover"];
-      auberon = ["clover" "work"];
-      clover-z270pd3 = ["clover"];
+      belisarius = {
+        nixos = true;
+        users = ["clover"];
+      };
+      auberon = {
+        nixos = true;
+        users = ["clover"];
+      };
+      clover-z270pd3 = {
+        nixos = false;
+        users = ["clover"];
+      };
     };
 
     homeCfgs = with builtins;
     with lib.lists;
       flatten (
         attrValues (
-          mapAttrs (host: users:
-            forEach users (
+          mapAttrs (host: v:
+            forEach v.users (
               user: "${user}@${host}"
             ))
           hostCfgs
@@ -153,9 +155,13 @@
       );
   in {
     nixosConfigurations = with builtins;
-      mapAttrs (host: users:
-        mkNixOsCfg {inherit host users;})
-      hostCfgs;
+    with lib;
+      mapAttrs (host: v:
+        mkNixOsCfg {
+          inherit host;
+          users = v.users;
+        })
+      (filterAttrs (n: v: v.nixos) hostCfgs);
 
     homeConfigurations = with builtins;
     with lib.lists;

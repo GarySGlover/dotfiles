@@ -24,10 +24,6 @@ in {
     };
   };
   config = mkIf opt.enable {
-    #    ${
-    #      if opt.useCodeStyle
-    #      then home.file."${config.xdg.configHome}/black"
-    #      else null
     home.file = {
       ${
         if opt.useCodeStyle

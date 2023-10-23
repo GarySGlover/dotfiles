@@ -11,5 +11,8 @@ with lib; {
     secretsPath = mkOption {
       type = types.path;
     };
+    user.interactive = mkOption {
+      type = types.bool;
+    };
   };
 }

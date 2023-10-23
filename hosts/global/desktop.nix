@@ -6,7 +6,8 @@
 
   services.xserver = {
     enable = true;
-    displayManager.startx.enable = true;
+    displayManager.sddm = {enable = true;};
+    #displayManager.startx.enable = true;
   };
 
   # Configure keymap in X11

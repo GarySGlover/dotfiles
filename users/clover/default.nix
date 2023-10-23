@@ -11,7 +11,6 @@ in {
   home.stateVersion = "23.05";
 
   imports = [
-    ./fonts.nix
     ./hypr/main.nix
     ./terminal.nix
   ];

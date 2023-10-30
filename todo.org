@@ -1,0 +1,62 @@
+* Emacs
+** TODO Avy
+https://karthinks.com/software/avy-can-do-anything/
+** TODO Highlight current line
+** TODO Notifications
+  - https://github.com/sinic/ednc
+** DONE Window Resize
+*** DONE Side windows initial width / store width on resize
+** TODO Languages / Programs
+*** TODO Kubernetes
+*** TODO Terraform
+*** TODO AZ Emacs Package
+New mode based on tabulated list mode
+** TODO Better project management
+  - Beframe
+  - projectile?
+** TODO Better shell
+** TODO Org UI improvemnts
+*** TODO Bullets
+*** TODO Max width / word wrap
+Apply both to text mode
+
+https://codeberg.org/joostkremers/visual-fill-column
+*** TODO Disable src block background change
+* Window Manager
+** TODO AGS Bar
+- Volume
+- Date/Time
+* TODO Web browser
+- Nyxt
+* TODO Screen lock
+
+
+* Global Custom Prefixes
+| Prefix | Name           |
+|--------+----------------|
+| C-c a  | TODO >avy      |
+| C-c b  |                |
+| C-c c  |                |
+| C-c d  |                |
+| C-c e  |                |
+| C-c f  |                |
+| C-c g  | magit          |
+| C-c h  |                |
+| C-c i  |                |
+| C-c j  |                |
+| C-c k  |                |
+| C-c l  |                |
+| C-c m  |                |
+| C-c n  |                |
+| C-c o  |                |
+| C-c p  |                |
+| C-c q  |                |
+| C-c r  | TODO >resize   |
+| C-c s  | >consult       |
+| C-c t  | >transparency  |
+| C-c u  |                |
+| C-c v  | >visual        |
+| C-c w  |                |
+| C-c x  |                |
+| C-c y  |                |
+| C-c z  |                |

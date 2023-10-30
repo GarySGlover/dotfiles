@@ -53,6 +53,8 @@
 
     lib = nixpkgs.lib;
 
+    extraSpecialArgs = {inherit pkgs;};
+
     mkHomeCfg = name: let
       user = "${builtins.head (builtins.match "(.+)@.+" name)}";
       host = "${builtins.head (builtins.match ".+@(.+)" name)}";
@@ -61,6 +63,7 @@
       inherit name;
       value = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
+        inherit extraSpecialArgs;
         modules = with builtins;
         with lib.lists;
           [
@@ -73,7 +76,6 @@
           ]
           ++ listNixFilesRecursive ./modules/users
           ++ optionals (pathExists userLegacyModule) [userLegacyModule];
-        extraSpecialArgs = {inherit pkgs;};
       };
     };
 
@@ -110,6 +112,7 @@
             home-manager.nixosModules.home-manager
             {
               home-manager = {
+                inherit extraSpecialArgs;
                 useGlobalPkgs = true;
                 useUserPackages = true;
                 users = userHome;

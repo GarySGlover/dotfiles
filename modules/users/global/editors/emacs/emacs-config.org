@@ -1,20 +1,17 @@
-#+PROPRTY: header-args :results silent
+#+PROPERTY: header-args :results silent
 
 * Initialisation
-This section contains basic configurations for emacs to tidy up the interface and
-set some defaults for the inbuilt modules that don't fit into other categories.
+This section contains basic configurations for emacs to tidy up the interface and set some defaults for the inbuilt modules that don't fit into other categories.
 
 ** Disable package downloads
-Remove elpa from the package archives so that no packages will be automtically
-downloaded. All packages will be installed using the nix package manager.
+Remove elpa from the package archives so that no packages will be automtically downloaded. All packages will be installed using the nix package manager.
 
 #+begin_src emacs-lisp :tangle yes
   (setq package-archives nil)
 #+end_src
 
 ** Cleanup interface
-Remove some of the default GUI display components that are typically used with
-mouse rather than keyboard.
+Remove some of the default GUI display components that are typically used with mouse rather than keyboard.
 
 #+begin_src emacs-lisp :tangle yes
   (scroll-bar-mode -1)
@@ -26,9 +23,7 @@ mouse rather than keyboard.
 #+end_src
 
 ** Disabled commands
-Emacs has disabled some inbuilt functions by default as a safety measure. Replacing
-the function that is called prior to running these enables all these commands without
-further confirmation.
+Emacs has disabled some inbuilt functions by default as a safety measure. Replacing the function that is called prior to running these enables all these commands without further confirmation.
 
 #+begin_src emacs-lisp :tangle yes
   (setq disabled-command-function nil)
@@ -42,9 +37,7 @@ Allow use of y/n instead of yes/no for interactive command confirmations.
 #+end_src
 
 ** Clean directories
-Tell emacs not to create lock files as everthing being edited is single user so
-should have no conflicts over files. Use of no-littering to reduce other files
-being scattered in the filesystem and keep the emacs folder clean.
+Tell emacs not to create lock files as everthing being edited is single user so should have no conflicts over files. Use of no-littering to reduce other files being scattered in the filesystem and keep the emacs folder clean.
 
 #+begin_src emacs-lisp :tangle yes
   (use-package no-littering
@@ -75,6 +68,18 @@ So we disable the horrible things
   (setopt indent-tabs-mode nil)
 #+end_src
 
+** Mice are evil
+Disable mouse inputs in Emacs as everybody knows keyboards are better
+#+begin_src emacs-lisp :tangle yes
+  (use-package disable-mouse
+    :init
+    (global-disable-mouse-mode))
+#+end_src
+
+** Repeat mode
+#+begin_src emacs-lisp :tangle yes
+  (setopt repeat-mode t)
+#+end_src
 * Core Utils
 Utilities for emacs that support further parts of the configuration.
 ** Transient
@@ -85,6 +90,25 @@ Utilities for emacs that support further parts of the configuration.
 Better popup frames
 #+begin_src emacs-lisp :tangle yes
   (use-package posframe)
+#+end_src
+
+* Help
+** Helpful
+#+begin_src emacs-lisp :tangle yes
+  (use-package helpful
+    :commands
+    (helpful-callable
+     helpful-command
+     helpful-key
+     helpful-variable
+     helpful-at-point)
+    :bind
+    ([remap describe-function] . helpful-callable)
+    ([remap describe-command] . helpful-command)
+    ([remap describe-variable] . helpful-variable)
+    ([remap describe-key] . helpful-key)
+    ([remap Info-goto-emacs-command-node] . helpful-function)
+    ("C-h M-p" . helpful-at-point))
 #+end_src
 
 ** Which key
@@ -100,7 +124,7 @@ Popup to show available shortcut keys in current mode
     :bind (:map help-map
                 ("C-h" . which-key-C-h-dispatch)
                 ("M-w" . which-key-show-top-level)
-                ("M-m" . which-key-show-major-mode))
+                ("M-m" . which-key-show-major-movhede))
     :custom
     (which-key-show-early-on-C-h t "Press C-h to show commands")
     (which-key-idle-delay 1 "Delay which key normal display")
@@ -116,9 +140,7 @@ Popup to show available shortcut keys in current mode
     (advice-add 'which-key-posframe--max-dimensions :filter-return #'which-key-posframe--max-dimensions-override)
     (setq which-key-posframe-poshandler 'posframe-poshandler-frame-top-center)
     (which-key-posframe-mode))
-
 #+end_src
-
 * Visual
 ** Alert notification
 When emacs reports an exception the default action is to play a bell sound. This
@@ -263,74 +285,161 @@ the diff window as well, those buffers open in a seperate window.
     (completion-category-overrides '((file (styles basic partial-completion)))))
 #+end_src
 
-** Helpful
-#+begin_src emacs-lisp :tangle yes
-  (use-package helpful
-    :commands
-    (helpful-callable
-     helpful-command
-     helpful-key
-     helpful-variable
-     helpful-at-point)
-    :bind
-    ([remap describe-function] . helpful-callable)
-    ([remap describe-command] . helpful-command)
-    ([remap describe-variable] . helpful-variable)
-    ([remap describe-key] . helpful-key)
-    ([remap Info-goto-emacs-command-node] . helpful-function)
-    ("C-h M-p" . helpful-at-point))
-    #+end_src
 * Window  Management
+** Window visited order
+Store a window parameter in non side windows. This is intended to be used to
+order windows and find the last visited window for display buffer functions.
+#+begin_src emacs-lisp :tangle yes
+  (defun 4lc/increment-and-store-window-count (frame)
+    "Increment the window counter and store it as a window parameter."
+    (let ((selected-win (selected-window)))
+      (when (and selected-win
+                 (not (window-parameter selected-win 'window-side))
+                 (not (window-minibuffer-p selected-win)))
+        (with-selected-frame (window-frame selected-win)
+          (let ((current-count (or (frame-parameter nil '4lc/window-counter) 0)))
+            (setq current-count (+ 1 current-count))
+            (set-frame-parameter nil '4lc/window-counter current-count)
+            (set-window-parameter selected-win '4lc/window-counter current-count))))))
+
+  (add-hook 'window-selection-change-functions '4lc/increment-and-store-window-count)
+
+  (defun 4lc/get-window-counter ()
+    "Get the window counter value from the selected window's parameter."
+    (let ((selected-win (selected-window)))
+      (when selected-win
+        (window-parameter selected-win '4lc/window-counter))))
+
+  (defun 4lc/get-window-with-highest-counter ()
+    "Get the window in the current frame with the highest window counter."
+    (let ((current-frame (selected-frame))
+          (windows (window-list)))
+      (cl-reduce
+       (lambda (win1 win2)
+         (let ((counter1 (window-parameter win1 '4lc/window-counter))
+               (counter2 (window-parameter win2 '4lc/window-counter)))
+           (if (and counter1 counter2)
+               (if (> counter1 counter2) win1 win2)
+             (if counter1 win1 win2))))
+       windows :initial-value nil)))
+#+end_src
+** Window resize
+Functions to directly set the height and width of windows as either percentage
+of frame width or character width.
+#+begin_src emacs-lisp :tangle yes
+    (defun 4lc/set-window-width (val &optional window)
+      (window-resize window (- val (window-width window)) t))
+
+    (defun 4lc/window-resize-width (val &optional window)
+      (if (< val 1)
+          (4lc/set-window-width (truncate (* val (frame-width))) window)
+        (4lc/set-window-width val window)))
+
+    (defun 4lc/side-window-width (window &optional side)
+      (let ((side (or side (window-parameter window 'window-side))))
+        (pcase side
+          ('left 4lc/left-side-window-width)
+          ('right 4lc/right-side-window-width))))
+#+end_src
 ** Display Buffer rules
 #+begin_src emacs-lisp :tangle yes
-    (setq display-buffer-base-action
-    '((display-buffer-reuse-window
-       display-buffer--maybe-same-window
-       display-buffer-in-previous-window
-       display-buffer-use-some-window)))
+  (defun 4lc/display-buffer-side-window-width (window &optional side)
+    (let ((width (4lc/side-window-width window side)))
+      (4lc/window-resize-width width window)))
+
+  (defun display-buffer-maybe-most-recent-window (buffer alist)
+    (window--display-buffer buffer (4lc/get-window-with-highest-counter) 'reuse alist))
+
+  (setq 4lc/default-side-window-width 0.2)
+  (setq 4lc/left-side-window-width 4lc/default-side-window-width)
+  (setq 4lc/right-side-window-width 4lc/default-side-window-width)
+
+  (setq display-buffer-base-action
+        '((display-buffer-maybe-most-recent-window
+           display-buffer-reuse-window
+           display-buffer--maybe-same-window
+           display-buffer-in-previous-window
+           display-buffer-use-some-window)))
 
   (setq display-buffer-alist nil)
 
   (add-to-list 'display-buffer-alist
                '("\\*help\\|\\*info"
                  (display-buffer-in-side-window)
-                 (window-width . 82)
+                 (window-width . 4lc/display-buffer-side-window-width)
                  (side . right)
                  (slot . 0)))
 
   (add-to-list 'display-buffer-alist
                '("magit.*:\\|magit-revision\\|forge:\\|COMMIT_EDITMSG"
                  (display-buffer-in-side-window)
-                 (window-width . 82)
+                 (window-width . 4lc/display-buffer-side-window-width)
                  (side . left)
                  (slot . 0)))
 
   (add-to-list 'display-buffer-alist
-             '("magit-diff.*"
-               (display-buffer-in-side-window)
-               (window-width . 82)
-               (side . left)
-               (slot . 1)))
+               '("magit-diff.*"
+                 (display-buffer-in-side-window)
+                 (window-width . 4lc/display-buffer-side-window-width)
+                 (side . left)
+                 (slot . 1)))
+
+  (add-to-list 'display-buffer-alist
+               `(,(lambda (buffer-name action) (with-current-buffer buffer-name (derived-mode-p 'dired-mode)))
+                 (display-buffer-in-side-window)
+                 (window-width . 4lc/display-buffer-side-window-width)
+                 (side . left)
+                 (slot . 0)))
+#+end_src
+*** Side Window Size Persistence
+When directly resizing a window that is a side window, store the updated size in
+the value used by the window rules alists for that side.
+#+begin_src emacs-lisp :tangle yes
+  (defun 4lc/store-side-window-size (DELTA &optional HORIZONTAL)
+    (let ((side (window-parameter nil 'window-side)))
+      (when side
+          (if (and HORIZONTAL (or (string= side 'left) (string= side 'right)))
+              (4lc/store--side-window-horizontal-size side)
+            (4lc/store--side-window-vertical-size side)))))
+
+  (defun 4lc/store--side-window-horizontal-size (side)
+    (if (string= side 'left)
+        (setq 4lc/left-side-window-width (window-width))
+      (setq 4lc/right-side-window-width (window-width))))
+
+  (defun 4lc/store--side-window-vertical-size (side)
+    (if (string= side 'top)
+        (setq 4lc/top-side-window-width (window-height))
+      (setq 4lc/bottom-side-window-width (window-height))))
+
+  (advice-add 'enlarge-window :after '4lc/store-side-window-size)
+  (advice-add 'shrink-window :after '4lc/store-side-window-size)
+  
 #+end_src
 * Editing
+** Text mode
+#+begin_src emacs-lisp :tangle yes
+  (add-hook 'text-mode-hook #'visual-line-mode)
+#+end_src
+** Org mode
+#+begin_src emacs-lisp :tangle yes
+  (use-package org
+  :init
+  (setopt org-src-window-setup 'plain))
+#+end_src
 ** Visual Tansient
 #+begin_src emacs-lisp :tangle yes
   (transient-define-prefix ct-visual-buffer ()
     :transient-suffix 'transient--do-stay
     :transient-non-suffix 'transient--do-exit
     [("c" "Column Indicator" display-fill-column-indicator-mode)
-     (clover--transient-visual-buffer-column-right)
      ("w" "Whitespace" whitespace-mode)])
   (bind-key "C-c v" 'ct-visual-buffer)
 #+end_src
 ** Vertical Ruler
 #+begin_src emacs-lisp :tangle yes
-  (transient-define-suffix clover--transient-visual-buffer-column-right ()
-    :key "i" :description "Column right"
-    (interactive)
-    (setq display-fill-column-indicator-column 100))
   (global-display-fill-column-indicator-mode 1)
-  (setopt display-fill-column-indicator-column 80)
+  (setopt display-fill-column-indicator-column 120)
   (setopt global-display-fill-column-indicator-mode t)
   (setopt display-fil-lcolumn-indicator-character #xf0689)
 #+end_src
@@ -366,7 +475,7 @@ subdirectories.
   (use-package dired-subtree
     :after dired
     :init
-    ;; FIx ford nerd icons in dired with subtree
+    ;; Fix for nerd icons in dired with subtree
     (defun dired-subtree-add-nerd-icons ()
       (interactive)
       (revert-buffer))
@@ -409,6 +518,10 @@ Dired nerd icons to show icons for files and folders
     :hook
     (prog-mode . eglot-ensure))
 #+end_src
+** Treesitter
+#+begin_src emacs-lisp :tangle yes
+  (customize-set-variable 'treesit-font-lock-level 4)
+#+end_src
 ** Nix
 #+begin_src emacs-lisp :tangle (if (string= (getenv "WOLF_LANGUAGE_NIX") "true") "yes" "no")
   (use-package nix-mode
@@ -417,10 +530,6 @@ Dired nerd icons to show icons for files and folders
     (nix-mode . (lambda ()
                   (setq-local format-all-formatters '(("Nix" alejandra)))))
     (nix-mode . format-all-mode))
-#+end_src
-** Treesitter
-#+begin_src emacs-lisp :tangle yes
-  (customize-set-variable 'treesit-font-lock-level 4)
 #+end_src
 ** Python
 #+begin_src emacs-lisp :tangle yes

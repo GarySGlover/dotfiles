@@ -8,5 +8,6 @@
     };
     terminal.kitty.enable = true;
     user.interactive = true;
+    window-manager.ags.enable = true;
   };
 }

@@ -25,13 +25,9 @@ in {
           exec-path-from-shell
           forge
           format-all
-          helpful
           magit
           no-littering
-          posframe
           treesit-grammars.with-all-grammars
-          which-key
-          which-key-posframe
         ];
       extraConfig = ''
         (delete-file (expand-file-name "emacs-config.el" "~/.config/emacs"))

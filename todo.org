@@ -15,12 +15,10 @@ New mode based on tabulated list mode
   - Beframe
   - projectile?
 ** TODO Better shell
+https://codeberg.org/akib/emacs-eat
 ** TODO Org UI improvemnts
 *** TODO Bullets
-*** TODO Max width / word wrap
-Apply both to text mode
-
-https://codeberg.org/joostkremers/visual-fill-column
+*** DONE Max width / word wrap
 *** TODO Disable src block background change
 * Window Manager
 ** TODO AGS Bar

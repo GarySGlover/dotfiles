@@ -3,6 +3,7 @@
     editors.emacs.enable = true;
     git.precommit.enable = true;
     languages = {
+      json.enable = true;
       nix.enable = true;
       python.enable = true;
     };

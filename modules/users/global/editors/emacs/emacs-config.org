@@ -143,8 +143,7 @@ Popup to show available shortcut keys in current mode
 #+end_src
 * Visual
 ** Alert notification
-When emacs reports an exception the default action is to play a bell sound. This
-replaces the sound with a double flash on the modeline background.
+When emacs reports an exception the default action is to play a bell sound. This replaces the sound with a double flash on the modeline background.
 
 #+begin_src emacs-lisp :tangle yes
   (defun double-flash-modeline ()
@@ -234,9 +233,7 @@ Set default transparency of frames and creation of hydra function for adjusting 
 * Project Management
 ** Version control
 
-Using Magit as the git porcelain. Is configured to use the same window rather than
-open a new one for all operations possible. As some operations such as commit open
-the diff window as well, those buffers open in a seperate window.
+Using Magit as the git porcelain. Is configured to use the same window rather than open a new one for all operations possible. As some operations such as commit open the diff window as well, those buffers open in a seperate window.
 
 #+begin_src emacs-lisp :tangle yes
   (use-package magit
@@ -258,6 +255,7 @@ the diff window as well, those buffers open in a seperate window.
   (use-package vertico-posframe
     :init
     (vertico-posframe-mode 1)
+    :config
     (setq vertico-posframe-poshandler #'posframe-poshandler-frame-top-center)
   )
 #+end_src
@@ -287,8 +285,7 @@ the diff window as well, those buffers open in a seperate window.
 
 * Window  Management
 ** Window visited order
-Store a window parameter in non side windows. This is intended to be used to
-order windows and find the last visited window for display buffer functions.
+Store a window parameter in non side windows. This is intended to be used to order windows and find the last visited window for display buffer functions.
 #+begin_src emacs-lisp :tangle yes
   (defun 4lc/increment-and-store-window-count (frame)
     "Increment the window counter and store it as a window parameter."
@@ -324,8 +321,7 @@ order windows and find the last visited window for display buffer functions.
        windows :initial-value nil)))
 #+end_src
 ** Window resize
-Functions to directly set the height and width of windows as either percentage
-of frame width or character width.
+Functions to directly set the height and width of windows as either percentage of frame width or character width.
 #+begin_src emacs-lisp :tangle yes
     (defun 4lc/set-window-width (val &optional window)
       (window-resize window (- val (window-width window)) t))
@@ -392,8 +388,7 @@ of frame width or character width.
                  (slot . 0)))
 #+end_src
 *** Side Window Size Persistence
-When directly resizing a window that is a side window, store the updated size in
-the value used by the window rules alists for that side.
+When directly resizing a window that is a side window, store the updated size in the value used by the window rules alists for that side.
 #+begin_src emacs-lisp :tangle yes
   (defun 4lc/store-side-window-size (DELTA &optional HORIZONTAL)
     (let ((side (window-parameter nil 'window-side)))
@@ -419,13 +414,21 @@ the value used by the window rules alists for that side.
 * Editing
 ** Text mode
 #+begin_src emacs-lisp :tangle yes
+  (setopt fill-column 100)
   (add-hook 'text-mode-hook #'visual-line-mode)
+  (use-package visual-fill-column
+    :init
+    (setopt visual-fill-column-mode-map (make-sparse-keymap))
+    :config
+    (setopt visual-fill-column-center-text t)
+    :hook
+    (visual-line-mode . visual-fill-column-mode))
 #+end_src
 ** Org mode
 #+begin_src emacs-lisp :tangle yes
   (use-package org
-  :init
-  (setopt org-src-window-setup 'plain))
+    :config
+    (setopt org-src-window-setup 'plain))
 #+end_src
 ** Visual Tansient
 #+begin_src emacs-lisp :tangle yes
@@ -439,18 +442,18 @@ the value used by the window rules alists for that side.
 ** Vertical Ruler
 #+begin_src emacs-lisp :tangle yes
   (global-display-fill-column-indicator-mode 1)
-  (setopt display-fill-column-indicator-column 120)
+  (setopt display-fill-column-indicator-column 100)
   (setopt global-display-fill-column-indicator-mode t)
   (setopt display-fil-lcolumn-indicator-character #xf0689)
 #+end_src
 * System
 ** Dired
-Change dired listing mode to not show full details by default.
-Change listing options to hide . & .. and group directories first.
-Add keybind for creating new files.
+- Change dired listing mode to not show full details by default.
+- Change listing options to hide . & .. and group directories first.
+- Add keybind for creating new files.
 #+begin_src emacs-lisp :tangle yes
   (use-package dired
-    :init
+    :config
     (setopt dired-listing-switches "-Alh --group-directories-first")
     (setopt dired-hide-details-hide-symlink-targets nil)
     :bind (:map dired-mode-map ("C-+" . dired-create-empty-file))
@@ -469,12 +472,11 @@ Make Dired find file and create emtpy file aware of subdirectory
   (advice-add 'read-file-name :around 'dired-subdir-aware)
 #+end_src
 
-Dired subtree package for allowing tree style insertion and removal of
-subdirectories.
+Dired subtree package for allowing tree style insertion and removal of subdirectories.
 #+begin_src emacs-lisp :tangle yes
   (use-package dired-subtree
     :after dired
-    :init
+    :config
     ;; Fix for nerd icons in dired with subtree
     (defun dired-subtree-add-nerd-icons ()
       (interactive)
@@ -502,6 +504,7 @@ Dired nerd icons to show icons for files and folders
   (use-package corfu
     :init
     (global-corfu-mode)
+    :config
     (setopt corfu-popupinfo-mode t)
     (defun corfu-enable-in-minibuffer ()
       "Enable Corfu in the minibuffer if `completion-at-point' is bound."

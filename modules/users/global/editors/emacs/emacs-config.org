@@ -230,6 +230,15 @@ Set default transparency of frames and creation of hydra function for adjusting 
   (bind-key "C-c t" 'ct-transparency)
 #+end_src
 
+** Nerd Icons
+For completions windows
+#+begin_src emacs-lisp :tangle yes
+  (use-package nerd-icons-completion
+    :after marginalia
+    :config
+    (nerd-icons-completion-mode)
+    (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+#+end_src
 * Project Management
 ** Version control
 
@@ -282,7 +291,70 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     (completion-category-defaults nil)
     (completion-category-overrides '((file (styles basic partial-completion)))))
 #+end_src
+** Margnalia
+#+begin_src emacs-lisp :tangle yes
+  (use-package marginalia
+    :bind (:map minibuffer-local-map
+           ("M-A" . marginalia-cycle))
+    :init
+    (marginalia-mode))
+#+end_src
+** Avy
+#+begin_src emacs-lisp :tangle yes
+  (use-package avy
+    :config
+    (setf (alist-get ?k avy-dispatch-alist) 'avy-action-kill-stay
+          (alist-get ?K avy-dispatch-alist) 'avy-action-kill-whole-line)
+    :bind ("C-c a a" . avy-goto-char-timer)
+    ("C-c a s" . avy-goto-char))
 
+  (defun avy-action-kill-whole-line (pt)
+    (save-excursion
+      (goto-char pt)
+      (kill-whole-line))
+    (select-window
+     (cdr
+      (ring-ref avy-ring 0))))
+
+  ;; a b c d e f g h ?i^ j ?k l ?m ?n^ o p q r s ?t^ u v w ?x y ?z
+  ;; i avy-action-ispell > ??
+  ;; n avy-action-copy > w
+  ;; t avy-action-teleportn
+  
+  ;; q c l m k z f u
+  ;; i s r t g p n e a o
+  ;; q v w d j b h
+
+  ;; colour
+
+#+end_src
+** Embark
+#+begin_src emacs-lisp :tangle yes
+  (use-package embark
+    :ensure t
+    :bind
+    (("C-." . embark-act)         ;; pick some comfortable binding
+     ("C-;" . embark-dwim)        ;; good alternative: M-.
+     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+    :init
+
+    ;; Optionally replace the key help with a completing-read interface
+    (setq prefix-help-command #'embark-prefix-help-command)
+
+    ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
+    ;; strategy, if you want to see the documentation from multiple providers.
+    (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+    ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+
+    :config
+
+    ;; Hide the mode line of the Embark live/completions buffers
+    (add-to-list 'display-buffer-alist
+                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                   nil
+                   (window-parameters (mode-line-format . none)))))
+
+#+end_src
 * Window  Management
 ** Window visited order
 Store a window parameter in non side windows. This is intended to be used to order windows and find the last visited window for display buffer functions.
@@ -503,9 +575,11 @@ Dired nerd icons to show icons for files and folders
 #+begin_src emacs-lisp :tangle yes
   (use-package corfu
     :init
-    (global-corfu-mode)
+    (setopt global-corfu-mode t)
     :config
+    (setopt corfu-auto t)
     (setopt corfu-popupinfo-mode t)
+    (setopt corfu-popupinfo-delay '(0.5 . 0.5))
     (defun corfu-enable-in-minibuffer ()
       "Enable Corfu in the minibuffer if `completion-at-point' is bound."
       (when (where-is-internal #'completion-at-point (list (current-local-map)))

@@ -1,6 +1,16 @@
 * Emacs
-** TODO Avy
+** DONE [#A] Marginalia
+** TODO [#A] Embark
+** TODO [#A] Avy
 https://karthinks.com/software/avy-can-do-anything/
+** Nerd-icons
+- nerd-icons-completion
+- corfu https://github.com/LuigiPiucco/nerd-icons-corfu
+** TODO [#B] AGS Bar
+- Volume
+- Date/Time
+** TODO [#B] Better shell
+https://codeberg.org/akib/emacs-eat
 ** TODO Highlight current line
 ** TODO Notifications
   - https://github.com/sinic/ednc
@@ -14,19 +24,14 @@ New mode based on tabulated list mode
 ** TODO Better project management
   - Beframe
   - projectile?
-** TODO Better shell
-https://codeberg.org/akib/emacs-eat
 ** TODO Org UI improvemnts
 *** TODO Bullets
 *** DONE Max width / word wrap
-*** TODO Disable src block background change
-* Window Manager
-** TODO AGS Bar
-- Volume
-- Date/Time
-* TODO Web browser
+*** DONE Disable src block background change
+* TODO [#C] Web browser
 - Nyxt
-* TODO Screen lock
+* Window Manager
+* TODO [#C] Screen lock
 
 
 * Global Custom Prefixes

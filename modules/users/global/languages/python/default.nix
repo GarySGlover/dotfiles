@@ -47,8 +47,12 @@ in {
           nodePackages.pyright
           python311Packages.black
           python311Packages.flake8
+          python311Packages.pipx
         ]
         else []
       );
+    home.sessionPath = [
+      "$HOME/.local/bin"
+    ];
   };
 }

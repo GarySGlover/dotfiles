@@ -269,6 +269,8 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     (vertico-posframe-mode 1)
     :config
     (setq vertico-posframe-poshandler #'posframe-poshandler-frame-top-center)
+    (setopt vertico-posframe-truncate-lines nil)
+    (setopt vertico-posframe-width 100)
   )
 #+end_src
 ** Consult
@@ -276,6 +278,7 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
   (use-package consult
     :init
     (define-prefix-command 'consult)
+    (setopt enable-recursive-minibuffers t)
     :bind
     ("C-s" . consult-line)
     ("C-x b" . consult-buffer)
@@ -333,30 +336,76 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
 #+end_src
 ** Embark
 #+begin_src emacs-lisp :tangle yes
-  (use-package embark
-    :ensure t
-    :bind
-    (("C-." . embark-act)         ;; pick some comfortable binding
-     ("C-;" . embark-dwim)        ;; good alternative: M-.
-     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
-    :init
+  (use-package
+   embark
+   :ensure t
+   :bind
+   (("C-." . embark-act) ;; pick some comfortable binding
+    ("C-;" . embark-dwim) ;; good alternative: M-.
+    ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+   :init
 
-    ;; Optionally replace the key help with a completing-read interface
-    (setq prefix-help-command #'embark-prefix-help-command)
+   ;; Optionally replace the key help with a completing-read interface
+   (setq prefix-help-command #'embark-prefix-help-command)
 
-    ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
-    ;; strategy, if you want to see the documentation from multiple providers.
-    (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-    ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+   ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
+   ;; strategy, if you want to see the documentation from multiple providers.
+   (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+   ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
 
-    :config
+   :config
 
-    ;; Hide the mode line of the Embark live/completions buffers
-    (add-to-list 'display-buffer-alist
-                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                   nil
-                   (window-parameters (mode-line-format . none)))))
+   ;; Hide the mode line of the Embark live/completions buffers
+   (add-to-list
+    'display-buffer-alist
+    '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+      nil
+      (window-parameters (mode-line-format . none)))))
 
+  (use-package
+   embark-consult
+   :hook (embark-collect-mode . consult-preview-at-point-mode))
+#+end_src
+
+Which-key for Embark
+#+begin_src emacs-lisp :tangle yes
+  (defun embark-which-key-indicator ()
+    "An embark indicator that displays keymaps using which-key.
+  The which-key help message will show the type and value of the
+  current target followed by an ellipsis if there are further
+  targets."
+    (lambda (&optional keymap targets prefix)
+      (if (null keymap)
+          (which-key--hide-popup-ignore-command)
+        (which-key--show-keymap
+         (if (eq (plist-get (car targets) :type) 'embark-become)
+             "Become"
+           (format "Act on %s '%s'%s"
+                   (plist-get (car targets) :type)
+                   (embark--truncate-target (plist-get (car targets) :target))
+                   (if (cdr targets) "…" "")))
+         (if prefix
+             (pcase (lookup-key keymap prefix 'accept-default)
+               ((and (pred keymapp) km) km)
+               (_ (key-binding prefix 'accept-default)))
+           keymap)
+         nil nil t (lambda (binding)
+                     (not (string-suffix-p "-argument" (cdr binding))))))))
+
+  (setq embark-indicators
+    '(embark-which-key-indicator
+      embark-highlight-indicator
+      embark-isearch-highlight-indicator))
+
+  (defun embark-hide-which-key-indicator (fn &rest args)
+    "Hide the which-key indicator immediately when using the completing-read prompter."
+    (which-key--hide-popup-ignore-command)
+    (let ((embark-indicators
+           (remq #'embark-which-key-indicator embark-indicators)))
+        (apply fn args)))
+
+  (advice-add #'embark-completing-read-prompter
+              :around #'embark-hide-which-key-indicator)
 #+end_src
 * Window  Management
 ** Window visited order

@@ -12,6 +12,7 @@ with lib; {
         consult
         corfu
         embark
+        embark-consult
         marginalia
         nerd-icons-completion
         orderless

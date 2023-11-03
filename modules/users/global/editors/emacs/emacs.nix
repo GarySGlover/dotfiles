@@ -23,6 +23,7 @@ in {
         with epkgs; [
           doom-themes
           exec-path-from-shell
+          elisp-autofmt
           forge
           format-all
           magit

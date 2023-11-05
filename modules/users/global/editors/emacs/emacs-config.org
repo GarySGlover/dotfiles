@@ -252,6 +252,19 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     :commands 'magit-status
     :config
     (setq magit-display-buffer-function #'display-buffer)
+    (add-to-list 'display-buffer-alist
+                 '("magit.*:\\|magit-revision\\|forge:\\|COMMIT_EDITMSG"
+                   (display-buffer-in-side-window)
+                   (window-width . 4lc/display-buffer-side-window-width)
+                   (side . left)
+                   (slot . 0)
+                   (window-parameters . ((mode-line-format . 'none)))))
+    (add-to-list 'display-buffer-alist
+                 '("magit-diff.*"
+                   (display-buffer-in-side-window)
+                   (window-width . 4lc/display-buffer-side-window-width)
+                   (side . left)
+                   (slot . 1)))
     :bind ("C-c g" . magit-status))
 
   (use-package forge
@@ -344,7 +357,6 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     ("C-;" . embark-dwim) ;; good alternative: M-.
     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
    :init
-
    ;; Optionally replace the key help with a completing-read interface
    (setq prefix-help-command #'embark-prefix-help-command)
 
@@ -354,13 +366,11 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
    ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
 
    :config
-
-   ;; Hide the mode line of the Embark live/completions buffers
    (add-to-list
     'display-buffer-alist
     '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
       nil
-      (window-parameters (mode-line-format . none)))))
+      (window-parameters . ((mode-line-format . 'none))))))
 
   (use-package
    embark-consult
@@ -376,7 +386,7 @@ Which-key for Embark
   targets."
     (lambda (&optional keymap targets prefix)
       (if (null keymap)
-          (which-key--hide-popup-ignore-command)
+          (which-key--hide-popup-ignore-command)nn
         (which-key--show-keymap
          (if (eq (plist-get (car targets) :type) 'embark-become)
              "Become"
@@ -489,27 +499,6 @@ Functions to directly set the height and width of windows as either percentage o
                  (window-width . 4lc/display-buffer-side-window-width)
                  (side . right)
                  (slot . 0)))
-
-  (add-to-list 'display-buffer-alist
-               '("magit.*:\\|magit-revision\\|forge:\\|COMMIT_EDITMSG"
-                 (display-buffer-in-side-window)
-                 (window-width . 4lc/display-buffer-side-window-width)
-                 (side . left)
-                 (slot . 0)))
-
-  (add-to-list 'display-buffer-alist
-               '("magit-diff.*"
-                 (display-buffer-in-side-window)
-                 (window-width . 4lc/display-buffer-side-window-width)
-                 (side . left)
-                 (slot . 1)))
-
-  (add-to-list 'display-buffer-alist
-               `(,(lambda (buffer-name action) (with-current-buffer buffer-name (derived-mode-p 'dired-mode)))
-                 (display-buffer-in-side-window)
-                 (window-width . 4lc/display-buffer-side-window-width)
-                 (side . left)
-                 (slot . 0)))
 #+end_src
 *** Side Window Size Persistence
 When directly resizing a window that is a side window, store the updated size in the value used by the window rules alists for that side.
@@ -580,6 +569,12 @@ When directly resizing a window that is a side window, store the updated size in
     :config
     (setopt dired-listing-switches "-Alh --group-directories-first")
     (setopt dired-hide-details-hide-symlink-targets nil)
+    (add-to-list 'display-buffer-alist
+                 `(,(lambda (buffer-name action) (with-current-buffer buffer-name (derived-mode-p 'dired-mode)))
+                   (display-buffer-in-side-window)
+                   (window-width . 4lc/display-buffer-side-window-width)
+                   (side . left)
+                   (slot . 0)))
     :bind (:map dired-mode-map ("C-+" . dired-create-empty-file))
     :hook (dired-mode . dired-hide-details-mode))
 #+end_src

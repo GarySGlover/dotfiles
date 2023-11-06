@@ -242,6 +242,12 @@ For completions windows
     (nerd-icons-completion-mode)
     (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 #+end_src
+
+** Doom Modelins
+#+begin_src emacs-lisp :tangle yes
+  (use-package doom-modeline
+    :init (doom-modeline-mode 1))
+#+end_src
 * Project Management
 ** Version control
 
@@ -258,13 +264,19 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
                    (window-width . 4lc/display-buffer-side-window-width)
                    (side . left)
                    (slot . 0)
-                   (window-parameters . ((mode-line-format . 'none)))))
+                   (window-parameters . ((mode-line-format . 'none)
+                                         (no-delete-other-windows . t)
+                                         (no-other-window . t)))))
     (add-to-list 'display-buffer-alist
                  '("magit-diff.*"
                    (display-buffer-in-side-window)
                    (window-width . 4lc/display-buffer-side-window-width)
                    (side . left)
-                   (slot . 1)))
+                   (slot . 1)
+                   (window-parameters . ((mode-line-format . 'none)
+                                         (no-delete-other-windows . t)
+                                         (no-other-window . t)))))
+
     :bind ("C-c g" . magit-status))
 
   (use-package forge
@@ -350,31 +362,34 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
 ** Embark
 #+begin_src emacs-lisp :tangle yes
   (use-package
-   embark
-   :ensure t
-   :bind
-   (("C-." . embark-act) ;; pick some comfortable binding
-    ("C-;" . embark-dwim) ;; good alternative: M-.
-    ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
-   :init
-   ;; Optionally replace the key help with a completing-read interface
-   (setq prefix-help-command #'embark-prefix-help-command)
+    embark
+    :ensure t
+    :bind
+    (("C-." . embark-act) ;; pick some comfortable binding
+     ("C-;" . embark-dwim) ;; good alternative: M-.
+     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+    :init
+    ;; Optionally replace the key help with a completing-read interface
+    (setq prefix-help-command #'embark-prefix-help-command)
 
-   ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
-   ;; strategy, if you want to see the documentation from multiple providers.
-   (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-   ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+    ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
+    ;; strategy, if you want to see the documentation from multiple providers.
+    (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+    ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
 
-   :config
-   (add-to-list
-    'display-buffer-alist
-    '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-      nil
-      (window-parameters . ((mode-line-format . 'none))))))
+    :config
+    (add-to-list
+     'display-buffer-alist
+     '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+       nil
+       (window-parameters . ((mode-line-format . 'none)
+                             (no-delete-other-windows . t)
+                             (no-other-window . t))))))
 
-  (use-package
-   embark-consult
-   :hook (embark-collect-mode . consult-preview-at-point-mode))
+
+    (use-package
+      embark-consult
+      :hook (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 
 Which-key for Embark
@@ -386,7 +401,7 @@ Which-key for Embark
   targets."
     (lambda (&optional keymap targets prefix)
       (if (null keymap)
-          (which-key--hide-popup-ignore-command)nn
+          (which-key--hide-popup-ignore-command)
         (which-key--show-keymap
          (if (eq (plist-get (car targets) :type) 'embark-become)
              "Become"
@@ -457,25 +472,43 @@ Store a window parameter in non side windows. This is intended to be used to ord
 ** Window resize
 Functions to directly set the height and width of windows as either percentage of frame width or character width.
 #+begin_src emacs-lisp :tangle yes
-    (defun 4lc/set-window-width (val &optional window)
-      (window-resize window (- val (window-width window)) t))
+  (defun 4lc/set-window-width (val &optional window)
+    (window-resize window (- val (window-width window)) t))
 
-    (defun 4lc/window-resize-width (val &optional window)
-      (if (< val 1)
-          (4lc/set-window-width (truncate (* val (frame-width))) window)
-        (4lc/set-window-width val window)))
+  (defun 4lc/window-resize-width (val &optional window)
+    (if (< val 1)
+        (4lc/set-window-width (truncate (* val (frame-width))) window)
+      (4lc/set-window-width val window)))
 
-    (defun 4lc/side-window-width (window &optional side)
-      (let ((side (or side (window-parameter window 'window-side))))
-        (pcase side
-          ('left 4lc/left-side-window-width)
-          ('right 4lc/right-side-window-width))))
+  (defun 4lc/side-window-width (window &optional side)
+    (let ((side (or side (window-parameter window 'window-side))))
+      (pcase side
+        ('left 4lc/left-side-window-width)
+        ('right 4lc/right-side-window-width))))
+
+  (defun 4lc/set-window-height (val &optional window)
+    (window-resize window (- val (window-height window))))
+
+  (defun 4lc/window-resize-height (val &optional window)
+    (if (< val 1)
+        (4lc/set-window-height (truncate (* val (frame-height))) window)
+      (4lc/set-window-height val window)))
+
+  (defun 4lc/side-window-height (window &optional side)
+    (let ((side (or side (window-parameter window 'window-side))))
+      (pcase side
+        ('top 4lc/top-side-window-height)
+        ('bottom 4lc/bottom-side-window-height))))
 #+end_src
 ** Display Buffer rules
 #+begin_src emacs-lisp :tangle yes
   (defun 4lc/display-buffer-side-window-width (window &optional side)
     (let ((width (4lc/side-window-width window side)))
       (4lc/window-resize-width width window)))
+
+  (defun 4lc/display-buffer-side-window-height (window &optional side)
+    (let ((height (4lc/side-window-height window side)))
+      (4lc/window-resize-height height window)))
 
   (defun display-buffer-maybe-most-recent-window (buffer alist)
     (window--display-buffer buffer (4lc/get-window-with-highest-counter) 'reuse alist))
@@ -484,12 +517,18 @@ Functions to directly set the height and width of windows as either percentage o
   (setq 4lc/left-side-window-width 4lc/default-side-window-width)
   (setq 4lc/right-side-window-width 4lc/default-side-window-width)
 
+  (setq 4lc/default-side-window-height 0.2)
+  (setq 4lc/top-side-window-height 4lc/default-side-window-height)
+  (setq 4lc/bottom-side-window-height 4lc/default-side-window-height)
+
   (setq display-buffer-base-action
         '((display-buffer-maybe-most-recent-window
            display-buffer-reuse-window
            display-buffer--maybe-same-window
            display-buffer-in-previous-window
            display-buffer-use-some-window)))
+
+  (setopt switch-to-buffer-obey-display-actions t)
 
   (setq display-buffer-alist nil)
 
@@ -498,7 +537,20 @@ Functions to directly set the height and width of windows as either percentage o
                  (display-buffer-in-side-window)
                  (window-width . 4lc/display-buffer-side-window-width)
                  (side . right)
-                 (slot . 0)))
+                 (slot . 0)
+                 (window-parameters . ((mode-line-format . 'none)
+                                       (no-delete-other-windows . t)
+                                       (no-other-window . t)))))
+
+  (add-to-list 'display-buffer-alist
+               '("^\\*\\(xref\\|Messages\\)\\*$"
+                 (display-buffer-in-side-window)
+                 (window-height . 4lc/display-buffer-side-window-height)
+                 (side . bottom)
+                 (slot . 0)
+                 (window-parameters . ((mode-line-format . 'none)
+                                       (no-delete-other-windows . t)
+                                       (no-other-window . t)))))
 #+end_src
 *** Side Window Size Persistence
 When directly resizing a window that is a side window, store the updated size in the value used by the window rules alists for that side.
@@ -517,8 +569,8 @@ When directly resizing a window that is a side window, store the updated size in
 
   (defun 4lc/store--side-window-vertical-size (side)
     (if (string= side 'top)
-        (setq 4lc/top-side-window-width (window-height))
-      (setq 4lc/bottom-side-window-width (window-height))))
+        (setq 4lc/top-side-window-height (window-height))
+      (setq 4lc/bottom-side-window-height (window-height))))
 
   (advice-add 'enlarge-window :after '4lc/store-side-window-size)
   (advice-add 'shrink-window :after '4lc/store-side-window-size)

@@ -248,6 +248,48 @@ For completions windows
   (use-package doom-modeline
     :init (doom-modeline-mode 1))
 #+end_src
+* Shells
+** Eshell
+#+begin_src emacs-lisp :tangle yes
+  (use-package eshell
+    :config
+    (add-to-list 'display-buffer-alist
+                       '("^\\*eshell.*\\*$"
+                         (display-buffer-in-side-window)
+                         (window-height . 4lc/display-buffer-side-window-height)
+                         (side . bottom)
+                         (slot . -1)
+                         (window-parameters . ((mode-line-format . 'none)
+                                               (no-delete-other-windows . t)
+                                               (no-other-window . t))))))
+#+end_src
+** Shell
+#+begin_src emacs-lisp :tangle yes
+  (use-package shell
+    :config (add-to-list 'display-buffer-alist
+                       '("^\\*shell.*\\*$"
+                         (display-buffer-in-side-window)
+                         (window-height . 4lc/display-buffer-side-window-height)
+                         (side . bottom)
+                         (slot . -1)
+                         (window-parameters . ((mode-line-format . 'none)
+                                               (no-delete-other-windows . t)
+                                               (no-other-window . t))))))
+#+end_src
+** Eat
+#+begin_src emacs-lisp :tangle yes
+  (use-package eat
+    :config (add-to-list 'display-buffer-alist
+                       '("^\\*eat.*\\*$"
+                         (display-buffer-in-side-window)
+                         (window-height . 4lc/display-buffer-side-window-height)
+                         (side . bottom)
+                         (slot . -1)
+                         (window-parameters . ((mode-line-format . 'none)
+                                               (no-delete-other-windows . t)
+                                               (no-other-window . t))))))
+#+end_src
+
 * Project Management
 ** Version control
 
@@ -334,9 +376,18 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
 #+begin_src emacs-lisp :tangle yes
   (use-package avy
     :config
+    (setq avy-dispatch-alist (delq (assoc ?i avy-dispatch-alist) avy-dispatch-alist))
+
+
     (setf (alist-get ?k avy-dispatch-alist) 'avy-action-kill-stay
-          (alist-get ?K avy-dispatch-alist) 'avy-action-kill-whole-line)
-    :bind ("C-c a a" . avy-goto-char-timer)
+          (alist-get ?K avy-dispatch-alist) 'avy-action-kill-whole-line
+          (alist-get ?w avy-dispatch-alist) 'avy-action-copy
+          (alist-get ?l avy-dispatch-alist) 'avy-action-teleport)
+
+    (setopt avy-keys '(?i ?s ?r ?t ?n ?e ?a ?o))
+
+    :bind
+    ("C-c a a" . avy-goto-char-timer)
     ("C-c a s" . avy-goto-char))
 
   (defun avy-action-kill-whole-line (pt)
@@ -347,23 +398,15 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
      (cdr
       (ring-ref avy-ring 0))))
 
-  ;; a b c d e f g h ?i^ j ?k l ?m ?n^ o p q r s ?t^ u v w ?x y ?z
-  ;; i avy-action-ispell > ??
-  ;; n avy-action-copy > w
-  ;; t avy-action-teleportn
-  
+  ;; avy words?
+  ;; document all shortcuts - rewrite above even for existing?
   ;; q c l m k z f u
-  ;; i s r t g p n e a o
+  ;; g p
   ;; q v w d j b h
-
-  ;; colour
-
 #+end_src
 ** Embark
 #+begin_src emacs-lisp :tangle yes
-  (use-package
-    embark
-    :ensure t
+  (use-package embark
     :bind
     (("C-." . embark-act) ;; pick some comfortable binding
      ("C-;" . embark-dwim) ;; good alternative: M-.
@@ -387,9 +430,9 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
                              (no-other-window . t))))))
 
 
-    (use-package
-      embark-consult
-      :hook (embark-collect-mode . consult-preview-at-point-mode))
+  (use-package embark-consult
+    :after (embark consult)
+    :hook (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 
 Which-key for Embark
@@ -472,6 +515,14 @@ Store a window parameter in non side windows. This is intended to be used to ord
 ** Window resize
 Functions to directly set the height and width of windows as either percentage of frame width or character width.
 #+begin_src emacs-lisp :tangle yes
+  (setq 4lc/default-side-window-width 0.2)
+  (setq 4lc/left-side-window-width 4lc/default-side-window-width)
+  (setq 4lc/right-side-window-width 4lc/default-side-window-width)
+
+  (setq 4lc/default-side-window-height 0.2)
+  (setq 4lc/top-side-window-height 4lc/default-side-window-height)
+  (setq 4lc/bottom-side-window-height 4lc/default-side-window-height)
+
   (defun 4lc/set-window-width (val &optional window)
     (window-resize window (- val (window-width window)) t))
 
@@ -513,46 +564,40 @@ Functions to directly set the height and width of windows as either percentage o
   (defun display-buffer-maybe-most-recent-window (buffer alist)
     (window--display-buffer buffer (4lc/get-window-with-highest-counter) 'reuse alist))
 
-  (setq 4lc/default-side-window-width 0.2)
-  (setq 4lc/left-side-window-width 4lc/default-side-window-width)
-  (setq 4lc/right-side-window-width 4lc/default-side-window-width)
+  (use-package window
+    :init
+    (setq display-buffer-base-action
+          '((display-buffer-maybe-most-recent-window
+             display-buffer-reuse-window
+             display-buffer--maybe-same-window
+             display-buffer-in-previous-window
+             display-buffer-use-some-window)))
 
-  (setq 4lc/default-side-window-height 0.2)
-  (setq 4lc/top-side-window-height 4lc/default-side-window-height)
-  (setq 4lc/bottom-side-window-height 4lc/default-side-window-height)
+    (setopt switch-to-buffer-obey-display-actions t)
 
-  (setq display-buffer-base-action
-        '((display-buffer-maybe-most-recent-window
-           display-buffer-reuse-window
-           display-buffer--maybe-same-window
-           display-buffer-in-previous-window
-           display-buffer-use-some-window)))
+    ;;(setq display-buffer-alist nil)
 
-  (setopt switch-to-buffer-obey-display-actions t)
+    (add-to-list 'display-buffer-alist
+                 '("\\*help\\|\\*info"
+                   (display-buffer-in-side-window)
+                   (window-width . 4lc/display-buffer-side-window-width)
+                   (side . right)
+                   (slot . 0)
+                   (window-parameters . ((mode-line-format . 'none)
+                                         (no-delete-other-windows . t)
+                                         (no-other-window . t)))))
 
-  (setq display-buffer-alist nil)
-
-  (add-to-list 'display-buffer-alist
-               '("\\*help\\|\\*info"
-                 (display-buffer-in-side-window)
-                 (window-width . 4lc/display-buffer-side-window-width)
-                 (side . right)
-                 (slot . 0)
-                 (window-parameters . ((mode-line-format . 'none)
-                                       (no-delete-other-windows . t)
-                                       (no-other-window . t)))))
-
-  (add-to-list 'display-buffer-alist
-               '("^\\*\\(xref\\|Messages\\)\\*$"
-                 (display-buffer-in-side-window)
-                 (window-height . 4lc/display-buffer-side-window-height)
-                 (side . bottom)
-                 (slot . 0)
-                 (window-parameters . ((mode-line-format . 'none)
-                                       (no-delete-other-windows . t)
-                                       (no-other-window . t)))))
+    (add-to-list 'display-buffer-alist
+                 '("^\\*\\(xref\\|Messages\\|Warning\\|compilation)\\*$"
+                   (display-buffer-in-side-window)
+                   (window-height . 4lc/display-buffer-side-window-height)
+                   (side . bottom)
+                   (slot . 0)
+                   (window-parameters . ((mode-line-format . 'none)
+                                         (no-delete-other-windows . t)
+                                         (no-other-window . t))))))
 #+end_src
-*** Side Window Size Persistence
+** Side Window Size Persistence
 When directly resizing a window that is a side window, store the updated size in the value used by the window rules alists for that side.
 #+begin_src emacs-lisp :tangle yes
   (defun 4lc/store-side-window-size (DELTA &optional HORIZONTAL)

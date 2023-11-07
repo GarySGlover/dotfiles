@@ -3,16 +3,10 @@
 ** TODO [#A] Embark
 ** TODO [#A] Avy
 https://karthinks.com/software/avy-can-do-anything/
-** TODO [#B] Bottom side buffers
-- Shell / eshell / eat
-- Compilation
-- Search (xref)
-- Messages / Warnings
-- Scratch
-- ??? Anything beginning * that isn't covered more specifically
-** TODO Modeline
-** TODO Editing
-- backward-kill-word replacement for killing whistespace or word
+** DONE [#B] Bottom side buffers
+** DONE Modeline
+** DONE Editing
+- M-\ solves: backward-kill-word replacement for killing whistespace or word 
 ** TODO Nerd-icons
 - nerd-icons-completion
 - corfu https://github.com/LuigiPiucco/nerd-icons-corfu

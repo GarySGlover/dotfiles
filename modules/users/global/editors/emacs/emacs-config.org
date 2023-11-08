@@ -376,19 +376,22 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
 #+begin_src emacs-lisp :tangle yes
   (use-package avy
     :config
-    (setq avy-dispatch-alist (delq (assoc ?i avy-dispatch-alist) avy-dispatch-alist))
-
+    (setopt avy-timeout-seconds 0.2)
 
     (setf (alist-get ?k avy-dispatch-alist) 'avy-action-kill-stay
           (alist-get ?K avy-dispatch-alist) 'avy-action-kill-whole-line
+          (alist-get ?l avy-dispatch-alist) 'avy-action-teleport
+          (alist-get ?m avy-dispatch-alist) 'avy-action-mark
           (alist-get ?w avy-dispatch-alist) 'avy-action-copy
-          (alist-get ?l avy-dispatch-alist) 'avy-action-teleport)
-
+          (alist-get ?x avy-dispatch-alist) 'avy-action-kill-move
+          (alist-get ?y avy-dispatch-alist) 'avy-action-yank
+          (alist-get ?Y avy-dispatch-alist) 'avy-action-yank-line
+          (alist-get ?z avy-dispatch-alist) 'avy-action-zap-to-char)
     (setopt avy-keys '(?i ?s ?r ?t ?n ?e ?a ?o))
+    (-each avy-keys (lambda (x) (setq avy-dispatch-alist (delq (assoc x avy-dispatch-alist) avy-dispatch-alist))))
 
     :bind
-    ("C-c a a" . avy-goto-char-timer)
-    ("C-c a s" . avy-goto-char))
+    ("C-c a" . avy-goto-char-timer))
 
   (defun avy-action-kill-whole-line (pt)
     (save-excursion
@@ -397,12 +400,6 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     (select-window
      (cdr
       (ring-ref avy-ring 0))))
-
-  ;; avy words?
-  ;; document all shortcuts - rewrite above even for existing?
-  ;; q c l m k z f u
-  ;; g p
-  ;; q v w d j b h
 #+end_src
 ** Embark
 #+begin_src emacs-lisp :tangle yes
@@ -588,7 +585,7 @@ Functions to directly set the height and width of windows as either percentage o
                                          (no-other-window . t)))))
 
     (add-to-list 'display-buffer-alist
-                 '("^\\*\\(xref\\|Messages\\|Warning\\|compilation)\\*$"
+                 '("^\\*\\(xref\\|Messages\\|Warning\\|compilation\\)\\*$"
                    (display-buffer-in-side-window)
                    (window-height . 4lc/display-buffer-side-window-height)
                    (side . bottom)

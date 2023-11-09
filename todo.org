@@ -17,6 +17,7 @@ https://karthinks.com/software/avy-can-do-anything/
 https://codeberg.org/akib/emacs-eat
 ** TODO Highlight current line
 ** TODO Notifications
+** TODO Check frog-jump-buffer package
   - https://github.com/sinic/ednc
 ** DONE Window Resize
 *** DONE Side windows initial width / store width on resize

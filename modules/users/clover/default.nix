@@ -1,5 +1,6 @@
 {...}: {
   wolf = {
+    browsers.nyxt.enable = true;
     editors.emacs.enable = true;
     git.precommit.enable = true;
     languages = {

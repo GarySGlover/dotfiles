@@ -635,7 +635,10 @@ When directly resizing a window that is a side window, store the updated size in
 #+begin_src emacs-lisp :tangle yes
   (use-package org
     :config
-    (setopt org-src-window-setup 'plain))
+    (setopt org-src-window-setup 'plain)
+    (add-to-list 'display-buffer-alist
+                 '("^\\*Org Src"
+                   (display-buffer-below-selected))))
 #+end_src
 ** Visual Tansient
 #+begin_src emacs-lisp :tangle yes
@@ -710,6 +713,10 @@ Dired nerd icons to show icons for files and folders
     :after dired
     :hook
     (dired-mode . nerd-icons-dired-mode))
+#+end_src
+** Kubernetes
+#+begin_src emacs-lisp :tangle (if (string= (getenv "WOLF_TOOLS_K8S") "true") "yes" "no")
+  
 #+end_src
 * Programming
 ** Completion

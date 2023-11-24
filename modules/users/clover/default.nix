@@ -9,7 +9,10 @@
       python.enable = true;
     };
     terminal.kitty.enable = true;
-    tools.azure.enable = false;
+    tools = {
+      azure.enable = false;
+      kubernetes.enable = true;
+    };
     user.interactive = true;
     window-manager.ags.enable = true;
   };

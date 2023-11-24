@@ -70,7 +70,7 @@ So we disable the horrible things
 
 ** Mice are evil
 Disable mouse inputs in Emacs as everybody knows keyboards are better
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
   (use-package disable-mouse
     :init
     (global-disable-mouse-mode))
@@ -318,6 +318,7 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
                    (window-parameters . ((mode-line-format . 'none)
                                          (no-delete-other-windows . t)
                                          (no-other-window . t)))))
+    (advice-add 'magit-worktree-delete :after (lambda (&optional WORKTREE) (project-forget-zombie-projects)))
 
     :bind ("C-c g" . magit-status))
 

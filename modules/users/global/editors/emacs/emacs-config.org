@@ -2,7 +2,7 @@
 
 * Initialisation
 This section contains basic configurations for emacs to tidy up the interface and set some defaults for the inbuilt modules that don't fit into other categories.
-
+
 ** Disable package downloads
 Remove elpa from the package archives so that no packages will be automtically downloaded. All packages will be installed using the nix package manager.
 
@@ -91,6 +91,35 @@ Better popup frames
 #+begin_src emacs-lisp :tangle yes
   (use-package posframe)
 #+end_src
+** God mode
+#+begin_src emacs-lisp :tangle yes
+  (use-package
+   god-mode
+   :init (god-mode)
+   :config
+   (defun clover/god-cursor ()
+     (defvar clover/cursor-bg (face-attribute 'cursor :background))
+     (if god-local-mode
+         (progn
+           (setq cursor-type 'hbar)
+           (set-face-attribute 'cursor nil :background "#50fa7b"))
+       (if buffer-read-only
+           (progn
+             (setq cursor-type 'hbar)
+             (set-face-attribute 'cursor nil :background "#ff5555"))
+         (progn
+           (setq cursor-type 'box)
+           (set-face-attribute 'cursor nil :background clover/cursor-bg)))))
+   (defun clover/global-escape ()
+     (interactive)
+     (funcall (key-binding "\C-g")))
+   :bind (("<escape>" . god-local-mode)
+          :map god-local-mode-map
+          ("<escape>" . clover/global-escape)
+          ("z" . repeat)
+          ("i" . god-local-mode))
+   :hook (post-command . clover/god-cursor))
+#+end_src
 
 * Help
 ** Helpful
@@ -118,6 +147,7 @@ Popup to show available shortcut keys in current mode
     :demand
     :config
     (which-key-mode)
+    (which-key-enable-god-mode-support)
     (which-key-add-keymap-based-replacements org-mode-map
       "C-c C-v" "Org babel"
       "C-c C-x" "Org extra")
@@ -325,7 +355,7 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
   (use-package forge
     :after magit)
 #+end_src
-* Search
+* Navigation
 ** Vertico
 #+begin_src emacs-lisp :tangle yes
   (use-package vertico

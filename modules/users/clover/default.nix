@@ -12,6 +12,7 @@
     tools = {
       azure.enable = false;
       kubernetes.enable = true;
+      qmk.enable = true;
     };
     user.interactive = true;
     window-manager.ags.enable = true;

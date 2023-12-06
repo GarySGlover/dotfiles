@@ -1,17 +1,11 @@
 {
   config,
   lib,
-  pgks,
+  pkgs,
   ...
 }:
-with lib; let
-  opt = config.wolf.tools.qmk;
-in {
-  options.wolf.tools.qmk.enable = mkOption {
-    type = types.bool;
-  };
-
-  config = mfIf opt.enable {
+with lib; {
+  config = mkIf config.wolf.roles.programming {
     home.packages = with pkgs; [
       qmk
     ];

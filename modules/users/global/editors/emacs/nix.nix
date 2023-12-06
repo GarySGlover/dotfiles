@@ -4,9 +4,11 @@
   lib,
   ...
 }:
-with lib; {
-  config = mkIf (config.wolf.editors.emacs.enable
-    && config.wolf.languages.nix.enable) {
+with lib; let
+  opt = config.wolf;
+in {
+  config = mkIf (opt.roles.programming
+    && opt.languages.nix) {
     programs.emacs.extraPackages = epkgs:
       with epkgs; [
         nix-mode

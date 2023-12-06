@@ -7,15 +7,7 @@
 with lib; let
   secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
 in {
-  options.wolf = {
-    editors.emacs = {
-      enable = mkOption {
-        type = types.bool;
-      };
-    };
-  };
-
-  config = mkIf config.wolf.editors.emacs.enable {
+  config = mkIf config.wolf.roles.editing {
     programs.emacs = {
       enable = true;
       package = pkgs.emacs29-gtk3;

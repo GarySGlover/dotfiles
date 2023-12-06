@@ -4,15 +4,7 @@
   ...
 }:
 with lib; {
-  options.wolf = {
-    terminal.kitty = {
-      enable = mkOption {
-        type = types.bool;
-      };
-    };
-  };
-
-  config = mkIf config.wolf.terminal.kitty.enable {
+  config = mkIf config.wolf.roles.desktop {
     programs.kitty = {
       enable = true;
       font = {

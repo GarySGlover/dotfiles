@@ -74,6 +74,7 @@
               wolf.secretsPath = ./secrets;
             })
           ]
+          ++ [./modules/users/global/temp_packages/temp.nix]
           ++ listNixFilesRecursive ./modules/users
           ++ optionals (pathExists userLegacyModule) [userLegacyModule];
       };

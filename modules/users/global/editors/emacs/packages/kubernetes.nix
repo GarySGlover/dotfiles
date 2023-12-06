@@ -5,7 +5,7 @@
   ...
 }:
 with lib; {
-  config = mkIf (config.wolf.editors.emacs.enable && config.wolf.tools.kubernetes.enable) {
+  config = mkIf (config.wolf.roles.editing && config.wolf.roles.devops) {
     programs.emacs.extraPackages = epkgs:
       with epkgs; [
         kele

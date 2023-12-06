@@ -2,7 +2,7 @@
 
 * Initialisation
 This section contains basic configurations for emacs to tidy up the interface and set some defaults for the inbuilt modules that don't fit into other categories.
-
+
 ** Disable package downloads
 Remove elpa from the package archives so that no packages will be automtically downloaded. All packages will be installed using the nix package manager.
 
@@ -97,6 +97,8 @@ Better popup frames
    god-mode
    :init (god-mode)
    :config
+   (setopt set-message-functions '(inhibit-message set-minibuffer-message))
+   (add-to-list 'inhibit-message-regexps "God")
    (defun clover/god-cursor ()
      (defvar clover/cursor-bg (face-attribute 'cursor :background))
      (if god-local-mode
@@ -113,11 +115,13 @@ Better popup frames
    (defun clover/global-escape ()
      (interactive)
      (funcall (key-binding "\C-g")))
-   :bind (("<escape>" . god-local-mode)
-          :map god-local-mode-map
-          ("<escape>" . clover/global-escape)
-          ("z" . repeat)
-          ("i" . god-local-mode))
+   :bind
+   (("<escape>" . god-local-mode)
+    :map
+    god-local-mode-map
+    ("<escape>" . clover/global-escape)
+    ("z" . repeat)
+    ("i" . god-local-mode))
    :hook (post-command . clover/god-cursor))
 #+end_src
 

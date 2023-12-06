@@ -4,14 +4,8 @@
   pkgs,
   ...
 }:
-with lib; let
-  opt = config.wolf.tools.kubernetes;
-in {
-  options.wolf.tools.kubernetes.enable = mkOption {
-    type = types.bool;
-  };
-
-  config = mkIf opt.enable {
+with lib; {
+  config = mkIf config.wolf.roles.devops {
     home.packages = with pkgs; [
       kubectl
       kubernetes-helm

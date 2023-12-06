@@ -5,15 +5,7 @@
   ...
 }:
 with lib; {
-  options.wolf = {
-    window-manager.ags = {
-      enable = mkOption {
-        type = types.bool;
-      };
-    };
-  };
-
-  config = mkIf config.wolf.window-manager.ags.enable {
+  config = mkIf config.wolf.roles.desktop {
     home.packages = with pkgs; [
       ags
     ];

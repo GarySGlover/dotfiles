@@ -4,14 +4,8 @@
   pkgs,
   ...
 }:
-with lib; let
-  opt = config.wolf.browsers.nyxt;
-in {
-  options.wolf.browsers.nyxt.enable = mkOption {
-    type = types.bool;
-  };
-
-  config = mkIf opt.enable {
+with lib; {
+  config = mkIf config.wolf.roles.internet {
     home.packages = with pkgs; [
       nyxt
     ];

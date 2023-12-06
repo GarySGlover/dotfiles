@@ -5,13 +5,8 @@
   ...
 }:
 with lib; let
-  opt = config.wolf.languages.json;
 in {
-  options.wolf.languages.json.enable = mkOption {
-    type = types.bool;
-  };
-
-  config = mkIf opt.enable {
+  config = mkIf config.wolf.languages.json {
     home.packages = with pkgs; [
       jq
     ];

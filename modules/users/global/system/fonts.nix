@@ -4,8 +4,10 @@
   lib,
   ...
 }:
-with lib; {
-  config = mkIf config.wolf.user.interactive {
+with lib; let
+  roles = config.wolf.roles;
+in {
+  config = mkIf (roles.editing || roles.desktop) {
     # Needed to pickup fonts installed by home manager
     fonts.fontconfig.enable = true;
 

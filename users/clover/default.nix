@@ -16,10 +16,7 @@ in {
   ];
 
   home.packages = with pkgs; [
-    firefox
     wlr-randr
-
-    brave
 
     rofi
 

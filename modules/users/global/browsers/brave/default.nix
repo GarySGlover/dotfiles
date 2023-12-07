@@ -5,11 +5,9 @@
   ...
 }:
 with lib; {
-  config = mkIf config.wolf.roles.devops {
+  config = mkIf config.wolf.roles.internet {
     home.packages = with pkgs; [
-      checkov
-      terraform
-      terraform-docs
+      brave
     ];
   };
 }

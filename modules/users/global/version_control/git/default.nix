@@ -41,6 +41,9 @@ in {
           user = "${secrets.github_user}";
         };
       };
+      ignores = [
+        "/.worktree/"
+      ];
       includes = lists.forEach secrets.repos_emails (x: {
         condition = "hasconfig:remote.*.url:${x.condition}";
         contents = {

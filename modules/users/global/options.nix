@@ -33,6 +33,10 @@ in {
       type = bool;
       default = roles.programming;
     };
+    nim = mkOption {
+      type = bool;
+      default = roles.programming;
+    };
   };
 
   options.wolf.roles = {

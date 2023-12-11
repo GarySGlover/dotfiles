@@ -21,6 +21,8 @@ in {
           magit
           no-littering
           treesit-grammars.with-all-grammars
+          json-mode
+          json-navigator
         ];
       extraConfig = ''
         (delete-file (expand-file-name "emacs-config.el" "~/.config/emacs"))

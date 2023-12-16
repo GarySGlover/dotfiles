@@ -58,7 +58,6 @@
     mkHomeCfg = name: let
       user = "${builtins.head (builtins.match "(.+)@.+" name)}";
       host = "${builtins.head (builtins.match ".+@(.+)" name)}";
-      userLegacyModule = ./users + "/${user}";
     in {
       inherit name;
       value = home-manager.lib.homeManagerConfiguration {
@@ -75,8 +74,7 @@
             })
           ]
           ++ [./modules/users/global/temp_packages/temp.nix]
-          ++ listNixFilesRecursive ./modules/users
-          ++ optionals (pathExists userLegacyModule) [userLegacyModule];
+          ++ listNixFilesRecursive ./modules/users;
       };
     };
 
@@ -94,9 +92,6 @@
                 home.username = "${user}";
                 home.homeDirectory = lib.mkForce "/home/${user}";
                 wolf.secretsPath = ./secrets;
-                imports = [
-                  ./users/${user}
-                ];
               };
             }
           )

@@ -6,6 +6,7 @@ in {
       devops = true;
       gaming = true;
       editing = true;
+      electrical = true;
       programming = true;
       internet =
         if opt.host == "clover-z270pd3"

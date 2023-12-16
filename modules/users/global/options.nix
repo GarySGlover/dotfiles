@@ -68,5 +68,9 @@ in {
       type = bool;
       default = false;
     };
+    electrical = mkOption {
+      type = bool;
+      default = false;
+    };
   };
 }

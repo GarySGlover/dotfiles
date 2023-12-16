@@ -19,4 +19,7 @@
 
   # ASUS Services
   services.asusd.enable = true;
+
+  # Udisk2 Disk Auto Mounting
+  services.udisks2.enable = true;
 }

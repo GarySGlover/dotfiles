@@ -313,8 +313,8 @@ For completions windows
 ** Eat
 #+begin_src emacs-lisp :tangle yes
   (use-package eat
-    :config (add-to-list 'display-buffer-alist
-                       '("^\\*eat.*\\*$"
+    :config     (add-to-list 'display-buffer-alist
+                   `(,(lambda (buffer-name action) (with-current-buffer buffer-name (derived-mode-p 'eat-mode)))
                          (display-buffer-in-side-window)
                          (window-height . 4lc/display-buffer-side-window-height)
                          (side . bottom)
@@ -358,6 +358,11 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
 
   (use-package forge
     :after magit)
+#+end_src
+** Project
+#+begin_src emacs-lisp :tangle yes
+  (use-package project
+   :bind ("C-x p t" . eat-project))
 #+end_src
 * Navigation
 ** Vertico
@@ -772,6 +777,12 @@ Dired nerd icons to show icons for files and folders
         (corfu-mode 1)))
     :hook (minibuffer-setup . corfu-enable-in-minibuffer))
 #+end_src
+** Language ID
+#+begin_src emacs-lisp :tangle yes
+  (use-package language-id
+    :config
+    (add-to-list 'language-id--definitions '("Nix"  nix-ts-mode)))
+#+end_src
 ** Eglot
 #+begin_src emacs-lisp :tangle yes
   (use-package eglot
@@ -783,13 +794,16 @@ Dired nerd icons to show icons for files and folders
   (customize-set-variable 'treesit-font-lock-level 4)
 #+end_src
 ** Nix
-#+begin_src emacs-lisp :tangle (if (string= (getenv "WOLF_LANGUAGE_NIX") "true") "yes" "no")
-  (use-package nix-mode
-    :mode "\\.nix\\'"
+###+begin_src emacs-lisp :tangle (if (string= (getenv "WOLF_LANGUAGE_NIX") "true") "yes" "no")
+#+begin_src emacs-lisp :tangle yes
+  (use-package nix-ts-mode
+    :mode "\\.nix$"
+    :config
+    (add-to-list 'eglot-server-programs '(nix-ts-mode . ("rnix-lsp")))
     :hook
-    (nix-mode . (lambda ()
-                  (setq-local format-all-formatters '(("Nix" alejandra)))))
-    (nix-mode . format-all-mode))
+    (nix-ts-mode . (lambda ()
+                     (setq-local format-all-formatters '(("Nix" alejandra)))))
+    (nix-ts-mode . format-all-mode)) 
 #+end_src
 ** Python
 #+begin_src emacs-lisp :tangle yes
@@ -809,4 +823,9 @@ Dired nerd icons to show icons for files and folders
                                    '(:python.\analysis
                                       (:typeCheckingMode "strict")))))
           (python-ts-mode . format-all-mode))
+#+end_src
+** Yaml
+#+begin_src emacs-lisp :tangle yes
+  (use-package yaml-ts-mode
+    :mode "\\.ya?ml$")
 #+end_src

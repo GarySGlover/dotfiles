@@ -1,5 +1,5 @@
 {
-  description = "Start of the system configuration flake";
+  description = "Clover Nix Configurtaion";
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
@@ -12,6 +12,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     ags.url = "github:Aylur/ags";
+    nixos-wsl = {
+      url = "github:nix-community/NixOS-WSL";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -74,7 +78,8 @@
             })
           ]
           ++ [./modules/users/global/temp_packages/temp.nix]
-          ++ listNixFilesRecursive ./modules/users;
+          ++ listNixFilesRecursive ./modules/users/global
+          ++ listNixFilesRecursive ./modules/users/${user};
       };
     };
 
@@ -92,15 +97,17 @@
                 home.username = "${user}";
                 home.homeDirectory = lib.mkForce "/home/${user}";
                 wolf.secretsPath = ./secrets;
+                imports = listNixFilesRecursive ./modules/users/${user};
               };
             }
           )
         );
       hostLegacyModule = with builtins;
       with lib.lists; optionals (pathExists ./hosts/${host}) [./hosts/${host}];
+      specialArgs = {inherit host users;};
     in
       lib.nixosSystem {
-        inherit system;
+        inherit system specialArgs;
         inherit pkgs;
         modules =
           [
@@ -118,20 +125,21 @@
                       wolf.host = host;
                     })
                   ]
-                  ++ (listNixFilesRecursive ./modules/users);
+                  ++ (listNixFilesRecursive ./modules/users/global);
               };
             }
           ]
-          ++ (listNixFilesRecursive ./modules/hosts)
+          ++ (listNixFilesRecursive ./modules/hosts/global)
+          ++ (listNixFilesRecursive ./modules/hosts/${host})
           ++ hostLegacyModule;
       };
 
     hostCfgs = {
-      belisarius = {
-        nixos = true;
-        users = ["clover"];
-      };
       auberon = {
+        nixos = true;
+        users = ["clover" "work"];
+      };
+      belisarius = {
         nixos = true;
         users = ["clover"];
       };

@@ -72,5 +72,9 @@ in {
       type = bool;
       default = false;
     };
+    work = mkOption {
+      type = bool;
+      default = false;
+    };
   };
 }

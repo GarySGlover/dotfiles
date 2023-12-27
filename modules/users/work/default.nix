@@ -5,18 +5,15 @@
 }:
 with lib; let
   opt = config.wolf;
-  gaming_hosts = ["belisarius"];
+  gaming_hosts = [];
   internet_hosts = ["auberon" "belisarius"];
 in {
   wolf = {
     roles = {
       devops = true;
-      gaming =
-        if lists.any (i: opt.host == i) gaming_hosts
-        then true
-        else false;
+      gaming = false;
       editing = true;
-      electrical = true;
+      electrical = false;
       programming = true;
       internet =
         if lists.any (i: opt.host == i) internet_hosts

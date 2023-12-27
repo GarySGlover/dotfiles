@@ -4,7 +4,8 @@
   lib,
   ...
 }:
-with lib; let
+with lib;
+with builtins; let
   secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
 in {
   config = mkIf config.wolf.roles.editing {
@@ -20,7 +21,6 @@ in {
           format-all
           magit
           no-littering
-          treesit-grammars.with-all-grammars
           json-mode
           json-navigator
         ];
@@ -44,9 +44,12 @@ in {
 
     home.file.authinfo = {
       target = ".authinfo";
-      text = ''
-        machine api.github.com login ${secrets.github_user}^forge password ${secrets.github_magit_forge_token}
-      '';
+      text =
+        if (hasAttr "github_user" secrets)
+        then ''
+          machine api.github.com login ${secrets.github_user}^forge password ${secrets.github_magit_forge_token}
+        ''
+        else "";
     };
   };
 }

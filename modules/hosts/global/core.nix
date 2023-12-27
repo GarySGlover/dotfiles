@@ -1,10 +1,20 @@
-{pkgs, ...}: {
-  imports = [
-    ./users.nix
-  ];
+{
+  pkgs,
+  config,
+  host,
+  ...
+}: {
+  # Hostname
+  networking.hostName = "${host}";
+
+  # Enable touchpad support (enabled default in most desktopManager).
+  services.xserver.libinput.enable = true;
+
+  # Udisk2 Disk Auto Mounting
+  services.udisks2.enable = true;
 
   # Default sops config
-  sops.defaultSopsFile = ../../secrets/global.yaml;
+  sops.defaultSopsFile = ../../../secrets/global.yaml;
 
   # Nix flakes
   nix.extraOptions = ''
@@ -15,7 +25,7 @@
   nix.gc = {
     automatic = true;
     dates = "daily";
-    options = "--delete-older-than 31d";
+    options = "--delete-older-than 7d";
   };
 
   # Set your time zone.
@@ -38,8 +48,6 @@
   environment.systemPackages = with pkgs; [
     pciutils
   ];
-
-  # https://github.com/NixOS/nixpkgs/issues/162562
 
   system.stateVersion = "23.05";
 }

@@ -7,11 +7,12 @@
 with lib; let
   opt = config.wolf;
 in {
-  config = mkIf (opt.roles.programming
+  config = mkIf (opt.roles.editing
+    && opt.roles.programming
     && opt.languages.nix) {
     programs.emacs.extraPackages = epkgs:
       with epkgs; [
-        nix-mode
+        nix-ts-mode
       ];
 
     home.sessionVariables = {WOLF_LANGUAGE_NIX = "true";};

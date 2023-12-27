@@ -4,7 +4,8 @@
   pkgs,
   ...
 }:
-with lib; let
+with lib;
+with builtins; let
   secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
 in {
   config = {
@@ -37,7 +38,7 @@ in {
         init = {
           templateDir = "${config.xdg.configHome}/git/templates";
         };
-        github = {
+        github = mkIf (hasAttr "github_user" secrets) {
           user = "${secrets.github_user}";
         };
       };

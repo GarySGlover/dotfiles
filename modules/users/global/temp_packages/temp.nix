@@ -4,14 +4,5 @@
     unzip
     jdk21
     zip
-
-    wlr-randr
-
-    rofi
-
-    age
-    sops
-    ssh-to-age
-    git-crypt # Secrets management
   ];
 }

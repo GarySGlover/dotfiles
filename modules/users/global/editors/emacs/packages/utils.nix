@@ -11,6 +11,7 @@ with lib; {
         mini-frame
         posframe
         transient
+        transient-posframe
       ];
   };
 }

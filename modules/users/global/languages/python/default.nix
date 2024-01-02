@@ -13,10 +13,11 @@ with lib; {
 
     home.packages = with pkgs; [
       python311
-      nodePackages.pyright
       python311Packages.black
       python311Packages.flake8
       python311Packages.pipx
+      python311Packages.pip
+      nodePackages.pyright
     ];
 
     home.sessionPath = [

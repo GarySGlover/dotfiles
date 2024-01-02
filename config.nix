@@ -28,4 +28,6 @@
         "steam-run"
         "terraform"
       ];
+
+  rocmSupport = true; # AMD Cuda support
 }

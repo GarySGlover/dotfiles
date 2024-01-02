@@ -14,11 +14,5 @@ in {
       with epkgs; [
         nim-mode
       ];
-
-    home.sessionVariables = {WOLF_LANGUAGE_NIM = "true";};
-
-    programs.emacs.extraConfig = ''
-      (exec-path-from-shell-copy-env "WOLF_LANGUAGE_NIM")
-    '';
   };
 }

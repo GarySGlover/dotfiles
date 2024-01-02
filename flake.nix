@@ -50,6 +50,16 @@
       import nixpkgs {
         inherit system;
         config = import ./config.nix {inherit lib;};
+        overlays = [
+          (final: prev: {
+            ollama-rocm = prev.ollama.override {
+              llama-cpp = prev.llama-cpp.override {
+                rocmSupport = true;
+                openblasSupport = false;
+              };
+            };
+          })
+        ];
       }
       // {
         ags = ags.packages.${system}.default;

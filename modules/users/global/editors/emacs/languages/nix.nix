@@ -15,12 +15,6 @@ in {
         nix-ts-mode
       ];
 
-    home.sessionVariables = {WOLF_LANGUAGE_NIX = "true";};
-
-    programs.emacs.extraConfig = ''
-      (exec-path-from-shell-copy-env "WOLF_LANGUAGE_NIX")
-    '';
-
     home.packages = with pkgs; [
       alejandra
       rnix-lsp

@@ -182,6 +182,140 @@ Popup to show available shortcut keys in current mode
    :if (package-installed-p 'chatgpt-shell)
    :bind ("C-c c" . chatgpt) ("C-c c s" . chatgpt-shell) ("C-c c r" . chatgpt-shell-send-region))
 #+end_src
+* Window  Management
+** Window visited order
+Store a window parameter in non side windows. This is intended to be used to order windows and find the last visited window for display buffer functions.
+#+begin_src emacs-lisp
+  (defun 4lc/increment-and-store-window-count (frame)
+    "Increment the window counter and store it as a window parameter."
+    (let ((selected-win (selected-window)))
+      (when (and selected-win
+                 (not (window-parameter selected-win 'window-side))
+                 (not (window-minibuffer-p selected-win)))
+        (with-selected-frame (window-frame selected-win)
+          (let ((current-count (or (frame-parameter nil '4lc/window-counter) 0)))
+            (setq current-count (+ 1 current-count))
+            (set-frame-parameter nil '4lc/window-counter current-count)
+            (set-window-parameter selected-win '4lc/window-counter current-count))))))
+
+  (add-hook 'window-selection-change-functions '4lc/increment-and-store-window-count)
+
+  (defun 4lc/get-window-counter ()
+    "Get the window counter value from the selected window's parameter."
+    (let ((selected-win (selected-window)))
+      (when selected-win
+        (window-parameter selected-win '4lc/window-counter))))
+
+  (defun 4lc/get-window-with-highest-counter ()
+    "Get the window in the current frame with the highest window counter."
+    (let ((current-frame (selected-frame))
+          (windows (window-list)))
+      (cl-reduce
+       (lambda (win1 win2)
+         (let ((counter1 (window-parameter win1 '4lc/window-counter))
+               (counter2 (window-parameter win2 '4lc/window-counter)))
+           (if (and counter1 counter2)
+               (if (> counter1 counter2) win1 win2)
+             (if counter1 win1 win2))))
+       windows :initial-value nil)))
+#+end_src
+** Window resize
+Functions to directly set the height and width of windows as either percentage of frame width or character width.
+#+begin_src emacs-lisp
+  (defun 4lc/set-window-width (val &optional window)
+    (window-resize window (- val (window-width window)) t))
+
+  (defun 4lc/window-resize-width (val &optional window)
+    (if (< val 1)
+        (4lc/set-window-width (truncate (* val (frame-width))) window)
+      (4lc/set-window-width val window)))
+
+  (defun 4lc/side-window-width (window &optional side)
+    (let ((side (or side (window-parameter window 'window-side))))
+      (pcase side
+        ('left 4lc/left-side-window-width)
+        ('right 4lc/right-side-window-width))))
+
+  (defun 4lc/set-window-height (val &optional window)
+    (window-resize window (- val (window-height window))))
+
+  (defun 4lc/window-resize-height (val &optional window)
+    (if (< val 1)
+        (4lc/set-window-height (truncate (* val (frame-height))) window)
+      (4lc/set-window-height val window)))
+
+  (defun 4lc/side-window-height (window &optional side)
+    (let ((side (or side (window-parameter window 'window-side))))
+      (pcase side
+        ('top 4lc/top-side-window-height)
+        ('bottom 4lc/bottom-side-window-height))))
+#+end_src
+** TODO Side window auto expand
+#+begin_src emacs-lisp
+  (defun 4lc/side-window (window)
+    (window-parameter window 'window-side))
+  (defun 4lc/side-window-deselected (frame)
+    (let* ((oldwin (get-mru-window nil t t))
+           (side (4lc/side-window oldwin)))
+      (cond ((or (eq side 'bottom) (eq side 'top)) (4lc/window-resize-height 0.2 oldwin))
+            ((or (eq side 'left) (eq side 'right)) (4lc/window-resize-width 0.2 oldwin)))))
+  (defun 4lc/side-window-selected (frame)
+    (let* ((curwin (selected-window))
+           (side (4lc/side-window curwin)))
+      (cond ((or (eq side 'bottom) (eq side 'top)) (4lc/window-resize-height 0.5 curwin))
+            ((or (eq side 'left) (eq side 'right)) (4lc/window-resize-width 0.5 curwin)))))
+  (add-to-list 'window-selection-change-functions #'4lc/side-window-selected)
+  (add-to-list 'window-selection-change-functions #'4lc/side-window-deselected)
+#+end_src
+** Display Buffer rules
+#+begin_src emacs-lisp
+  (defun 4lc/display-buffer-side-window-width (window &optional side)
+    (let ((width (4lc/side-window-width window side)))
+      (4lc/window-resize-width width window)))
+
+  (defun 4lc/display-buffer-side-window-height (window &optional side)
+    (let ((height (4lc/side-window-height window side)))
+      (4lc/window-resize-height height window)))
+
+  (defun display-buffer-maybe-most-recent-window (buffer alist)
+    (window--display-buffer buffer (4lc/get-window-with-highest-counter) 'reuse alist))
+
+  (use-package window
+    :init
+    (setq display-buffer-base-action
+          '((display-buffer-maybe-most-recent-window
+             display-buffer-reuse-window
+             display-buffer--maybe-same-window
+             display-buffer-in-previous-window
+             display-buffer-use-some-window)))
+
+    (setopt switch-to-buffer-obey-display-actions t)
+
+    (add-to-list 'display-buffer-alist
+                 '("^\\*[^*]+\\*$"
+                   (display-buffer-in-side-window)
+                   (window-height . 0.2)
+                   (side . bottom)
+                   (slot . 0)
+                   (window-parameters . ((mode-line-format . 'none)
+                                         (no-delete-other-windows . t)
+                                         (no-other-window . t))))))
+
+  (add-to-list 'display-buffer-alist
+                 '("\\*help\\|\\*info"
+                   (display-buffer-in-side-window)
+                   (window-width . 0.2)
+                   (side . right)
+                   (slot . 0)
+                   (window-parameters . ((mode-line-format . 'none)
+                                         (no-delete-other-windows . t)
+                                         (no-other-window . t)))))
+#+end_src
+** Ace window
+#+begin_src emacs-lisp
+  (use-package ace-window
+    :bind ("M-o" . ace-window))
+#+end_src
 * Visual
 ** Alert notification
 When emacs reports an exception the default action is to play a bell sound. This replaces the sound with a double flash on the modeline background.
@@ -297,7 +431,7 @@ For completions windows
     (add-to-list 'display-buffer-alist
                        '("^\\*eshell.*\\*$"
                          (display-buffer-in-side-window)
-                         (window-height . 4lc/display-buffer-side-window-height)
+                         (window-height . 0.2)
                          (side . bottom)
                          (slot . -1)
                          (window-parameters . ((mode-line-format . 'none)
@@ -310,7 +444,7 @@ For completions windows
     :config (add-to-list 'display-buffer-alist
                        '("^\\*shell.*\\*$"
                          (display-buffer-in-side-window)
-                         (window-height . 4lc/display-buffer-side-window-height)
+                         (window-height . 0.2)
                          (side . bottom)
                          (slot . -1)
                          (window-parameters . ((mode-line-format . 'none)
@@ -323,7 +457,7 @@ For completions windows
     :config     (add-to-list 'display-buffer-alist
                    `(,(lambda (buffer-name action) (with-current-buffer buffer-name (derived-mode-p 'eat-mode)))
                          (display-buffer-in-side-window)
-                         (window-height . 4lc/display-buffer-side-window-height)
+                         (window-height . 0.2)
                          (side . bottom)
                          (slot . -1)
                          (window-parameters . ((mode-line-format . 'none)
@@ -344,7 +478,7 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     (add-to-list 'display-buffer-alist
                  '("magit.*:\\|magit-revision\\|forge:\\|COMMIT_EDITMSG"
                    (display-buffer-in-side-window)
-                   (window-width . 4lc/display-buffer-side-window-width)
+                   (window-width . 0.2)
                    (side . left)
                    (slot . 0)
                    (window-parameters . ((mode-line-format . 'none)
@@ -353,7 +487,7 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     (add-to-list 'display-buffer-alist
                  '("magit-diff.*"
                    (display-buffer-in-side-window)
-                   (window-width . 4lc/display-buffer-side-window-width)
+                   (window-width . 0.2)
                    (side . left)
                    (slot . 1)
                    (window-parameters . ((mode-line-format . 'none)
@@ -520,182 +654,6 @@ Which-key for Embark
   (advice-add #'embark-completing-read-prompter
               :around #'embark-hide-which-key-indicator)
 #+end_src
-* Window  Management
-** Window visited order
-Store a window parameter in non side windows. This is intended to be used to order windows and find the last visited window for display buffer functions.
-#+begin_src emacs-lisp
-  (defun 4lc/increment-and-store-window-count (frame)
-    "Increment the window counter and store it as a window parameter."
-    (let ((selected-win (selected-window)))
-      (when (and selected-win
-                 (not (window-parameter selected-win 'window-side))
-                 (not (window-minibuffer-p selected-win)))
-        (with-selected-frame (window-frame selected-win)
-          (let ((current-count (or (frame-parameter nil '4lc/window-counter) 0)))
-            (setq current-count (+ 1 current-count))
-            (set-frame-parameter nil '4lc/window-counter current-count)
-            (set-window-parameter selected-win '4lc/window-counter current-count))))))
-
-  (add-hook 'window-selection-change-functions '4lc/increment-and-store-window-count)
-
-  (defun 4lc/get-window-counter ()
-    "Get the window counter value from the selected window's parameter."
-    (let ((selected-win (selected-window)))
-      (when selected-win
-        (window-parameter selected-win '4lc/window-counter))))
-
-  (defun 4lc/get-window-with-highest-counter ()
-    "Get the window in the current frame with the highest window counter."
-    (let ((current-frame (selected-frame))
-          (windows (window-list)))
-      (cl-reduce
-       (lambda (win1 win2)
-         (let ((counter1 (window-parameter win1 '4lc/window-counter))
-               (counter2 (window-parameter win2 '4lc/window-counter)))
-           (if (and counter1 counter2)
-               (if (> counter1 counter2) win1 win2)
-             (if counter1 win1 win2))))
-       windows :initial-value nil)))
-#+end_src
-** Window resize
-Functions to directly set the height and width of windows as either percentage of frame width or character width.
-#+begin_src emacs-lisp
-  (setq 4lc/default-side-window-width 0.2)
-  (setq 4lc/left-side-window-width 4lc/default-side-window-width)
-  (setq 4lc/right-side-window-width 4lc/default-side-window-width)
-
-  (setq 4lc/default-side-window-height 0.2)
-  (setq 4lc/top-side-window-height 4lc/default-side-window-height)
-  (setq 4lc/bottom-side-window-height 4lc/default-side-window-height)
-
-  (defun 4lc/set-window-width (val &optional window)
-    (window-resize window (- val (window-width window)) t))
-
-  (defun 4lc/window-resize-width (val &optional window)
-    (if (< val 1)
-        (4lc/set-window-width (truncate (* val (frame-width))) window)
-      (4lc/set-window-width val window)))
-
-  (defun 4lc/side-window-width (window &optional side)
-    (let ((side (or side (window-parameter window 'window-side))))
-      (pcase side
-        ('left 4lc/left-side-window-width)
-        ('right 4lc/right-side-window-width))))
-
-  (defun 4lc/set-window-height (val &optional window)
-    (window-resize window (- val (window-height window))))
-
-  (defun 4lc/window-resize-height (val &optional window)
-    (if (< val 1)
-        (4lc/set-window-height (truncate (* val (frame-height))) window)
-      (4lc/set-window-height val window)))
-
-  (defun 4lc/side-window-height (window &optional side)
-    (let ((side (or side (window-parameter window 'window-side))))
-      (pcase side
-        ('top 4lc/top-side-window-height)
-        ('bottom 4lc/bottom-side-window-height))))
-#+end_src
-** TODO Side window auto expand
-#+begin_src emacs-lisp
-  (defun 4lc/side-window (window)
-    (window-parameter window 'window-side))
-  (defun 4lc/side-window-deselected (frame)
-    (let* ((oldwin (get-mru-window nil t t))
-           (side (4lc/side-window oldwin)))
-      (cond ((or (eq side 'bottom) (eq side 'top)) (4lc/window-resize-height 0.2 oldwin))
-            ((or (eq side 'left) (eq side 'right)) (4lc/window-resize-width 0.2 oldwin)))))
-  (defun 4lc/side-window-selected (frame)
-    (let* ((curwin (selected-window))
-           (side (4lc/side-window curwin)))
-      (cond ((or (eq side 'bottom) (eq side 'top)) (4lc/window-resize-height 0.5 curwin))
-            ((or (eq side 'left) (eq side 'right)) (4lc/window-resize-width 0.5 curwin)))))
-  (add-to-list 'window-selection-change-functions #'4lc/side-window-selected)
-  (add-to-list 'window-selection-change-functions #'4lc/side-window-deselected)
-#+end_src
-** Display Buffer rules
-#+begin_src emacs-lisp
-  (defun 4lc/display-buffer-side-window-width (window &optional side)
-    (let ((width (4lc/side-window-width window side)))
-      (4lc/window-resize-width width window)))
-
-  (defun 4lc/display-buffer-side-window-height (window &optional side)
-    (let ((height (4lc/side-window-height window side)))
-      (4lc/window-resize-height height window)))
-
-  (defun display-buffer-maybe-most-recent-window (buffer alist)
-    (window--display-buffer buffer (4lc/get-window-with-highest-counter) 'reuse alist))
-
-  (use-package window
-    :init
-    (setq display-buffer-base-action
-          '((display-buffer-maybe-most-recent-window
-             display-buffer-reuse-window
-             display-buffer--maybe-same-window
-             display-buffer-in-previous-window
-             display-buffer-use-some-window)))
-
-    (setopt switch-to-buffer-obey-display-actions t)
-
-    ;;(setq display-buffer-alist nil)
-
-    (add-to-list 'display-buffer-alist
-                 '("\\*help\\|\\*info"
-                   (display-buffer-in-side-window)
-                   (window-width . 4lc/display-buffer-side-window-width)
-                   (side . right)
-                   (slot . 0)
-                   (window-parameters . ((mode-line-format . 'none)
-                                         (no-delete-other-windows . t)
-                                         (no-other-window . t)))))
-    (add-to-list 'display-buffer-alist
-                 '("*Checkdoc*"
-                   (display-buffer-in-side-window)
-                   (window-height . 4lc/display-buffer-side-window-height)
-                   (side . bottom)
-                   (slot . 0)
-                   (window-parameters . ((mode-line-format . 'none)
-                                         (no-delete-other-windows . t)
-                                         (no-other-window . t)))))
-    (add-to-list 'display-buffer-alist
-                 '("^\\*\\(xref\\|Messages\\|Warning\\|compilation\\)\\*$"
-                   (display-buffer-in-side-window)
-                   (window-height . 4lc/display-buffer-side-window-height)
-                   (side . bottom)
-                   (slot . 0)
-                   (window-parameters . ((mode-line-format . 'none)
-                                         (no-delete-other-windows . t)
-                                         (no-other-window . t))))))
-#+end_src
-** Side Window Size Persistence
-When directly resizing a window that is a side window, store the updated size in the value used by the window rules alists for that side.
-#+begin_src emacs-lisp
-  (defun 4lc/store-side-window-size (DELTA &optional HORIZONTAL)
-    (let ((side (window-parameter nil 'window-side)))
-      (when side
-          (if (and HORIZONTAL (or (string= side 'left) (string= side 'right)))
-              (4lc/store--side-window-horizontal-size side)
-            (4lc/store--side-window-vertical-size side)))))
-
-  (defun 4lc/store--side-window-horizontal-size (side)
-    (if (string= side 'left)
-        (setq 4lc/left-side-window-width (window-width))
-      (setq 4lc/right-side-window-width (window-width))))
-
-  (defun 4lc/store--side-window-vertical-size (side)
-    (if (string= side 'top)
-        (setq 4lc/top-side-window-height (window-height))
-      (setq 4lc/bottom-side-window-height (window-height))))
-
-  (advice-add 'enlarge-window :after '4lc/store-side-window-size)
-  (advice-add 'shrink-window :after '4lc/store-side-window-size)
-  
-#+end_src
-** Ace window
-#+begin_src emacs-lisp
-  (use-package ace-window
-    :bind ("M-o" . ace-window))
-#+end_src
 * Editing
 ** Text mode
 #+begin_src emacs-lisp
@@ -762,7 +720,7 @@ When directly resizing a window that is a side window, store the updated size in
     (add-to-list 'display-buffer-alist
                  `(,(lambda (buffer-name action) (with-current-buffer buffer-name (derived-mode-p 'dired-mode)))
                    (display-buffer-in-side-window)
-                   (window-width . 4lc/display-buffer-side-window-width)
+                   (window-width . 0.2)
                    (side . left)
                    (slot . 0)))
     :bind (:map dired-mode-map ("C-+" . dired-create-empty-file))

@@ -4,5 +4,6 @@
     unzip
     jdk21
     zip
+    glxinfo
   ];
 }

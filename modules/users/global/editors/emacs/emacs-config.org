@@ -839,3 +839,22 @@ Dired nerd icons to show icons for files and folders
   (use-package yaml-ts-mode
     :mode "\\.ya?ml$")
 #+end_src
+** Terraform
+#+begin_src emacs-lisp
+  (use-package terraform-mode
+    :if (package-installed-p 'terraform-mode)
+    :bind ("C-c C-d C-d" . terraform-doc)
+    :config (add-to-list 'eglot-server-programs '(terraform-mode . ("terraform-ls" "serve"))))
+#+end_src
+** Markdown
+#+begin_src emacs-lisp
+  (use-package markdown-mode
+    :config
+    (defun clover/markdown-view (&rest args)
+      (when (eq major-mode 'markdown-mode)
+        (if god-local-mode
+            (markdown-toggle-markup-hiding t)
+          (markdown-toggle-markup-hiding 0))))
+    (advice-add 'god-local-mode :after #'clover/markdown-view))
+
+#+end_src

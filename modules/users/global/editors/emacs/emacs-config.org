@@ -19,7 +19,7 @@ Remove some of the default GUI display components that are typically used with m
   (tooltip-mode -1)
   (set-fringe-mode 10)
   (menu-bar-mode -1)
-  (setq inhibit-startup-message t)
+  (setopt inhibit-startup-message t)
 #+end_src
 
 ** Disabled commands
@@ -250,7 +250,7 @@ Functions to directly set the height and width of windows as either percentage o
         ('top 4lc/top-side-window-height)
         ('bottom 4lc/bottom-side-window-height))))
 #+end_src
-** TODO Side window auto expand
+** Side window auto expand
 #+begin_src emacs-lisp
   (defun 4lc/side-window (window)
     (window-parameter window 'window-side))
@@ -282,12 +282,12 @@ Functions to directly set the height and width of windows as either percentage o
 
   (use-package window
     :init
-    (setq display-buffer-base-action
-          '((display-buffer-maybe-most-recent-window
-             display-buffer-reuse-window
-             display-buffer--maybe-same-window
-             display-buffer-in-previous-window
-             display-buffer-use-some-window)))
+    ;; (setq display-buffer-base-action
+    ;;       '((display-buffer-maybe-most-recent-window
+    ;;          display-buffer-reuse-window
+    ;;          display-buffer--maybe-same-window
+    ;;          display-buffer-in-previous-window
+    ;;          display-buffer-use-some-window)))
 
     (setopt switch-to-buffer-obey-display-actions t)
 
@@ -302,7 +302,7 @@ Functions to directly set the height and width of windows as either percentage o
                                          (no-other-window . t))))))
 
   (add-to-list 'display-buffer-alist
-                 '("\\*help\\|\\*info"
+                 '("^\\*help\\|^\\*info\\|^\\*Terraform:"
                    (display-buffer-in-side-window)
                    (window-width . 0.2)
                    (side . right)
@@ -310,12 +310,34 @@ Functions to directly set the height and width of windows as either percentage o
                    (window-parameters . ((mode-line-format . 'none)
                                          (no-delete-other-windows . t)
                                          (no-other-window . t)))))
+
+  (add-to-list 'display-buffer-alist
+               '("^\\*scratch+\\*$\\|^\\*GNU Emacs\\*$"))
 #+end_src
 ** Ace window
 #+begin_src emacs-lisp
   (use-package ace-window
     :bind ("M-o" . ace-window))
 #+end_src
+** Frog jump buffer
+#+begin_src emacs-lisp
+  (use-package
+   frog-jump-buffer
+   :if (package-installed-p 'frog-jump-buffer)
+   :bind ("C-c f" . frog-jump-buffer)
+   :init
+   (custom-set-faces
+    '(child-frame-border ((t (:background "white"))))
+    '(frog-menu-posframe-background-face ((t (:inherit default))))))
+#+end_src
+Still investigation this code
+(defface frog-menu-posframe-background-face
+  '((t (:inherit default)))
+  "Face used for the background color of the posframe.")
+
+(defface frog-menu-border '((t (:background "black"))) "Dude")
+
+(frog-menu-read "Hello" '("t1" "t2" "t3"))
 * Visual
 ** Alert notification
 When emacs reports an exception the default action is to play a bell sound. This replaces the sound with a double flash on the modeline background.
@@ -433,7 +455,7 @@ For completions windows
                          (display-buffer-in-side-window)
                          (window-height . 0.2)
                          (side . bottom)
-                         (slot . -1)
+                         (slot . 0)
                          (window-parameters . ((mode-line-format . 'none)
                                                (no-delete-other-windows . t)
                                                (no-other-window . t))))))
@@ -446,7 +468,7 @@ For completions windows
                          (display-buffer-in-side-window)
                          (window-height . 0.2)
                          (side . bottom)
-                         (slot . -1)
+                         (slot . 0)
                          (window-parameters . ((mode-line-format . 'none)
                                                (no-delete-other-windows . t)
                                                (no-other-window . t))))))
@@ -459,7 +481,7 @@ For completions windows
                          (display-buffer-in-side-window)
                          (window-height . 0.2)
                          (side . bottom)
-                         (slot . -1)
+                         (slot . 0)
                          (window-parameters . ((mode-line-format . 'none)
                                                (no-delete-other-windows . t)
                                                (no-other-window . t))))))
@@ -671,10 +693,10 @@ Which-key for Embark
 #+begin_src emacs-lisp
   (use-package org
     :config
-    (setopt org-src-window-setup 'plain)
-    (add-to-list 'display-buffer-alist
-                 '("^\\*Org Src"
-                   (display-buffer-below-selected))))
+    (setopt org-src-window-setup 'plain))
+    ;; (add-to-list 'display-buffer-alist
+    ;;              '("^\\*Org Src"
+    ;;                (display-buffer-below-selected))))
 #+end_src
 *** Org Style
 #+begin_src emacs-lisp

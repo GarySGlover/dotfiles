@@ -24,6 +24,7 @@
     home-manager,
     ags,
     sops-nix,
+    flake-utils,
     ...
   }: let
     system =
@@ -187,5 +188,12 @@
           name: mkHomeCfg name
         )
       );
+
+    devShells.${system}.default = pkgs.mkShell {
+      packages = with pkgs; [
+        alejandra
+        rnix-lsp
+      ];
+    };
   };
 }

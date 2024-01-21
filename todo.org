@@ -1,3 +1,10 @@
+* Development environments
+Look to use direnv and nix flake for environment
+Maybe use devenv as well  to
+* Nim keyboard development
+Setup dev environment
+** Futhark
+This will be required. Does error around clang library, run ~nimble install furthark --debug~ to get full error details.
 * Emacs
 ** DONE [#A] Marginalia
 ** TODO [#A] Embark

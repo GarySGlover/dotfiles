@@ -119,6 +119,12 @@ Better popup frames
     ("i" . god-local-mode))
    :hook (post-command . clover/god-cursor))
 #+end_src
+** Direnv
+#+begin_src emacs-lisp
+  (use-package direnv
+   :config
+   (direnv-mode))
+#+end_src
 
 * Help
 ** Helpful
@@ -171,16 +177,14 @@ Popup to show available shortcut keys in current mode
     (which-key-posframe-mode))
 #+end_src
 
-** ChatGPT
+** GPTel
 #+begin_src emacs-lisp
   (use-package
-   chatgpt-shell
-   :init (define-prefix-command 'chatgpt)
-   :config
-   (setq chatgpt-shell-openai-key
-         (lambda () (auth-source-pick-first-password :host "api.openai.com")))
-   :if (package-installed-p 'chatgpt-shell)
-   :bind ("C-c c" . chatgpt) ("C-c c s" . chatgpt-shell) ("C-c c r" . chatgpt-shell-send-region))
+   gptel
+   :init (define-prefix-command 'gptel)
+   :bind
+   ("C-c c s" . gptel-send)
+   ("C-c c m" . gptel-menu))
 #+end_src
 * Window  Management
 ** Window visited order
@@ -323,7 +327,6 @@ Functions to directly set the height and width of windows as either percentage o
 #+begin_src emacs-lisp
   (use-package
    frog-jump-buffer
-   :if (package-installed-p 'frog-jump-buffer)
    :bind ("C-c f" . frog-jump-buffer)
    :init
    (custom-set-faces
@@ -338,6 +341,12 @@ Still investigation this code
 (defface frog-menu-border '((t (:background "black"))) "Dude")
 
 (frog-menu-read "Hello" '("t1" "t2" "t3"))
+** Beframe
+#+begin_src emacs-lisp
+  (use-package beframe
+    :init (beframe-mode 1)
+    :bind-keymap (("C-c b" . beframe-prefix-map)))
+#+end_src
 * Visual
 ** Alert notification
 When emacs reports an exception the default action is to play a bell sound. This replaces the sound with a double flash on the modeline background.
@@ -445,6 +454,13 @@ For completions windows
   (use-package doom-modeline
     :init (doom-modeline-mode 1))
 #+end_src
+
+** Eglot breadcrumbs
+#+begin_src emacs-lisp
+  (use-package breadcrumb
+    :init
+    (breadcrumb-mode 1))
+#+end_src
 * Shells
 ** Eshell
 #+begin_src emacs-lisp
@@ -498,7 +514,7 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     :config
     (setq magit-display-buffer-function #'display-buffer)
     (add-to-list 'display-buffer-alist
-                 '("magit.*:\\|magit-revision\\|forge:\\|COMMIT_EDITMSG"
+                 '("magit.*:\\|magit-revision\\|COMMIT_EDITMSG"
                    (display-buffer-in-side-window)
                    (window-width . 0.2)
                    (side . left)
@@ -519,9 +535,6 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
 
     :bind (("C-c g" . magit-status)
            ("C-x p m" . magit-project-status)))
-
-  (use-package forge
-    :after magit)
 #+end_src
 ** Project
 #+begin_src emacs-lisp
@@ -558,6 +571,34 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     ("C-c s g" . consult-grep)
     ("C-c s i" . consult-imenu)
     ("C-c s m" . consult-imenu-multi))
+#+end_src
+*** Beframe interation
+#+begin_src emacs-lisp
+  (use-package
+   beframe
+   :after consult
+   :init (defvar consult-buffer-sources) (declare-function consult--buffer-state "consult")
+
+   (defface beframe-buffer '((t :inherit font-lock-string-face))
+     "Face for `consult' framed buffers.")
+
+   (defun my-beframe-buffer-names-sorted (&optional frame)
+     "Return the list of buffers from `beframe-buffer-names' sorted by visibility.
+  With optional argument FRAME, return the list of buffers of FRAME."
+     (beframe-buffer-names frame :sort #'beframe-buffer-sort-visibility))
+
+   (defvar beframe-consult-source
+     `(:name
+       "Frame-specific buffers (current frame)"
+       :narrow ?F
+       :category buffer
+       :face beframe-buffer
+       :history beframe-history
+       :items ,#'my-beframe-buffer-names-sorted
+       :action ,#'switch-to-buffer
+       :state ,#'consult--buffer-state))
+
+   (add-to-list 'consult-buffer-sources 'beframe-consult-source))
 #+end_src
 ** Orderless
 #+begin_src emacs-lisp
@@ -680,20 +721,21 @@ Which-key for Embark
 ** Text mode
 #+begin_src emacs-lisp
   (setopt fill-column 100)
-  (add-hook 'text-mode-hook (lambda () (unless (or (derived-mode-p 'yaml-ts-mode) (derived-mode-p 'org-mode)) (visual-line-mode t))))
-  (use-package visual-fill-column
-    :init
-    (setopt visual-fill-column-mode-map (make-sparse-keymap))
-    :config
-    (setopt visual-fill-column-center-text t)
-    :hook
-    (visual-line-mode . visual-fill-column-mode))
+  (add-hook 'text-mode-hook (lambda () (visual-line-mode t)))
+  (use-package
+   visual-fill-column
+   :init (setopt visual-fill-column-mode-map (make-sparse-keymap))
+   :config
+   (setopt visual-fill-column-center-text nil)
+   (setopt visual-line-fringe-indicators '(left-curly-arrow nil))
+   :hook (visual-line-mode . visual-fill-column-mode))
 #+end_src
 ** Org mode
 #+begin_src emacs-lisp
   (use-package org
     :config
-    (setopt org-src-window-setup 'plain))
+    (setopt org-src-window-setup 'plain)
+    (setopt org-startup-indented t))
     ;; (add-to-list 'display-buffer-alist
     ;;              '("^\\*Org Src"
     ;;                (display-buffer-below-selected))))
@@ -830,7 +872,6 @@ Dired nerd icons to show icons for files and folders
   #+begin_src emacs-lisp
     (use-package
      nix-ts-mode
-     :if (package-installed-p 'nix-ts-mode)
      :mode "\\.nix$"
      :config (add-to-list 'eglot-server-programs '(nix-ts-mode . ("rnix-lsp")))
      :hook
@@ -864,7 +905,6 @@ Dired nerd icons to show icons for files and folders
 ** Terraform
 #+begin_src emacs-lisp
   (use-package terraform-mode
-    :if (package-installed-p 'terraform-mode)
     :bind ("C-c C-d C-d" . terraform-doc)
     :config (add-to-list 'eglot-server-programs '(terraform-mode . ("terraform-ls" "serve"))))
 #+end_src

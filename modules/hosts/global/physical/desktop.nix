@@ -14,7 +14,6 @@ with lib; {
       enable = true;
       displayManager.sddm = {enable = true;};
       displayManager.defaultSession = "hyprland";
-      desktopManager.gnome.enable = true;
     };
 
     # Configure keymap in X11

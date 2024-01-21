@@ -5,5 +5,7 @@
     jdk21
     zip
     glxinfo
+    wlr-randr
+    nwg-displays
   ];
 }

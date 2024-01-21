@@ -5,3 +5,6 @@
 # Nix build folder
 /result
 /scripts/result
+
+# Direnv
+.direnv

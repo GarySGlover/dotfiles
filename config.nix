@@ -4,17 +4,17 @@
     steam = pkgs.steam.override {
       extraPkgs = pkgs:
         with pkgs; [
-          libgdiplus
           keyutils
+          libgdiplus
           libkrb5
           libpng
           libpulseaudio
           libvorbis
           stdenv.cc.cc.lib
+          xorg.libXScrnSaver
           xorg.libXcursor
           xorg.libXi
           xorg.libXinerama
-          xorg.libXScrnSaver
         ];
     };
   };

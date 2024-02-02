@@ -45,6 +45,9 @@ in {
       ignores = [
         "/.worktree/"
       ];
+      aliases = {
+        fetchp = "fetch --force";
+      };
       includes = lists.forEach secrets.repos_emails (x: {
         condition = "hasconfig:remote.*.url:${x.condition}";
         contents = {

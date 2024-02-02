@@ -9,7 +9,7 @@ with lib; {
     home.packages = with pkgs; [
       kubectl
       kubernetes-helm
-      openlens
+      argo-rollouts
     ];
   };
 }

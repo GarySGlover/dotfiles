@@ -831,7 +831,14 @@ Dired nerd icons to show icons for files and folders
 #+end_src
 ** Kubernetes
 #+begin_src emacs-lisp
-  
+  (use-package
+   kubel
+   :config
+   (defun kubel-quick-edit ()
+     "Quickly edit any resource."
+     (interactive)
+     (kubel--describe-resource
+      (completing-read "Select resource: " (kubel--kubernetes-resources-list)))))
 #+end_src
 * Programming
 ** Completion

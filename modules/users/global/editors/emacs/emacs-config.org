@@ -171,7 +171,7 @@ Popup to show available shortcut keys in current mode
     :after (which-key posframe)
     :config
     (defun which-key-posframe--max-dimensions-override (x)
-      (cons (min 10 (pop x)) x))
+      (cons (max 10 (pop x)) x))
     (advice-add 'which-key-posframe--max-dimensions :filter-return #'which-key-posframe--max-dimensions-override)
     (setq which-key-posframe-poshandler 'posframe-poshandler-frame-top-center)
     (which-key-posframe-mode))
@@ -226,6 +226,12 @@ Store a window parameter in non side windows. This is intended to be used to ord
 ** Window resize
 Functions to directly set the height and width of windows as either percentage of frame width or character width.
 #+begin_src emacs-lisp
+  (defun 4lc/get-window-delta (size)
+    (- size (window-height)))
+
+  (defun 4lc/get-window-width-delta (size)
+    (- size (window-width)))
+
   (defun 4lc/set-window-width (val &optional window)
     (window-resize window (- val (window-width window)) t))
 
@@ -258,16 +264,20 @@ Functions to directly set the height and width of windows as either percentage o
 #+begin_src emacs-lisp
   (defun 4lc/side-window (window)
     (window-parameter window 'window-side))
+
   (defun 4lc/side-window-deselected (frame)
     (let* ((oldwin (get-mru-window nil t t))
            (side (4lc/side-window oldwin)))
       (cond ((or (eq side 'bottom) (eq side 'top)) (4lc/window-resize-height 0.2 oldwin))
             ((or (eq side 'left) (eq side 'right)) (4lc/window-resize-width 0.2 oldwin)))))
+
+
+
   (defun 4lc/side-window-selected (frame)
     (let* ((curwin (selected-window))
            (side (4lc/side-window curwin)))
-      (cond ((or (eq side 'bottom) (eq side 'top)) (4lc/window-resize-height 0.5 curwin))
-            ((or (eq side 'left) (eq side 'right)) (4lc/window-resize-width 0.5 curwin)))))
+      (cond ((or (eq side 'bottom) (eq side 'top)) (enlarge-window (4lc/get-window-delta (/ (frame-height) 2))))
+            ((or (eq side 'left) (eq side 'right)) (enlarge-window-horizontally (4lc/get-window-width-delta (/ (frame-width) 2)))))))
   (add-to-list 'window-selection-change-functions #'4lc/side-window-selected)
   (add-to-list 'window-selection-change-functions #'4lc/side-window-deselected)
 #+end_src
@@ -284,39 +294,35 @@ Functions to directly set the height and width of windows as either percentage o
   (defun display-buffer-maybe-most-recent-window (buffer alist)
     (window--display-buffer buffer (4lc/get-window-with-highest-counter) 'reuse alist))
 
-  (use-package window
-    :init
-    ;; (setq display-buffer-base-action
-    ;;       '((display-buffer-maybe-most-recent-window
-    ;;          display-buffer-reuse-window
-    ;;          display-buffer--maybe-same-window
-    ;;          display-buffer-in-previous-window
-    ;;          display-buffer-use-some-window)))
+  (use-package
+   window
+   :init
+   ;; (setq display-buffer-base-action
+   ;;       '((display-buffer-maybe-most-recent-window
+   ;;          display-buffer-reuse-window
+   ;;          display-buffer--maybe-same-window
+   ;;          display-buffer-in-previous-window
+   ;;          display-buffer-use-some-window)))
 
-    (setopt switch-to-buffer-obey-display-actions t)
+   (setopt switch-to-buffer-obey-display-actions t)
 
-    (add-to-list 'display-buffer-alist
-                 '("^\\*[^*]+\\*$"
-                   (display-buffer-in-side-window)
-                   (window-height . 0.2)
-                   (side . bottom)
-                   (slot . 0)
-                   (window-parameters . ((mode-line-format . 'none)
-                                         (no-delete-other-windows . t)
-                                         (no-other-window . t))))))
+   (add-to-list
+    'display-buffer-alist
+    '("^\\*Warnings\\*$" (display-buffer-in-side-window) (window-height . 0.2) (side . bottom) (slot . 0)
+      (window-parameters
+       . ((mode-line-format . 'none) (no-delete-other-windows . t) (no-other-window . t)))))
 
-  (add-to-list 'display-buffer-alist
-                 '("^\\*help\\|^\\*info\\|^\\*Terraform:"
-                   (display-buffer-in-side-window)
-                   (window-width . 0.2)
-                   (side . right)
-                   (slot . 0)
-                   (window-parameters . ((mode-line-format . 'none)
-                                         (no-delete-other-windows . t)
-                                         (no-other-window . t)))))
+   (add-to-list
+    'display-buffer-alist
+    '("^\\*help\\|^\\*info\\|^\\*Terraform:"
+      (display-buffer-in-side-window)
+      (window-width . 0.2)
+      (side . right)
+      (slot . 0)
+      (window-parameters
+       . ((mode-line-format . 'none) (no-delete-other-windows . t) (no-other-window . t)))))
 
-  (add-to-list 'display-buffer-alist
-               '("^\\*scratch+\\*$\\|^\\*GNU Emacs\\*$"))
+   (add-to-list 'display-buffer-alist '("^\\*scratch+\\*$\\|^\\*GNU Emacs\\*$")))
 #+end_src
 ** Ace window
 #+begin_src emacs-lisp
@@ -491,16 +497,17 @@ For completions windows
 #+end_src
 ** Eat
 #+begin_src emacs-lisp
-  (use-package eat
-    :config     (add-to-list 'display-buffer-alist
-                   `(,(lambda (buffer-name action) (with-current-buffer buffer-name (derived-mode-p 'eat-mode)))
-                         (display-buffer-in-side-window)
-                         (window-height . 0.2)
-                         (side . bottom)
-                         (slot . 0)
-                         (window-parameters . ((mode-line-format . 'none)
-                                               (no-delete-other-windows . t)
-                                               (no-other-window . t))))))
+  (use-package
+   eat
+   :config
+   (add-to-list
+    'display-buffer-alist
+    `(,(lambda (buffer-name action)
+         (with-current-buffer buffer-name
+           (derived-mode-p 'eat-mode)))
+      (display-buffer-in-side-window) (window-height . 0.2) (side . bottom) (slot . 0)
+      (window-parameters
+       . ((mode-line-format . 'none) (no-delete-other-windows . t) (no-other-window . t))))))
 #+end_src
 
 * Project Management

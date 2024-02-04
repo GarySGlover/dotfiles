@@ -48,14 +48,23 @@ in {
       aliases = {
         fetchp = "fetch --force";
       };
-      includes = lists.forEach secrets.repos_emails (x: {
-        condition = "hasconfig:remote.*.url:${x.condition}";
-        contents = {
-          user = {
-            email = "${x.email}";
+      includes =
+        lists.forEach secrets.git_remotes_emails (x: {
+          condition = "hasconfig:remote.*.url:${x.condition}";
+          contents = {
+            user = {
+              email = "${x.email}";
+            };
           };
-        };
-      });
+        })
+        ++ lists.forEach secrets.git_folders_emails (x: {
+          condition = "gitdir:${x.condition}";
+          contents = {
+            user = {
+              email = "${x.email}";
+            };
+          };
+        });
     };
   };
 }

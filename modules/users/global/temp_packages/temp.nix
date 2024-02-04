@@ -7,5 +7,6 @@
     glxinfo
     wlr-randr
     nwg-displays
+    pandoc
   ];
 }

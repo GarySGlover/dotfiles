@@ -11,6 +11,11 @@ with lib; {
       extraConfig = builtins.readFile ./hyprland.conf;
     };
 
+    home.file."${config.xdg.configHome}/hypr/imports" = {
+      source = ./imports;
+      recursive = true;
+    };
+
     home.packages = with pkgs; [
       rofi # Application launcher
       swww # Animated wallpapers

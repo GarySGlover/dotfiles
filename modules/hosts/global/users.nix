@@ -29,6 +29,7 @@ with builtins; let
       uid = 1000;
       hashedPasswordFile = config.sops.secrets.clover-password.path;
       shell = pkgs.fish;
+      extraGroups = ["realtime"];
     };
     work = {
       isNormalUser = true;

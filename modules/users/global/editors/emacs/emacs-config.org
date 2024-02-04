@@ -182,9 +182,11 @@ Popup to show available shortcut keys in current mode
   (use-package
    gptel
    :init (define-prefix-command 'gptel)
+   :commands (gptel)
    :bind
    ("C-c c s" . gptel-send)
-   ("C-c c m" . gptel-menu))
+   ("C-c c m" . gptel-menu)
+   ("C-c c b" . gptel))
 #+end_src
 * Window  Management
 ** Window visited order
@@ -553,7 +555,8 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
 #+begin_src emacs-lisp
   (use-package vertico
     :init
-    (vertico-mode))
+    (vertico-mode)
+    :bind (:map vertico-map ("M-s" . vertico-suspend)))
 
   (use-package vertico-posframe
     :init
@@ -886,6 +889,7 @@ Dired nerd icons to show icons for files and folders
   #+begin_src emacs-lisp
     (use-package
      nix-ts-mode
+     :defer t
      :mode "\\.nix$"
      :config (add-to-list 'eglot-server-programs '(nix-ts-mode . ("rnix-lsp")))
      :hook
@@ -894,43 +898,50 @@ Dired nerd icons to show icons for files and folders
 #+end_src
 ** Python
 #+begin_src emacs-lisp
-  (use-package python
-    :init
-    (setf (cdr (rassoc 'python-mode auto-mode-alist)) 'python-ts-mode)
-    (setf (cdr (rassoc 'python-mode interpreter-mode-alist)) 'python-ts-mode)
-      :hook
-      (python-ts-mode .
-                   (lambda
-                     ()
-                     (setq-local format-all-formatters
-                                 '(("Python" black)))
-                     (setq-local python-flymake-command
-                                 '("flake8" "-"))
-                     (setopt eglot-workspace-configuration
-                                   '(:python.\analysis
-                                      (:typeCheckingMode "strict")))))
-          (python-ts-mode . format-all-mode))
+  (use-package
+   python
+   :defer t
+   :init
+   (setf (cdr (rassoc 'python-mode auto-mode-alist)) 'python-ts-mode)
+   (setf (cdr (rassoc 'python-mode interpreter-mode-alist)) 'python-ts-mode)
+   :hook
+   (python-ts-mode
+    .
+    (lambda ()
+      (setq-local format-all-formatters '(("Python" black)))
+      (setq-local python-flymake-command '("flake8" "-"))
+      (setopt eglot-workspace-configuration '(:python.\analysis (:typeCheckingMode "strict")))))
+   (python-ts-mode . format-all-mode))
 #+end_src
 ** Yaml
 #+begin_src emacs-lisp
-  (use-package yaml-ts-mode
-    :mode "\\.ya?ml$")
+  (use-package yaml-ts-mode :defer t :mode "\\.ya?ml$")
 #+end_src
 ** Terraform
 #+begin_src emacs-lisp
-  (use-package terraform-mode
-    :bind ("C-c C-d C-d" . terraform-doc)
-    :config (add-to-list 'eglot-server-programs '(terraform-mode . ("terraform-ls" "serve"))))
+  (use-package
+   terraform-mode
+   :defer t
+   :bind ("C-c C-d C-d" . terraform-doc)
+   :config (add-to-list 'eglot-server-programs '(terraform-mode . ("terraform-ls" "serve"))))
 #+end_src
 ** Markdown
 #+begin_src emacs-lisp
-  (use-package markdown-mode
-    :config
-    (defun clover/markdown-view (&rest args)
-      (when (eq major-mode 'markdown-mode)
-        (if god-local-mode
-            (markdown-toggle-markup-hiding t)
-          (markdown-toggle-markup-hiding 0))))
-    (advice-add 'god-local-mode :after #'clover/markdown-view))
-
+  (use-package
+   markdown-mode
+   :defer t
+   :config
+   (defun clover/markdown-view (&rest args)
+     (when (eq major-mode 'markdown-mode)
+       (if god-local-mode
+           (markdown-toggle-markup-hiding t)
+         (markdown-toggle-markup-hiding 0))))
+   (advice-add 'god-local-mode :after #'clover/markdown-view))
+#+end_src
+** NIM
+#+begin_src emacs-lisp
+  (use-package
+   nim-mode
+   :defer t
+   :config (add-to-list 'eglot-server-programs '(nim-mode . ("nimlangserver"))))
 #+end_src

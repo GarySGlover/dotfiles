@@ -267,32 +267,6 @@ Functions to directly set the height and width of windows as either percentage o
         ('top 4lc/top-side-window-height)
         ('bottom 4lc/bottom-side-window-height))))
 #+end_src
-** Side window auto expand
-#+begin_src emacs-lisp
-  (defun 4lc/side-window (window)
-    (window-parameter window 'window-side))
-
-  (defun 4lc/side-window-deselected (frame)
-    (let* ((oldwin (get-mru-window nil t t))
-           (side (4lc/side-window oldwin)))
-      (cond
-       ((or (eq side 'bottom) (eq side 'top))
-        (4lc/window-resize-height 0.2 oldwin))
-       ((or (eq side 'left) (eq side 'right))
-        (4lc/window-resize-width 0.2 oldwin)))))
-
-
-  (defun 4lc/side-window-selected (frame)
-    (let* ((curwin (selected-window))
-           (side (4lc/side-window curwin)))
-      (cond
-       ((or (eq side 'bottom) (eq side 'top))
-        (enlarge-window (4lc/get-window-delta (/ (frame-height) 2))))
-       ((or (eq side 'left) (eq side 'right))
-        (enlarge-window-horizontally (4lc/get-window-width-delta (/ (frame-width) 2)))))))
-  (add-to-list 'window-selection-change-functions #'4lc/side-window-selected)
-  (add-to-list 'window-selection-change-functions #'4lc/side-window-deselected)
-#+end_src
 ** Display Buffer rules
 #+begin_src emacs-lisp
   (defun 4lc/display-buffer-side-window-width (window &optional side)
@@ -368,9 +342,7 @@ When emacs reports an exception the default action is to play a bell sound. This
 Setup the main theme and fonts used within this emacs configuration.
 
 #+begin_src emacs-lisp
-  (set-face-attribute 'default nil :font "FiraCode Nerd Font" :height 100)
-  (set-face-attribute 'default (selected-frame) :font "FiraCode Nerd Font" :height 100)
-  (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font"))
+  (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font-10"))
   (setopt nerd-icons-font-family "FiraCode Nerd Font")
 
   (load-theme 'doom-dracula t)

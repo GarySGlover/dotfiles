@@ -10,6 +10,7 @@ with lib; {
       checkov
       terraform
       terraform-docs
+      terraform-ls
     ];
   };
 }

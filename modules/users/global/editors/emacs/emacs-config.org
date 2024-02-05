@@ -181,7 +181,7 @@ Popup to show available shortcut keys in current mode
 #+begin_src emacs-lisp
   (use-package
    gptel
-   :init (define-prefix-command 'gptel)
+   :init (define-prefix-command 'gpt)
    :commands (gptel)
    :bind
    ("C-c c s" . gptel-send)

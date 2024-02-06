@@ -7,8 +7,7 @@
 with lib; {
   config = mkIf config.wolf.roles.cad {
     home.packages = with pkgs; [
-      kicad
-      kikit
+      prusa-slicer
     ];
   };
 }

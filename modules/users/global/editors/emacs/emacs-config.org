@@ -2,7 +2,10 @@
 
 * Initialisation
 This section contains basic configurations for emacs to tidy up the interface and set some defaults for the inbuilt modules that don't fit into other categories.
-
+** Fix emacs home
+#+begin_src emacs-lisp
+  (setq user-emacs-directory (file-truename "~/.config/emacs/"))
+#+end_src
 ** Disable package downloads
 Remove elpa from the package archives so that no packages will be automtically downloaded. All packages will be installed using the nix package manager.
 
@@ -278,11 +281,15 @@ Functions to directly set the height and width of windows as either percentage o
       (4lc/window-resize-height height window)))
 
   (defun display-buffer-maybe-most-recent-window (buffer alist)
-    (window--display-buffer buffer (4lc/get-window-with-highest-counter) 'reuse alist))
+    (unless (cdr (assq 'inhibit-same-window alist))
+      (window--display-buffer buffer (4lc/get-window-with-highest-counter) 'reuse alist)))
 
   (use-package
    window
    :init
+   (setq display-buffer-base-action
+         '((display-buffer--maybe-same-window
+            display-buffer-reuse-window display-buffer-maybe-most-recent-window)))
    ;; (setq display-buffer-base-action
    ;;       '((display-buffer-maybe-most-recent-window
    ;;          display-buffer-reuse-window
@@ -804,7 +811,14 @@ Which-key for Embark
    format-all
    :commands (format-all-mode define-format-all-formatter)
    :bind (:map prog-mode-map ("C-c f" . format-all-region-or-buffer))
-   :hook (prog-mode . format-all-mode))
+   :hook
+   (prog-mode . format-all-mode)
+   (yaml-ts-mode . format-all-mode))
+#+end_src
+** Macros
+#+begin_src emacs-lisp
+  (defalias 'convert-devops-yaml-parameter-to-full
+     (kmacro "a i - SPC n a m e : <escape> s : <return> <backspace> <return> i SPC SPC t y p e : SPC s t r i n g <return> d e f a u l t : SPC <escape> n a"))
 #+end_src
 * System
 ** Dired
@@ -906,7 +920,10 @@ Dired nerd icons to show icons for files and folders
 #+end_src
 ** Treesitter
 #+begin_src emacs-lisp
-  (customize-set-variable 'treesit-font-lock-level 4)
+  (use-package treesit
+    :custom
+    (setopt treesit-font-lock-level 4)
+    (setopt treesit-extra-load-path '("~/.config/emacs/var/tree-sitter")))
 #+end_src
 ** Emacs Lisp
 #+begin_src emacs-lisp
@@ -951,7 +968,20 @@ Dired nerd icons to show icons for files and folders
 #+end_src
 ** Yaml
 #+begin_src emacs-lisp
-  (use-package yaml-ts-mode :defer t :mode "\\.ya?ml$")
+  (define-format-all-formatter
+   yamlfmt (:executable "yamlfmt") (:install) (:languages "YAML") (:features)
+   (:format
+    (if (project-current)
+        (format-all--buffer-easy
+         executable "-conf"
+         (expand-file-name (s-concat (project-root (project-current)) ".yamlfmt")) "-")
+      (format-all--buffer-easy executable "-"))))
+
+  (use-package
+   yaml-ts-mode
+   :defer t
+   :mode "\\.ya?ml$"
+   :hook (yaml-ts-mode . (lambda () (setq-local format-all-formatters '(("YAML" yamlfmt))))))
 #+end_src
 ** Terraform
 #+begin_src emacs-lisp

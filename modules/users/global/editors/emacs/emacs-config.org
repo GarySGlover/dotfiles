@@ -1,4 +1,4 @@
-#+PROPERTY: header-args :results silent
+#+property: header-args :results silent
 
 * Initialisation
 This section contains basic configurations for emacs to tidy up the interface and set some defaults for the inbuilt modules that don't fit into other categories.
@@ -184,7 +184,6 @@ Popup to show available shortcut keys in current mode
 #+begin_src emacs-lisp
   (use-package
    gptel
-   :init (define-prefix-command 'gpt)
    :commands (gptel)
    :bind
    ("C-c c s" . gptel-send)
@@ -216,7 +215,7 @@ Store a window parameter in non side windows. This is intended to be used to ord
         (window-parameter selected-win '4lc/window-counter))))
 
   (defun 4lc/get-window-with-highest-counter ()
-    "Get the window in the current frame with the highest window counter."
+ "Get the window in the current frame with the highest window counter."
     (let ((current-frame (selected-frame))
           (windows (window-list)))
       (cl-reduce
@@ -805,6 +804,13 @@ Which-key for Embark
   (setq show-trailing-whitespace t)
 #+end_src
 ** Highlight indentation
+#+begin_src emacs-lisp
+  (use-package highlight-indent-guides
+    :config
+    (setopt highlight-indent-guides-responsive 'top)
+    (setopt highlight-indent-guides-method 'character)
+    :hook (prog-mode . highlight-indent-guides-mode))
+#+end_src
 ** Format all
 #+begin_src emacs-lisp
   (use-package
@@ -891,7 +897,19 @@ Dired nerd icons to show icons for files and folders
       (completing-read "Select resource: " (kubel--kubernetes-resources-list)))))
 #+end_src
 * Programming
-** Completion
+** Compilation
+#+begin_src emacs-lisp
+  (use-package compile
+    :init
+    (defun compile-comint ()
+      (interactive)
+      (compile (eval compile-command) t))
+    :bind (:map prog-mode-map
+                ("C-c m c" . compile)
+                ("C-c m r" . recompile)
+                ("C-c m i" . compile-comint)))
+#+end_src
+ ** Completion
 #+begin_src emacs-lisp
   (use-package
    corfu

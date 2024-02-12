@@ -65,20 +65,20 @@ New mode based on tabulated list mode
 | C-c c  | >chatgpt-shell   |
 | C-c d  |                  |
 | C-c e  |                  |
-| C-c f  | frog-jump-buffer |
+| C-c f  |                  |
 | C-c g  | magit            |
 | C-c h  |                  |
 | C-c i  |                  |
 | C-c j  |                  |
 | C-c k  |                  |
 | C-c l  |                  |
-| C-c m  |                  |
+| C-c m  | compile          |
 | C-c n  |                  |
 | C-c o  |                  |
 | C-c p  |                  |
 | C-c q  |                  |
 | C-c r  | TODO >resize     |
-| C-c s  | >consult         |
+| C-c s  |                  |
 | C-c t  | >transparency    |
 | C-c u  |                  |
 | C-c v  | >visual          |

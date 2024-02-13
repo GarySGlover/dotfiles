@@ -41,6 +41,7 @@ in {
         github = mkIf (hasAttr "github_user" secrets) {
           user = "${secrets.github_user}";
         };
+        credential.helper = "store";
       };
       ignores = [
         "/.worktree/"

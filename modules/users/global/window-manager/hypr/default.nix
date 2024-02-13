@@ -21,6 +21,7 @@ with lib; {
       swww # Animated wallpapers
       udiskie # Disk auto mount
       wlr-randr # Wlroots randr alternative
+      brightnessctl
     ];
   };
 }

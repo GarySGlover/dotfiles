@@ -44,6 +44,9 @@
   # Kernel
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
+  # Clean tmp directory
+  boot.tmp.cleanOnBoot = true;
+
   # Extra system packages
   environment.systemPackages = with pkgs; [
     pciutils

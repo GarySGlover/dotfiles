@@ -351,7 +351,7 @@ Setup the main theme and fonts used within this emacs configuration.
   (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font-10"))
   (setopt nerd-icons-font-family "FiraCode Nerd Font")
 
-  (load-theme 'doom-dracula t)
+  (load-theme 'doom-solarized-light t)
 #+end_src
 
 Window splitting
@@ -380,8 +380,8 @@ Set default transparency of frames and creation of hydra function for adjusting 
         (if (< newAlpha 0)
             (set-frame-alpha 0)
           (set-frame-alpha newAlpha)))))
-  (set-frame-alpha 85)
-  (add-to-list 'default-frame-alist '(alpha-background . 85))
+  (set-frame-alpha 100)
+  (add-to-list 'default-frame-alist '(alpha-background . 100))
 
   (transient-define-suffix
    clover--transient-transparency-increase-frame-alpha
@@ -450,11 +450,6 @@ For completions windows
 ** Doom Modelins
 #+begin_src emacs-lisp
   (use-package doom-modeline :init (doom-modeline-mode 1))
-#+end_src
-
-** Eglot breadcrumbs
-#+begin_src emacs-lisp
-  (use-package breadcrumb :init (breadcrumb-mode 1))
 #+end_src
 * Shells
 ** Eshell
@@ -825,6 +820,30 @@ Which-key for Embark
 #+begin_src emacs-lisp
   (defalias 'convert-devops-yaml-parameter-to-full
      (kmacro "a i - SPC n a m e : <escape> s : <return> <backspace> <return> i SPC SPC t y p e : SPC s t r i n g <return> d e f a u l t : SPC <escape> n a"))
+#+end_src
+** Eglot breadcrumbs
+#+begin_src emacs-lisp
+  (use-package breadcrumb :init (breadcrumb-mode 1))
+#+end_src
+** Highlight current line
+#+begin_src emacs-lisp
+  (use-package
+    hl-line
+    :init
+    (setopt global-hl-line-sticky-flag nil)
+    (setopt hl-line-sticky-flag nil)
+    (global-hl-line-mode t))
+#+end_src
+** Line numbers
+#+begin_src emacs-lisp
+  (use-package simple
+    :init
+    (setopt display-line-numbesr-type 'relative)
+    :hook
+    (prog-mode . column-number-mode)
+    (yaml-mode . column-number-mode)
+    (prog-mode . display-line-numbers-mode)
+    (yaml-mode . display-line-numbers-mode))
 #+end_src
 * System
 ** Dired

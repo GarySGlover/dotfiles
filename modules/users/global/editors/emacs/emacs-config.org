@@ -749,17 +749,19 @@ Which-key for Embark
   (advice-add #'embark-completing-read-prompter :around #'embark-hide-which-key-indicator)
 #+end_src
 * Editing
-** Text mode
+** Column Indicator
 #+begin_src emacs-lisp
-  (setopt fill-column 100)
-  (add-hook 'text-mode-hook (lambda () (visual-line-mode t)))
   (use-package
    visual-fill-column
-   :init (setopt visual-fill-column-mode-map (make-sparse-keymap))
    :config
+   (setopt display-fill-column-indicator-column 100)
+   (setopt display-fil-lcolumn-indicator-character #xf0689)
+   (setopt fill-column 100)
    (setopt visual-fill-column-center-text nil)
    (setopt visual-line-fringe-indicators '(left-curly-arrow nil))
-   :hook (visual-line-mode . visual-fill-column-mode))
+   :hook
+   (visual-line-mode . visual-fill-column-mode)
+   (text-mode-hook . (lambda () (visual-line-mode t))))
 #+end_src
 ** Org mode
 #+begin_src emacs-lisp
@@ -784,12 +786,7 @@ Which-key for Embark
   (bind-key "C-c v" 'ct-visual-buffer)
 #+end_src
 ** Vertical Ruler
-#+begin_src emacs-lisp
-  (global-display-fill-column-indicator-mode 1)
-  (setopt display-fill-column-indicator-column 100)
-  (setopt global-display-fill-column-indicator-mode t)
-  (setopt display-fil-lcolumn-indicator-character #xf0689)
-#+end_src
+
 ** Rainbow delimiters
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters :hook (prog-mode . rainbow-delimiters-mode))
@@ -838,10 +835,8 @@ Which-key for Embark
 #+begin_src emacs-lisp
   (use-package simple
     :init
-    (setopt display-line-numbesr-type 'relative)
+    (setopt display-line-numbers-type 'relative)
     :hook
-    (prog-mode . column-number-mode)
-    (yaml-mode . column-number-mode)
     (prog-mode . display-line-numbers-mode)
     (yaml-mode . display-line-numbers-mode))
 #+end_src

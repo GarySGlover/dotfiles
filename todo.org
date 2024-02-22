@@ -1,56 +1,27 @@
-* Development environments
-Look to use direnv and nix flake for environment
-Maybe use devenv as well  to
 * Nim keyboard development
 Setup dev environment
 ** Futhark
 This will be required. Does error around clang library, run ~nimble install furthark --debug~ to get full error details.
 * Emacs
-** DONE [#A] Marginalia
-** TODO [#A] Embark
+** Indentation
+Performance issues with highlight-indent-guides-mode
+Try https://github.com/jdtsmith/indent-bars
 ** TODO [#A] Avy
 https://karthinks.com/software/avy-can-do-anything/
-** TODO Modal editing
-- God mode
-- Modalka
-- Meow
-** TODO [#A] Kubernetes
-- Kele
-- kubernetes-el
-- Kubel
-** DONE [#B] Bottom side buffers
-** DONE Modeline
-** DONE Editing
-- M-\ solves: backward-kill-word replacement for killing whistespace or word 
 ** TODO Nerd-icons
 - nerd-icons-completion
 - corfu https://github.com/LuigiPiucco/nerd-icons-corfu
-** Manuals
-Looked at dash but requires sqlite
-- devdocs
 ** TODO [#C] AGS Bar
 - Volume
 - Date/Time
 ** DONE [#C] Better shell
 https://codeberg.org/akib/emacs-eat
-** TODO Highlight current line
 ** TODO Notifications
-** TODO Check frog-jump-buffer package
-  - https://github.com/sinic/ednc
-** DONE Window Resize
-*** DONE Side windows initial width / store width on resize
 ** TODO Languages / Programs
 *** TODO Kubernetes
 *** TODO Terraform
 *** TODO AZ Emacs Package
 New mode based on tabulated list mode
-** TODO Better project management
-  - Beframe
-  - projectile?
-** DONE Org UI improvemnts
-*** DONE Bullets
-*** DONE Max width / word wrap
-*** DONE Disable src block background change
 * TODO [#C] Web browser
 - Nyxt
 * Window Manager
@@ -65,7 +36,7 @@ New mode based on tabulated list mode
 | C-c c  | >chatgpt-shell   |
 | C-c d  |                  |
 | C-c e  |                  |
-| C-c f  |                  |
+| C-c f  | format-all       |
 | C-c g  | magit            |
 | C-c h  |                  |
 | C-c i  |                  |
@@ -77,7 +48,7 @@ New mode based on tabulated list mode
 | C-c o  |                  |
 | C-c p  |                  |
 | C-c q  |                  |
-| C-c r  | TODO >resize     |
+| C-c r  |                  |
 | C-c s  |                  |
 | C-c t  | >transparency    |
 | C-c u  |                  |

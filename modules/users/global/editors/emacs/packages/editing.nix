@@ -10,6 +10,7 @@ with lib; {
       with epkgs; [
         format-all
         god-mode
+        dtrt-indent
       ];
   };
 }

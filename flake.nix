@@ -16,15 +16,17 @@
       url = "github:nix-community/NixOS-WSL";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    emacs-overlay.url = "github:nix-community/emacs-overlay/master";
   };
 
   outputs = {
-    self,
-    nixpkgs,
-    home-manager,
     ags,
-    sops-nix,
+    emacs-overlay,
     flake-utils,
+    home-manager,
+    nixpkgs,
+    self,
+    sops-nix,
     ...
   }: let
     system =
@@ -60,6 +62,7 @@
               };
             };
           })
+          emacs-overlay.overlay
         ];
       }
       // {

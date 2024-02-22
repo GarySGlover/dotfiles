@@ -10,6 +10,7 @@ with lib; {
         nft = "~/dotfiles/scripts/nix-flake-test-build.sh";
         nfr = "~/dotfiles/scripts/nix-flake-rebuild.sh";
         nfu = "~/dotfiles/scripts/nix-flake-update.sh";
+        ed = "ps aux | grep -ie emacs | grep -v grep | grep -v emacsclient | awk '{print $2}' | xargs kill -SIGUSR2";
       };
     };
   };

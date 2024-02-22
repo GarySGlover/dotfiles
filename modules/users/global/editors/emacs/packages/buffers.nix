@@ -9,7 +9,6 @@ with lib; {
     programs.emacs.extraPackages = epkgs:
       with epkgs; [
         beframe
-        frog-jump-buffer
       ];
   };
 }

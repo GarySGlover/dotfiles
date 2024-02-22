@@ -63,10 +63,19 @@ Revert the buffer to the on disk file contents when they are changed outside of 
    (exec-path-from-shell-copy-env "SSH_AUTH_SOCK"))
 #+end_src
 
-** Tabs are evil
-So we disable the horrible things
+** Indentataion
+Tabs are evil so they are disabled. Indentation defaults to 2.
+Dtrt-indent used to guess indentation used in current file and override local setting.
+Inhibit electric indent from reindenting.
 #+begin_src emacs-lisp
-  (setopt indent-tabs-mode nil)
+  (use-package
+   dtrt-indent
+   :init
+   (setopt dtrt-indent-global-mode t)
+   (setopt indent-tabs-mode nil)
+   (setopt tab-width 2)
+   (setopt standard-indent 2)
+   (setopt electric-indent-inhibit t))
 #+end_src
 
 ** Repeat mode
@@ -91,23 +100,24 @@ Better popup frames
    god-mode
    :init
    (setopt god-mode-enable-function-key-translation nil)
+   (defun clover/god-cursor ()
+     (ef-themes-with-colors
+      (if god-local-mode
+          (progn
+            (setq cursor-type 'box)
+            (set-face-attribute 'cursor nil :background bg-cyan-intense))
+        (if buffer-read-only
+            (progn
+              (setq cursor-type 'box)
+              (set-face-attribute 'cursor nil :background bg-red-intense))
+          (progn
+            (setq cursor-type 'box)
+            (set-face-attribute 'cursor nil :background bg-yellow-intense))))))
    (god-mode)
    :config
-   (setopt set-message-functions '(inhibit-message set-minibuffer-message))
+   (setopt
+    set-message-functions '(inhibit-message set-minibuffer-message))
    (add-to-list 'inhibit-message-regexps "God")
-   (defun clover/god-cursor ()
-     (defvar clover/cursor-bg (face-attribute 'cursor :background))
-     (if god-local-mode
-         (progn
-           (setq cursor-type 'hbar)
-           (set-face-attribute 'cursor nil :background "#50fa7b"))
-       (if buffer-read-only
-           (progn
-             (setq cursor-type 'hbar)
-             (set-face-attribute 'cursor nil :background "#ff5555"))
-         (progn
-           (setq cursor-type 'box)
-           (set-face-attribute 'cursor nil :background clover/cursor-bg)))))
    (defun clover/global-escape ()
      (interactive)
      (funcall (key-binding "\C-g")))
@@ -281,23 +291,25 @@ Functions to directly set the height and width of windows as either percentage o
 
   (defun display-buffer-maybe-most-recent-window (buffer alist)
     (unless (cdr (assq 'inhibit-same-window alist))
-      (window--display-buffer buffer (4lc/get-window-with-highest-counter) 'reuse alist)))
+      (window--display-buffer
+       buffer (4lc/get-window-with-highest-counter) 'reuse
+       alist)))
+
+  (defun display-buffer-split-current-window (buffer alist)
+    (when (window-splittable-p (selected-window) t)
+      (window--display-buffer buffer (split-window-sensibly) 'window alist)))
 
   (use-package
    window
    :init
    (setq display-buffer-base-action
          '((display-buffer--maybe-same-window
-            display-buffer-reuse-window display-buffer-maybe-most-recent-window)))
-   ;; (setq display-buffer-base-action
-   ;;       '((display-buffer-maybe-most-recent-window
-   ;;          display-buffer-reuse-window
-   ;;          display-buffer--maybe-same-window
-   ;;          display-buffer-in-previous-window
-   ;;          display-buffer-use-some-window)))
-
+            display-buffer-reuse-window
+            display-buffer-maybe-most-recent-window
+            display-buffer-in-previous-window
+            display-buffer-use-some-window
+            display-buffer-split-current-window)))
    (setopt switch-to-buffer-obey-display-actions t)
-
    (add-to-list
     'display-buffer-alist
     '("^\\*Warnings\\*$"
@@ -306,7 +318,10 @@ Functions to directly set the height and width of windows as either percentage o
       (side . bottom)
       (slot . 0)
       (window-parameters
-       . ((mode-line-format . 'none) (no-delete-other-windows . t) (no-other-window . t)))))
+       .
+       ((mode-line-format . 'none)
+        (no-delete-other-windows . t)
+        (no-other-window . t)))))
 
    (add-to-list
     'display-buffer-alist
@@ -316,9 +331,13 @@ Functions to directly set the height and width of windows as either percentage o
       (side . right)
       (slot . 0)
       (window-parameters
-       . ((mode-line-format . 'none) (no-delete-other-windows . t) (no-other-window . t)))))
+       .
+       ((mode-line-format . 'none)
+        (no-delete-other-windows . t)
+        (no-other-window . t)))))
 
-   (add-to-list 'display-buffer-alist '("^\\*scratch+\\*$\\|^\\*GNU Emacs\\*$")))
+   (add-to-list
+    'display-buffer-alist '("^\\*scratch+\\*$\\|^\\*GNU Emacs\\*$")))
 #+end_src
 ** Ace window
 #+begin_src emacs-lisp
@@ -329,6 +348,26 @@ Functions to directly set the height and width of windows as either percentage o
   (use-package beframe :init (beframe-mode 1) :bind-keymap (("C-c b" . beframe-prefix-map)))
 #+end_src
 * Visual
+** Theme
+Setup the main theme and fonts used within this emacs configuration.
+#+begin_src emacs-lisp
+  (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font-10"))
+  (setopt nerd-icons-font-family "FiraCode Nerd Font")
+
+  (use-package ef-themes
+    :init
+    (setopt ef-themes-to-toggle '(ef-melissa-light ef-melissa-dark))
+    (ef-themes-select 'ef-melissa-light))
+#+end_src
+
+Window splitting
+#+begin_src emacs-lisp
+  (setopt window-divider-mode t)
+  (setopt window-divider-default-places t)
+  (set-face-foreground 'vertical-border "black")
+  (set-face-background 'vertical-border (face-foreground 'vertical-border))
+#+end_src
+
 ** Alert notification
 When emacs reports an exception the default action is to play a bell sound. This replaces the sound with a double flash on the modeline background.
 
@@ -344,23 +383,6 @@ When emacs reports an exception the default action is to play a bell sound. This
    ring-bell-function 'double-flash-modeline)
 #+end_src
 
-** Theme
-Setup the main theme and fonts used within this emacs configuration.
-
-#+begin_src emacs-lisp
-  (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font-10"))
-  (setopt nerd-icons-font-family "FiraCode Nerd Font")
-
-  (load-theme 'doom-solarized-light t)
-#+end_src
-
-Window splitting
-#+begin_src emacs-lisp
-  (setopt window-divider-mode t)
-  (setopt window-divider-default-places t)
-  (set-face-foreground 'vertical-border "black")
-  (set-face-background 'vertical-border (face-foreground 'vertical-border))
-#+end_src
 ** Transparency
 Set default transparency of frames and creation of hydra function for adjusting alpha.
 
@@ -392,7 +414,7 @@ Set default transparency of frames and creation of hydra function for adjusting 
    (interactive)
    (change-frame-alpha-by 1))
   (transient-define-suffix
-   clover--transient-transparency-decrease-frame-alpha
+  clover--transient-transparency-decrease-frame-alpha
    ()
    :key "d"
    :description
@@ -576,7 +598,7 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     ("M-y" . consult-yank-pop) ;; orig. yank-pop
     ;; M-g bindings in `goto-map'
     ("M-g e" . consult-compile-error)
-    ("M-g f" . consult-flymake) ;; Alternative: consult-flycheck
+    ("M-g f" . consult-flycheck)
     ("M-g g" . consult-goto-line) ;; orig. goto-line
     ("M-g M-g" . consult-goto-line) ;; orig. goto-line
     ("M-g o" . consult-outline) ;; Alternative: consult-org-heading
@@ -685,17 +707,15 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
   (use-package
    embark
    :bind
-   (("C-." . embark-act) ;; pick some comfortable binding
-    ("C-;" . embark-dwim) ;; good alternative: M-.
-    ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+   (("C-." . embark-act)
+    ("C-;" . embark-dwim)
+    ("C-h B" . embark-bindings)
+    :map embark-identifier-map
+    ("RET" . xref-find-definitions-other-window))
    :init
-   ;; Optionally replace the key help with a completing-read interface
    (setq prefix-help-command #'embark-prefix-help-command)
 
-   ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
-   ;; strategy, if you want to see the documentation from multiple providers.
    (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-   ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
 
    :config
    (add-to-list
@@ -703,7 +723,6 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*" nil
       (window-parameters
        . ((mode-line-format . 'none) (no-delete-other-windows . t) (no-other-window . t))))))
-
 
   (use-package
    embark-consult
@@ -766,9 +785,6 @@ Which-key for Embark
 ** Org mode
 #+begin_src emacs-lisp
   (use-package org :config (setopt org-src-window-setup 'plain) (setopt org-startup-indented t))
-  ;; (add-to-list 'display-buffer-alist
-  ;;              '("^\\*Org Src"
-  ;;                (display-buffer-below-selected))))
 #+end_src
 *** Org Style
 #+begin_src emacs-lisp
@@ -785,24 +801,42 @@ Which-key for Embark
    [("c" "Column Indicator" display-fill-column-indicator-mode) ("w" "Whitespace" whitespace-mode)])
   (bind-key "C-c v" 'ct-visual-buffer)
 #+end_src
-** Vertical Ruler
-
 ** Rainbow delimiters
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
 ** Trailing whitespace
 #+begin_src emacs-lisp
-  (setq show-trailing-whitespace t)
+  (use-package
+   whitespace
+   :config
+   (setopt
+    whitespace-style
+    '(face trailing newline empty newline-mark missing-newline-at-eof))
+   :hook (prog-mode . whitespace-mode)
+   (whitespace-mode
+    .
+    (lambda ()
+      (if whitespace-mode
+          (add-hook 'before-save-hook 'whitespace-cleanup nil 'local)
+        (remove-hook 'before-save-hook 'whitespace-cleanup 'local)))))
 #+end_src
 ** Highlight indentation
+Indent bars
 #+begin_src emacs-lisp
-  (use-package highlight-indent-guides
+  (use-package
+    indent-bars
+    :demand t
     :config
-    (setopt highlight-indent-guides-responsive 'top)
-    (setopt highlight-indent-guides-method 'character)
-    :hook (prog-mode . highlight-indent-guides-mode))
+    (setopt indent-bars-pattern ".")
+    (setopt indent-bars-width-frac 0.1)
+    (setopt indent-bars-highlight-current-depth '(:pattern "." :width 0.40))
+    (setopt indent-bars-treesit-support t)
+    (setopt indent-bars-no-descend-string t)
+    (setopt indent-bars-spacing-override nil)
+    :hook ((prog-mode yaml-ts-mode) . indent-bars-mode))
 #+end_src
+
 ** Format all
 #+begin_src emacs-lisp
   (use-package
@@ -839,6 +873,12 @@ Which-key for Embark
     :hook
     (prog-mode . display-line-numbers-mode)
     (yaml-mode . display-line-numbers-mode))
+#+end_src
+** Bidirectional text
+#+begin_src emacs-lisp
+  ;; (use-package
+  ;;  emacs
+  ;;  :init (setopt bidi-inhibit-bpa t) (setopt bidi-paragraph-direction 'left-to-right))
 #+end_src
 * System
 ** Dired
@@ -950,6 +990,18 @@ Dired nerd icons to show icons for files and folders
 #+begin_src emacs-lisp
   (use-package eglot :hook (prog-mode . eglot-ensure))
 #+end_src
+** Flycheck
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :init
+    (global-flycheck-mode 1))
+  (use-package flycheck-eglot
+    :init
+    (global-flycheck-eglot-mode 1))
+  (use-package flycheck-posframe
+    :hook
+    (flycheck-mode . flycheck-posframe-mode))
+#+end_src
 ** Treesitter
 #+begin_src emacs-lisp
   (use-package treesit
@@ -973,6 +1025,30 @@ Dired nerd icons to show icons for files and folders
    :hook
    (emacs-lisp-mode . (lambda () (setq-local format-all-formatters '(("Emacs Lisp" elisp-autofmt))))))
 #+end_src
+** JSON
+#+begin_src emacs-lisp
+#+end_src
+** Markdown
+#+begin_src emacs-lisp
+  (use-package
+   markdown-mode
+   :defer t
+   :config
+   (defun clover/markdown-view (&rest args)
+     (when (eq major-mode 'markdown-mode)
+       (if god-local-mode
+           (markdown-toggle-markup-hiding t)
+         (markdown-toggle-markup-hiding 0))))
+   (advice-add 'god-local-mode :after #'clover/markdown-view))
+#+end_src
+** NIM
+#+begin_src emacs-lisp
+  (use-package
+   nim-mode
+   :defer t
+   :config (add-to-list 'eglot-server-programs '(nim-mode . ("nimlangserver"))))
+#+end_src
+
 ** Nix
   #+begin_src emacs-lisp
     (use-package
@@ -998,6 +1074,14 @@ Dired nerd icons to show icons for files and folders
       (setq-local python-flymake-command '("flake8" "-"))
       (setopt eglot-workspace-configuration '(:python.\analysis (:typeCheckingMode "strict"))))))
 #+end_src
+** Terraform
+#+begin_src emacs-lisp
+  (use-package
+   terraform-mode
+   :defer t
+   :bind ("C-c C-d C-d" . terraform-doc)
+   :config (add-to-list 'eglot-server-programs '(terraform-mode . ("terraform-ls" "serve"))))
+#+end_src
 ** Yaml
 #+begin_src emacs-lisp
   (define-format-all-formatter
@@ -1014,32 +1098,4 @@ Dired nerd icons to show icons for files and folders
    :defer t
    :mode "\\.ya?ml$"
    :hook (yaml-ts-mode . (lambda () (setq-local format-all-formatters '(("YAML" yamlfmt))))))
-#+end_src
-** Terraform
-#+begin_src emacs-lisp
-  (use-package
-   terraform-mode
-   :defer t
-   :bind ("C-c C-d C-d" . terraform-doc)
-   :config (add-to-list 'eglot-server-programs '(terraform-mode . ("terraform-ls" "serve"))))
-#+end_src
-** Markdown
-#+begin_src emacs-lisp
-  (use-package
-   markdown-mode
-   :defer t
-   :config
-   (defun clover/markdown-view (&rest args)
-     (when (eq major-mode 'markdown-mode)
-       (if god-local-mode
-           (markdown-toggle-markup-hiding t)
-         (markdown-toggle-markup-hiding 0))))
-   (advice-add 'god-local-mode :after #'clover/markdown-view))
-#+end_src
-** NIM
-#+begin_src emacs-lisp
-  (use-package
-   nim-mode
-   :defer t
-   :config (add-to-list 'eglot-server-programs '(nim-mode . ("nimlangserver"))))
 #+end_src

@@ -23,12 +23,7 @@ in {
     };
 
     xdg.configFile."emacs/emacs-config.org".source = ./emacs-config.org;
-
-    # Hide emacs from application menu
-    xdg.desktopEntries.emacs = {
-      name = "Emacs";
-      noDisplay = true;
-    };
+    xdg.configFile."emacs/indent-bars.el".source = ./indent-bars.el;
 
     home.packages = with pkgs; [
       alejandra

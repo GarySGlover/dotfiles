@@ -11,11 +11,13 @@ in {
     programs.emacs.extraPackages = epkgs:
       with epkgs; [
         elisp-autofmt
+        flycheck
+        flycheck-eglot
         json-mode
         json-navigator
+        markdown-mode
         nim-mode
         nix-ts-mode
-        markdown-mode
         terraform-doc
         terraform-mode
       ];

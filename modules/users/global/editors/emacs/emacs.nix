@@ -23,7 +23,6 @@ in {
     };
 
     xdg.configFile."emacs/emacs-config.org".source = ./emacs-config.org;
-    xdg.configFile."emacs/indent-bars.el".source = ./indent-bars.el;
 
     home.packages = with pkgs; [
       alejandra

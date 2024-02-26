@@ -52,6 +52,10 @@ Revert the buffer to the on disk file contents when they are changed outside of 
 
 #+begin_src emacs-lisp
   (global-auto-revert-mode 1)
+
+  ;; Also auto refresh dired, but be quiet about it
+  (setq global-auto-revert-non-file-buffers t)
+  (setq auto-revert-verbose nil)
 #+end_src
 
 ** Environment Variable import
@@ -194,11 +198,21 @@ Popup to show available shortcut keys in current mode
 #+begin_src emacs-lisp
   (use-package
    gptel
+   :demand t
+   :init
+   (defun 4lc/set-gptel-directive (&optional language)
+     (let ((lang (language-id-buffer)))
+       (when lang
+         (unless (assoc (intern (downcase lang)) gptel-directives)
+           (let ((prompt (format "Respond with %s code only" lang)))
+             (setq-local gptel-directives
+                         (append
+                          `((,(intern (downcase lang)) . ,prompt)) gptel-directives))
+             (setq-local gptel--system-message prompt))))))
+   :config (setopt gptel-model "gpt-4-turbo-preview")
    :commands (gptel)
-   :bind
-   ("C-c c s" . gptel-send)
-   ("C-c c m" . gptel-menu)
-   ("C-c c b" . gptel))
+   :bind ("C-c c" . gptel-send)
+   :hook ((prog-mode yaml-mode) . 4lc/set-gptel-directive))
 #+end_src
 * Window  Management
 ** Window visited order
@@ -984,7 +998,13 @@ Dired nerd icons to show icons for files and folders
 #+end_src
 ** Language ID
 #+begin_src emacs-lisp
-  (use-package language-id :config (add-to-list 'language-id--definitions '("Nix" nix-ts-mode)))
+  (use-package
+   language-id
+   :config
+   (setopt
+    language-id--definitions
+    (append
+     '(("Nix" nix-ts-mode) ("Nim" nim-mode)) language-id--definitions)))
 #+end_src
 ** Eglot
 #+begin_src emacs-lisp
@@ -1045,8 +1065,21 @@ Dired nerd icons to show icons for files and folders
 #+begin_src emacs-lisp
   (use-package
    nim-mode
+   :init
+   (define-format-all-formatter
+    nph
+    (:executable "nph")
+    (:install)
+    (:languages "Nim")
+    (:features)
+    (:format
+     (format-all--buffer-easy
+      executable "-")))
    :defer t
-   :config (add-to-list 'eglot-server-programs '(nim-mode . ("nimlangserver"))))
+   :config (add-to-list 'eglot-server-programs '(nim-mode . ("nimlangserver")))
+   :hook
+   (nim-mode
+    . (lambda () (setq-local format-all-formatters '(("Nim" nph))))))
 #+end_src
 
 ** Nix

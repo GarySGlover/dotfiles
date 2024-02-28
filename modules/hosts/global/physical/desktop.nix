@@ -17,7 +17,7 @@ with lib; {
     };
 
     # Configure keymap in X11
-    services.xserver.layout = "gb";
+    services.xserver.xkb.layout = "gb";
 
     # Enable sound.
     hardware.pulseaudio.enable = false;

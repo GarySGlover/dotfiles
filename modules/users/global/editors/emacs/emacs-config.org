@@ -1,13 +1,13 @@
 #+property: header-args :results silent
 
 * Initialisation
-This section contains basic configurations for emacs to tidy up the interface and set some defaults for the inbuilt modules that don't fit into other categories.
-** Fix emacs home
+This section contains basic configurations for Emacs to tidy up the interface and set some defaults for the inbuilt modules that don't fit into other categories.
+** Fix Emacs home
 #+begin_src emacs-lisp
-  (setq user-emacs-directory (file-truename "~/.config/emacs/"))
+ (setq user-emacs-directory (file-truename "~/.config/emacs/"))
 #+end_src
 ** Disable package downloads
-Remove elpa from the package archives so that no packages will be automtically downloaded. All packages will be installed using the nix package manager.
+Remove elpa from the package archives so that no packages will be automatically downloaded. All packages will be installed using the nix package manager.
 
 #+begin_src emacs-lisp
   (setq package-archives nil)
@@ -40,7 +40,7 @@ Allow use of y/n instead of yes/no for interactive command confirmations.
 #+end_src
 
 ** Clean directories
-Tell emacs not to create lock files as everthing being edited is single user so should have no conflicts over files. Use of no-littering to reduce other files being scattered in the filesystem and keep the emacs folder clean.
+Tell Emacs not to create lock files as everything being edited is single user so should have no conflicts over files. Use of no-littering to reduce other files being scattered in the file system and keep the Emacs folder clean.
 
 #+begin_src emacs-lisp
   (use-package no-littering :demand t :config (no-littering-theme-backups))
@@ -48,7 +48,7 @@ Tell emacs not to create lock files as everthing being edited is single user so 
 #+end_src
 
 ** Buffer auto revert
-Revert the buffer to the on disk file contents when they are changed outside of emacs.
+Revert the buffer to the on disk file contents when they are changed outside of Emacs.
 
 #+begin_src emacs-lisp
   (global-auto-revert-mode 1)
@@ -67,10 +67,10 @@ Revert the buffer to the on disk file contents when they are changed outside of 
    (exec-path-from-shell-copy-env "SSH_AUTH_SOCK"))
 #+end_src
 
-** Indentataion
+** Indentation
 Tabs are evil so they are disabled. Indentation defaults to 2.
 Dtrt-indent used to guess indentation used in current file and override local setting.
-Inhibit electric indent from reindenting.
+Inhibit electric indent from re-indenting.
 #+begin_src emacs-lisp
   (use-package
    dtrt-indent
@@ -86,8 +86,8 @@ Inhibit electric indent from reindenting.
 #+begin_src emacs-lisp
   (setopt repeat-mode t)
 #+end_src
-* Core Utils
-Utilities for emacs that support further parts of the configuration.
+* Core Utilities
+Utilities for Emacs that support further parts of the configuration.
 ** Transient
 #+begin_src emacs-lisp
   (use-package transient)
@@ -96,7 +96,7 @@ Utilities for emacs that support further parts of the configuration.
 Better popup frames
 #+begin_src emacs-lisp
   (use-package posframe)
-  (use-package transient-posframe :init (transient-posframe-mode))
+  ;; (use-package transient-posframe :init (transient-posframe-mode))
 #+end_src
 ** God mode
 #+begin_src emacs-lisp
@@ -140,7 +140,10 @@ Better popup frames
 #+end_src
 ** Direnv
 #+begin_src emacs-lisp
-  (use-package direnv :config (direnv-mode))
+  (use-package
+   direnv
+   :config (setopt direnv-always-show-summary nil)
+   :init (direnv-mode))
 #+end_src
 
 * Help
@@ -383,7 +386,7 @@ Window splitting
 #+end_src
 
 ** Alert notification
-When emacs reports an exception the default action is to play a bell sound. This replaces the sound with a double flash on the modeline background.
+When Emacs reports an exception the default action is to play a bell sound. This replaces the sound with a double flash on the mode-line background.
 
 #+begin_src emacs-lisp
   (defun double-flash-modeline ()
@@ -483,7 +486,7 @@ For completions windows
    (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 #+end_src
 
-** Doom Modelins
+** Doom Mode-lines
 #+begin_src emacs-lisp
   (use-package doom-modeline :init (doom-modeline-mode 1))
 #+end_src
@@ -535,7 +538,6 @@ For completions windows
 
 * Project Management
 ** Version control
-
 Using Magit as the git porcelain. Is configured to use the same window rather than open a new one for all operations possible. As some operations such as commit open the diff window as well, those buffers open in a seperate window.
 
 #+begin_src emacs-lisp
@@ -643,7 +645,7 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     ("M-s" . consult-history) ;; orig. next-matching-history-element
     ("M-r" . consult-history)))
 #+end_src
-*** Beframe interation
+*** Beframe
 #+begin_src emacs-lisp
   (use-package
    beframe
@@ -804,7 +806,7 @@ Which-key for Embark
 #+begin_src emacs-lisp
   (use-package org-modern :hook (org-mode . org-modern-mode))
 #+end_src
-** Visual Tansient
+** Visual Transient
 #+begin_src emacs-lisp
   (transient-define-prefix
    ct-visual-buffer
@@ -819,7 +821,7 @@ Which-key for Embark
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
-** Trailing whitespace
+** Trailing white-space
 #+begin_src emacs-lisp
   (use-package
    whitespace
@@ -888,17 +890,60 @@ Indent bars
     (prog-mode . display-line-numbers-mode)
     (yaml-mode . display-line-numbers-mode))
 #+end_src
-** Bidirectional text
+** Spelling
 #+begin_src emacs-lisp
-  ;; (use-package
-  ;;  emacs
-  ;;  :init (setopt bidi-inhibit-bpa t) (setopt bidi-paragraph-direction 'left-to-right))
+  (use-package
+   flyspell
+   :config
+   (setopt ispell-list-command "--list")
+   (setopt ispell-program-name "aspell")
+   :bind (:map flyspell-mode-map
+               ( "C-." . nil))
+   :init
+   (defun flyspell-on-for-buffer-type ()
+     "Enable Flyspell appropriately for the major mode of the current buffer.  Uses `flyspell-prog-mode' for modes derived from `prog-mode', so only strings and comments get checked.  All other buffers get `flyspell-mode' to check all text.  If flyspell is already enabled, does nothing."
+     (interactive)
+     (if (not (symbol-value flyspell-mode)) ; if not already on
+         (progn
+           (if (derived-mode-p 'prog-mode)
+               (progn
+                 (message "Flyspell on (code)")
+                 (flyspell-prog-mode))
+             ;; else
+             (progn
+               (message "Flyspell on (text)")
+               (flyspell-mode 1)))
+           ;; I tried putting (flyspell-buffer) here but it didn't seem to work
+           )))
+   (defun flyspell-toggle ()
+     "Turn Flyspell on if it is off, or off if it is on.  When turning on, it uses `flyspell-on-for-buffer-type' so code-vs-text is handled appropriately."
+     (interactive)
+     (if (symbol-value flyspell-mode)
+         (progn ; flyspell is on, turn it off
+           (message "Flyspell off")
+           (flyspell-mode -1))
+       ; else - flyspell is off, turn it on
+       (flyspell-on-for-buffer-type)))
+   :hook ((find-file prog-mode text-mode) . flyspell-on-for-buffer-type))
+  ;; Tbs is a comment with a spelling mistake
+
+  ;; This isn't
+#+end_src
+** Replace region
+#+begin_src emacs-lisp
+  (delete-selection-mode t)
+
+  (defun 4lc/yank-replace (&optional ARG)
+    (if (and (region-active-p) (bound-and-true-p delete-selection-mode))
+        (delete-active-region)))
+
+  (advice-add 'yank :before #'4lc/yank-replace)
 #+end_src
 * System
 ** Dired
 - Change dired listing mode to not show full details by default.
 - Change listing options to hide . & .. and group directories first.
-- Add keybind for creating new files.
+- Add key-bind for creating new files.
 #+begin_src emacs-lisp
   (use-package
    dired
@@ -927,7 +972,7 @@ Make Dired find file and create emtpy file aware of subdirectory
   (advice-add 'read-file-name :around 'dired-subdir-aware)
 #+end_src
 
-Dired subtree package for allowing tree style insertion and removal of subdirectories.
+Dired subtree package for allowing tree style insertion and removal of sub-directories.
 #+begin_src emacs-lisp
   (use-package
    dired-subtree
@@ -1008,11 +1053,19 @@ Dired nerd icons to show icons for files and folders
 #+end_src
 ** Eglot
 #+begin_src emacs-lisp
-  (use-package eglot :hook (prog-mode . eglot-ensure))
+  (use-package
+   eglot
+   :hook (prog-mode . eglot-ensure)
+   :config
+   (fset #'jsonrpc--log-event #'ignore)
+   (setopt eglot-events-buffer-config (plist-put eglot-events-buffer-config :size 0)))
 #+end_src
-** Flycheck
+** COMMENT Flycheck
 #+begin_src emacs-lisp
   (use-package flycheck
+    :config
+    (setopt flycheck--idle-trigger-timer 5)
+    (setopt flycheck-idle-change-delay 5)
     :init
     (global-flycheck-mode 1))
   (use-package flycheck-eglot
@@ -1032,7 +1085,11 @@ Dired nerd icons to show icons for files and folders
 ** Emacs Lisp
 #+begin_src emacs-lisp
   (define-format-all-formatter
-   elisp-autofmt (:executable) (:install) (:languages "Emacs Lisp") (:features region)
+   elisp-autofmt
+   (:executable)
+   (:install)
+   (:languages "Emacs Lisp")
+   (:features region)
    (:format
     (format-all--buffer-native
      'elisp-autofmt-mode
@@ -1042,8 +1099,17 @@ Dired nerd icons to show icons for files and folders
 
   (use-package
    elisp-mode
+   :config
+   (defun 4lc/disable-flycheck-emacs-lisp-checkdoc ()
+     (setq-local flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
+
    :hook
-   (emacs-lisp-mode . (lambda () (setq-local format-all-formatters '(("Emacs Lisp" elisp-autofmt))))))
+   ;; (org-src-mode . 4lc/disable-flycheck-emacs-lisp-checkdoc)
+   (emacs-lisp-mode
+    .
+    (lambda ()
+      (setq-local format-all-formatters
+                  '(("Emacs Lisp" elisp-autofmt))))))
 #+end_src
 ** JSON
 #+begin_src emacs-lisp
@@ -1061,7 +1127,7 @@ Dired nerd icons to show icons for files and folders
          (markdown-toggle-markup-hiding 0))))
    (advice-add 'god-local-mode :after #'clover/markdown-view))
 #+end_src
-** NIM
+** COMMENT NIM
 #+begin_src emacs-lisp
   (use-package
    nim-mode
@@ -1080,6 +1146,14 @@ Dired nerd icons to show icons for files and folders
    :hook
    (nim-mode
     . (lambda () (setq-local format-all-formatters '(("Nim" nph))))))
+
+
+  (defun flymake-diag-region-drop-col (fun buffer line &optional col)
+    (message "Running clover flymake diag")
+    (apply fun buffer line))
+
+  (advice-add 'flymake-diag-region :around #'flymake-diag-region-drop-col)
+  (advice-remove 'flymake-diag-region #'flymake-diag-region-drop-col)
 #+end_src
 
 ** Nix

@@ -23,7 +23,7 @@ Remove some of the default GUI display components that are typically used with m
   (set-fringe-mode 10)
   (menu-bar-mode -1)
   (setopt inhibit-startup-message t)
-#+end_src
+#+end_src 
 
 ** Disabled commands
 Emacs has disabled some inbuilt functions by default as a safety measure. Replacing the function that is called prior to running these enables all these commands without further confirmation.
@@ -362,7 +362,37 @@ Functions to directly set the height and width of windows as either percentage o
 #+end_src
 ** Beframe
 #+begin_src emacs-lisp
-  (use-package beframe :init (beframe-mode 1) :bind-keymap (("C-c b" . beframe-prefix-map)))
+  (use-package
+   beframe
+   :after consult
+   :init
+   (beframe-mode 1)
+   (defvar consult-buffer-sources)
+   (declare-function consult--buffer-state "consult")
+
+   (defface beframe-buffer '((t :inherit font-lock-string-face))
+     "Face for `consult' framed buffers.")
+
+   (defun my-beframe-buffer-names-sorted (&optional frame)
+     "Return the list of buffers from `beframe-buffer-names' sorted by visibility.
+    With optional argument FRAME, return the list of buffers of FRAME."
+     (beframe-buffer-names
+      frame
+      :sort #'beframe-buffer-sort-visibility))
+
+   (defvar beframe-consult-source
+     `(:name
+       "Frame-specific buffers (current frame)"
+       :narrow ?F
+       :category buffer
+       :face beframe-buffer
+       :history beframe-history
+       :items ,#'my-beframe-buffer-names-sorted
+       :action ,#'switch-to-buffer
+       :state ,#'consult--buffer-state))
+
+   (add-to-list 'consult-buffer-sources 'beframe-consult-source)
+   :bind-keymap (("C-c b" . beframe-prefix-map)))
 #+end_src
 * Visual
 ** Theme
@@ -614,7 +644,7 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     ("M-y" . consult-yank-pop) ;; orig. yank-pop
     ;; M-g bindings in `goto-map'
     ("M-g e" . consult-compile-error)
-    ("M-g f" . consult-flycheck)
+    ("M-g f" . consult-flymake)
     ("M-g g" . consult-goto-line) ;; orig. goto-line
     ("M-g M-g" . consult-goto-line) ;; orig. goto-line
     ("M-g o" . consult-outline) ;; Alternative: consult-org-heading
@@ -644,34 +674,6 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     minibuffer-local-map
     ("M-s" . consult-history) ;; orig. next-matching-history-element
     ("M-r" . consult-history)))
-#+end_src
-*** Beframe
-#+begin_src emacs-lisp
-  (use-package
-   beframe
-   :after consult
-   :init (defvar consult-buffer-sources) (declare-function consult--buffer-state "consult")
-
-   (defface beframe-buffer '((t :inherit font-lock-string-face))
-     "Face for `consult' framed buffers.")
-
-   (defun my-beframe-buffer-names-sorted (&optional frame)
-     "Return the list of buffers from `beframe-buffer-names' sorted by visibility.
-  With optional argument FRAME, return the list of buffers of FRAME."
-     (beframe-buffer-names frame :sort #'beframe-buffer-sort-visibility))
-
-   (defvar beframe-consult-source
-     `(:name
-       "Frame-specific buffers (current frame)"
-       :narrow ?F
-       :category buffer
-       :face beframe-buffer
-       :history beframe-history
-       :items ,#'my-beframe-buffer-names-sorted
-       :action ,#'switch-to-buffer
-       :state ,#'consult--buffer-state))
-
-   (add-to-list 'consult-buffer-sources 'beframe-consult-source))
 #+end_src
 ** Orderless
 #+begin_src emacs-lisp
@@ -1009,6 +1011,162 @@ Dired nerd icons to show icons for files and folders
      (kubel--describe-resource
       (completing-read "Select resource: " (kubel--kubernetes-resources-list)))))
 #+end_src
+* Languages
+** Bash
+#+begin_src emacs-lisp
+  (use-package
+   sh-script
+   :init
+   (add-to-list 'major-mode-remap-alist (cons 'sh-mode 'bash-ts-mode)))
+#+end_src
+** CMake
+#+begin_src emacs-lisp
+  (use-package cmake-ts-mode)
+#+end_src
+** Dockerfile
+#+begin_src emacs-lisp
+  (use-package dockerfile-ts-mode)
+#+end_src
+** Emacs Lisp
+#+begin_src emacs-lisp
+  (define-format-all-formatter
+   elisp-autofmt
+   (:executable)
+   (:install)
+   (:languages "Emacs Lisp")
+   (:features region)
+   (:format
+    (format-all--buffer-native
+     'elisp-autofmt-mode
+     (if region
+         (lambda () (elisp-autofmt-region (car region) (cdr region)))
+       (lambda () (elisp-autofmt-region (point-min) (point-max)))))))
+
+  (use-package
+   elisp-mode
+   :config
+   (defun 4lc/disable-flycheck-emacs-lisp-checkdoc ()
+     (setq-local flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
+   :hook
+   (emacs-lisp-mode
+    .
+    (lambda ()
+      (setq-local format-all-formatters
+                  '(("Emacs Lisp" elisp-autofmt))))))
+#+end_src
+** Go
+#+begin_src emacs-lisp
+  (use-package
+   go-ts-mode
+   :mode ("\\.go\\'" . go-ts-mode) ("/go\\.mod\\'" . go-mod-ts-mode))
+#+end_src
+** Markdown
+#+begin_src emacs-lisp
+  (use-package
+   markdown-mode
+   :defer t
+   :config
+   (defun clover/markdown-view (&rest args)
+     (when (eq major-mode 'markdown-mode)
+       (if god-local-mode
+           (markdown-toggle-markup-hiding t)
+         (markdown-toggle-markup-hiding 0))))
+   (advice-add 'god-local-mode :after #'clover/markdown-view))
+#+end_src
+** Nim
+#+begin_src emacs-lisp
+  (use-package
+   nim-ts-mode
+   :init
+   (define-format-all-formatter
+    nph
+    (:executable "nph")
+    (:install)
+    (:languages "nim")
+    (:features)
+    (:format
+     (format-all--buffer-easy
+      executable "-")))
+   :defer t
+   :config (add-to-list 'eglot-server-programs '(nim-mode . ("nimlangserver")))
+   :hook
+   (nim-mode
+    . (lambda () (setq-local format-all-formatters '(("nim" nph))))))
+
+
+  (defun flymake-diag-region-drop-col (fun buffer line &optional col)
+    (message "Running clover flymake diag")
+    (apply fun buffer line))
+
+  (advice-add 'flymake-diag-region :around #'flymake-diag-region-drop-col)
+  (advice-remove 'flymake-diag-region #'flymake-diag-region-drop-col)
+#+end_src
+
+** Nix
+  #+begin_src emacs-lisp
+    (use-package
+     nix-ts-mode
+     :defer t
+     :mode "\\.nix\\'"
+     :config (add-to-list 'eglot-server-programs '(nix-ts-mode . ("rnix-lsp")))
+     :hook (nix-ts-mode . (lambda () (setq-local format-all-formatters '(("Nix" alejandra))))))
+#+end_src
+** Python
+#+begin_src emacs-lisp
+  (use-package
+   python
+   :defer t
+   :init
+   (setf (cdr (rassoc 'python-mode auto-mode-alist)) 'python-ts-mode)
+   (setf (cdr (rassoc 'python-mode interpreter-mode-alist)) 'python-ts-mode)
+   :hook
+   (python-ts-mode
+    .
+    (lambda ()
+      (setq-local format-all-formatters '(("Python" black)))
+      (setq-local python-flymake-command '("flake8" "-"))
+      (setopt eglot-workspace-configuration '(:python.\analysis (:typeCheckingMode "strict"))))))
+#+end_src
+** Rust
+#+begin_src emacs-lisp
+  (use-package rust-ts-mode :mode "\\.rs\\'")
+#+end_src
+** Terraform
+#+begin_src emacs-lisp
+  (use-package
+   terraform-mode
+   :defer t
+   :bind ("C-c C-d C-d" . terraform-doc)
+   :config (add-to-list 'eglot-server-programs '(terraform-mode . ("terraform-ls" "serve"))))
+#+end_src
+** Toml
+#+begin_src emacs-lisp
+  (use-package
+   toml-ts-mode
+   :init
+   (add-to-list
+    'major-mode-remap-alist (cons 'conf-toml-mode 'toml-ts-mode)))
+#+end_src
+** Typescript
+#+begin_src emacs-lisp 
+  (use-package typescript-ts-mode)
+#+end_src
+** Yaml
+#+begin_src emacs-lisp
+  (define-format-all-formatter
+   yamlfmt (:executable "yamlfmt") (:install) (:languages "YAML") (:features)
+   (:format
+    (if (project-current)
+        (format-all--buffer-easy
+         executable "-conf"
+         (expand-file-name (s-concat (project-root (project-current)) ".yamlfmt")) "-")
+      (format-all--buffer-easy executable "-"))))
+
+  (use-package
+   yaml-ts-mode
+   :defer t
+   :hook (yaml-ts-mode . (lambda () (setq-local format-all-formatters '(("YAML" yamlfmt))))))
+#+end_src
 * Programming
 ** Compilation
 #+begin_src emacs-lisp
@@ -1022,7 +1180,7 @@ Dired nerd icons to show icons for files and folders
                 ("C-c m r" . recompile)
                 ("C-c m i" . compile-comint)))
 #+end_src
- ** Completion
+** Completion
 #+begin_src emacs-lisp
   (use-package
    corfu
@@ -1049,9 +1207,11 @@ Dired nerd icons to show icons for files and folders
    (setopt
     language-id--definitions
     (append
-     '(("Nix" nix-ts-mode) ("Nim" nim-mode)) language-id--definitions)))
+     '(("Nix" nix-ts-mode) ("nim" nim-mode)) language-id--definitions)))
 #+end_src
-** Eglot
+** LSP
+Configuration for LSP support in prog-mode and yaml-ts-mode. Using Emacs inbuilt mode Eglot.
+Config options to reduce the logging and improve the performance.
 #+begin_src emacs-lisp
   (use-package
    eglot
@@ -1060,149 +1220,50 @@ Dired nerd icons to show icons for files and folders
    (fset #'jsonrpc--log-event #'ignore)
    (setopt eglot-events-buffer-config (plist-put eglot-events-buffer-config :size 0)))
 #+end_src
-** COMMENT Flycheck
-#+begin_src emacs-lisp
-  (use-package flycheck
-    :config
-    (setopt flycheck--idle-trigger-timer 5)
-    (setopt flycheck-idle-change-delay 5)
-    :init
-    (global-flycheck-mode 1))
-  (use-package flycheck-eglot
-    :init
-    (global-flycheck-eglot-mode 1))
-  (use-package flycheck-posframe
-    :hook
-    (flycheck-mode . flycheck-posframe-mode))
-#+end_src
 ** Treesitter
 #+begin_src emacs-lisp
-  (use-package treesit
-    :custom
-    (setopt treesit-font-lock-level 4)
-    (setopt treesit-extra-load-path '("~/.config/emacs/var/tree-sitter")))
-#+end_src
-** Emacs Lisp
-#+begin_src emacs-lisp
-  (define-format-all-formatter
-   elisp-autofmt
-   (:executable)
-   (:install)
-   (:languages "Emacs Lisp")
-   (:features region)
-   (:format
-    (format-all--buffer-native
-     'elisp-autofmt-mode
-     (if region
-         (lambda () (elisp-autofmt-region (car region) (cdr region)))
-       (lambda () (elisp-autofmt-region (point-min) (point-max)))))))
-
   (use-package
-   elisp-mode
-   :config
-   (defun 4lc/disable-flycheck-emacs-lisp-checkdoc ()
-     (setq-local flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
-
-   :hook
-   ;; (org-src-mode . 4lc/disable-flycheck-emacs-lisp-checkdoc)
-   (emacs-lisp-mode
-    .
-    (lambda ()
-      (setq-local format-all-formatters
-                  '(("Emacs Lisp" elisp-autofmt))))))
-#+end_src
-** JSON
-#+begin_src emacs-lisp
-#+end_src
-** Markdown
-#+begin_src emacs-lisp
-  (use-package
-   markdown-mode
-   :defer t
-   :config
-   (defun clover/markdown-view (&rest args)
-     (when (eq major-mode 'markdown-mode)
-       (if god-local-mode
-           (markdown-toggle-markup-hiding t)
-         (markdown-toggle-markup-hiding 0))))
-   (advice-add 'god-local-mode :after #'clover/markdown-view))
-#+end_src
-** COMMENT NIM
-#+begin_src emacs-lisp
-  (use-package
-   nim-mode
+   treesit
    :init
-   (define-format-all-formatter
-    nph
-    (:executable "nph")
-    (:install)
-    (:languages "Nim")
-    (:features)
-    (:format
-     (format-all--buffer-easy
-      executable "-")))
-   :defer t
-   :config (add-to-list 'eglot-server-programs '(nim-mode . ("nimlangserver")))
-   :hook
-   (nim-mode
-    . (lambda () (setq-local format-all-formatters '(("Nim" nph))))))
+   (defun 4lc/treesitter-major-mode-remap ()
+     "Remap major modes to their treesitter counterparts if available."
+     (interactive)
+     ;; Iterate over all loaded packages and find "-ts-mode" ones
+     (dolist (mode (apropos-internal "-ts-mode$" 'functionp))
+       (let*
+           ((ts-mode-name (symbol-name mode)) ; Convert symbol to string
+            (normal-mode-name
+             (replace-regexp-in-string
+              "-ts-mode$" "-mode" ts-mode-name))
+            (normal-mode-symbol (intern-soft normal-mode-name)))
+         (when (and normal-mode-symbol (fboundp normal-mode-symbol))
+           (progn
+             (add-to-list
+              'major-mode-remap-alist
+              (cons normal-mode-symbol mode)))))))
 
+   (defvar 4lc/treesitter-no-auto-mode ()
+     "List of Treesitter modes that are not auto-remapped.")
 
-  (defun flymake-diag-region-drop-col (fun buffer line &optional col)
-    (message "Running clover flymake diag")
-    (apply fun buffer line))
+   (defun 4lc/update-treesitter-no-auto-mode-list ()
+     "Update `4lc/treesitter-no-auto-mode' with Treesitter modes not in `major-mode-remap-alist'."
+     (setq 4lc/treesitter-no-auto-mode nil)
+     (let ((ts-modes
+            (seq-filter
+             (lambda (mode)
+               (string-suffix-p "-ts-mode" (symbol-name mode)))
+             (apropos-internal "-ts-mode" 'commandp)))
+           (remapped-modes (mapcar 'cdr major-mode-remap-alist))
+           (auto-modes (mapcar 'cdr auto-mode-alist)))
+       (dolist (mode ts-modes)
+         (unless (or (memq mode remapped-modes) (memq mode auto-modes))
+           (add-to-list '4lc/treesitter-no-auto-mode mode)))))
 
-  (advice-add 'flymake-diag-region :around #'flymake-diag-region-drop-col)
-  (advice-remove 'flymake-diag-region #'flymake-diag-region-drop-col)
-#+end_src
+   (4lc/treesitter-major-mode-remap)
+   (4lc/update-treesitter-no-auto-mode-list)
 
-** Nix
-  #+begin_src emacs-lisp
-    (use-package
-     nix-ts-mode
-     :defer t
-     :mode "\\.nix$"
-     :config (add-to-list 'eglot-server-programs '(nix-ts-mode . ("rnix-lsp")))
-     :hook (nix-ts-mode . (lambda () (setq-local format-all-formatters '(("Nix" alejandra))))))
-#+end_src
-** Python
-#+begin_src emacs-lisp
-  (use-package
-   python
-   :defer t
-   :init
-   (setf (cdr (rassoc 'python-mode auto-mode-alist)) 'python-ts-mode)
-   (setf (cdr (rassoc 'python-mode interpreter-mode-alist)) 'python-ts-mode)
-   :hook
-   (python-ts-mode
-    .
-    (lambda ()
-      (setq-local format-all-formatters '(("Python" black)))
-      (setq-local python-flymake-command '("flake8" "-"))
-      (setopt eglot-workspace-configuration '(:python.\analysis (:typeCheckingMode "strict"))))))
-#+end_src
-** Terraform
-#+begin_src emacs-lisp
-  (use-package
-   terraform-mode
-   :defer t
-   :bind ("C-c C-d C-d" . terraform-doc)
-   :config (add-to-list 'eglot-server-programs '(terraform-mode . ("terraform-ls" "serve"))))
-#+end_src
-** Yaml
-#+begin_src emacs-lisp
-  (define-format-all-formatter
-   yamlfmt (:executable "yamlfmt") (:install) (:languages "YAML") (:features)
-   (:format
-    (if (project-current)
-        (format-all--buffer-easy
-         executable "-conf"
-         (expand-file-name (s-concat (project-root (project-current)) ".yamlfmt")) "-")
-      (format-all--buffer-easy executable "-"))))
-
-  (use-package
-   yaml-ts-mode
-   :defer t
-   :mode "\\.ya?ml$"
-   :hook (yaml-ts-mode . (lambda () (setq-local format-all-formatters '(("YAML" yamlfmt))))))
+   :config (setopt treesit-font-lock-level 4)
+   :custom
+   (setopt
+    treesit-extra-load-path '("~/.config/emacs/var/tree-sitter")))
 #+end_src

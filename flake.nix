@@ -33,7 +33,6 @@
       if builtins ? currentSystem
       then builtins.currentSystem
       else "x86_64-linux";
-
     listNixFilesRecursive = with builtins;
     with lib;
       dir:
@@ -49,11 +48,16 @@
           then path
           else []) (readDir dir));
 
+    tree-sitter-grammars = import ./modules/overlays/tree-sitter-grammars.nix;
+
     pkgs =
       import nixpkgs {
         inherit system;
         config = import ./config.nix {inherit lib;};
-        overlays = [emacs-overlay.overlay];
+        overlays = [
+          emacs-overlay.overlay
+          tree-sitter-grammars
+        ];
       }
       // {
         ags = ags.packages.${system}.default;

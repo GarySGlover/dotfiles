@@ -401,10 +401,19 @@ Setup the main theme and fonts used within this emacs configuration.
   (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font-10"))
   (setopt nerd-icons-font-family "FiraCode Nerd Font")
 
-  (use-package ef-themes
-    :init
-    (setopt ef-themes-to-toggle '(ef-melissa-light ef-melissa-dark))
-    (ef-themes-select 'ef-melissa-light))
+  (use-package
+   ef-themes
+   :init
+   (let ((light
+          (nth
+           (random (length ef-themes-light-themes))
+           ef-themes-light-themes))
+         (dark
+          (nth
+           (random (length ef-themes-dark-themes))
+           ef-themes-dark-themes)))
+     (setopt ef-themes-to-toggle `(,light ,dark))
+     (ef-themes-select dark)))
 #+end_src
 
 Window splitting

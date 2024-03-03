@@ -1084,21 +1084,23 @@ Dired nerd icons to show icons for files and folders
     (:install)
     (:languages "nim")
     (:features)
-    (:format
-     (format-all--buffer-easy
-      executable "-")))
+    (:format (format-all--buffer-easy executable "-")))
+   (setopt nim-ts-mode--font-base-theme (car custom-enabled-themes))
    :defer t
-   :config (add-to-list 'eglot-server-programs '(nim-mode . ("nimlangserver")))
+   :config
+   (add-to-list
+    'eglot-server-programs '(nim-ts-mode . ("nimlangserver")))
    :hook
-   (nim-mode
+   (nim-ts-mode
     . (lambda () (setq-local format-all-formatters '(("nim" nph))))))
-
 
   (defun flymake-diag-region-drop-col (fun buffer line &optional col)
     (message "Running clover flymake diag")
     (apply fun buffer line))
 
-  (advice-add 'flymake-diag-region :around #'flymake-diag-region-drop-col)
+  (advice-add
+   'flymake-diag-region
+   :around #'flymake-diag-region-drop-col)
   (advice-remove 'flymake-diag-region #'flymake-diag-region-drop-col)
 #+end_src
 

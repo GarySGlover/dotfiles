@@ -16,7 +16,10 @@ in {
         json-mode
         json-navigator
         markdown-mode
-        nim-mode
+        (callPackage ./manual/nim-ts-mode.nix {
+          inherit (pkgs) fetchFromGitHub writeText;
+          inherit (epkgs) melpaBuild nim-mode;
+        })
         nix-ts-mode
         terraform-doc
         terraform-mode

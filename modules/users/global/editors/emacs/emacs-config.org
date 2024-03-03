@@ -567,6 +567,10 @@ For completions windows
 #+end_src
 
 * Project Management
+** Project
+#+begin_src emacs-lisp
+  (use-package project :bind ("C-x p t" . eat-project))
+#+end_src
 ** Version control
 Using Magit as the git porcelain. Is configured to use the same window rather than open a new one for all operations possible. As some operations such as commit open the diff window as well, those buffers open in a seperate window.
 
@@ -595,22 +599,35 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
 
    :bind (("C-c g" . magit-status) ("C-x p m" . magit-project-status)))
 #+end_src
-** Project
-#+begin_src emacs-lisp
-  (use-package project :bind ("C-x p t" . eat-project))
-#+end_src
 * Navigation
-** Vertico
+** Avy
 #+begin_src emacs-lisp
-  (use-package vertico :init (vertico-mode) :bind (:map vertico-map ("M-s" . vertico-suspend)))
-
   (use-package
-   vertico-posframe
-   :init (vertico-posframe-mode 1)
-   :config
-   (setq vertico-posframe-poshandler #'posframe-poshandler-frame-top-center)
-   (setopt vertico-posframe-truncate-lines nil)
-   (setopt vertico-posframe-width 100))
+   avy
+   :config (setopt avy-timeout-seconds 0.2)
+
+   (setf
+    (alist-get ?k avy-dispatch-alist) 'avy-action-kill-stay
+    (alist-get ?K avy-dispatch-alist) 'avy-action-kill-whole-line
+    (alist-get ?l avy-dispatch-alist) 'avy-action-teleport
+    (alist-get ?m avy-dispatch-alist) 'avy-action-mark
+    (alist-get ?w avy-dispatch-alist) 'avy-action-copy
+    (alist-get ?x avy-dispatch-alist) 'avy-action-kill-move
+    (alist-get ?y avy-dispatch-alist) 'avy-action-yank
+    (alist-get ?Y avy-dispatch-alist) 'avy-action-yank-line
+    (alist-get ?z avy-dispatch-alist) 'avy-action-zap-to-char)
+   (setopt avy-keys '(?i ?s ?r ?t ?n ?e ?a ?o))
+   (-each
+    avy-keys
+    (lambda (x) (setq avy-dispatch-alist (delq (assoc x avy-dispatch-alist) avy-dispatch-alist))))
+
+   :bind ("C-c a" . avy-goto-char-timer))
+
+  (defun avy-action-kill-whole-line (pt)
+    (save-excursion
+      (goto-char pt)
+      (kill-whole-line))
+    (select-window (cdr (ring-ref avy-ring 0))))
 #+end_src
 ** Consult
 #+begin_src emacs-lisp
@@ -674,51 +691,6 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     minibuffer-local-map
     ("M-s" . consult-history) ;; orig. next-matching-history-element
     ("M-r" . consult-history)))
-#+end_src
-** Orderless
-#+begin_src emacs-lisp
-  (use-package
-   orderless
-   :config (add-to-list 'completion-styles 'orderless)
-   :custom
-   (completion-category-defaults nil)
-   (completion-category-overrides '((file (styles basic partial-completion)))))
-#+end_src
-** Margnalia
-#+begin_src emacs-lisp
-  (use-package
-   marginalia
-   :bind (:map minibuffer-local-map ("M-A" . marginalia-cycle))
-   :init (marginalia-mode))
-#+end_src
-** Avy
-#+begin_src emacs-lisp
-  (use-package
-   avy
-   :config (setopt avy-timeout-seconds 0.2)
-
-   (setf
-    (alist-get ?k avy-dispatch-alist) 'avy-action-kill-stay
-    (alist-get ?K avy-dispatch-alist) 'avy-action-kill-whole-line
-    (alist-get ?l avy-dispatch-alist) 'avy-action-teleport
-    (alist-get ?m avy-dispatch-alist) 'avy-action-mark
-    (alist-get ?w avy-dispatch-alist) 'avy-action-copy
-    (alist-get ?x avy-dispatch-alist) 'avy-action-kill-move
-    (alist-get ?y avy-dispatch-alist) 'avy-action-yank
-    (alist-get ?Y avy-dispatch-alist) 'avy-action-yank-line
-    (alist-get ?z avy-dispatch-alist) 'avy-action-zap-to-char)
-   (setopt avy-keys '(?i ?s ?r ?t ?n ?e ?a ?o))
-   (-each
-    avy-keys
-    (lambda (x) (setq avy-dispatch-alist (delq (assoc x avy-dispatch-alist) avy-dispatch-alist))))
-
-   :bind ("C-c a" . avy-goto-char-timer))
-
-  (defun avy-action-kill-whole-line (pt)
-    (save-excursion
-      (goto-char pt)
-      (kill-whole-line))
-    (select-window (cdr (ring-ref avy-ring 0))))
 #+end_src
 ** Embark
 #+begin_src emacs-lisp
@@ -785,6 +757,34 @@ Which-key for Embark
 
   (advice-add #'embark-completing-read-prompter :around #'embark-hide-which-key-indicator)
 #+end_src
+** Margnalia
+#+begin_src emacs-lisp
+  (use-package
+   marginalia
+   :bind (:map minibuffer-local-map ("M-A" . marginalia-cycle))
+   :init (marginalia-mode))
+#+end_src
+** Orderless
+#+begin_src emacs-lisp
+  (use-package
+   orderless
+   :config (add-to-list 'completion-styles 'orderless)
+   :custom
+   (completion-category-defaults nil)
+   (completion-category-overrides '((file (styles basic partial-completion)))))
+#+end_src
+** Vertico
+#+begin_src emacs-lisp
+  (use-package vertico :init (vertico-mode) :bind (:map vertico-map ("M-s" . vertico-suspend)))
+
+  (use-package
+   vertico-posframe
+   :init (vertico-posframe-mode 1)
+   :config
+   (setq vertico-posframe-poshandler #'posframe-poshandler-frame-top-center)
+   (setopt vertico-posframe-truncate-lines nil)
+   (setopt vertico-posframe-width 100))
+#+end_src
 * Editing
 ** Column Indicator
 #+begin_src emacs-lisp
@@ -800,44 +800,28 @@ Which-key for Embark
    (visual-line-mode . visual-fill-column-mode)
    (text-mode-hook . (lambda () (visual-line-mode t))))
 #+end_src
-** Org mode
+** Eglot breadcrumbs
 #+begin_src emacs-lisp
-  (use-package org :config (setopt org-src-window-setup 'plain) (setopt org-startup-indented t))
+  (use-package breadcrumb :init (breadcrumb-mode 1))
 #+end_src
-*** Org Style
-#+begin_src emacs-lisp
-  (use-package org-modern :hook (org-mode . org-modern-mode))
-#+end_src
-** Visual Transient
-#+begin_src emacs-lisp
-  (transient-define-prefix
-   ct-visual-buffer
-   ()
-   :transient-suffix 'transient--do-stay
-   :transient-non-suffix
-   'transient--do-exit
-   [("c" "Column Indicator" display-fill-column-indicator-mode) ("w" "Whitespace" whitespace-mode)])
-  (bind-key "C-c v" 'ct-visual-buffer)
-#+end_src
-** Rainbow delimiters
-#+begin_src emacs-lisp
-  (use-package rainbow-delimiters :hook (prog-mode . rainbow-delimiters-mode))
-#+end_src
-** Trailing white-space
+** Format all
 #+begin_src emacs-lisp
   (use-package
-   whitespace
-   :config
-   (setopt
-    whitespace-style
-    '(face trailing newline empty newline-mark missing-newline-at-eof))
-   :hook (prog-mode . whitespace-mode)
-   (whitespace-mode
-    .
-    (lambda ()
-      (if whitespace-mode
-          (add-hook 'before-save-hook 'whitespace-cleanup nil 'local)
-        (remove-hook 'before-save-hook 'whitespace-cleanup 'local)))))
+   format-all
+   :commands (format-all-mode define-format-all-formatter)
+   :bind (:map prog-mode-map ("C-c f" . format-all-region-or-buffer))
+   :hook
+   (prog-mode . format-all-mode)
+   (yaml-ts-mode . format-all-mode))
+#+end_src
+** Highlight current line
+#+begin_src emacs-lisp
+  (use-package
+    hl-line
+    :init
+    (setopt global-hl-line-sticky-flag nil)
+    (setopt hl-line-sticky-flag nil)
+    (global-hl-line-mode t))
 #+end_src
 ** Highlight indentation
 Indent bars
@@ -855,34 +839,6 @@ Indent bars
     :hook ((prog-mode yaml-ts-mode) . indent-bars-mode))
 #+end_src
 
-** Format all
-#+begin_src emacs-lisp
-  (use-package
-   format-all
-   :commands (format-all-mode define-format-all-formatter)
-   :bind (:map prog-mode-map ("C-c f" . format-all-region-or-buffer))
-   :hook
-   (prog-mode . format-all-mode)
-   (yaml-ts-mode . format-all-mode))
-#+end_src
-** Macros
-#+begin_src emacs-lisp
-  (defalias 'convert-devops-yaml-parameter-to-full
-     (kmacro "a i - SPC n a m e : <escape> s : <return> <backspace> <return> i SPC SPC t y p e : SPC s t r i n g <return> d e f a u l t : SPC <escape> n a"))
-#+end_src
-** Eglot breadcrumbs
-#+begin_src emacs-lisp
-  (use-package breadcrumb :init (breadcrumb-mode 1))
-#+end_src
-** Highlight current line
-#+begin_src emacs-lisp
-  (use-package
-    hl-line
-    :init
-    (setopt global-hl-line-sticky-flag nil)
-    (setopt hl-line-sticky-flag nil)
-    (global-hl-line-mode t))
-#+end_src
 ** Line numbers
 #+begin_src emacs-lisp
   (use-package simple
@@ -891,6 +847,33 @@ Indent bars
     :hook
     (prog-mode . display-line-numbers-mode)
     (yaml-mode . display-line-numbers-mode))
+#+end_src
+** Macros
+#+begin_src emacs-lisp
+  (defalias 'convert-devops-yaml-parameter-to-full
+     (kmacro "a i - SPC n a m e : <escape> s : <return> <backspace> <return> i SPC SPC t y p e : SPC s t r i n g <return> d e f a u l t : SPC <escape> n a"))
+#+end_src
+** Org mode
+#+begin_src emacs-lisp
+  (use-package org :config (setopt org-src-window-setup 'plain) (setopt org-startup-indented t))
+#+end_src
+*** Org Style
+#+begin_src emacs-lisp
+  (use-package org-modern :hook (org-mode . org-modern-mode))
+#+end_src
+** Rainbow delimiters
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+** Replace region
+#+begin_src emacs-lisp
+  (delete-selection-mode t)
+
+  (defun 4lc/yank-replace (&optional ARG)
+    (if (and (region-active-p) (bound-and-true-p delete-selection-mode))
+        (delete-active-region)))
+
+  (advice-add 'yank :before #'4lc/yank-replace)
 #+end_src
 ** Spelling
 #+begin_src emacs-lisp
@@ -931,15 +914,32 @@ Indent bars
 
   ;; This isn't
 #+end_src
-** Replace region
+** Trailing white-space
 #+begin_src emacs-lisp
-  (delete-selection-mode t)
-
-  (defun 4lc/yank-replace (&optional ARG)
-    (if (and (region-active-p) (bound-and-true-p delete-selection-mode))
-        (delete-active-region)))
-
-  (advice-add 'yank :before #'4lc/yank-replace)
+  (use-package
+   whitespace
+   :config
+   (setopt
+    whitespace-style
+    '(face trailing newline empty newline-mark missing-newline-at-eof))
+   :hook (prog-mode . whitespace-mode)
+   (whitespace-mode
+    .
+    (lambda ()
+      (if whitespace-mode
+          (add-hook 'before-save-hook 'whitespace-cleanup nil 'local)
+        (remove-hook 'before-save-hook 'whitespace-cleanup 'local)))))
+#+end_src
+** Visual Transient
+#+begin_src emacs-lisp
+  (transient-define-prefix
+   ct-visual-buffer
+   ()
+   :transient-suffix 'transient--do-stay
+   :transient-non-suffix
+   'transient--do-exit
+   [("c" "Column Indicator" display-fill-column-indicator-mode) ("w" "Whitespace" whitespace-mode)])
+  (bind-key "C-c v" 'ct-visual-buffer)
 #+end_src
 * System
 ** Dired

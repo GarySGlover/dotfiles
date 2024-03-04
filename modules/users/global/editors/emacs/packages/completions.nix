@@ -10,11 +10,9 @@ with lib; {
       with epkgs; [
         avy
         consult
-        consult-flycheck
         corfu
         embark
         embark-consult
-        flycheck-posframe
         marginalia
         nerd-icons-completion
         orderless

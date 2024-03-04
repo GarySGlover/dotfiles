@@ -1055,9 +1055,6 @@ Dired nerd icons to show icons for files and folders
 
   (use-package
    elisp-mode
-   :config
-   (defun 4lc/disable-flycheck-emacs-lisp-checkdoc ()
-     (setq-local flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
    :hook
    (emacs-lisp-mode
     .

@@ -403,7 +403,7 @@ Setup the main theme and fonts used within this emacs configuration.
 
   (use-package
    ef-themes
-   :init
+   :config
    (let ((light
           (nth
            (random (length ef-themes-light-themes))
@@ -676,6 +676,7 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
     ("M-g o" . consult-outline) ;; Alternative: consult-org-heading
     ("M-g m" . consult-mark)
     ("M-g k" . consult-global-mark)
+    ("M-g s" . consult-flyspell)
     ("M-g i" . consult-imenu)
     ("M-g I" . consult-imenu-multi)
     ;; M-s bindings in `search-map'
@@ -950,6 +951,7 @@ Indent bars
    [("c" "Column Indicator" display-fill-column-indicator-mode) ("w" "Whitespace" whitespace-mode)])
   (bind-key "C-c v" 'ct-visual-buffer)
 #+end_src
+** Templates
 * System
 ** Dired
 - Change dired listing mode to not show full details by default.
@@ -1210,6 +1212,10 @@ Dired nerd icons to show icons for files and folders
        (corfu-mode 1)))
    :hook (minibuffer-setup . corfu-enable-in-minibuffer))
 #+end_src
+** Flymake
+#+begin_src emacs-lisp
+  (use-package flymake-popon :hook (flymake-mode . flymake-popon-mode))
+#+end_src
 ** Language ID
 #+begin_src emacs-lisp
   (use-package
@@ -1226,10 +1232,31 @@ Config options to reduce the logging and improve the performance.
 #+begin_src emacs-lisp
   (use-package
    eglot
-   :hook (prog-mode . eglot-ensure)
+   :hook ((prog-mode yaml-ts-mode) . eglot-ensure)
+   :bind
+   (:map
+    eglot-mode-map
+    ("C-c e r" . eglot-rename)
+    ("C-c e f" . eglot-format)
+    ("C-c e a" . eglot-code-actions)
+    ("C-c e o" . eglot-code-action-organize-imports)
+    ("C-c e i" . eglot-code-action-inline)
+    ("C-c e x" . eglot-code-action-extract)
+    ("C-c e w" . eglot-code-action-rewrite)
+    ("C-c e q" . eglot-code-action-quickfix)
+    ("C-c e h" . eldoc))
    :config
    (fset #'jsonrpc--log-event #'ignore)
-   (setopt eglot-events-buffer-config (plist-put eglot-events-buffer-config :size 0)))
+   (setopt eglot-events-buffer-size 0))
+#+end_src
+** Sideline
+#+begin_src emacs-lisp
+  (use-package
+   sideline
+   :init (global-sideline-mode 1)
+   (setq sideline-backends-right
+         '((sideline-blame . up) (sideline-eglot . down)))
+   (setq sideline-backends-left nil))
 #+end_src
 ** Treesitter
 #+begin_src emacs-lisp

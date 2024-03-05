@@ -320,7 +320,31 @@ Functions to directly set the height and width of windows as either percentage o
 
   (defun display-buffer-split-current-window (buffer alist)
     (when (window-splittable-p (selected-window) t)
-      (window--display-buffer buffer (split-window-sensibly) 'window alist)))
+      (window--display-buffer buffer (split-window-sensibly) 'window
+                              alist)))
+
+  (defun 4lc/display-buffer-alist-left (title &optional slot)
+    (let ((selected-slot
+           (if slot
+               slot
+             0)))
+      (add-to-list
+       'display-buffer-alist
+       `(,title
+         (display-buffer-in-side-window)
+         (window-width . 0.3)
+         (side . left)
+         (slot . ,selected-slot)
+         (window-parameters
+          .
+          ((mode-line-format . 'none)
+           (no-delete-other-windows . t)
+           (no-other-window . t)))))))
+
+  (defun 4lc/display-buffer-derived-mode-p (mode)
+    `(lambda (buffer-name action)
+       (with-current-buffer buffer-name
+         (derived-mode-p ',mode))))
 
   (use-package
    window
@@ -333,32 +357,24 @@ Functions to directly set the height and width of windows as either percentage o
             display-buffer-use-some-window
             display-buffer-split-current-window)))
    (setopt switch-to-buffer-obey-display-actions t)
-   (add-to-list
-    'display-buffer-alist
-    '("^\\*Warnings\\*$"
-      (display-buffer-in-side-window)
-      (window-height . 0.2)
-      (side . bottom)
-      (slot . 0)
-      (window-parameters
-       .
-       ((mode-line-format . 'none)
-        (no-delete-other-windows . t)
-        (no-other-window . t)))))
-
-   (add-to-list
-    'display-buffer-alist
-    '("^\\*help\\|^\\*info\\|^\\*Terraform:"
-      (display-buffer-in-side-window)
-      (window-width . 0.2)
-      (side . right)
-      (slot . 0)
-      (window-parameters
-       .
-       ((mode-line-format . 'none)
-        (no-delete-other-windows . t)
-        (no-other-window . t)))))
-
+   (let ((buffer-rules
+          `("^\\*Warnings\\*$"
+            "^\\*Messages\\*$"
+            "^\\*help\\|^\\*info\\|^\\*Terraform:"
+            "magit.*:\\|magit-revision\\|COMMIT_EDITMSG"
+            "\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+            ,(4lc/display-buffer-derived-mode-p 'dired-mode)
+            ,(4lc/display-buffer-derived-mode-p 'eat-mode)
+            "^\\*kubel stderr\\*$"
+            "^\\*kubel-process\\*$"
+            "^\\*.*shell.*\\*$"
+            ("magit-\\(diff\\|process\\).*" 1))))
+     (-each
+      buffer-rules
+      (lambda (item)
+        (if (and (listp item) (not (eq (car item) 'lambda)))
+            (apply #'4lc/display-buffer-alist-left item)
+          (4lc/display-buffer-alist-left item)))))
    (add-to-list
     'display-buffer-alist '("^\\*scratch+\\*$\\|^\\*GNU Emacs\\*$")))
 #+end_src
@@ -535,52 +551,6 @@ For completions windows
 #+begin_src emacs-lisp
   (use-package doom-modeline :init (doom-modeline-mode 1))
 #+end_src
-* Shells
-** Eshell
-#+begin_src emacs-lisp
-  (use-package
-   eshell
-   :config
-   (add-to-list
-    'display-buffer-alist
-    '("^\\*eshell.*\\*$"
-      (display-buffer-in-side-window)
-      (window-height . 0.2)
-      (side . bottom)
-      (slot . 0)
-      (window-parameters
-       . ((mode-line-format . 'none) (no-delete-other-windows . t) (no-other-window . t))))))
-#+end_src
-** Shell
-#+begin_src emacs-lisp
-  (use-package
-   shell
-   :config
-   (add-to-list
-    'display-buffer-alist
-    '("^\\*shell.*\\*$"
-      (display-buffer-in-side-window)
-      (window-height . 0.2)
-      (side . bottom)
-      (slot . 0)
-      (window-parameters
-       . ((mode-line-format . 'none) (no-delete-other-windows . t) (no-other-window . t))))))
-#+end_src
-** Eat
-#+begin_src emacs-lisp
-  (use-package
-   eat
-   :config
-   (add-to-list
-    'display-buffer-alist
-    `(,(lambda (buffer-name action)
-         (with-current-buffer buffer-name
-           (derived-mode-p 'eat-mode)))
-      (display-buffer-in-side-window) (window-height . 0.2) (side . bottom) (slot . 0)
-      (window-parameters
-       . ((mode-line-format . 'none) (no-delete-other-windows . t) (no-other-window . t))))))
-#+end_src
-
 * Project Management
 ** Project
 #+begin_src emacs-lisp
@@ -594,24 +564,9 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
    magit
    :commands 'magit-status
    :config (setq magit-display-buffer-function #'display-buffer)
-   (add-to-list
-    'display-buffer-alist
-    '("magit.*:\\|magit-revision\\|COMMIT_EDITMSG"
-      (display-buffer-in-side-window)
-      (window-width . 0.2)
-      (side . left)
-      (slot . 0)
-      (window-parameters
-       . ((mode-line-format . 'none) (no-delete-other-windows . t) (no-other-window . t)))))
-   (add-to-list
-    'display-buffer-alist
-    '("magit-diff.*" (display-buffer-in-side-window) (window-width . 0.2) (side . left) (slot . 1)
-      (window-parameters
-       . ((mode-line-format . 'none) (no-delete-other-windows . t) (no-other-window . t)))))
    (advice-add
     'magit-worktree-delete
     :after (lambda (&optional WORKTREE) (project-forget-zombie-projects)))
-
    :bind (("C-c g" . magit-status) ("C-x p m" . magit-project-status)))
 #+end_src
 * Navigation
@@ -716,19 +671,11 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
    (("C-." . embark-act)
     ("C-;" . embark-dwim)
     ("C-h B" . embark-bindings)
-    :map embark-identifier-map
+    :map
+    embark-identifier-map
     ("RET" . xref-find-definitions-other-window))
-   :init
-   (setq prefix-help-command #'embark-prefix-help-command)
-
-   (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-
-   :config
-   (add-to-list
-    'display-buffer-alist
-    '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*" nil
-      (window-parameters
-       . ((mode-line-format . 'none) (no-delete-other-windows . t) (no-other-window . t))))))
+   :init (setq prefix-help-command #'embark-prefix-help-command)
+   (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target))
 
   (use-package
    embark-consult
@@ -965,13 +912,7 @@ Indent bars
    :config
    (setopt dired-listing-switches "-Alh --group-directories-first")
    (setopt dired-hide-details-hide-symlink-targets nil)
-   (add-to-list
-    'display-buffer-alist
-    `(,(lambda (buffer-name action)
-         (with-current-buffer buffer-name
-           (derived-mode-p 'dired-mode)))
-      (display-buffer-in-side-window) (window-width . 0.2) (side . left) (slot . 0)))
-   :bind (:map dired-mode-map ("C-+" . dired-create-empty-file))
+ :bind (:map dired-mode-map ("C-+" . dired-create-empty-file))
    :hook (dired-mode . dired-hide-details-mode))
 #+end_src
 
@@ -1022,7 +963,8 @@ Dired nerd icons to show icons for files and folders
      "Quickly edit any resource."
      (interactive)
      (kubel--describe-resource
-      (completing-read "Select resource: " (kubel--kubernetes-resources-list)))))
+      (completing-read
+       "Select resource: " (kubel--kubernetes-resources-list)))))
 #+end_src
 * Languages
 ** Bash

@@ -1,11 +1,4 @@
-* Nim keyboard development
-Setup dev environment
-** Futhark
-This will be required. Does error around clang library, run ~nimble install furthark --debug~ to get full error details.
 * Emacs
-** Indentation
-Performance issues with highlight-indent-guides-mode
-Try https://github.com/jdtsmith/indent-bars
 ** TODO [#A] Avy
 https://karthinks.com/software/avy-can-do-anything/
 ** TODO Nerd-icons
@@ -14,8 +7,6 @@ https://karthinks.com/software/avy-can-do-anything/
 ** TODO [#C] AGS Bar
 - Volume
 - Date/Time
-** DONE [#C] Better shell
-https://codeberg.org/akib/emacs-eat
 ** TODO Notifications
 ** TODO Languages / Programs
 *** TODO Kubernetes

@@ -9,6 +9,7 @@ with lib; {
     programs.emacs.extraPackages = epkgs:
       with epkgs; [
         direnv
+        gcmh
         exec-path-from-shell
         magit
         mini-frame

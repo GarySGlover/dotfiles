@@ -79,7 +79,8 @@ Inhibit electric indent from re-indenting.
    (setopt indent-tabs-mode nil)
    (setopt tab-width 2)
    (setopt standard-indent 2)
-   (setopt electric-indent-inhibit t))
+   ;; (setopt electric-indent-inhibit t)
+   )
 #+end_src
 
 ** Repeat mode
@@ -88,15 +89,18 @@ Inhibit electric indent from re-indenting.
 #+end_src
 * Core Utilities
 Utilities for Emacs that support further parts of the configuration.
-** Transient
+** Direnv
 #+begin_src emacs-lisp
-  (use-package transient)
+  (use-package
+   direnv
+   :config (setopt direnv-always-show-summary nil)
+   :init (direnv-mode))
 #+end_src
-** Posframe
-Better popup frames
+** GCMH
 #+begin_src emacs-lisp
-  (use-package posframe)
-  ;; (use-package transient-posframe :init (transient-posframe-mode))
+  (use-package gcmh
+    :init
+    (gcmh-mode 1))
 #+end_src
 ** God mode
 #+begin_src emacs-lisp
@@ -138,14 +142,16 @@ Better popup frames
     ("i" . god-local-mode))
    :hook (post-command . clover/god-cursor))
 #+end_src
-** Direnv
+** Posframe
+Better popup frames
 #+begin_src emacs-lisp
-  (use-package
-   direnv
-   :config (setopt direnv-always-show-summary nil)
-   :init (direnv-mode))
+  (use-package posframe)
+  ;; (use-package transient-posframe :init (transient-posframe-mode))
 #+end_src
-
+** Transient
+#+begin_src emacs-lisp
+  (use-package transient)
+#+end_src
 * Help
 ** Helpful
 #+begin_src emacs-lisp
@@ -892,8 +898,7 @@ Indent bars
    :config
    (setopt ispell-list-command "--list")
    (setopt ispell-program-name "aspell")
-   :bind (:map flyspell-mode-map
-               ( "C-." . nil))
+   :bind (:map flyspell-mode-map ("C-." . nil))
    :init
    (defun flyspell-on-for-buffer-type ()
      "Enable Flyspell appropriately for the major mode of the current buffer.  Uses `flyspell-prog-mode' for modes derived from `prog-mode', so only strings and comments get checked.  All other buffers get `flyspell-mode' to check all text.  If flyspell is already enabled, does nothing."
@@ -920,9 +925,6 @@ Indent bars
        ; else - flyspell is off, turn it on
        (flyspell-on-for-buffer-type)))
    :hook ((find-file prog-mode text-mode) . flyspell-on-for-buffer-type))
-  ;; Tbs is a comment with a spelling mistake
-
-  ;; This isn't
 #+end_src
 ** Trailing white-space
 #+begin_src emacs-lisp
@@ -931,7 +933,7 @@ Indent bars
    :config
    (setopt
     whitespace-style
-    '(face trailing newline empty newline-mark missing-newline-at-eof))
+    '(face trailing empty missing-newline-at-eof))
    :hook (prog-mode . whitespace-mode)
    (whitespace-mode
     .

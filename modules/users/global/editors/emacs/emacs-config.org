@@ -972,7 +972,14 @@ Dired nerd icons to show icons for files and folders
   (use-package
    sh-script
    :init
-   (add-to-list 'major-mode-remap-alist (cons 'sh-mode 'bash-ts-mode)))
+   (add-to-list 'major-mode-remap-alist (cons 'sh-mode 'bash-ts-mode))
+   :config (setopt sh-basic-offset 2)
+   :hook
+   (bash-ts-mode
+    .
+    (lambda ()
+      (setq-local
+       format-all-formatters '(("Shell" (shfmt "-i" "2" "-ci")))))))
 #+end_src
 ** CMake
 #+begin_src emacs-lisp

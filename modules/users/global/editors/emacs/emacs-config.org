@@ -358,15 +358,19 @@ Functions to directly set the height and width of windows as either percentage o
             display-buffer-split-current-window)))
    (setopt switch-to-buffer-obey-display-actions t)
    (let ((buffer-rules
-          `("^\\*Warnings\\*$"
-            "^\\*Messages\\*$"
+          `(("^\\*Warnings\\*$" 1)
+            ("^\\*Messages\\*$" 1)
+            ("^\\*kubel stderr\\*$" 1)
+            ("^\\*format-all-errors\\*$" 1)
+            ("^\\*kubel-process\\*$" 1)
+            ("^\\*Backtrace\\*$" 1)
+            "^\\*Woman.*\\*$"
             "^\\*help\\|^\\*info\\|^\\*Terraform:"
             "magit.*:\\|magit-revision\\|COMMIT_EDITMSG"
             "\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+            "\\`\\*Embark Export:.*\\*"
             ,(4lc/display-buffer-derived-mode-p 'dired-mode)
             ,(4lc/display-buffer-derived-mode-p 'eat-mode)
-            "^\\*kubel stderr\\*$"
-            "^\\*kubel-process\\*$"
             "^\\*.*shell.*\\*$"
             ("magit-\\(diff\\|process\\).*" 1))))
      (-each

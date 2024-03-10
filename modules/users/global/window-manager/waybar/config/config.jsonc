@@ -1,0 +1,41 @@
+{
+  "layer": "top",
+  "modules-left": ["hyprland/workspaces"],
+  "modules-right": ["temperature#cpu", "temperature#gpu1", "temperature#gpu2", "battery", "clock"],
+  "hyrpland/workspaces": {
+	  "window-rewrite": {},
+  },
+  "hyprland/window": {
+    "max-length": 50
+  },
+  "temperature#cpu": {
+    "thermal-zone": 0,
+    "critical-threshold": 80,
+    "format-critical": "C: {temperatureC}°C {icon}",
+    "format": "C: {temperatureC}°C {icon}",
+    "format-icons": ["", "", ""]
+  },
+  "temperature#gpu1": {
+     "hwmon-path-abs": "/sys/devices/pci0000:00/0000:00:01.1/0000:01:00.0/0000:02:00.0/0000:03:00.0/hwmon",
+     "input-filename": "temp1_input",
+     "critical-threshold": 80,
+     "format-critical": "G1: {temperatureC}°C {icon}",
+     "format": "G1: {temperatureC}°C {icon}",
+     "format-icons": ["", "", ""]
+  },
+  "temperature#gpu2": {
+     "hwmon-path-abs": "/sys/devices/pci0000:00/0000:00:08.1/0000:76:00.0/hwmon",
+     "input-filename": "temp1_input",
+     "critical-threshold": 80,
+     "format-critical": "G2: {temperatureC}°C {icon}",
+     "format": "G2: {temperatureC}°C {icon}",
+     "format-icons": ["", "", ""]
+  },  
+  "battery": {
+    "format": "{capacity}% {icon}",
+    "format-icons": ["", "", "", "", ""]
+  },
+  "clock": {
+    "format-alt": "{:%a, %d. %b  %H:%M}"
+  }
+}

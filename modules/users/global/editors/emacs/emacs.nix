@@ -11,7 +11,7 @@ in {
   config = mkIf config.wolf.roles.editing {
     programs.emacs = {
       enable = true;
-      package = pkgs.emacs29-gtk3;
+      package = pkgs.emacs29-pgtk;
       extraConfig = ''
         (delete-file (expand-file-name "emacs-config.el" "~/.config/emacs"))
         (org-babel-load-file (expand-file-name "emacs-config.org" "~/.config/emacs"))

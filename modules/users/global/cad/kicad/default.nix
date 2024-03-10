@@ -9,9 +9,9 @@
   };
 in
   with lib; {
-    config = mkIf config.wolf.roles.cad {
-      home.packages = [
-        kicad
-      ];
-    };
+    # config = mkIf config.wolf.roles.cad {
+    #   home.packages = [
+    #     kicad
+    #   ];
+    # };
   }

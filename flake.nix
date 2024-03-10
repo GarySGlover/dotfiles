@@ -49,6 +49,7 @@
           else []) (readDir dir));
 
     tree-sitter-grammars = import ./modules/overlays/tree-sitter-grammars.nix;
+    qtile = import ./modules/overlays/qtile.nix;
 
     pkgs =
       import nixpkgs {
@@ -57,6 +58,7 @@
         overlays = [
           emacs-overlay.overlay
           tree-sitter-grammars
+          qtile
         ];
       }
       // {
@@ -190,6 +192,9 @@
       packages = with pkgs; [
         alejandra
         rnix-lsp
+        (python311.withPackages (p: [
+          p.qtile
+        ]))
       ];
     };
   };

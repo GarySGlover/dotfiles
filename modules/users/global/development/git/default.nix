@@ -26,7 +26,7 @@ in {
     };
 
     home.packages = with pkgs; [
-      python311
+      python312
       pre-commit
       go
     ];

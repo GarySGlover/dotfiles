@@ -12,11 +12,11 @@ with lib; {
     '';
 
     home.packages = with pkgs; [
-      python311
-      python311Packages.black
-      python311Packages.flake8
-      python311Packages.pipx
-      python311Packages.pip
+      python312
+      python312Packages.black
+      python312Packages.flake8
+      python312Packages.pipx
+      python312Packages.pip
       nodePackages.pyright
     ];
 

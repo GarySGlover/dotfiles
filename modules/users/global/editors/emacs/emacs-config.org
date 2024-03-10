@@ -963,6 +963,13 @@ Dired nerd icons to show icons for files and folders
    kubel
    :commands kubel
    :config
+   (defun kubel-delete-resource-confirmation ()
+     (interactive)
+     (y-or-n-p "Are you sure you want to delete resource?"))
+   (advice-add
+    'kubel-delete-resource
+    :before-while #'kubel-delete-resource-confirmation)
+
    (defun kubel-quick-edit ()
      "Quickly edit any resource."
      (interactive)

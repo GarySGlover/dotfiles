@@ -11,7 +11,6 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    ags.url = "github:Aylur/ags";
     nixos-wsl = {
       url = "github:nix-community/NixOS-WSL";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -20,7 +19,6 @@
   };
 
   outputs = {
-    ags,
     emacs-overlay,
     flake-utils,
     home-manager,
@@ -49,21 +47,15 @@
           else []) (readDir dir));
 
     tree-sitter-grammars = import ./modules/overlays/tree-sitter-grammars.nix;
-    qtile = import ./modules/overlays/qtile.nix;
 
-    pkgs =
-      import nixpkgs {
-        inherit system;
-        config = import ./config.nix {inherit lib;};
-        overlays = [
-          emacs-overlay.overlay
-          tree-sitter-grammars
-          qtile
-        ];
-      }
-      // {
-        ags = ags.packages.${system}.default;
-      };
+    pkgs = import nixpkgs {
+      inherit system;
+      config = import ./config.nix {inherit lib;};
+      overlays = [
+        emacs-overlay.overlay
+        tree-sitter-grammars
+      ];
+    };
 
     lib = nixpkgs.lib;
 
@@ -192,9 +184,6 @@
       packages = with pkgs; [
         alejandra
         rnix-lsp
-        (python311.withPackages (p: [
-          p.qtile
-        ]))
       ];
     };
   };

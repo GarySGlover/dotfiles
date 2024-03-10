@@ -4,9 +4,6 @@ https://karthinks.com/software/avy-can-do-anything/
 ** TODO Nerd-icons
 - nerd-icons-completion
 - corfu https://github.com/LuigiPiucco/nerd-icons-corfu
-** TODO [#C] AGS Bar
-- Volume
-- Date/Time
 ** TODO Notifications
 ** TODO Languages / Programs
 *** TODO Kubernetes
@@ -15,7 +12,6 @@ https://karthinks.com/software/avy-can-do-anything/
 New mode based on tabulated list mode
 * TODO [#C] Web browser
 - Nyxt
-* Window Manager
 * TODO [#C] Screen lock
 
 

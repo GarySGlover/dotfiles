@@ -1,0 +1,9 @@
+{
+  "url": "https://github.com/alaviss/tree-sitter-nim",
+  "rev": "f5cec6a841b585e4e7388a120ded07e60ae19c43",
+  "sha256": "sha256-CL041Tjw7CH9EnpjAVl4f66zyOADfG9qwkFxeUjXH0w=",
+  "fetchLFS": false,
+  "fetchSubmodules": false,
+  "deepClone": false,
+  "leaveDotGit": false
+}

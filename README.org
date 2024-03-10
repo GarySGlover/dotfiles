@@ -1,1 +1,45 @@
-# dotfiles
+* Setup
+** Disk partitioning
+Create following partitions and names
+| Partion name | fsType | size   | opt |
+| BOOT         | vfat   | 512MiB |     |
+| root         | ext4   |        |     |
+| home         | ext4   |        | x   |
+|--------------+--------+--------+-----|
+
+Wipe dise and create partition table
+#+begin_src shell
+  wipefs -a /dev/nvme0n1
+  parted /dev/nvme0n1 -- mklabel gpt
+  parted /dev/nvme0n1 -- mkpart ESP fat32 1MB 512MB
+  parted /dev/nvme0n1 -- set 1 esp on
+  parted /dev/nvme0n1 -- mkpart root ext4 512MB 100%
+#+end_src
+
+Format partitions
+#+begin_src shell
+  mkfs.fat -F 32 -n BOOT /dev/nvme0n1p1
+  mkfs.ext4 -L root /dev/nvme0n1p2
+#+end_src
+** Mount partitions and Create the following directories
+#+begin_src shell
+  mount /dev/disk/by-label/root /mnt
+  mkdir -p /mnt/boot
+  mount /dev/disk/by-label/BOOT /mnt/boot
+#+end_src
+** System ssh cert
+# Make directory for cert
+# Generate cert
+
+** User ssh cert
+Not sure if this is needed
+** Generate hardware-config
+nixos-generate-config --root /mnt
+** Prep git repo
+Add system
+- flake.nix
+- secrets?
+- host module
+*** Move hardware config
+Source is /mnt/etc/nixos/configuration.nix
+** Install

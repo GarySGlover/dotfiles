@@ -1,0 +1,1266 @@
+#+property: header-args :results silent
+
+* Initialisation
+This section contains basic configurations for Emacs to tidy up the interface and set some defaults for the inbuilt modules that don't fit into other categories.
+** Fix Emacs home
+#+begin_src emacs-lisp
+ (setq user-emacs-directory (file-truename "~/.config/emacs/"))
+#+end_src
+** Disable package downloads
+Remove elpa from the package archives so that no packages will be automatically downloaded. All packages will be installed using the nix package manager.
+
+#+begin_src emacs-lisp
+  (setq package-archives nil)
+#+end_src
+
+** Cleanup interface
+Remove some of the default GUI display components that are typically used with mouse rather than keyboard.
+
+#+begin_src emacs-lisp
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1)
+  (tooltip-mode -1)
+  (set-fringe-mode 10)
+  (menu-bar-mode -1)
+  (setopt inhibit-startup-message t)
+#+end_src
+
+** Disabled commands
+Emacs has disabled some inbuilt functions by default as a safety measure. Replacing the function that is called prior to running these enables all these commands without further confirmation.
+
+#+begin_src emacs-lisp
+  (setq disabled-command-function nil)
+#+end_src
+
+** Use short answers
+Allow use of y/n instead of yes/no for interactive command confirmations.
+
+#+begin_src emacs-lisp
+  (setq use-short-answers t)
+#+end_src
+
+** Clean directories
+Tell Emacs not to create lock files as everything being edited is single user so should have no conflicts over files. Use of no-littering to reduce other files being scattered in the file system and keep the Emacs folder clean.
+
+#+begin_src emacs-lisp
+  (use-package no-littering :demand t :config (no-littering-theme-backups))
+  (setq create-lockfiles nil)
+#+end_src
+
+** Buffer auto revert
+Revert the buffer to the on disk file contents when they are changed outside of Emacs.
+
+#+begin_src emacs-lisp
+  (global-auto-revert-mode 1)
+
+  ;; Also auto refresh dired, but be quiet about it
+  (setq global-auto-revert-non-file-buffers t)
+  (setq auto-revert-verbose nil)
+#+end_src
+
+** Environment Variable import
+#+begin_src emacs-lisp
+  (use-package
+   exec-path-from-shell
+   :config
+   (exec-path-from-shell-copy-env "SSH_AGENT_PID")
+   (exec-path-from-shell-copy-env "SSH_AUTH_SOCK"))
+#+end_src
+
+** Indentation
+Tabs are evil so they are disabled. Indentation defaults to 2.
+Dtrt-indent used to guess indentation used in current file and override local setting.
+Inhibit electric indent from re-indenting.
+#+begin_src emacs-lisp
+  (use-package
+   dtrt-indent
+   :init
+   (setopt dtrt-indent-global-mode t)
+   (setopt indent-tabs-mode nil)
+   (setopt tab-width 2)
+   (setopt standard-indent 2)
+   ;; (setopt electric-indent-inhibit t)
+   )
+#+end_src
+
+** Repeat mode
+#+begin_src emacs-lisp
+  (setopt repeat-mode t)
+#+end_src
+* Core Utilities
+Utilities for Emacs that support further parts of the configuration.
+** Direnv
+#+begin_src emacs-lisp
+  (use-package
+   direnv
+   :config (setopt direnv-always-show-summary nil)
+   :init (direnv-mode))
+#+end_src
+** GCMH
+#+begin_src emacs-lisp
+  (use-package gcmh
+    :init
+    (gcmh-mode 1))
+#+end_src
+** God mode
+#+begin_src emacs-lisp
+  (use-package
+   god-mode
+   :init
+   (setopt god-mode-enable-function-key-translation nil)
+   (defun clover/god-cursor ()
+     (ef-themes-with-colors
+      (if god-local-mode
+          (progn
+            (setq cursor-type 'box)
+            (set-face-attribute 'cursor nil :background bg-cyan-intense))
+        (if buffer-read-only
+            (progn
+              (setq cursor-type 'box)
+              (set-face-attribute 'cursor nil :background bg-red-intense))
+          (progn
+            (setq cursor-type 'box)
+            (set-face-attribute 'cursor nil :background bg-yellow-intense))))))
+   (god-mode)
+   :config
+   (setopt
+    set-message-functions '(inhibit-message set-minibuffer-message))
+   (add-to-list 'inhibit-message-regexps "God")
+   (defun clover/global-escape ()
+     (interactive)
+     (funcall (key-binding "\C-g")))
+   :bind
+   (("<escape>" . god-local-mode)
+    ("C-x C-1" . delete-other-windows)
+    ("C-x C-2" . split-window-below)
+    ("C-x C-3" . split-window-right)
+    ("C-x C-0" . delete-window)
+    :map
+    god-local-mode-map
+    ("<escape>" . clover/global-escape)
+    ("z" . repeat)
+    ("i" . god-local-mode))
+   :hook (post-command . clover/god-cursor))
+#+end_src
+** Posframe
+Better popup frames
+#+begin_src emacs-lisp
+  (use-package posframe)
+  ;; (use-package transient-posframe :init (transient-posframe-mode))
+#+end_src
+** Transient
+#+begin_src emacs-lisp
+  (use-package transient)
+#+end_src
+* Help
+** Helpful
+#+begin_src emacs-lisp
+  (use-package
+   helpful
+   :commands (helpful-callable helpful-command helpful-key helpful-variable helpful-at-point)
+   :bind
+   ([remap describe-function] . helpful-callable)
+   ([remap describe-command] . helpful-command)
+   ([remap describe-variable] . helpful-variable)
+   ([remap describe-key] . helpful-key)
+   ([remap Info-goto-emacs-command-node] . helpful-function)
+   ("C-h M-p" . helpful-at-point))
+#+end_src
+
+** Which key
+Popup to show available shortcut keys in current mode
+#+begin_src emacs-lisp
+  (use-package
+   which-key
+   :demand
+   :config
+   (which-key-mode)
+   (which-key-enable-god-mode-support)
+   (which-key-add-keymap-based-replacements org-mode-map "C-c C-v" "Org babel" "C-c C-x" "Org extra")
+   :bind
+   (:map
+    help-map
+    ("C-h" . which-key-C-h-dispatch)
+    ("M-w" . which-key-show-top-level)
+    ("M-m" . which-key-show-major-movhede))
+   :custom
+   (which-key-show-early-on-C-h t "Press C-h to show commands")
+   (which-key-idle-delay 1 "Delay which key normal display")
+   (which-key-idle-secondary-delay 0.05 "Quicker which-key subsequest display")
+   (which-key-max-display-columns 3)
+   (which-key-show-remaining-keys t))
+
+  (use-package
+   which-key-posframe
+   :after (which-key posframe)
+   :config
+   (defun which-key-posframe--max-dimensions-override (x)
+     (cons (max 10 (pop x)) x))
+   (advice-add
+    'which-key-posframe--max-dimensions
+    :filter-return #'which-key-posframe--max-dimensions-override)
+   (setq which-key-posframe-poshandler 'posframe-poshandler-frame-top-center)
+   (which-key-posframe-mode))
+#+end_src
+
+** GPTel
+#+begin_src emacs-lisp
+  (use-package
+   gptel
+   :demand t
+   :init
+   (defun 4lc/set-gptel-directive (&optional language)
+     (let ((lang (language-id-buffer)))
+       (when lang
+         (unless (assoc (intern (downcase lang)) gptel-directives)
+           (let ((prompt (format "Respond with %s code only" lang)))
+             (setq-local gptel-directives
+                         (append
+                          `((,(intern (downcase lang)) . ,prompt)) gptel-directives))
+             (setq-local gptel--system-message prompt))))))
+   :config (setopt gptel-model "gpt-4-turbo-preview")
+   :commands (gptel)
+   :bind ("C-c c" . gptel-send)
+   :hook ((prog-mode yaml-mode) . 4lc/set-gptel-directive))
+#+end_src
+* Window  Management
+** Window visited order
+Store a window parameter in non side windows. This is intended to be used to order windows and find the last visited window for display buffer functions.
+#+begin_src emacs-lisp
+  (defun 4lc/increment-and-store-window-count (frame)
+    "Increment the window counter and store it as a window parameter."
+    (let ((selected-win (selected-window)))
+      (when (and selected-win
+                 (not (window-parameter selected-win 'window-side))
+                 (not (window-minibuffer-p selected-win)))
+        (with-selected-frame (window-frame selected-win)
+          (let ((current-count (or (frame-parameter nil '4lc/window-counter) 0)))
+            (setq current-count (+ 1 current-count))
+            (set-frame-parameter nil '4lc/window-counter current-count)
+            (set-window-parameter selected-win '4lc/window-counter current-count))))))
+
+  (add-hook 'window-selection-change-functions '4lc/increment-and-store-window-count)
+
+  (defun 4lc/get-window-counter ()
+    "Get the window counter value from the selected window's parameter."
+    (let ((selected-win (selected-window)))
+      (when selected-win
+        (window-parameter selected-win '4lc/window-counter))))
+
+  (defun 4lc/get-window-with-highest-counter ()
+ "Get the window in the current frame with the highest window counter."
+    (let ((current-frame (selected-frame))
+          (windows (window-list)))
+      (cl-reduce
+       (lambda (win1 win2)
+         (let ((counter1 (window-parameter win1 '4lc/window-counter))
+               (counter2 (window-parameter win2 '4lc/window-counter)))
+           (if (and counter1 counter2)
+               (if (> counter1 counter2)
+                   win1
+                 win2)
+             (if counter1
+                 win1
+               win2))))
+       windows
+       :initial-value nil)))
+#+end_src
+** Window resize
+Functions to directly set the height and width of windows as either percentage of frame width or character width.
+#+begin_src emacs-lisp
+  (defun 4lc/get-window-delta (size)
+    (- size (window-height)))
+
+  (defun 4lc/get-window-width-delta (size)
+    (- size (window-width)))
+
+  (defun 4lc/set-window-width (val &optional window)
+    (window-resize window (- val (window-width window)) t))
+
+  (defun 4lc/window-resize-width (val &optional window)
+    (if (< val 1)
+        (4lc/set-window-width (truncate (* val (frame-width))) window)
+      (4lc/set-window-width val window)))
+
+  (defun 4lc/side-window-width (window &optional side)
+    (let ((side (or side (window-parameter window 'window-side))))
+      (pcase side
+        ('left 4lc/left-side-window-width)
+        ('right 4lc/right-side-window-width))))
+
+  (defun 4lc/set-window-height (val &optional window)
+    (window-resize window (- val (window-height window))))
+
+  (defun 4lc/window-resize-height (val &optional window)
+    (if (< val 1)
+        (4lc/set-window-height (truncate (* val (frame-height))) window)
+      (4lc/set-window-height val window)))
+
+  (defun 4lc/side-window-height (window &optional side)
+    (let ((side (or side (window-parameter window 'window-side))))
+      (pcase side
+        ('top 4lc/top-side-window-height)
+        ('bottom 4lc/bottom-side-window-height))))
+#+end_src
+** Display Buffer rules
+#+begin_src emacs-lisp
+  (defun 4lc/display-buffer-side-window-width (window &optional side)
+    (let ((width (4lc/side-window-width window side)))
+      (4lc/window-resize-width width window)))
+
+  (defun 4lc/display-buffer-side-window-height (window &optional side)
+    (let ((height (4lc/side-window-height window side)))
+      (4lc/window-resize-height height window)))
+
+  (defun display-buffer-maybe-most-recent-window (buffer alist)
+    (unless (cdr (assq 'inhibit-same-window alist))
+      (window--display-buffer
+       buffer (4lc/get-window-with-highest-counter) 'reuse
+       alist)))
+
+  (defun display-buffer-split-current-window (buffer alist)
+    (when (window-splittable-p (selected-window) t)
+      (window--display-buffer buffer (split-window-sensibly) 'window
+                              alist)))
+
+  (defun 4lc/display-buffer-alist-left (title &optional slot)
+    (let ((selected-slot
+           (if slot
+               slot
+             0)))
+      (add-to-list
+       'display-buffer-alist
+       `(,title
+         (display-buffer-in-side-window)
+         (window-width . 0.3)
+         (side . left)
+         (slot . ,selected-slot)
+         (window-parameters
+          .
+          ((mode-line-format . 'none)
+           (no-delete-other-windows . t)
+           (no-other-window . t)))))))
+
+  (defun 4lc/display-buffer-derived-mode-p (mode)
+    `(lambda (buffer-name action)
+       (with-current-buffer buffer-name
+         (derived-mode-p ',mode))))
+
+  (use-package
+   window
+   :init
+   (setq display-buffer-base-action
+         '((display-buffer--maybe-same-window
+            display-buffer-reuse-window
+            display-buffer-maybe-most-recent-window
+            display-buffer-in-previous-window
+            display-buffer-use-some-window
+            display-buffer-split-current-window)))
+   (setopt switch-to-buffer-obey-display-actions t)
+   (let ((buffer-rules
+          `(("^\\*Warnings\\*$" 1)
+            ("^\\*Messages\\*$" 1)
+            ("^\\*kubel stderr\\*$" 1)
+            ("^\\*format-all-errors\\*$" 1)
+            ("^\\*kubel-process\\*$" 1)
+            ("^\\*Backtrace\\*$" 1)
+            "^\\*Woman.*\\*$"
+            "^\\*help\\|^\\*info\\|^\\*Terraform:"
+            "magit.*:\\|magit-revision\\|COMMIT_EDITMSG"
+            "\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+            "\\`\\*Embark Export:.*\\*"
+            ,(4lc/display-buffer-derived-mode-p 'dired-mode)
+            ,(4lc/display-buffer-derived-mode-p 'eat-mode)
+            "^\\*.*shell.*\\*$"
+            ("magit-\\(diff\\|process\\).*" 1))))
+     (-each
+      buffer-rules
+      (lambda (item)
+        (if (and (listp item) (not (eq (car item) 'lambda)))
+            (apply #'4lc/display-buffer-alist-left item)
+          (4lc/display-buffer-alist-left item)))))
+   (add-to-list
+    'display-buffer-alist '("^\\*scratch+\\*$\\|^\\*GNU Emacs\\*$")))
+#+end_src
+** Ace window
+#+begin_src emacs-lisp
+  (use-package ace-window :bind ("M-o" . ace-window))
+#+end_src
+** Beframe
+#+begin_src emacs-lisp
+  (use-package
+   beframe
+   :after consult
+   :init
+   (beframe-mode 1)
+   (defvar consult-buffer-sources)
+   (declare-function consult--buffer-state "consult")
+
+   (defface beframe-buffer '((t :inherit font-lock-string-face))
+     "Face for `consult' framed buffers.")
+
+   (defun my-beframe-buffer-names-sorted (&optional frame)
+     "Return the list of buffers from `beframe-buffer-names' sorted by visibility.
+    With optional argument FRAME, return the list of buffers of FRAME."
+     (beframe-buffer-names
+      frame
+      :sort #'beframe-buffer-sort-visibility))
+
+   (defvar beframe-consult-source
+     `(:name
+       "Frame-specific buffers (current frame)"
+       :narrow ?F
+       :category buffer
+       :face beframe-buffer
+       :history beframe-history
+       :items ,#'my-beframe-buffer-names-sorted
+       :action ,#'switch-to-buffer
+       :state ,#'consult--buffer-state))
+
+   (add-to-list 'consult-buffer-sources 'beframe-consult-source)
+   :bind-keymap (("C-c b" . beframe-prefix-map)))
+#+end_src
+* Visual
+** Theme
+Setup the main theme and fonts used within this emacs configuration.
+#+begin_src emacs-lisp
+  (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font-10"))
+  (setopt nerd-icons-font-family "FiraCode Nerd Font")
+
+  (use-package
+   ef-themes
+   :config
+   (let ((light
+          (nth
+           (random (length ef-themes-light-themes))
+           ef-themes-light-themes))
+         (dark
+          (nth
+           (random (length ef-themes-dark-themes))
+           ef-themes-dark-themes)))
+     (setopt ef-themes-to-toggle `(,light ,dark))
+     (ef-themes-select dark)))
+#+end_src
+
+Window splitting
+#+begin_src emacs-lisp
+  (setopt window-divider-mode t)
+  (setopt window-divider-default-places t)
+  (set-face-foreground 'vertical-border "black")
+  (set-face-background 'vertical-border (face-foreground 'vertical-border))
+#+end_src
+
+** Alert notification
+When Emacs reports an exception the default action is to play a bell sound. This replaces the sound with a double flash on the mode-line background.
+
+#+begin_src emacs-lisp
+  (defun double-flash-modeline ()
+    (let ((flash-sec (/ 1.0 20)))
+      (invert-face 'mode-line)
+      (run-with-timer flash-sec nil #'invert-face 'mode-line)
+      (run-with-timer (* 2 flash-sec) nil #'invert-face 'mode-line)
+      (run-with-timer (* 3 flash-sec) nil #'invert-face 'mode-line)))
+  (setq
+   visible-bell nil
+   ring-bell-function 'double-flash-modeline)
+#+end_src
+
+** Transparency
+Set default transparency of frames and creation of hydra function for adjusting alpha.
+
+#+begin_src emacs-lisp
+  (defun set-frame-alpha (value)
+    (set-frame-parameter nil 'alpha-background value))
+
+  (defun get-frame-alpha ()
+    (frame-parameter nil 'alpha-background))
+
+  (defun change-frame-alpha-by (value)
+    (let ((newAlpha (+ value (get-frame-alpha))))
+      (if (> newAlpha (get-frame-alpha))
+          (if (> newAlpha 100)
+              (set-frame-alpha 100)
+            (set-frame-alpha newAlpha))
+        (if (< newAlpha 0)
+            (set-frame-alpha 0)
+          (set-frame-alpha newAlpha)))))
+  (set-frame-alpha 100)
+  (add-to-list 'default-frame-alist '(alpha-background . 100))
+
+  (transient-define-suffix
+   clover--transient-transparency-increase-frame-alpha
+   ()
+   :key "i"
+   :description
+   "Increase"
+   (interactive)
+   (change-frame-alpha-by 1))
+  (transient-define-suffix
+  clover--transient-transparency-decrease-frame-alpha
+   ()
+   :key "d"
+   :description
+   "Decrease"
+   (interactive)
+   (change-frame-alpha-by -1))
+  (transient-define-suffix
+   clover--transient-transparency-frame-alpha-low
+   ()
+   :key "l"
+   :description
+   "Low"
+   (interactive)
+   (set-frame-alpha 0))
+  (transient-define-suffix
+   clover--transient-transparency-frame-alpha-high
+   ()
+   :key "h"
+   :description
+   "High"
+   (interactive)
+   (set-frame-alpha 100))
+  (transient-define-suffix
+   clover--transient-transparency-frame-alpha-reset
+   ()
+   :key "r"
+   :description
+   "r"
+   (interactive)
+   (set-frame-alpha 85))
+
+  (transient-define-prefix
+   ct-transparency ()
+   :transient-suffix 'transient--do-stay
+   :transient-non-suffix 'transient--do-exit
+   [(clover--transient-transparency-increase-frame-alpha)
+    (clover--transient-transparency-decrease-frame-alpha)
+    (clover--transient-transparency-frame-alpha-low)
+    (clover--transient-transparency-frame-alpha-high)
+    (clover--transient-transparency-frame-alpha-reset)])
+  (bind-key "C-c t" 'ct-transparency)
+#+end_src
+
+** Nerd Icons
+For completions windows
+#+begin_src emacs-lisp
+  (use-package
+   nerd-icons-completion
+   :after marginalia
+   :config
+   (nerd-icons-completion-mode)
+   (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+#+end_src
+
+** Doom Mode-lines
+#+begin_src emacs-lisp
+  (use-package doom-modeline :init (doom-modeline-mode 1))
+#+end_src
+* Project Management
+** Project
+#+begin_src emacs-lisp
+  (use-package project :bind ("C-x p t" . eat-project))
+#+end_src
+** Version control
+Using Magit as the git porcelain. Is configured to use the same window rather than open a new one for all operations possible. As some operations such as commit open the diff window as well, those buffers open in a seperate window.
+
+#+begin_src emacs-lisp
+  (use-package
+   magit
+   :commands 'magit-status
+   :config (setq magit-display-buffer-function #'display-buffer)
+   (advice-add
+    'magit-worktree-delete
+    :after (lambda (&optional WORKTREE) (project-forget-zombie-projects)))
+   :bind (("C-c g" . magit-status) ("C-x p m" . magit-project-status)))
+#+end_src
+* Navigation
+** Avy
+#+begin_src emacs-lisp
+  (use-package
+   avy
+   :config (setopt avy-timeout-seconds 0.2)
+
+   (setf
+    (alist-get ?k avy-dispatch-alist) 'avy-action-kill-stay
+    (alist-get ?K avy-dispatch-alist) 'avy-action-kill-whole-line
+    (alist-get ?l avy-dispatch-alist) 'avy-action-teleport
+    (alist-get ?m avy-dispatch-alist) 'avy-action-mark
+    (alist-get ?w avy-dispatch-alist) 'avy-action-copy
+    (alist-get ?x avy-dispatch-alist) 'avy-action-kill-move
+    (alist-get ?y avy-dispatch-alist) 'avy-action-yank
+    (alist-get ?Y avy-dispatch-alist) 'avy-action-yank-line
+    (alist-get ?z avy-dispatch-alist) 'avy-action-zap-to-char)
+   (setopt avy-keys '(?i ?s ?r ?t ?n ?e ?a ?o))
+   (-each
+    avy-keys
+    (lambda (x) (setq avy-dispatch-alist (delq (assoc x avy-dispatch-alist) avy-dispatch-alist))))
+
+   :bind ("C-c a" . avy-goto-char-timer))
+
+  (defun avy-action-kill-whole-line (pt)
+    (save-excursion
+      (goto-char pt)
+      (kill-whole-line))
+    (select-window (cdr (ring-ref avy-ring 0))))
+#+end_src
+** Consult
+#+begin_src emacs-lisp
+  (use-package
+   consult
+   :init (setopt enable-recursive-minibuffers t)
+   (setq
+    xref-show-xrefs-function #'consult-xref
+    xref-show-definitions-function #'consult-xref)
+   :bind
+   ( ;; C-c bindings in `mode-specific-map'
+    ("C-c M-x" . consult-mode-command)
+    ("C-c h" . consult-history)
+    ("C-c k" . consult-kmacro)
+    ("C-c m" . consult-man)
+    ("C-c i" . consult-info)
+    ([remap Info-search] . consult-info)
+    ;; C-x bindings in `ctl-x-map'
+    ("C-x M-:" . consult-complex-command) ;; orig. repeat-complex-command
+    ("C-x b" . consult-buffer) ;; orig. switch-to-buffer
+    ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+    ("C-x 5 b" . consult-buffer-other-frame) ;; orig. switch-to-buffer-other-frame
+    ("C-x t b" . consult-buffer-other-tab) ;; orig. switch-to-buffer-other-tab
+    ("C-x r b" . consult-bookmark) ;; orig. bookmark-jump
+    ("C-x p b" . consult-project-buffer) ;; orig. project-switch-to-buffer
+    ;; Custom M-# bindings for fast register access
+    ("M-#" . consult-register-load)
+    ("M-'" . consult-register-store) ;; orig. abbrev-prefix-mark (unrelated)
+    ("C-M-#" . consult-register)
+    ;; Other custom bindings
+    ("M-y" . consult-yank-pop) ;; orig. yank-pop
+    ;; M-g bindings in `goto-map'
+    ("M-g e" . consult-compile-error)
+    ("M-g f" . consult-flymake)
+    ("M-g g" . consult-goto-line) ;; orig. goto-line
+    ("M-g M-g" . consult-goto-line) ;; orig. goto-line
+    ("M-g o" . consult-outline) ;; Alternative: consult-org-heading
+    ("M-g m" . consult-mark)
+    ("M-g k" . consult-global-mark)
+    ("M-g s" . consult-flyspell)
+    ("M-g i" . consult-imenu)
+    ("M-g I" . consult-imenu-multi)
+    ;; M-s bindings in `search-map'
+    ("M-s d" . consult-find) ;; Alternative: consult-fd
+    ("M-s g" . consult-grep)
+    ("M-s G" . consult-git-grep)
+    ("M-s r" . consult-ripgrep)
+    ("M-s l" . consult-line)
+    ("M-s L" . consult-line-multi)
+    ("M-s k" . consult-keep-lines)
+    ("M-s u" . consult-focus-lines)
+    ;; Isearch integration
+    ("M-s e" . consult-isearch-history)
+    :map
+    isearch-mode-map
+    ("M-e" . consult-isearch-history) ;; orig. isearch-edit-string
+    ("M-s e" . consult-isearch-history) ;; orig. isearch-edit-string
+    ("M-s l" . consult-line) ;; needed by consult-line to detect isearch
+    ("M-s L" . consult-line-multi) ;; needed by consult-line to detect isearch
+    ;; Minibuffer history
+    :map
+    minibuffer-local-map
+    ("M-s" . consult-history) ;; orig. next-matching-history-element
+    ("M-r" . consult-history)))
+#+end_src
+** Embark
+#+begin_src emacs-lisp
+  (use-package
+   embark
+   :bind
+   (("C-." . embark-act)
+    ("C-;" . embark-dwim)
+    ("C-h B" . embark-bindings)
+    :map
+    embark-identifier-map
+    ("RET" . xref-find-definitions-other-window))
+   :init (setq prefix-help-command #'embark-prefix-help-command)
+   (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target))
+
+  (use-package
+   embark-consult
+   :after (embark consult)
+   :hook (embark-collect-mode . consult-preview-at-point-mode))
+#+end_src
+
+Which-key for Embark
+#+begin_src emacs-lisp
+  (defun embark-which-key-indicator ()
+    "An embark indicator that displays keymaps using which-key.
+  The which-key help message will show the type and value of the
+  current target followed by an ellipsis if there are further
+  targets."
+    (lambda (&optional keymap targets prefix)
+      (if (null keymap)
+          (which-key--hide-popup-ignore-command)
+        (which-key--show-keymap
+         (if (eq (plist-get (car targets) :type) 'embark-become)
+             "Become"
+           (format "Act on %s '%s'%s"
+                   (plist-get (car targets) :type)
+                   (embark--truncate-target (plist-get (car targets) :target))
+                   (if (cdr targets)
+                       "…"
+                     "")))
+         (if prefix
+             (pcase (lookup-key keymap prefix 'accept-default)
+               ((and (pred keymapp) km) km)
+               (_ (key-binding prefix 'accept-default)))
+           keymap)
+         nil nil t (lambda (binding) (not (string-suffix-p "-argument" (cdr binding))))))))
+
+  (setq embark-indicators
+        '(embark-which-key-indicator embark-highlight-indicator embark-isearch-highlight-indicator))
+
+  (defun embark-hide-which-key-indicator (fn &rest args)
+    "Hide the which-key indicator immediately when using the completing-read prompter."
+    (which-key--hide-popup-ignore-command)
+    (let ((embark-indicators (remq #'embark-which-key-indicator embark-indicators)))
+      (apply fn args)))
+
+  (advice-add #'embark-completing-read-prompter :around #'embark-hide-which-key-indicator)
+#+end_src
+** Margnalia
+#+begin_src emacs-lisp
+  (use-package
+   marginalia
+   :bind (:map minibuffer-local-map ("M-A" . marginalia-cycle))
+   :init (marginalia-mode))
+#+end_src
+** Orderless
+#+begin_src emacs-lisp
+  (use-package
+   orderless
+   :config (add-to-list 'completion-styles 'orderless)
+   :custom
+   (completion-category-defaults nil)
+   (completion-category-overrides '((file (styles basic partial-completion)))))
+#+end_src
+** Vertico
+#+begin_src emacs-lisp
+  (use-package vertico :init (vertico-mode) :bind (:map vertico-map ("M-s" . vertico-suspend)))
+
+  (use-package
+   vertico-posframe
+   :init (vertico-posframe-mode 1)
+   :config
+   (setq vertico-posframe-poshandler #'posframe-poshandler-frame-top-center)
+   (setopt vertico-posframe-truncate-lines nil)
+   (setopt vertico-posframe-width 100))
+#+end_src
+* Editing
+** Column Indicator
+#+begin_src emacs-lisp
+  (use-package
+   visual-fill-column
+   :config
+   (setopt display-fill-column-indicator-column 100)
+   (setopt display-fil-lcolumn-indicator-character #xf0689)
+   (setopt fill-column 100)
+   (setopt visual-fill-column-center-text nil)
+   (setopt visual-line-fringe-indicators '(left-curly-arrow nil))
+   :hook
+   (visual-line-mode . visual-fill-column-mode)
+   (text-mode-hook . (lambda () (visual-line-mode t))))
+#+end_src
+** Eglot breadcrumbs
+#+begin_src emacs-lisp
+  (use-package breadcrumb :init (breadcrumb-mode 1))
+#+end_src
+** Format all
+#+begin_src emacs-lisp
+  (use-package
+   format-all
+   :commands (format-all-mode define-format-all-formatter)
+   :bind (:map prog-mode-map ("C-c f" . format-all-region-or-buffer))
+   :hook
+   (prog-mode . format-all-mode)
+   (yaml-ts-mode . format-all-mode))
+#+end_src
+** Highlight current line
+#+begin_src emacs-lisp
+  (use-package
+    hl-line
+    :init
+    (setopt global-hl-line-sticky-flag nil)
+    (setopt hl-line-sticky-flag nil)
+    (global-hl-line-mode t))
+#+end_src
+** Highlight indentation
+Indent bars
+#+begin_src emacs-lisp
+  (use-package
+    indent-bars
+    :demand t
+    :config
+    (setopt indent-bars-pattern ".")
+    (setopt indent-bars-width-frac 0.1)
+    (setopt indent-bars-highlight-current-depth '(:pattern "." :width 0.40))
+    (setopt indent-bars-treesit-support t)
+    (setopt indent-bars-no-descend-string t)
+    (setopt indent-bars-spacing-override nil)
+    :hook ((prog-mode yaml-ts-mode) . indent-bars-mode))
+#+end_src
+
+** Line numbers
+#+begin_src emacs-lisp
+  (use-package simple
+    :init
+    (setopt display-line-numbers-type 'relative)
+    :hook
+    (prog-mode . display-line-numbers-mode)
+    (yaml-mode . display-line-numbers-mode))
+#+end_src
+** Macros
+#+begin_src emacs-lisp
+  (defalias 'convert-devops-yaml-parameter-to-full
+     (kmacro "a i - SPC n a m e : <escape> s : <return> <backspace> <return> i SPC SPC t y p e : SPC s t r i n g <return> d e f a u l t : SPC <escape> n a"))
+#+end_src
+** Org mode
+#+begin_src emacs-lisp
+  (use-package org :config (setopt org-src-window-setup 'plain) (setopt org-startup-indented t))
+#+end_src
+*** Org Style
+#+begin_src emacs-lisp
+  (use-package org-modern :hook (org-mode . org-modern-mode))
+#+end_src
+** Rainbow delimiters
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+** Replace region
+#+begin_src emacs-lisp
+  (delete-selection-mode t)
+
+  (defun 4lc/yank-replace (&optional ARG)
+    (if (and (region-active-p) (bound-and-true-p delete-selection-mode))
+        (delete-active-region)))
+
+  (advice-add 'yank :before #'4lc/yank-replace)
+#+end_src
+** Spelling
+#+begin_src emacs-lisp
+  (use-package
+   flyspell
+   :config
+   (setopt ispell-list-command "--list")
+   (setopt ispell-program-name "aspell")
+   :bind (:map flyspell-mode-map ("C-." . nil))
+   :init
+   (defun flyspell-on-for-buffer-type ()
+     "Enable Flyspell appropriately for the major mode of the current buffer.  Uses `flyspell-prog-mode' for modes derived from `prog-mode', so only strings and comments get checked.  All other buffers get `flyspell-mode' to check all text.  If flyspell is already enabled, does nothing."
+     (interactive)
+     (if (not (symbol-value flyspell-mode)) ; if not already on
+         (progn
+           (if (derived-mode-p 'prog-mode)
+               (progn
+                 (message "Flyspell on (code)")
+                 (flyspell-prog-mode))
+             ;; else
+             (progn
+               (message "Flyspell on (text)")
+               (flyspell-mode 1)))
+           ;; I tried putting (flyspell-buffer) here but it didn't seem to work
+           )))
+   (defun flyspell-toggle ()
+     "Turn Flyspell on if it is off, or off if it is on.  When turning on, it uses `flyspell-on-for-buffer-type' so code-vs-text is handled appropriately."
+     (interactive)
+     (if (symbol-value flyspell-mode)
+         (progn ; flyspell is on, turn it off
+           (message "Flyspell off")
+           (flyspell-mode -1))
+       ; else - flyspell is off, turn it on
+       (flyspell-on-for-buffer-type)))
+   :hook ((find-file prog-mode text-mode) . flyspell-on-for-buffer-type))
+#+end_src
+** Trailing white-space
+#+begin_src emacs-lisp
+  (use-package
+   whitespace
+   :config
+   (setopt
+    whitespace-style
+    '(face trailing empty missing-newline-at-eof))
+   :hook (prog-mode . whitespace-mode)
+   (whitespace-mode
+    .
+    (lambda ()
+      (if whitespace-mode
+          (add-hook 'before-save-hook 'whitespace-cleanup nil 'local)
+        (remove-hook 'before-save-hook 'whitespace-cleanup 'local)))))
+#+end_src
+** Visual Transient
+#+begin_src emacs-lisp
+  (transient-define-prefix
+   ct-visual-buffer
+   ()
+   :transient-suffix 'transient--do-stay
+   :transient-non-suffix
+   'transient--do-exit
+   [("c" "Column Indicator" display-fill-column-indicator-mode) ("w" "Whitespace" whitespace-mode)])
+  (bind-key "C-c v" 'ct-visual-buffer)
+#+end_src
+** Templates
+* System
+** Dired
+- Change dired listing mode to not show full details by default.
+- Change listing options to hide . & .. and group directories first.
+- Add key-bind for creating new files.
+#+begin_src emacs-lisp
+  (use-package
+   dired
+   :config
+   (setopt dired-listing-switches "-Alh --group-directories-first")
+   (setopt dired-hide-details-hide-symlink-targets nil)
+ :bind (:map dired-mode-map ("C-+" . dired-create-empty-file))
+   :hook (dired-mode . dired-hide-details-mode))
+#+end_src
+
+Make Dired find file and create emtpy file aware of subdirectory
+#+begin_src emacs-lisp
+  (defun dired-subdir-aware (orig-fun &rest args)
+    (if (eq major-mode 'dired-mode)
+        (let ((default-directory (dired-current-directory)))
+          (apply orig-fun args))
+      (apply orig-fun args)))
+
+  (advice-add 'find-file-read-args :around 'dired-subdir-aware)
+  (advice-add 'read-file-name :around 'dired-subdir-aware)
+#+end_src
+
+Dired subtree package for allowing tree style insertion and removal of sub-directories.
+#+begin_src emacs-lisp
+  (use-package
+   dired-subtree
+   :after dired
+   :config
+   ;; Fix for nerd icons in dired with subtree
+   (defun dired-subtree-add-nerd-icons ()
+     (interactive)
+     (revert-buffer))
+   (advice-add 'dired-subtree-toggle :after 'dired-subtree-add-nerd-icons)
+   (advice-add 'dired-subtree-cycle :after 'dired-subtree-add-nerd-icons)
+   (advice-add 'dired-subtree-remove :after 'dired-subtree-add-nerd-icons)
+   :bind
+   (:map
+    dired-mode-map
+    ("<tab>" . dired-subtree-toggle)
+    ("C-<tab>" . dired-subtree-cycle)
+    ("<backtab>" . dired-subtree-remove)))
+#+end_src
+
+Dired nerd icons to show icons for files and folders
+#+begin_src emacs-lisp
+  (use-package nerd-icons-dired :after dired :hook (dired-mode . nerd-icons-dired-mode))
+#+end_src
+** Kubernetes
+#+begin_src emacs-lisp
+  (use-package
+   kubel
+   :commands kubel
+   :config
+   (defun kubel-delete-resource-confirmation ()
+     (interactive)
+     (y-or-n-p "Are you sure you want to delete resource?"))
+   (advice-add
+    'kubel-delete-resource
+    :before-while #'kubel-delete-resource-confirmation)
+
+   (defun kubel-quick-edit ()
+     "Quickly edit any resource."
+     (interactive)
+     (kubel--describe-resource
+      (completing-read
+       "Select resource: " (kubel--kubernetes-resources-list)))))
+#+end_src
+* Languages
+** Bash
+#+begin_src emacs-lisp
+  (use-package
+   sh-script
+   :init
+   (add-to-list 'major-mode-remap-alist (cons 'sh-mode 'bash-ts-mode))
+   :config (setopt sh-basic-offset 2)
+   :hook
+   (bash-ts-mode
+    .
+    (lambda ()
+      (setq-local
+       format-all-formatters '(("Shell" (shfmt "-i" "2" "-ci")))))))
+#+end_src
+** CMake
+#+begin_src emacs-lisp
+  (use-package cmake-ts-mode)
+#+end_src
+** Dockerfile
+#+begin_src emacs-lisp
+  (use-package dockerfile-ts-mode)
+#+end_src
+** Emacs Lisp
+#+begin_src emacs-lisp
+  (define-format-all-formatter
+   elisp-autofmt
+   (:executable)
+   (:install)
+   (:languages "Emacs Lisp")
+   (:features region)
+   (:format
+    (format-all--buffer-native
+     'elisp-autofmt-mode
+     (if region
+         (lambda () (elisp-autofmt-region (car region) (cdr region)))
+       (lambda () (elisp-autofmt-region (point-min) (point-max)))))))
+
+  (use-package
+   elisp-mode
+   :hook
+   (emacs-lisp-mode
+    .
+    (lambda ()
+      (setq-local format-all-formatters
+                  '(("Emacs Lisp" elisp-autofmt))))))
+#+end_src
+** Go
+#+begin_src emacs-lisp
+  (use-package
+   go-ts-mode
+   :mode ("\\.go\\'" . go-ts-mode) ("/go\\.mod\\'" . go-mod-ts-mode))
+#+end_src
+** Markdown
+#+begin_src emacs-lisp
+  (use-package
+   markdown-mode
+   :defer t
+   :config
+   (defun clover/markdown-view (&rest args)
+     (when (eq major-mode 'markdown-mode)
+       (if god-local-mode
+           (markdown-toggle-markup-hiding t)
+         (markdown-toggle-markup-hiding 0))))
+   (advice-add 'god-local-mode :after #'clover/markdown-view))
+#+end_src
+** Nim
+#+begin_src emacs-lisp
+  (use-package
+   nim-ts-mode
+   :init
+   (define-format-all-formatter
+    nph
+    (:executable "nph")
+    (:install)
+    (:languages "nim")
+    (:features)
+    (:format (format-all--buffer-easy executable "-")))
+   (setopt nim-ts-mode--font-base-theme (car custom-enabled-themes))
+   :defer t
+   :config
+   (add-to-list
+    'eglot-server-programs '(nim-ts-mode . ("nimlangserver")))
+   :hook
+   (nim-ts-mode
+    . (lambda () (setq-local format-all-formatters '(("nim" nph))))))
+
+  (defun flymake-diag-region-drop-col (fun buffer line &optional col)
+    (message "Running clover flymake diag")
+    (apply fun buffer line))
+
+  (advice-add
+   'flymake-diag-region
+   :around #'flymake-diag-region-drop-col)
+  (advice-remove 'flymake-diag-region #'flymake-diag-region-drop-col)
+#+end_src
+
+** Nix
+  #+begin_src emacs-lisp
+    (use-package
+     nix-ts-mode
+     :defer t
+     :mode "\\.nix\\'"
+     :config (add-to-list 'eglot-server-programs '(nix-ts-mode . ("rnix-lsp")))
+     :hook (nix-ts-mode . (lambda () (setq-local format-all-formatters '(("Nix" alejandra))))))
+#+end_src
+** Python
+#+begin_src emacs-lisp
+  (use-package
+   python
+   :defer t
+   :init
+   (setf (cdr (rassoc 'python-mode auto-mode-alist)) 'python-ts-mode)
+   (setf (cdr (rassoc 'python-mode interpreter-mode-alist)) 'python-ts-mode)
+   :hook
+   (python-ts-mode
+    .
+    (lambda ()
+      (setq-local format-all-formatters '(("Python" black)))
+      (setq-local python-flymake-command '("flake8" "-"))
+      (setopt eglot-workspace-configuration '(:python.\analysis (:typeCheckingMode "strict"))))))
+#+end_src
+** Rust
+#+begin_src emacs-lisp
+  (use-package rust-ts-mode :mode "\\.rs\\'")
+#+end_src
+** Terraform
+#+begin_src emacs-lisp
+  (use-package
+   terraform-mode
+   :defer t
+   :bind ("C-c C-d C-d" . terraform-doc)
+   :config (add-to-list 'eglot-server-programs '(terraform-mode . ("terraform-ls" "serve"))))
+#+end_src
+** Toml
+#+begin_src emacs-lisp
+  (use-package
+   toml-ts-mode
+   :init
+   (add-to-list
+    'major-mode-remap-alist (cons 'conf-toml-mode 'toml-ts-mode)))
+#+end_src
+** Typescript
+#+begin_src emacs-lisp
+  (use-package typescript-ts-mode)
+#+end_src
+** Yaml
+#+begin_src emacs-lisp
+  (define-format-all-formatter
+   yamlfmt (:executable "yamlfmt") (:install) (:languages "YAML") (:features)
+   (:format
+    (if (project-current)
+        (format-all--buffer-easy
+         executable "-conf"
+         (expand-file-name (s-concat (project-root (project-current)) ".yamlfmt")) "-")
+      (format-all--buffer-easy executable "-"))))
+
+  (use-package
+   yaml-ts-mode
+   :defer t
+   :hook (yaml-ts-mode . (lambda () (setq-local format-all-formatters '(("YAML" yamlfmt))))))
+#+end_src
+* Programming
+** Compilation
+#+begin_src emacs-lisp
+  (use-package compile
+    :init
+    (defun compile-comint ()
+      (interactive)
+      (compile (eval compile-command) t))
+    :bind (:map prog-mode-map
+                ("C-c m c" . compile)
+                ("C-c m r" . recompile)
+                ("C-c m i" . compile-comint)))
+#+end_src
+** Completion
+#+begin_src emacs-lisp
+  (use-package
+   corfu
+   :init (setopt global-corfu-mode t)
+   :config
+   (setopt corfu-auto t)
+   (setopt corfu-popupinfo-mode t)
+   (setopt corfu-popupinfo-delay '(0.5 . 0.5))
+   (defun corfu-enable-in-minibuffer ()
+     "Enable Corfu in the minibuffer if `completion-at-point' is bound."
+     (when (where-is-internal #'completion-at-point (list (current-local-map)))
+       (setq-local corfu-auto t) ;; Enable/disable auto completion
+       (setq-local
+        corfu-echo-delay nil ;; Disable automatic echo and popup
+        corfu-popupinfo-delay nil)
+       (corfu-mode 1)))
+   :hook (minibuffer-setup . corfu-enable-in-minibuffer))
+#+end_src
+** Flymake
+#+begin_src emacs-lisp
+  (use-package flymake-popon :hook (flymake-mode . flymake-popon-mode))
+#+end_src
+** Language ID
+#+begin_src emacs-lisp
+  (use-package
+   language-id
+   :config
+   (setopt
+    language-id--definitions
+    (append
+     '(("Nix" nix-ts-mode) ("nim" nim-mode)) language-id--definitions)))
+#+end_src
+** LSP
+Configuration for LSP support in prog-mode and yaml-ts-mode. Using Emacs inbuilt mode Eglot.
+Config options to reduce the logging and improve the performance.
+#+begin_src emacs-lisp
+  (use-package
+   eglot
+   :hook ((prog-mode yaml-ts-mode) . eglot-ensure)
+   :bind
+   (:map
+    eglot-mode-map
+    ("C-c e r" . eglot-rename)
+    ("C-c e f" . eglot-format)
+    ("C-c e a" . eglot-code-actions)
+    ("C-c e o" . eglot-code-action-organize-imports)
+    ("C-c e i" . eglot-code-action-inline)
+    ("C-c e x" . eglot-code-action-extract)
+    ("C-c e w" . eglot-code-action-rewrite)
+    ("C-c e q" . eglot-code-action-quickfix)
+    ("C-c e h" . eldoc))
+   :config
+   (fset #'jsonrpc--log-event #'ignore)
+   (setopt eglot-events-buffer-size 0))
+#+end_src
+** Sideline
+#+begin_src emacs-lisp
+  (use-package
+   sideline
+   :init (global-sideline-mode 1)
+   (setq sideline-backends-right
+         '((sideline-blame . up) (sideline-eglot . down)))
+   (setq sideline-backends-left nil))
+#+end_src
+** Treesitter
+#+begin_src emacs-lisp
+  (use-package
+   treesit
+   :init
+   (defun 4lc/treesitter-major-mode-remap ()
+     "Remap major modes to their treesitter counterparts if available."
+     (interactive)
+     ;; Iterate over all loaded packages and find "-ts-mode" ones
+     (dolist (mode (apropos-internal "-ts-mode$" 'functionp))
+       (let*
+           ((ts-mode-name (symbol-name mode)) ; Convert symbol to string
+            (normal-mode-name
+             (replace-regexp-in-string
+              "-ts-mode$" "-mode" ts-mode-name))
+            (normal-mode-symbol (intern-soft normal-mode-name)))
+         (when (and normal-mode-symbol (fboundp normal-mode-symbol))
+           (progn
+             (add-to-list
+              'major-mode-remap-alist
+              (cons normal-mode-symbol mode)))))))
+
+   (defvar 4lc/treesitter-no-auto-mode ()
+     "List of Treesitter modes that are not auto-remapped.")
+
+   (defun 4lc/update-treesitter-no-auto-mode-list ()
+     "Update `4lc/treesitter-no-auto-mode' with Treesitter modes not in `major-mode-remap-alist'."
+     (setq 4lc/treesitter-no-auto-mode nil)
+     (let ((ts-modes
+            (seq-filter
+             (lambda (mode)
+               (string-suffix-p "-ts-mode" (symbol-name mode)))
+             (apropos-internal "-ts-mode" 'commandp)))
+           (remapped-modes (mapcar 'cdr major-mode-remap-alist))
+           (auto-modes (mapcar 'cdr auto-mode-alist)))
+       (dolist (mode ts-modes)
+         (unless (or (memq mode remapped-modes) (memq mode auto-modes))
+           (add-to-list '4lc/treesitter-no-auto-mode mode)))))
+
+   (4lc/treesitter-major-mode-remap)
+   (4lc/update-treesitter-no-auto-mode-list)
+
+   :config (setopt treesit-font-lock-level 4)
+   :custom
+   (setopt
+    treesit-extra-load-path '("~/.config/emacs/var/tree-sitter")))
+#+end_src

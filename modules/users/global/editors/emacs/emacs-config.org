@@ -23,7 +23,7 @@ Remove some of the default GUI display components that are typically used with m
   (set-fringe-mode 10)
   (menu-bar-mode -1)
   (setopt inhibit-startup-message t)
-#+end_src 
+#+end_src
 
 ** Disabled commands
 Emacs has disabled some inbuilt functions by default as a safety measure. Replacing the function that is called prior to running these enables all these commands without further confirmation.
@@ -1120,7 +1120,7 @@ Dired nerd icons to show icons for files and folders
     'major-mode-remap-alist (cons 'conf-toml-mode 'toml-ts-mode)))
 #+end_src
 ** Typescript
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp
   (use-package typescript-ts-mode)
 #+end_src
 ** Yaml

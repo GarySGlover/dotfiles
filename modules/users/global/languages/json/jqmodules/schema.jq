@@ -25,7 +25,7 @@ module {
 # jq .[] huge.json | jq -n 'include "schema" {search: "."}; schema(inputs)'
 # gojq .[] huge.json | gojq -L . -nc 'include "schema"; schema(inputs)'
 
-# Example of use with jm (http://github.com/pkoppstein/jm) 
+# Example of use with jm (http://github.com/pkoppstein/jm)
 # jm HUGE.json | jq -n 'include "schema" {search: "."}; schema(inputs)'
 
 # To check conformance with the structural schemas produced by this module,

@@ -30,7 +30,7 @@
      "format-critical": "G2: {temperatureC}°C {icon}",
      "format": "G2: {temperatureC}°C {icon}",
      "format-icons": ["", "", ""]
-  },  
+  },
   "battery": {
     "format": "{capacity}% {icon}",
     "format-icons": ["", "", "", "", ""]

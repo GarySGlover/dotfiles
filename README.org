@@ -8,7 +8,7 @@ Create following partitions and names
 |--------------+--------+--------+-----|
 
 Wipe dise and create partition table
-#+begin_src shell 
+#+begin_src shell
   wipefs -a /dev/nvme0n1
   parted /dev/nvme0n1 -- mklabel gpt
   parted /dev/nvme0n1 -- mkpart ESP fat32 1MB 512MB
@@ -42,4 +42,4 @@ Add system
 - host module
 *** Move hardware config
 Source is /mnt/etc/nixos/configuration.nix
-** Install 
+** Install

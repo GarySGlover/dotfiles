@@ -1182,15 +1182,6 @@ Config options to reduce the logging and improve the performance.
    (fset #'jsonrpc--log-event #'ignore)
    (setopt eglot-events-buffer-size 0))
 #+end_src
-** Sideline
-#+begin_src emacs-lisp
-  (use-package
-   sideline
-   :init (global-sideline-mode 1)
-   (setq sideline-backends-right
-         '((sideline-blame . up) (sideline-eglot . down)))
-   (setq sideline-backends-left nil))
-#+end_src
 ** Treesitter
 #+begin_src emacs-lisp
   (use-package

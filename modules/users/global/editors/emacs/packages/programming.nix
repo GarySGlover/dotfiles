@@ -11,13 +11,6 @@ in {
     programs.emacs.extraPackages = epkgs:
       with epkgs; [
         flymake-popon
-        sideline
-        sideline-flymake
-        sideline-blame
-        (callPackage ./manual/sideline-eglot.nix {
-          inherit (pkgs) fetchFromGitHub writeText;
-          inherit (epkgs) melpaBuild sideline ht;
-        })
       ];
   };
 }

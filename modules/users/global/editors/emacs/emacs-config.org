@@ -142,12 +142,6 @@ Utilities for Emacs that support further parts of the configuration.
     ("i" . god-local-mode))
    :hook (post-command . clover/god-cursor))
 #+end_src
-** Posframe
-Better popup frames
-#+begin_src emacs-lisp
-  (use-package posframe)
-  ;; (use-package transient-posframe :init (transient-posframe-mode))
-#+end_src
 ** Transient
 #+begin_src emacs-lisp
   (use-package transient)
@@ -189,18 +183,6 @@ Popup to show available shortcut keys in current mode
    (which-key-idle-secondary-delay 0.05 "Quicker which-key subsequest display")
    (which-key-max-display-columns 3)
    (which-key-show-remaining-keys t))
-
-  (use-package
-   which-key-posframe
-   :after (which-key posframe)
-   :config
-   (defun which-key-posframe--max-dimensions-override (x)
-     (cons (max 10 (pop x)) x))
-   (advice-add
-    'which-key-posframe--max-dimensions
-    :filter-return #'which-key-posframe--max-dimensions-override)
-   (setq which-key-posframe-poshandler 'posframe-poshandler-frame-top-center)
-   (which-key-posframe-mode))
 #+end_src
 
 ** GPTel
@@ -743,14 +725,6 @@ Which-key for Embark
 ** Vertico
 #+begin_src emacs-lisp
   (use-package vertico :init (vertico-mode) :bind (:map vertico-map ("M-s" . vertico-suspend)))
-
-  (use-package
-   vertico-posframe
-   :init (vertico-posframe-mode 1)
-   :config
-   (setq vertico-posframe-poshandler #'posframe-poshandler-frame-top-center)
-   (setopt vertico-posframe-truncate-lines nil)
-   (setopt vertico-posframe-width 100))
 #+end_src
 * Editing
 ** Column Indicator

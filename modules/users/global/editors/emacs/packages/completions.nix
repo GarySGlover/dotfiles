@@ -17,7 +17,6 @@ with lib; {
         nerd-icons-completion
         orderless
         vertico
-        vertico-posframe
       ];
   };
 }

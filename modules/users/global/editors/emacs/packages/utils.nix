@@ -14,9 +14,7 @@ with lib; {
         magit
         mini-frame
         no-littering
-        posframe
         transient
-        transient-posframe
         (callPackage ./manual/combobulate.nix {
           inherit (pkgs) fetchFromGitHub writeText;
           inherit (epkgs) melpaBuild compat;

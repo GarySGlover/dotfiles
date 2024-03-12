@@ -11,7 +11,6 @@ with lib; {
         devdocs
         helpful
         which-key
-        which-key-posframe
       ];
   };
 }

@@ -1143,10 +1143,6 @@ Dired nerd icons to show icons for files and folders
        (corfu-mode 1)))
    :hook (minibuffer-setup . corfu-enable-in-minibuffer))
 #+end_src
-** Flymake
-#+begin_src emacs-lisp
-  (use-package flymake-popon :hook (flymake-mode . flymake-popon-mode))
-#+end_src
 ** Language ID
 #+begin_src emacs-lisp
   (use-package

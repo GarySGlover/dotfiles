@@ -9,8 +9,6 @@ with lib; let
 in {
   config = mkIf opt.roles.editing {
     programs.emacs.extraPackages = epkgs:
-      with epkgs; [
-        flymake-popon
-      ];
+      with epkgs; [];
   };
 }

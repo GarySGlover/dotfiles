@@ -352,8 +352,6 @@ Functions to directly set the height and width of windows as either percentage o
             "\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
             "\\`\\*Embark Export:.*\\*"
             ,(4lc/display-buffer-derived-mode-p 'dired-mode)
-            ,(4lc/display-buffer-derived-mode-p 'eat-mode)
-            "^\\*.*shell.*\\*$"
             ("magit-\\(diff\\|process\\).*" 1))))
      (-each
       buffer-rules

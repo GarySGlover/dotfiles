@@ -949,6 +949,26 @@ Dired nerd icons to show icons for files and folders
       (completing-read
        "Select resource: " (kubel--kubernetes-resources-list)))))
 #+end_src
+** Eat
+#+begin_src emacs-lisp
+  (use-package
+   eat
+   :init
+   (defun 4lc/eat-program (name)
+     (interactive)
+     (let ((eat-buffer-name (format "*%s*" name))
+           (eat-kill-buffer-on-exit t))
+       (eat name)))
+   :bind
+   (("C-c e b" .
+     (lambda ()
+       (interactive)
+       (4lc/eat-program "btop")))
+    ("C-c e k" .
+     (lambda ()
+       (interactive)
+       (4lc/eat-program "k9s")))))
+#+end_src
 * Languages
 ** Bash
 #+begin_src emacs-lisp

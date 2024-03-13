@@ -22,7 +22,7 @@ New mode based on tabulated list mode
 | C-c b  |                  |
 | C-c c  | >chatgpt-shell   |
 | C-c d  |                  |
-| C-c e  |                  |
+| C-c e  | >eat program     |
 | C-c f  | format-all       |
 | C-c g  | magit            |
 | C-c h  |                  |

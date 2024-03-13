@@ -52,9 +52,6 @@ Revert the buffer to the on disk file contents when they are changed outside of 
 
 #+begin_src emacs-lisp
   (global-auto-revert-mode 1)
-
-  ;; Also auto refresh dired, but be quiet about it
-  (setq global-auto-revert-non-file-buffers t)
   (setq auto-revert-verbose nil)
 #+end_src
 
@@ -320,8 +317,7 @@ Functions to directly set the height and width of windows as either percentage o
          (window-parameters
           .
           ((mode-line-format . 'none)
-           (no-delete-other-windows . t)
-           (no-other-window . t)))))))
+           (no-delete-other-windows . t)))))))
 
   (defun 4lc/display-buffer-derived-mode-p (mode)
     `(lambda (buffer-name action)

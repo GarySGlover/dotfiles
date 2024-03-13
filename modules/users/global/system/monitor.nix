@@ -1,6 +1,12 @@
 {pkgs, ...}: {
   home.packages = with pkgs; [
-    btop
     lm_sensors
   ];
+
+  programs.btop = {
+    enable = true;
+    settings = {
+      force_tty = true;
+    };
+  };
 }

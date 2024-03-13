@@ -7,9 +7,13 @@
 with lib; {
   config = mkIf config.wolf.roles.devops {
     home.packages = with pkgs; [
+      argo-rollouts
       kubectl
       kubernetes-helm
-      argo-rollouts
     ];
+
+    programs.k9s = {
+      enable = true;
+    };
   };
 }

@@ -406,14 +406,17 @@ Setup the main theme and fonts used within this emacs configuration.
   (use-package
    ef-themes
    :config
-   (let ((light
-          (nth
-           (random (length ef-themes-light-themes))
-           ef-themes-light-themes))
-         (dark
-          (nth
-           (random (length ef-themes-dark-themes))
-           ef-themes-dark-themes)))
+   (let* ((ef-allowed-light-themes
+           (seq-difference
+            ef-themes-light-themes '(ef-cyprus ef-frost ef-light)))
+          (light
+           (nth
+            (random (length ef-allowed-light-themes))
+            ef-allowed-light-themes))
+          (dark
+           (nth
+            (random (length ef-themes-dark-themes))
+            ef-themes-dark-themes)))
      (setopt ef-themes-to-toggle `(,light ,dark))
      (ef-themes-select dark)))
 #+end_src

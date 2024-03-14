@@ -913,11 +913,11 @@ Dired nerd icons to show icons for files and folders
            (eat-kill-buffer-on-exit t))
        (eat name)))
    :bind
-   (("C-c e b" .
+   (("C-c p b" .
      (lambda ()
        (interactive)
        (4lc/eat-program "btop")))
-    ("C-c e k" .
+    ("C-c p k" .
      (lambda ()
        (interactive)
        (4lc/eat-program "k9s")))))

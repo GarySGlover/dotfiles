@@ -19,10 +19,10 @@ New mode based on tabulated list mode
 | Prefix | Name           |
 |--------+----------------|
 | C-c a  | >avy           |
-| C-c b  |                |
+| C-c b  | beframe        |
 | C-c c  | chatgpt-send   |
 | C-c d  |                |
-| C-c e  | >eat program   |
+| C-c e  | eglot          |
 | C-c f  | format-all     |
 | C-c g  | magit          |
 | C-c h  |                |
@@ -33,7 +33,7 @@ New mode based on tabulated list mode
 | C-c m  | compile        |
 | C-c n  |                |
 | C-c o  |                |
-| C-c p  |                |
+| C-c p  | >eat-programs  |
 | C-c q  |                |
 | C-c r  |                |
 | C-c s  |                |

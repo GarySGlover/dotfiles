@@ -16,31 +16,31 @@ New mode based on tabulated list mode
 
 
 * Global Custom Prefixes
-| Prefix | Name             |
-|--------+------------------|
-| C-c a  | >avy             |
-| C-c b  |                  |
-| C-c c  | >chatgpt-shell   |
-| C-c d  |                  |
-| C-c e  | >eat program     |
-| C-c f  | format-all       |
-| C-c g  | magit            |
-| C-c h  |                  |
-| C-c i  |                  |
-| C-c j  |                  |
-| C-c k  |                  |
-| C-c l  |                  |
-| C-c m  | compile          |
-| C-c n  |                  |
-| C-c o  |                  |
-| C-c p  |                  |
-| C-c q  |                  |
-| C-c r  |                  |
-| C-c s  |                  |
-| C-c t  | >transparency    |
-| C-c u  |                  |
-| C-c v  | >visual          |
-| C-c w  |                  |
-| C-c x  |                  |
-| C-c y  |                  |
-| C-c z  |                  |
+| Prefix | Name           |
+|--------+----------------|
+| C-c a  | >avy           |
+| C-c b  |                |
+| C-c c  | chatgpt-send   |
+| C-c d  |                |
+| C-c e  | >eat program   |
+| C-c f  | format-all     |
+| C-c g  | magit          |
+| C-c h  |                |
+| C-c i  |                |
+| C-c j  |                |
+| C-c k  |                |
+| C-c l  |                |
+| C-c m  | compile        |
+| C-c n  |                |
+| C-c o  |                |
+| C-c p  |                |
+| C-c q  |                |
+| C-c r  |                |
+| C-c s  |                |
+| C-c t  | >transparency  |
+| C-c u  |                |
+| C-c v  |                |
+| C-c w  |                |
+| C-c x  |                |
+| C-c y  |                |
+| C-c z  |                |

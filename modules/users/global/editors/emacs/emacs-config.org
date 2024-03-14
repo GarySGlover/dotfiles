@@ -869,18 +869,7 @@ Indent bars
           (add-hook 'before-save-hook 'whitespace-cleanup nil 'local)
         (remove-hook 'before-save-hook 'whitespace-cleanup 'local)))))
 #+end_src
-** Visual Transient
-#+begin_src emacs-lisp
-  (transient-define-prefix
-   ct-visual-buffer
-   ()
-   :transient-suffix 'transient--do-stay
-   :transient-non-suffix
-   'transient--do-exit
-   [("c" "Column Indicator" display-fill-column-indicator-mode) ("w" "Whitespace" whitespace-mode)])
-  (bind-key "C-c v" 'ct-visual-buffer)
-#+end_src
-** Templates
+
 * System
 ** Dired
 - Change dired listing mode to not show full details by default.

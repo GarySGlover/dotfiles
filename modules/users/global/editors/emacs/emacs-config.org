@@ -342,13 +342,18 @@ Functions to directly set the height and width of windows as either percentage o
             ("^\\*format-all-errors\\*$" 1)
             ("^\\*kubel-process\\*$" 1)
             ("^\\*Backtrace\\*$" 1)
+            ("magit.*" 1)
             "^\\*Woman.*\\*$"
-            "^\\*help\\|^\\*info\\|^\\*Terraform:"
-            "magit.*:\\|magit-revision\\|COMMIT_EDITMSG"
-            "\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-            "\\`\\*Embark Export:.*\\*"
+            "^\\*help"
+            "^\\*info"
+            "^\\*Terraform:"
+            "^magit:"
+            "^magit-revision"
+            "^COMMIT_EDITMSG$"
+            "^\\*Embark .*\\*$"
             ,(4lc/display-buffer-derived-mode-p 'dired-mode)
-            ("magit-\\(diff\\|process\\).*" 1))))
+            "^\\*format-all-errors\\*$"
+            "^\\*Occur\\*$")))
      (-each
       buffer-rules
       (lambda (item)

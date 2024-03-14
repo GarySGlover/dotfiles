@@ -920,7 +920,15 @@ Dired nerd icons to show icons for files and folders
     ("C-c p k" .
      (lambda ()
        (interactive)
-       (4lc/eat-program "k9s")))))
+       (4lc/eat-program "k9s")))
+    ("C-c p f" .
+     (lambda ()
+       (interactive)
+       (4lc/eat-program "fish")))
+    ("C-c p s" .
+     (lambda ()
+       (interactive)
+       (4lc/eat-program "bash")))))
 #+end_src
 * Languages
 ** Bash

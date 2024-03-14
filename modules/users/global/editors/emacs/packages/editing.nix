@@ -11,7 +11,6 @@ with lib; {
         consult-flyspell
         dtrt-indent
         format-all
-        god-mode
       ];
 
     home.packages = with pkgs; [

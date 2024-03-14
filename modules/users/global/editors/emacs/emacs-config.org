@@ -99,46 +99,7 @@ Utilities for Emacs that support further parts of the configuration.
     :init
     (gcmh-mode 1))
 #+end_src
-** God mode
-#+begin_src emacs-lisp
-  (use-package
-   god-mode
-   :init
-   (setopt god-mode-enable-function-key-translation nil)
-   (defun clover/god-cursor ()
-     (ef-themes-with-colors
-      (if god-local-mode
-          (progn
-            (setq cursor-type 'box)
-            (set-face-attribute 'cursor nil :background bg-cyan-intense))
-        (if buffer-read-only
-            (progn
-              (setq cursor-type 'box)
-              (set-face-attribute 'cursor nil :background bg-red-intense))
-          (progn
-            (setq cursor-type 'box)
-            (set-face-attribute 'cursor nil :background bg-yellow-intense))))))
-   (god-mode)
-   :config
-   (setopt
-    set-message-functions '(inhibit-message set-minibuffer-message))
-   (add-to-list 'inhibit-message-regexps "God")
-   (defun clover/global-escape ()
-     (interactive)
-     (funcall (key-binding "\C-g")))
-   :bind
-   (("<escape>" . god-local-mode)
-    ("C-x C-1" . delete-other-windows)
-    ("C-x C-2" . split-window-below)
-    ("C-x C-3" . split-window-right)
-    ("C-x C-0" . delete-window)
-    :map
-    god-local-mode-map
-    ("<escape>" . clover/global-escape)
-    ("z" . repeat)
-    ("i" . god-local-mode))
-   :hook (post-command . clover/god-cursor))
-#+end_src
+
 ** Transient
 #+begin_src emacs-lisp
   (use-package transient)
@@ -166,7 +127,6 @@ Popup to show available shortcut keys in current mode
    :demand
    :config
    (which-key-mode)
-   (which-key-enable-god-mode-support)
    (which-key-add-keymap-based-replacements org-mode-map "C-c C-v" "Org babel" "C-c C-x" "Org extra")
    :bind
    (:map
@@ -1019,14 +979,7 @@ Dired nerd icons to show icons for files and folders
 #+begin_src emacs-lisp
   (use-package
    markdown-mode
-   :defer t
-   :config
-   (defun clover/markdown-view (&rest args)
-     (when (eq major-mode 'markdown-mode)
-       (if god-local-mode
-           (markdown-toggle-markup-hiding t)
-         (markdown-toggle-markup-hiding 0))))
-   (advice-add 'god-local-mode :after #'clover/markdown-view))
+   :defer t)
 #+end_src
 ** Nim
 #+begin_src emacs-lisp

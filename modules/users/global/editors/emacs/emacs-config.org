@@ -934,6 +934,11 @@ Indent bars
 #+begin_src emacs-lisp
   (use-package
    org
+   :init
+   (defun 4lc/org-babel-add-language (lang)
+     (org-babel-do-load-languages
+      'org-babel-load-languages
+      (add-to-list 'org-babel-load-languages `(,lang . t))))
    :config
    (setopt org-src-window-setup 'plain)
    (setopt org-startup-indented t)
@@ -1271,6 +1276,10 @@ Dired nerd icons to show icons for files and folders
    :hook
    (restclient-mode . restclient-test-mode)
    (restclient-test-mode . flymake-mode))
+#+end_src
+** Verb
+#+begin_src emacs-lisp
+  (use-package verb :init (4lc/org-babel-add-language 'verb))
 #+end_src
 * Programming
 ** Compilation

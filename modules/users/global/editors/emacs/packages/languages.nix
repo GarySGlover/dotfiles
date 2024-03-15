@@ -19,9 +19,6 @@ in {
           inherit (epkgs) melpaBuild nim-mode;
         })
         nix-ts-mode
-        restclient
-        restclient-test
-        ob-restclient
         verb
         terraform-doc
         terraform-mode

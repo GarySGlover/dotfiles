@@ -936,10 +936,6 @@ Indent bars
    (setopt org-startup-indented t)
    (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
 #+end_src
-*** Org Style
-#+begin_src emacs-lisp
-  (use-package org-modern :hook (org-mode . org-modern-mode))
-#+end_src
 ** Rainbow delimiters
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters :hook (prog-mode . rainbow-delimiters-mode))
@@ -1019,39 +1015,6 @@ Indent bars
    (setopt dired-hide-details-hide-symlink-targets nil)
  :bind (:map dired-mode-map ("C-+" . dired-create-empty-file))
    :hook (dired-mode . dired-hide-details-mode))
-#+end_src
-
-Make Dired find file and create emtpy file aware of subdirectory
-#+begin_src emacs-lisp
-  (defun dired-subdir-aware (orig-fun &rest args)
-    (if (eq major-mode 'dired-mode)
-        (let ((default-directory (dired-current-directory)))
-          (apply orig-fun args))
-      (apply orig-fun args)))
-
-  (advice-add 'find-file-read-args :around 'dired-subdir-aware)
-  (advice-add 'read-file-name :around 'dired-subdir-aware)
-#+end_src
-
-Dired subtree package for allowing tree style insertion and removal of sub-directories.
-#+begin_src emacs-lisp
-  (use-package
-   dired-subtree
-   :after dired
-   :config
-   ;; Fix for nerd icons in dired with subtree
-   (defun dired-subtree-add-nerd-icons ()
-     (interactive)
-     (revert-buffer))
-   (advice-add 'dired-subtree-toggle :after 'dired-subtree-add-nerd-icons)
-   (advice-add 'dired-subtree-cycle :after 'dired-subtree-add-nerd-icons)
-   (advice-add 'dired-subtree-remove :after 'dired-subtree-add-nerd-icons)
-   :bind
-   (:map
-    dired-mode-map
-    ("<tab>" . dired-subtree-toggle)
-    ("C-<tab>" . dired-subtree-cycle)
-    ("<backtab>" . dired-subtree-remove)))
 #+end_src
 
 Dired nerd icons to show icons for files and folders

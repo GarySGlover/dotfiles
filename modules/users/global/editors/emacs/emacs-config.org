@@ -560,14 +560,6 @@ Setup the main theme and fonts used within this emacs configuration.
      (ef-themes-select dark)))
 #+end_src
 
-Window splitting
-#+begin_src emacs-lisp
-  (setopt window-divider-mode t)
-  (setopt window-divider-default-places t)
-  (set-face-foreground 'vertical-border "black")
-  (set-face-background 'vertical-border (face-foreground 'vertical-border))
-#+end_src
-
 ** Alert notification
 When Emacs reports an exception the default action is to play a bell sound. This replaces the sound with a double flash on the mode-line background.
 

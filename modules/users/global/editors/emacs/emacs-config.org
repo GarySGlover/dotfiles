@@ -367,6 +367,8 @@ Popup to show available shortcut keys in current mode
    :demand t
    :init
    (defun 4lc/set-gptel-directive (&optional language)
+     "Set the gptel directive to respond as code for the
+  current buffers language "
      (let ((lang (language-id-buffer)))
        (when lang
          (unless (assoc (intern (downcase lang)) gptel-directives)
@@ -375,6 +377,13 @@ Popup to show available shortcut keys in current mode
                          (append
                           `((,(intern (downcase lang)) . ,prompt)) gptel-directives))
              (setq-local gptel--system-message prompt))))))
+
+   (defun 4lc/gptel-y-n (f &rest args)
+     "Add confirmation to prevent accidental sends"
+     (when (yes-or-no-p "Are you sure you want to send to AI?")
+       (apply f args)))
+   (advice-add 'gptel-curl-get-response :around #'4lc/gptel-y-n)
+   (advice-add 'gptel--url-get-response :around #'4lc/gptel-y-n)
    :config (setopt gptel-model "gpt-4-turbo-preview")
    :commands (gptel)
    :bind ("C-c c" . gptel-send)

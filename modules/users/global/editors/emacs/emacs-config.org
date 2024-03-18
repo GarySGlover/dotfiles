@@ -784,10 +784,10 @@ Easy look through files git history
    :bind
    ( ;; C-c bindings in `mode-specific-map'
     ("C-c M-x" . consult-mode-command)
-    ("C-c h" . consult-history)
-    ("C-c k" . consult-kmacro)
-    ("C-c m" . consult-man)
-    ("C-c i" . consult-info)
+    ("C-c d h" . consult-history)
+    ("C-c d k" . consult-kmacro)
+    ("C-c d m" . consult-man)
+    ("C-c d i" . consult-info)
     ([remap Info-search] . consult-info)
     ;; C-x bindings in `ctl-x-map'
     ("C-x M-:" . consult-complex-command) ;; orig. repeat-complex-command
@@ -848,8 +848,7 @@ Easy look through files git history
     :map
     embark-identifier-map
     ("RET" . xref-find-definitions-other-window))
-   :init (setq prefix-help-command #'embark-prefix-help-command)
-   (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target))
+   :init (setq prefix-help-command #'embark-prefix-help-command))
 
   (use-package
    embark-consult
@@ -1283,6 +1282,10 @@ Dired nerd icons to show icons for files and folders
    yaml-ts-mode
    :defer t
    :hook (yaml-ts-mode . (lambda () (setq-local format-all-formatters '(("YAML" yamlfmt))))))
+
+  (use-package
+    yaml-pro
+    :hook (yaml-ts-mode . yaml-pro-ts-mode))
 #+end_src
 
 #+begin_src emacs-lisp

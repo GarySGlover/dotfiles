@@ -1,5 +1,50 @@
 #+property: header-args :results silent
 
+* Info
+** Key Bindings
+*** Global
+| Prefix | Name             |
+|--------+------------------|
+| C-c a  | avy char         |
+| C-c b  | beframe          |
+| C-c c  | chatgpt-send     |
+| C-c d  | >consult         |
+| C-c f  | format-all       |
+| C-c g  | magit            |
+| C-c h  |                  |
+| C-c i  |                  |
+| C-c j  |                  |
+| C-c k  |                  |
+| C-c l  |                  |
+| C-c n  |                  |
+| C-c o  |                  |
+| C-c p  | >eat-programs    |
+| C-c q  |                  |
+| C-c r  |                  |
+| C-c s  | git time machine |
+| C-c t  | >transparency    |
+| C-c u  |                  |
+| C-c v  |                  |
+| C-c w  |                  |
+| C-c x  |                  |
+| C-c y  |                  |
+| C-c z  |                  |
+*** Local
+**** Prog mode
+| Prefix | Name     |
+|--------+----------|
+| C-c e  | >eglot   |
+| C-c m  | >compile |
+
+** Investigate packages
+** Yaml pro
+https://github.com/zkry/yaml-pro
+** Consult eglot
+https://github.com/mohkale/consult-eglot
+** Hyperbole
+** Emacs everywhere
+Doesn't work with wayland: https://github.com/tecosaur/emacs-everywhere/issues/50
+
 * Initialisation
 This section contains basic configurations for Emacs to tidy up the interface and set some defaults for the inbuilt modules that don't fit into other categories.
 ** Fix Emacs home

@@ -22,6 +22,7 @@ in {
         verb
         terraform-doc
         terraform-mode
+        yaml-pro
       ];
   };
 }

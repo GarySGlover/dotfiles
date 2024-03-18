@@ -1270,22 +1270,47 @@ Dired nerd icons to show icons for files and folders
 ** Yaml
 #+begin_src emacs-lisp
   (define-format-all-formatter
-   yamlfmt (:executable "yamlfmt") (:install) (:languages "YAML") (:features)
+   yamlfmt
+   (:executable "yamlfmt")
+   (:install)
+   (:languages "YAML")
+   (:features)
    (:format
     (if (project-current)
         (format-all--buffer-easy
          executable "-conf"
-         (expand-file-name (s-concat (project-root (project-current)) ".yamlfmt")) "-")
+         (expand-file-name
+          (s-concat (project-root (project-current)) ".yamlfmt"))
+         "-")
       (format-all--buffer-easy executable "-"))))
 
   (use-package
    yaml-ts-mode
    :defer t
-   :hook (yaml-ts-mode . (lambda () (setq-local format-all-formatters '(("YAML" yamlfmt))))))
+   :hook
+   (yaml-ts-mode
+    .
+    (lambda () (setq-local format-all-formatters '(("YAML" yamlfmt))))))
 
   (use-package
-    yaml-pro
-    :hook (yaml-ts-mode . yaml-pro-ts-mode))
+   yaml-pro
+   :hook (yaml-ts-mode . yaml-pro-ts-mode)
+   :bind
+   (:map
+    yaml-pro-ts-mode
+    ("M-<up>" . yaml-pro-ts-move-subtree-up)
+    ("M-<down>" . yaml-pro-ts-move-subtree-down))
+   (:repeat-map
+    my/yaml-pro/tree-repeat-map
+    ("n" . yaml-pro-ts-next-subtree)
+    ("p" . yaml-pro-ts-prev-subtree)
+    ("u" . yaml-pro-ts-up-level)
+    ("d" . yaml-pro-ts-down-level)
+    ("m" . yaml-pro-ts-mark-subtree)
+    ("k" . yaml-pro-ts-kill-subtree)
+    ("a" . yaml-pro-ts-first-sibling)
+    ("e" . yaml-pro-ts-last-sibling)
+    ("SPC" . my/yaml-pro/set-mark)))
 #+end_src
 
 #+begin_src emacs-lisp

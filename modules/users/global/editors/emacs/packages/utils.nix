@@ -9,8 +9,9 @@ with lib; {
     programs.emacs.extraPackages = epkgs:
       with epkgs; [
         direnv
-        gcmh
         exec-path-from-shell
+        gcmh
+        git-timemachine
         magit
         mini-frame
         no-littering

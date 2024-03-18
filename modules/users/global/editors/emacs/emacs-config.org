@@ -730,12 +730,18 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
 #+begin_src emacs-lisp
   (use-package
    magit
-   :commands 'magit-status
-   :config (setq magit-display-buffer-function #'display-buffer)
+   :demand t
+   :config (setq magit-dispnlay-buffer-function #'display-buffer)
    (advice-add
     'magit-worktree-delete
     :after (lambda (&optional WORKTREE) (project-forget-zombie-projects)))
    :bind (("C-c g" . magit-status) ("C-x p m" . magit-project-status)))
+#+end_src
+
+Easy look through files git history
+#+begin_src emacs-lisp
+  (use-package git-timemachine
+    :bind ("C-c s" . git-timemachine))
 #+end_src
 * Navigation
 ** Avy

@@ -37,8 +37,6 @@
 | C-c m  | >compile |
 
 ** Investigate packages
-** Yaml pro
-https://github.com/zkry/yaml-pro
 ** Consult eglot
 https://github.com/mohkale/consult-eglot
 ** Hyperbole
@@ -47,6 +45,10 @@ Doesn't work with wayland: https://github.com/tecosaur/emacs-everywhere/issues/5
 
 * Initialisation
 This section contains basic configurations for Emacs to tidy up the interface and set some defaults for the inbuilt modules that don't fit into other categories.
+** Lexical Binding
+#+begin_src emacs-lisp
+  ;; -*- lexical-binding: t -*-
+#+end_src
 ** Fix Emacs home
 #+begin_src emacs-lisp
  (setq user-emacs-directory (file-truename "~/.config/emacs/"))
@@ -126,8 +128,28 @@ Inhibit electric indent from re-indenting.
 #+end_src
 
 ** Repeat mode
+#+begin_src emacs-lisp :lexical t
+  (defun repeat-help--which-key-popup ()
+    (if-let ((cmd (or this-command real-this-command))
+             (keymap
+              (or repeat-map (repeat--command-property 'repeat-map))))
+      (run-at-time
+       0 nil
+       (lambda ()
+         (which-key--create-buffer-and-show nil (symbol-value keymap))))
+      (which-key--hide-popup)))
+#+end_src
+
 #+begin_src emacs-lisp
-  (setopt repeat-mode t)
+  (use-package
+   repeat
+   :init (setopt repeat-mode t)
+
+   :config
+   ;; Disable the built-in repeat-mode hinting
+   (setopt repeat-echo-function #'ignore)
+
+   (advice-add 'repeat-post-hook :after 'repeat-help--which-key-popup))
 #+end_src
 * Core Utilities
 Utilities for Emacs that support further parts of the configuration.

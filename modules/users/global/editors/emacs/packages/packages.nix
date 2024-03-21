@@ -29,12 +29,14 @@ in {
     programs.emacs.extraPackages = epkgs:
       with epkgs; [
         ace-window
+        auto-yasnippet
         avy
         beframe
         breadcrumb
         combobulate
         consult
         consult-flyspell
+        consult-yasnippet
         corfu
         devdocs
         direnv
@@ -75,6 +77,8 @@ in {
         visual-fill-column
         which-key
         yaml-pro
+        yasnippet
+        yasnippet-snippets
       ];
 
     # Dictionaries for use with flyspell

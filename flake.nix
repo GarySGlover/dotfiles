@@ -2,7 +2,7 @@
   description = "Clover Nix Configurtaion";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-unstable";
+    nixpkgs.url = "nixpkgs/nixpkgs-unstable";
     home-manager = {
       url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -183,7 +183,7 @@
     devShells.${system}.default = pkgs.mkShell {
       packages = with pkgs; [
         alejandra
-        rnix-lsp
+        nixd
       ];
     };
   };

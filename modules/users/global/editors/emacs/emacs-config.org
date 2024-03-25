@@ -564,7 +564,8 @@ Functions to directly set the height and width of windows as either percentage o
             ,(4lc/display-buffer-derived-mode-p 'dired-mode)
             "^\\*format-all-errors\\*$"
             "^\\*Occur\\*$"
-            "^\\*refs.*$")))
+            "^\\*refs.*$"
+            "^\\*Org Help\\*$")))
      (-each
       buffer-rules
       (lambda (item)
@@ -952,20 +953,6 @@ Which-key for Embark
    (visual-line-mode . visual-fill-column-mode)
    (text-mode-hook . (lambda () (visual-line-mode t))))
 #+end_src
-** Eglot breadcrumbs
-#+begin_src emacs-lisp
-  (use-package breadcrumb :init (breadcrumb-mode 1))
-#+end_src
-** Format all
-#+begin_src emacs-lisp
-  (use-package
-   format-all
-   :commands (format-all-mode define-format-all-formatter)
-   :bind (:map prog-mode-map ("C-c f" . format-all-region-or-buffer))
-   :hook
-   (prog-mode . format-all-mode)
-   (yaml-ts-mode . format-all-mode))
-#+end_src
 ** Highlight current line
 #+begin_src emacs-lisp
   (use-package
@@ -1151,6 +1138,153 @@ Dired nerd icons to show icons for files and folders
      (lambda ()
        (interactive)
        (4lc/eat-program "bash")))))
+#+end_src
+* Programming
+** Compilation
+#+begin_src emacs-lisp
+  (use-package compile
+    :init
+    (defun compile-comint ()
+      (interactive)
+      (compile (eval compile-command) t))
+    :bind (:map prog-mode-map
+                ("C-c m c" . compile)
+                ("C-c m r" . recompile)
+                ("C-c m i" . compile-comint)))
+#+end_src
+** Completion
+#+begin_src emacs-lisp
+  (use-package
+   corfu
+   :init (setopt global-corfu-mode t)
+   :config
+   (setopt corfu-auto t)
+   (setopt corfu-popupinfo-mode t)
+   (setopt corfu-popupinfo-delay '(0.5 . 0.5))
+   (defun corfu-enable-in-minibuffer ()
+     "Enable Corfu in the minibuffer if `completion-at-point' is bound."
+     (when (where-is-internal #'completion-at-point (list (current-local-map)))
+       (setq-local corfu-auto t) ;; Enable/disable auto completion
+       (setq-local
+        corfu-echo-delay nil ;; Disable automatic echo and popup
+        corfu-popupinfo-delay nil)
+       (corfu-mode 1)))
+   :hook (minibuffer-setup . corfu-enable-in-minibuffer))
+#+end_src
+** Eglot breadcrumbs
+#+begin_src emacs-lisp
+  (use-package breadcrumb :init (breadcrumb-mode 1))
+#+end_src
+** Format all
+#+begin_src emacs-lisp
+  (use-package
+   format-all
+   :commands (format-all-mode define-format-all-formatter)
+   :bind (:map prog-mode-map ("C-c f" . format-all-region-or-buffer))
+   :hook
+   (prog-mode . format-all-mode)
+   (yaml-ts-mode . format-all-mode))
+#+end_src
+** Language ID
+#+begin_src emacs-lisp
+  (use-package
+   language-id
+   :config
+   (setopt
+    language-id--definitions
+    (append
+     '(("Nix" nix-ts-mode) ("nim" nim-mode)) language-id--definitions)))
+#+end_src
+** LSP
+Configuration for LSP support in prog-mode and yaml-ts-mode. Using Emacs inbuilt mode Eglot.
+Config options to reduce the logging and improve the performance.
+#+begin_src emacs-lisp
+  (use-package
+   eglot
+   :hook ((prog-mode yaml-ts-mode) . eglot-ensure)
+   :bind
+   (:map
+    eglot-mode-map
+    ("C-c e r" . eglot-rename)
+    ("C-c e f" . eglot-format)
+    ("C-c e a" . eglot-code-actions)
+    ("C-c e o" . eglot-code-action-organize-imports)
+    ("C-c e i" . eglot-code-action-inline)
+    ("C-c e x" . eglot-code-action-extract)
+    ("C-c e w" . eglot-code-action-rewrite)
+    ("C-c e q" . eglot-code-action-quickfix)
+    ("C-c e h" . eldoc))
+   :config
+   (fset #'jsonrpc--log-event #'ignore)
+   (setopt eglot-events-buffer-size 0))
+#+end_src
+** Snippets
+#+begin_src emacs-lisp
+  (use-package yasnippet :init (yas-global-mode 1))
+#+end_src
+ ** Format all
+#+begin_src emacs-lisp
+  (use-package
+   format-all
+   :commands (format-all-mode define-format-all-formatter)
+   :bind (:map prog-mode-map ("C-c f" . format-all-region-or-buffer))
+   :hook
+   (prog-mode . format-all-mode)
+   (yaml-ts-mode . format-all-mode))
+#+end_src
+** Smart Parens
+#+begin_src emacs-lisp
+  (use-package
+   smartparens-mode
+   :hook (prog-mode yaml-mode)
+   :config (require 'smartparens-config))
+#+end_src
+** Treesitter
+#+begin_src emacs-lisp
+  (use-package
+   treesit
+   :init
+   (defun 4lc/treesitter-major-mode-remap ()
+     "Remap major modes to their treesitter counterparts if available."
+     (interactive)
+     ;; Iterate over all loaded packages and find "-ts-mode" ones
+     (dolist (mode (apropos-internal "-ts-mode$" 'functionp))
+       (let*
+           ((ts-mode-name (symbol-name mode)) ; Convert symbol to string
+            (normal-mode-name
+             (replace-regexp-in-string
+              "-ts-mode$" "-mode" ts-mode-name))
+            (normal-mode-symbol (intern-soft normal-mode-name)))
+         (when (and normal-mode-symbol (fboundp normal-mode-symbol))
+           (progn
+             (add-to-list
+              'major-mode-remap-alist
+              (cons normal-mode-symbol mode)))))))
+
+   (defvar 4lc/treesitter-no-auto-mode ()
+     "List of Treesitter modes that are not auto-remapped.")
+
+   (defun 4lc/update-treesitter-no-auto-mode-list ()
+     "Update `4lc/treesitter-no-auto-mode' with Treesitter modes not in `major-mode-remap-alist'."
+     (setq 4lc/treesitter-no-auto-mode nil)
+     (let ((ts-modes
+            (seq-filter
+             (lambda (mode)
+               (string-suffix-p "-ts-mode" (symbol-name mode)))
+             (apropos-internal "-ts-mode" 'commandp)))
+           (remapped-modes (mapcar 'cdr major-mode-remap-alist))
+           (auto-modes (mapcar 'cdr auto-mode-alist)))
+       (dolist (mode ts-modes)
+         (unless (or (memq mode remapped-modes) (memq mode auto-modes))
+           (add-to-list '4lc/treesitter-no-auto-mode mode)))))
+
+   (4lc/treesitter-major-mode-remap)
+   (4lc/update-treesitter-no-auto-mode-list)
+
+   :config (setopt treesit-font-lock-level 4)
+   :custom
+   (setopt
+    treesit-extra-load-path '("~/.config/emacs/var/tree-sitter")))
 #+end_src
 * Languages
 ** Bash
@@ -1348,115 +1482,7 @@ Dired nerd icons to show icons for files and folders
 #+begin_src emacs-lisp
   (use-package verb :init (4lc/org-babel-add-language 'verb))
 #+end_src
-* Programming
-** Compilation
+** LISP
 #+begin_src emacs-lisp
-  (use-package compile
-    :init
-    (defun compile-comint ()
-      (interactive)
-      (compile (eval compile-command) t))
-    :bind (:map prog-mode-map
-                ("C-c m c" . compile)
-                ("C-c m r" . recompile)
-                ("C-c m i" . compile-comint)))
-#+end_src
-** Completion
-#+begin_src emacs-lisp
-  (use-package
-   corfu
-   :init (setopt global-corfu-mode t)
-   :config
-   (setopt corfu-auto t)
-   (setopt corfu-popupinfo-mode t)
-   (setopt corfu-popupinfo-delay '(0.5 . 0.5))
-   (defun corfu-enable-in-minibuffer ()
-     "Enable Corfu in the minibuffer if `completion-at-point' is bound."
-     (when (where-is-internal #'completion-at-point (list (current-local-map)))
-       (setq-local corfu-auto t) ;; Enable/disable auto completion
-       (setq-local
-        corfu-echo-delay nil ;; Disable automatic echo and popup
-        corfu-popupinfo-delay nil)
-       (corfu-mode 1)))
-   :hook (minibuffer-setup . corfu-enable-in-minibuffer))
-#+end_src
-** Language ID
-#+begin_src emacs-lisp
-  (use-package
-   language-id
-   :config
-   (setopt
-    language-id--definitions
-    (append
-     '(("Nix" nix-ts-mode) ("nim" nim-mode)) language-id--definitions)))
-#+end_src
-** LSP
-Configuration for LSP support in prog-mode and yaml-ts-mode. Using Emacs inbuilt mode Eglot.
-Config options to reduce the logging and improve the performance.
-#+begin_src emacs-lisp
-  (use-package
-   eglot
-   :hook ((prog-mode yaml-ts-mode) . eglot-ensure)
-   :bind
-   (:map
-    eglot-mode-map
-    ("C-c e r" . eglot-rename)
-    ("C-c e f" . eglot-format)
-    ("C-c e a" . eglot-code-actions)
-    ("C-c e o" . eglot-code-action-organize-imports)
-    ("C-c e i" . eglot-code-action-inline)
-    ("C-c e x" . eglot-code-action-extract)
-    ("C-c e w" . eglot-code-action-rewrite)
-    ("C-c e q" . eglot-code-action-quickfix)
-    ("C-c e h" . eldoc))
-   :config
-   (fset #'jsonrpc--log-event #'ignore)
-   (setopt eglot-events-buffer-size 0))
-#+end_src
-** Treesitter
-#+begin_src emacs-lisp
-  (use-package
-   treesit
-   :init
-   (defun 4lc/treesitter-major-mode-remap ()
-     "Remap major modes to their treesitter counterparts if available."
-     (interactive)
-     ;; Iterate over all loaded packages and find "-ts-mode" ones
-     (dolist (mode (apropos-internal "-ts-mode$" 'functionp))
-       (let*
-           ((ts-mode-name (symbol-name mode)) ; Convert symbol to string
-            (normal-mode-name
-             (replace-regexp-in-string
-              "-ts-mode$" "-mode" ts-mode-name))
-            (normal-mode-symbol (intern-soft normal-mode-name)))
-         (when (and normal-mode-symbol (fboundp normal-mode-symbol))
-           (progn
-             (add-to-list
-              'major-mode-remap-alist
-              (cons normal-mode-symbol mode)))))))
-
-   (defvar 4lc/treesitter-no-auto-mode ()
-     "List of Treesitter modes that are not auto-remapped.")
-
-   (defun 4lc/update-treesitter-no-auto-mode-list ()
-     "Update `4lc/treesitter-no-auto-mode' with Treesitter modes not in `major-mode-remap-alist'."
-     (setq 4lc/treesitter-no-auto-mode nil)
-     (let ((ts-modes
-            (seq-filter
-             (lambda (mode)
-               (string-suffix-p "-ts-mode" (symbol-name mode)))
-             (apropos-internal "-ts-mode" 'commandp)))
-           (remapped-modes (mapcar 'cdr major-mode-remap-alist))
-           (auto-modes (mapcar 'cdr auto-mode-alist)))
-       (dolist (mode ts-modes)
-         (unless (or (memq mode remapped-modes) (memq mode auto-modes))
-           (add-to-list '4lc/treesitter-no-auto-mode mode)))))
-
-   (4lc/treesitter-major-mode-remap)
-   (4lc/update-treesitter-no-auto-mode-list)
-
-   :config (setopt treesit-font-lock-level 4)
-   :custom
-   (setopt
-    treesit-extra-load-path '("~/.config/emacs/var/tree-sitter")))
+  (use-package sly :custom (inferior-lisp-program "sbcl"))
 #+end_src

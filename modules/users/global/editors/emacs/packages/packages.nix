@@ -67,7 +67,10 @@ in {
         nix-ts-mode
         no-littering
         orderless
+        pandoc-mode
         rainbow-delimiters
+        sly
+        smartparens
         terraform-doc
         terraform-mode
         transient

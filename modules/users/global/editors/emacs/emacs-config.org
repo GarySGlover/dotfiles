@@ -739,10 +739,6 @@ For completions windows
    (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 #+end_src
 
-** Doom Mode-lines
-#+begin_src emacs-lisp
-  (use-package doom-modeline :init (doom-modeline-mode 1))
-#+end_src
 * Project Management
 ** Project
 #+begin_src emacs-lisp
@@ -1392,6 +1388,7 @@ Config options to reduce the logging and improve the performance.
    python
    :defer t
    :init
+   (4lc/org-babel-add-language 'python)
    (setf (cdr (rassoc 'python-mode auto-mode-alist)) 'python-ts-mode)
    (setf (cdr (rassoc 'python-mode interpreter-mode-alist)) 'python-ts-mode)
    :hook
@@ -1485,5 +1482,8 @@ Config options to reduce the logging and improve the performance.
 #+end_src
 ** LISP
 #+begin_src emacs-lisp
-  (use-package sly :custom (inferior-lisp-program "sbcl"))
+  (use-package
+   sly
+   :init (4lc/org-babel-add-language 'lisp)
+   :custom (inferior-lisp-program "sbcl"))
 #+end_src

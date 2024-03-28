@@ -40,7 +40,6 @@ in {
         corfu
         devdocs
         direnv
-        doom-modeline
         dtrt-indent
         eat
         ef-themes

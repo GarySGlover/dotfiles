@@ -17,7 +17,7 @@ with lib; {
     };
 
     home.packages = with pkgs; [
-      rofi # Application launcher
+      rofi-wayland # Application launcher
       swww # Animated wallpapers
       udiskie # Disk auto mount
       wlr-randr # Wlroots randr alternative

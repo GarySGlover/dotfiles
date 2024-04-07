@@ -36,7 +36,12 @@
 |--------+----------|
 | C-c e  | >eglot   |
 | C-c m  | >compile |
-
+** Magit ediff
+(setq ediff-window-setup-function 'ediff-setup-windows-plain)
+(setq ediff-split-window-function 'split-window-horizontally)
+(defun 4lc/ediff-setup-windows-advice (buffer-a buffer-b buffer-c control-buffer)
+  (select-window (4lc/get-window-with-highest-counter)))
+(advice-add 'ediff-setup-windows :before #'4lc/ediff-setup-windows-advice)
 ** Investigate packages
 ** Consult eglot
 https://github.com/mohkale/consult-eglot
@@ -49,6 +54,10 @@ This section contains basic configurations for Emacs to tidy up the interface an
 ** Lexical Binding
 #+begin_src emacs-lisp
   ;; -*- lexical-binding: t -*-
+#+end_src
+** Truncate Lines
+#+begin_src emacs-lisp
+  (setopt truncate-partial-width-windows t)
 #+end_src
 ** Fix Emacs home
 #+begin_src emacs-lisp
@@ -524,10 +533,17 @@ Functions to directly set the height and width of windows as either percentage o
          (window-width . 0.3)
          (side . left)
          (slot . ,selected-slot)
-         (window-parameters
-          .
-          ((mode-line-format . 'none)
-           (no-delete-other-windows . t)))))))
+         (window-parameters . ((no-delete-other-windows . t)))))))
+
+  (defun 4lc/display-buffer-alist-bottom (title)
+    (add-to-list
+     'display-buffer-alist
+     `(,title
+       (display-buffer-in-side-window)
+       (window-height . 0.3)
+       (side . bottom)
+       (slot . 1)
+       (window-parameters . ((no-delete-other-windows . t))))))
 
   (defun 4lc/display-buffer-derived-mode-p (mode)
     `(lambda (buffer-name action)
@@ -546,13 +562,7 @@ Functions to directly set the height and width of windows as either percentage o
             display-buffer-split-current-window)))
    (setopt switch-to-buffer-obey-display-actions t)
    (let ((buffer-rules
-          `(("^\\*Warnings\\*$" 1)
-            ("^\\*Messages\\*$" 1)
-            ("^\\*kubel stderr\\*$" 1)
-            ("^\\*format-all-errors\\*$" 1)
-            ("^\\*kubel-process\\*$" 1)
-            ("^\\*Backtrace\\*$" 1)
-            ("magit.*" 1)
+          `(("^\\*.*\\*$" 1)
             "^\\*Woman.*\\*$"
             "^\\*help"
             "^\\*info"
@@ -563,8 +573,6 @@ Functions to directly set the height and width of windows as either percentage o
             "^\\*Embark .*\\*$"
             ,(4lc/display-buffer-derived-mode-p 'dired-mode)
             "^\\*format-all-errors\\*$"
-            "^\\*Occur\\*$"
-            "^\\*refs.*$"
             "^\\*Org Help\\*$")))
      (-each
       buffer-rules
@@ -572,8 +580,29 @@ Functions to directly set the height and width of windows as either percentage o
         (if (and (listp item) (not (eq (car item) 'lambda)))
             (apply #'4lc/display-buffer-alist-left item)
           (4lc/display-buffer-alist-left item)))))
-   (add-to-list
-    'display-buffer-alist '("^\\*scratch+\\*$\\|^\\*GNU Emacs\\*$")))
+   (let ((buffer-rules
+          `("^\\*.*compile.*\\*$"
+            "^\\*Backtrace\\*$"
+            "^\\*Warnings\\*$"
+            "^\\*Messages\\*$"
+            "^\\*Org Src"
+            "^\\*Occur\\*$"
+            "^\\*refs.*$"
+            "^\\*Flymake.*\\*$"
+            "^\\*Embark.*\\*$")))
+     (-each
+      buffer-rules
+      (lambda (item) (4lc/display-buffer-alist-bottom item))))
+   (let ((exceptions
+          `("^\\*scratch.*\\*$"
+            "^\\*GNU Emacs\\*$"
+            "^\\*Kubel:.*\\*$"
+            "^\\*fish\\*$"
+            "[Ee]diff")))
+     (-each
+      exceptions
+      (lambda (item) (add-to-list 'display-buffer-alist `(,item))))))
+
 #+end_src
 ** Ace window
 #+begin_src emacs-lisp
@@ -1212,7 +1241,9 @@ Config options to reduce the logging and improve the performance.
     ("C-c e h" . eldoc))
    :config
    (fset #'jsonrpc--log-event #'ignore)
-   (setopt eglot-events-buffer-size 0))
+   (setopt eglot-events-buffer-size 0)
+   :custom
+   (eglot-report-progress nil "Silence Eglot"))
 #+end_src
 ** Snippets
 #+begin_src emacs-lisp

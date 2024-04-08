@@ -642,6 +642,33 @@ Functions to directly set the height and width of windows as either percentage o
    (add-to-list 'consult-buffer-sources 'beframe-consult-source)
    :bind-keymap (("C-c b" . beframe-prefix-map)))
 #+end_src
+** Max window
+#+begin_src emacs-lisp
+  (defun 4lc/toggle-single-window ()
+    (interactive)
+    (if (equal (selected-window) (next-window))
+        (when (frame-parameter
+               (selected-frame) 'toggle-window-configuration)
+          (progn
+            (set-window-configuration
+             (frame-parameter
+              (selected-frame) 'toggle-window-configuration))
+            (set-frame-parameter
+             (selected-frame) 'toggle-window-configuration nil)))
+      (progn
+        (set-frame-parameter
+         (selected-frame)
+         'toggle-window-configuration
+         (current-window-configuration))
+        (when (window-parameter (selected-window) 'window-side)
+          (select-window
+           (display-buffer-maybe-most-recent-window
+            (current-buffer) nil)))
+        (while (not (equal (selected-window) (next-window)))
+          (delete-window (next-window))))))
+
+  (global-set-key (kbd "C-c m") '4lc/toggle-single-window)
+#+end_src
 * Visual
 ** Theme
 Setup the main theme and fonts used within this emacs configuration.

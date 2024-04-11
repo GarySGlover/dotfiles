@@ -12,10 +12,10 @@ melpaBuild rec {
   version = "20240210.0";
 
   src = fetchFromGitHub {
-    owner = "niontrix";
+    owner = "GarySGlover";
     repo = "nim-ts-mode";
-    rev = "d6470984167b1f0b1693aecf4d8360ee4bba8bb7";
-    sha256 = "sha256-gfZfayfvqz41MbuQSstdaLPHy9CVI6OpQKTEMpBgU4E=";
+    rev = "32adc17e47fb2faf603248bea42df6fb14639c88";
+    sha256 = "sha256-63Z/iNkBH8yBjkETXERU4sFweru02PxZNR0C3WhlVDc=";
   };
 
   # Require to prevent file not found error

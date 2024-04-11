@@ -52,28 +52,28 @@ Doesn't work with wayland: https://github.com/tecosaur/emacs-everywhere/issues/5
 * Initialisation
 This section contains basic configurations for Emacs to tidy up the interface and set some defaults for the inbuilt modules that don't fit into other categories.
 ** Lexical Binding
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   ;; -*- lexical-binding: t -*-
 #+end_src
 ** Truncate Lines
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (setopt truncate-partial-width-windows t)
 #+end_src
 ** Fix Emacs home
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
  (setq user-emacs-directory (file-truename "~/.config/emacs/"))
 #+end_src
 ** Disable package downloads
 Remove elpa from the package archives so that no packages will be automatically downloaded. All packages will be installed using the nix package manager.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (setq package-archives nil)
 #+end_src
 
 ** Cleanup interface
 Remove some of the default GUI display components that are typically used with mouse rather than keyboard.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (scroll-bar-mode -1)
   (tool-bar-mode -1)
   (tooltip-mode -1)
@@ -85,21 +85,21 @@ Remove some of the default GUI display components that are typically used with m
 ** Disabled commands
 Emacs has disabled some inbuilt functions by default as a safety measure. Replacing the function that is called prior to running these enables all these commands without further confirmation.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (setq disabled-command-function nil)
 #+end_src
 
 ** Use short answers
 Allow use of y/n instead of yes/no for interactive command confirmations.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (setq use-short-answers t)
 #+end_src
 
 ** Clean directories
 Tell Emacs not to create lock files as everything being edited is single user so should have no conflicts over files. Use of no-littering to reduce other files being scattered in the file system and keep the Emacs folder clean.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package no-littering :demand t :config (no-littering-theme-backups))
   (setq create-lockfiles nil)
 #+end_src
@@ -107,13 +107,13 @@ Tell Emacs not to create lock files as everything being edited is single user so
 ** Buffer auto revert
 Revert the buffer to the on disk file contents when they are changed outside of Emacs.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (global-auto-revert-mode 1)
   (setq auto-revert-verbose nil)
 #+end_src
 
 ** Environment Variable import
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    exec-path-from-shell
    :config
@@ -125,7 +125,7 @@ Revert the buffer to the on disk file contents when they are changed outside of 
 Tabs are evil so they are disabled. Indentation defaults to 2.
 Dtrt-indent used to guess indentation used in current file and override local setting.
 Inhibit electric indent from re-indenting.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    dtrt-indent
    :init
@@ -138,7 +138,7 @@ Inhibit electric indent from re-indenting.
 #+end_src
 
 ** Repeat mode
-#+begin_src emacs-lisp :lexical t
+#+begin_src emacs-lisp :lexical t :tangle yes
   (defun repeat-help--which-key-popup ()
     (if-let ((cmd (or this-command real-this-command))
              (keymap
@@ -150,7 +150,7 @@ Inhibit electric indent from re-indenting.
       (which-key--hide-popup)))
 #+end_src
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    repeat
    :init (setopt repeat-mode t)
@@ -164,26 +164,26 @@ Inhibit electric indent from re-indenting.
 * Core Utilities
 Utilities for Emacs that support further parts of the configuration.
 ** Direnv
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    direnv
    :config (setopt direnv-always-show-summary nil)
    :init (direnv-mode))
 #+end_src
 ** GCMH
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package gcmh
     :init
     (gcmh-mode 1))
 #+end_src
 
 ** Transient
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package transient)
 #+end_src
 
 ** Url
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    url
    :config
@@ -356,7 +356,7 @@ Utilities for Emacs that support further parts of the configuration.
 
 * Help
 ** Helpful
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    helpful
    :commands (helpful-callable helpful-command helpful-key helpful-variable helpful-at-point)
@@ -371,7 +371,7 @@ Utilities for Emacs that support further parts of the configuration.
 
 ** Which key
 Popup to show available shortcut keys in current mode
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    which-key
    :demand
@@ -393,7 +393,7 @@ Popup to show available shortcut keys in current mode
 #+end_src
 
 ** GPTel
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    gptel
    :demand t
@@ -424,7 +424,7 @@ Popup to show available shortcut keys in current mode
 * Window  Management
 ** Window visited order
 Store a window parameter in non side windows. This is intended to be used to order windows and find the last visited window for display buffer functions.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (defun 4lc/increment-and-store-window-count (frame)
     "Increment the window counter and store it as a window parameter."
     (let ((selected-win (selected-window)))
@@ -465,7 +465,7 @@ Store a window parameter in non side windows. This is intended to be used to ord
 #+end_src
 ** Window resize
 Functions to directly set the height and width of windows as either percentage of frame width or character width.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (defun 4lc/get-window-delta (size)
     (- size (window-height)))
 
@@ -501,7 +501,7 @@ Functions to directly set the height and width of windows as either percentage o
         ('bottom 4lc/bottom-side-window-height))))
 #+end_src
 ** Display Buffer rules
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (defun 4lc/display-buffer-side-window-width (window &optional side)
     (let ((width (4lc/side-window-width window side)))
       (4lc/window-resize-width width window)))
@@ -605,11 +605,11 @@ Functions to directly set the height and width of windows as either percentage o
 
 #+end_src
 ** Ace window
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package ace-window :bind ("M-o" . ace-window))
 #+end_src
 ** Beframe
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    beframe
    :after consult
@@ -643,7 +643,7 @@ Functions to directly set the height and width of windows as either percentage o
    :bind-keymap (("C-c b" . beframe-prefix-map)))
 #+end_src
 ** Max window
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (defun 4lc/toggle-single-window ()
     (interactive)
     (if (equal (selected-window) (next-window))
@@ -672,7 +672,7 @@ Functions to directly set the height and width of windows as either percentage o
 * Visual
 ** Theme
 Setup the main theme and fonts used within this emacs configuration.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font-10"))
   (setopt nerd-icons-font-family "FiraCode Nerd Font")
 
@@ -697,7 +697,7 @@ Setup the main theme and fonts used within this emacs configuration.
 ** Alert notification
 When Emacs reports an exception the default action is to play a bell sound. This replaces the sound with a double flash on the mode-line background.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (defun double-flash-modeline ()
     (let ((flash-sec (/ 1.0 20)))
       (invert-face 'mode-line)
@@ -712,7 +712,7 @@ When Emacs reports an exception the default action is to play a bell sound. This
 ** Transparency
 Set default transparency of frames and creation of hydra function for adjusting alpha.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (defun set-frame-alpha (value)
     (set-frame-parameter nil 'alpha-background value))
 
@@ -786,7 +786,7 @@ Set default transparency of frames and creation of hydra function for adjusting 
 
 ** Nerd Icons
 For completions windows
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    nerd-icons-completion
    :after marginalia
@@ -797,13 +797,13 @@ For completions windows
 
 * Project Management
 ** Project
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package project :bind ("C-x p t" . eat-project))
 #+end_src
 ** Version control
 Using Magit as the git porcelain. Is configured to use the same window rather than open a new one for all operations possible. As some operations such as commit open the diff window as well, those buffers open in a seperate window.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    magit
    :demand t
@@ -815,13 +815,28 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
 #+end_src
 
 Easy look through files git history
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package git-timemachine
     :bind ("C-c s" . git-timemachine))
 #+end_src
+
+#+begin_src emacs-lisp :tangle yes
+  (defun magit-status-next ()
+      (interactive)
+      (let ((project-root "~/Next-Technology/"))
+        (magit-status
+         (completing-read
+          "Project: "
+          (mapcan
+           (lambda (d)
+             (directory-files (concat project-root d) t "\\`[^.]"))
+           (-filter
+            (lambda (d) (file-directory-p (concat project-root d)))
+            (directory-files project-root nil "\\`[^.]")))))))
+#+end_src
 * Navigation
 ** Avy
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    avy
    :config (setopt avy-timeout-seconds 0.2)
@@ -850,7 +865,7 @@ Easy look through files git history
     (select-window (cdr (ring-ref avy-ring 0))))
 #+end_src
 ** Consult
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    consult
    :init (setopt enable-recursive-minibuffers t)
@@ -915,7 +930,7 @@ Easy look through files git history
     ("M-r" . consult-history)))
 #+end_src
 ** Embark
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    embark
    :bind
@@ -934,7 +949,7 @@ Easy look through files git history
 #+end_src
 
 Which-key for Embark
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (defun embark-which-key-indicator ()
     "An embark indicator that displays keymaps using which-key.
   The which-key help message will show the type and value of the
@@ -971,14 +986,14 @@ Which-key for Embark
   (advice-add #'embark-completing-read-prompter :around #'embark-hide-which-key-indicator)
 #+end_src
 ** Margnalia
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    marginalia
    :bind (:map minibuffer-local-map ("M-A" . marginalia-cycle))
    :init (marginalia-mode))
 #+end_src
 ** Orderless
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    orderless
    :config (add-to-list 'completion-styles 'orderless)
@@ -987,12 +1002,12 @@ Which-key for Embark
    (completion-category-overrides '((file (styles basic partial-completion)))))
 #+end_src
 ** Vertico
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package vertico :init (vertico-mode) :bind (:map vertico-map ("M-s" . vertico-suspend)))
 #+end_src
 * Editing
 ** Column Indicator
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    visual-fill-column
    :config
@@ -1006,7 +1021,7 @@ Which-key for Embark
    (text-mode-hook . (lambda () (visual-line-mode t))))
 #+end_src
 ** Highlight current line
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
     hl-line
     :init
@@ -1016,7 +1031,7 @@ Which-key for Embark
 #+end_src
 ** Highlight indentation
 Indent bars
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
     indent-bars
     :demand t
@@ -1031,7 +1046,7 @@ Indent bars
 #+end_src
 
 ** Line numbers
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package simple
     :init
     (setopt display-line-numbers-type 'relative)
@@ -1040,12 +1055,12 @@ Indent bars
     (yaml-mode . display-line-numbers-mode))
 #+end_src
 ** Macros
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (defalias 'convert-devops-yaml-parameter-to-full
      (kmacro "a i - SPC n a m e : <escape> s : <return> <backspace> <return> i SPC SPC t y p e : SPC s t r i n g <return> d e f a u l t : SPC <escape> n a"))
 #+end_src
 ** Org mode
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    org
    :init
@@ -1059,11 +1074,11 @@ Indent bars
    (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
 #+end_src
 ** Rainbow delimiters
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package rainbow-delimiters :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
 ** Replace region
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (delete-selection-mode t)
 
   (defun 4lc/yank-replace (&optional ARG)
@@ -1073,7 +1088,7 @@ Indent bars
   (advice-add 'yank :before #'4lc/yank-replace)
 #+end_src
 ** Spelling
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    flyspell
    :config
@@ -1108,7 +1123,7 @@ Indent bars
    :hook ((find-file prog-mode text-mode) . flyspell-on-for-buffer-type))
 #+end_src
 ** Trailing white-space
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    whitespace
    :config
@@ -1129,7 +1144,7 @@ Indent bars
 - Change dired listing mode to not show full details by default.
 - Change listing options to hide . & .. and group directories first.
 - Add key-bind for creating new files.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    dired
    :config
@@ -1140,11 +1155,11 @@ Indent bars
 #+end_src
 
 Dired nerd icons to show icons for files and folders
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package nerd-icons-dired :after dired :hook (dired-mode . nerd-icons-dired-mode))
 #+end_src
 ** Kubernetes
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    kubel
    :commands kubel
@@ -1164,7 +1179,7 @@ Dired nerd icons to show icons for files and folders
        "Select resource: " (kubel--kubernetes-resources-list)))))
 #+end_src
 ** Eat
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    eat
    :init
@@ -1193,7 +1208,7 @@ Dired nerd icons to show icons for files and folders
 #+end_src
 * Programming
 ** Compilation
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package compile
     :init
     (defun compile-comint ()
@@ -1205,7 +1220,7 @@ Dired nerd icons to show icons for files and folders
                 ("C-c m i" . compile-comint)))
 #+end_src
 ** Completion
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    corfu
    :init (setopt global-corfu-mode t)
@@ -1224,11 +1239,11 @@ Dired nerd icons to show icons for files and folders
    :hook (minibuffer-setup . corfu-enable-in-minibuffer))
 #+end_src
 ** Eglot breadcrumbs
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package breadcrumb :init (breadcrumb-mode 1))
 #+end_src
 ** Format all
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    format-all
    :commands (format-all-mode define-format-all-formatter)
@@ -1238,7 +1253,7 @@ Dired nerd icons to show icons for files and folders
    (yaml-ts-mode . format-all-mode))
 #+end_src
 ** Language ID
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    language-id
    :config
@@ -1250,7 +1265,7 @@ Dired nerd icons to show icons for files and folders
 ** LSP
 Configuration for LSP support in prog-mode and yaml-ts-mode. Using Emacs inbuilt mode Eglot.
 Config options to reduce the logging and improve the performance.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    eglot
    :hook ((prog-mode yaml-ts-mode) . eglot-ensure)
@@ -1273,11 +1288,11 @@ Config options to reduce the logging and improve the performance.
    (eglot-report-progress nil "Silence Eglot"))
 #+end_src
 ** Snippets
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package yasnippet :init (yas-global-mode 1))
 #+end_src
  ** Format all
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    format-all
    :commands (format-all-mode define-format-all-formatter)
@@ -1287,7 +1302,7 @@ Config options to reduce the logging and improve the performance.
    (yaml-ts-mode . format-all-mode))
 #+end_src
 ** Smart Parens
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package smartparens
     :ensure smartparens
     :hook (prog-mode text-mode markdown-mode)
@@ -1295,7 +1310,7 @@ Config options to reduce the logging and improve the performance.
     (require 'smartparens-config))
 #+end_src
 ** Treesitter
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    treesit
    :init
@@ -1343,7 +1358,7 @@ Config options to reduce the logging and improve the performance.
 #+end_src
 * Languages
 ** Bash
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    sh-script
    :init
@@ -1357,15 +1372,15 @@ Config options to reduce the logging and improve the performance.
        format-all-formatters '(("Shell" (shfmt "-i" "2" "-ci")))))))
 #+end_src
 ** CMake
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package cmake-ts-mode)
 #+end_src
 ** Dockerfile
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package dockerfile-ts-mode)
 #+end_src
 ** Emacs Lisp
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (define-format-all-formatter
    elisp-autofmt
    (:executable)
@@ -1389,19 +1404,19 @@ Config options to reduce the logging and improve the performance.
                   '(("Emacs Lisp" elisp-autofmt))))))
 #+end_src
 ** Go
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    go-ts-mode
    :mode ("\\.go\\'" . go-ts-mode) ("/go\\.mod\\'" . go-mod-ts-mode))
 #+end_src
 ** Markdown
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    markdown-mode
    :defer t)
 #+end_src
 ** Nim
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    nim-ts-mode
    :init
@@ -1432,7 +1447,7 @@ Config options to reduce the logging and improve the performance.
 #+end_src
 
 ** Nix
-  #+begin_src emacs-lisp
+  #+begin_src emacs-lisp :tangle yes
     (use-package
      nix-ts-mode
      :defer t
@@ -1441,7 +1456,7 @@ Config options to reduce the logging and improve the performance.
      :hook (nix-ts-mode . (lambda () (setq-local format-all-formatters '(("Nix" alejandra))))))
 #+end_src
 ** Python
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    python
    :defer t
@@ -1458,11 +1473,11 @@ Config options to reduce the logging and improve the performance.
       (setopt eglot-workspace-configuration '(:python.\analysis (:typeCheckingMode "strict"))))))
 #+end_src
 ** Rust
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package rust-ts-mode :mode "\\.rs\\'")
 #+end_src
 ** Terraform
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    terraform-mode
    :defer t
@@ -1470,7 +1485,7 @@ Config options to reduce the logging and improve the performance.
    :config (add-to-list 'eglot-server-programs '(terraform-mode . ("terraform-ls" "serve"))))
 #+end_src
 ** Toml
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    toml-ts-mode
    :init
@@ -1478,11 +1493,11 @@ Config options to reduce the logging and improve the performance.
     'major-mode-remap-alist (cons 'conf-toml-mode 'toml-ts-mode)))
 #+end_src
 ** Typescript
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package typescript-ts-mode)
 #+end_src
 ** Yaml
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (define-format-all-formatter
    yamlfmt
    (:executable "yamlfmt")
@@ -1527,7 +1542,7 @@ Config options to reduce the logging and improve the performance.
     ("SPC" . my/yaml-pro/set-mark)))
 #+end_src
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    restclient
    :hook
@@ -1535,11 +1550,11 @@ Config options to reduce the logging and improve the performance.
    (restclient-test-mode . flymake-mode))
 #+end_src
 ** Verb
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package verb :init (4lc/org-babel-add-language 'verb))
 #+end_src
 ** LISP
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes
   (use-package
    sly
    :init (4lc/org-babel-add-language 'lisp)

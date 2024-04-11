@@ -23,6 +23,7 @@
   with lib;
     pkg:
       elem (getName pkg) [
+        "codeium"
         "steam"
         "steam-original"
         "steam-run"

@@ -421,6 +421,18 @@ Popup to show available shortcut keys in current mode
    :bind ("C-c c" . gptel-send)
    :hook ((prog-mode yaml-mode) . 4lc/set-gptel-directive))
 #+end_src
+
+** Codeium
+#+begin_src emacs-lisp :tangle yes
+  (use-package
+   codeium
+   :init
+   (add-to-list
+    'completion-at-point-functions #'codeium-completion-at-point)
+   :config (setq use-dialog-box nil)
+   (setq codeium/metadata/api_key
+         "7cf3b1f3-b8b5-4de1-bc7e-3b95904604bf"))
+#+end_src
 * Window  Management
 ** Window visited order
 Store a window parameter in non side windows. This is intended to be used to order windows and find the last visited window for display buffer functions.

@@ -20,6 +20,11 @@ with builtins; let
     inherit (epkgs) melpaBuild compat;
   };
 
+  emacscodeium = pkgs.callPackage ./manual/codeium.nix {
+    inherit (pkgs) fetchFromGitHub;
+    inherit (epkgs) trivialBuild;
+  };
+
   nim-ts-mode = pkgs.callPackage ./manual/nim-ts-mode.nix {
     inherit (pkgs) fetchFromGitHub writeText;
     inherit (epkgs) melpaBuild nim-mode;
@@ -33,6 +38,7 @@ in {
         avy
         beframe
         breadcrumb
+        emacscodeium
         combobulate
         consult
         consult-flyspell
@@ -86,6 +92,7 @@ in {
     # Dictionaries for use with flyspell
     home.packages = with pkgs; [
       (aspellWithDicts (ds: with ds; [en en-computers en-science]))
+      codeium
     ];
 
     # Populate authinfo for gptel to use chatgpt api

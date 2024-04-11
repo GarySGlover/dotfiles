@@ -514,14 +514,6 @@ Functions to directly set the height and width of windows as either percentage o
 #+end_src
 ** Display Buffer rules
 #+begin_src emacs-lisp :tangle yes
-  (defun 4lc/display-buffer-side-window-width (window &optional side)
-    (let ((width (4lc/side-window-width window side)))
-      (4lc/window-resize-width width window)))
-
-  (defun 4lc/display-buffer-side-window-height (window &optional side)
-    (let ((height (4lc/side-window-height window side)))
-      (4lc/window-resize-height height window)))
-
   (defun display-buffer-maybe-most-recent-window (buffer alist)
     (unless (cdr (assq 'inhibit-same-window alist))
       (window--display-buffer
@@ -533,7 +525,7 @@ Functions to directly set the height and width of windows as either percentage o
       (window--display-buffer buffer (split-window-sensibly) 'window
                               alist)))
 
-  (defun 4lc/display-buffer-alist-left (title &optional slot)
+  (defun 4lc/display-buffer-alist-right (title &optional slot)
     (let ((selected-slot
            (if slot
                slot
@@ -543,7 +535,7 @@ Functions to directly set the height and width of windows as either percentage o
        `(,title
          (display-buffer-in-side-window)
          (window-width . 0.3)
-         (side . left)
+         (side . right)
          (slot . ,selected-slot)
          (window-parameters . ((no-delete-other-windows . t)))))))
 
@@ -590,8 +582,8 @@ Functions to directly set the height and width of windows as either percentage o
       buffer-rules
       (lambda (item)
         (if (and (listp item) (not (eq (car item) 'lambda)))
-            (apply #'4lc/display-buffer-alist-left item)
-          (4lc/display-buffer-alist-left item)))))
+            (apply #'4lc/display-buffer-alist-right item)
+          (4lc/display-buffer-alist-right item)))))
    (let ((buffer-rules
           `("^\\*.*compile.*\\*$"
             "^\\*Backtrace\\*$"
@@ -614,7 +606,6 @@ Functions to directly set the height and width of windows as either percentage o
      (-each
       exceptions
       (lambda (item) (add-to-list 'display-buffer-alist `(,item))))))
-
 #+end_src
 ** Ace window
 #+begin_src emacs-lisp :tangle yes
@@ -1447,7 +1438,6 @@ Config options to reduce the logging and improve the performance.
    :hook
    (nim-ts-mode
     . (lambda () (setq-local format-all-formatters '(("nim" nph))))))
-
   (defun flymake-diag-region-drop-col (fun buffer line &optional col)
     (message "Running clover flymake diag")
     (apply fun buffer line))

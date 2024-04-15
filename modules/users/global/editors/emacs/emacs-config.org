@@ -4,32 +4,32 @@
 * Info
 ** Key Bindings
 *** Global
-| Prefix | Name             |
-|--------+------------------|
-| C-c a  | avy char         |
-| C-c b  | beframe          |
-| C-c c  | chatgpt-send     |
-| C-c d  | >consult         |
-| C-c f  | format-all       |
-| C-c g  | magit            |
-| C-c h  |                  |
-| C-c i  |                  |
-| C-c j  |                  |
-| C-c k  |                  |
-| C-c l  |                  |
-| C-c n  |                  |
-| C-c o  |                  |
-| C-c p  | >eat-programs    |
-| C-c q  |                  |
-| C-c r  |                  |
-| C-c s  | git time machine |
-| C-c t  | >transparency    |
-| C-c u  |                  |
-| C-c v  |                  |
-| C-c w  |                  |
-| C-c x  |                  |
-| C-c y  |                  |
-| C-c z  |                  |
+| Prefix | Name                 |
+|--------+----------------------|
+| C-c a  | avy char             |
+| C-c b  | beframe              |
+| C-c c  | chatgpt-send         |
+| C-c d  | >consult             |
+| C-c f  | format-all           |
+| C-c g  | magit                |
+| C-c h  |                      |
+| C-c i  |                      |
+| C-c j  |                      |
+| C-c k  |                      |
+| C-c l  |                      |
+| C-c n  |                      |
+| C-c o  |                      |
+| C-c p  | >eat-programs        |
+| C-c q  |                      |
+| C-c r  |                      |
+| C-c s  | git time machine     |
+| C-c t  | >transparency        |
+| C-c u  |                      |
+| C-c v  | single window toggle |
+| C-c w  |                      |
+| C-c x  |                      |
+| C-c y  |                      |
+| C-c z  |                      |
 *** Local
 **** Prog mode
 | Prefix | Name     |
@@ -427,11 +427,14 @@ Popup to show available shortcut keys in current mode
   (use-package
    codeium
    :init
-   (add-to-list
-    'completion-at-point-functions #'codeium-completion-at-point)
-   :config (setq use-dialog-box nil)
+   (defalias
+     'cape-codeium
+     (cape-capf-interactive #'codeium-completion-at-point))
+   :config
    (setq codeium/metadata/api_key
-         "7cf3b1f3-b8b5-4de1-bc7e-3b95904604bf"))
+         "7cf3b1f3-b8b5-4de1-bc7e-3b95904604bf")
+   :autoload codeium-completion-at-point
+   :bind ("C-c u c" . cape-codeium))
 #+end_src
 * Window  Management
 ** Window visited order
@@ -670,7 +673,7 @@ Functions to directly set the height and width of windows as either percentage o
         (while (not (equal (selected-window) (next-window)))
           (delete-window (next-window))))))
 
-  (global-set-key (kbd "C-c m") '4lc/toggle-single-window)
+  (global-set-key (kbd "C-c v") '4lc/toggle-single-window)
 #+end_src
 * Visual
 ** Theme
@@ -1241,6 +1244,22 @@ Dired nerd icons to show icons for files and folders
        (corfu-mode 1)))
    :hook (minibuffer-setup . corfu-enable-in-minibuffer))
 #+end_src
+
+#+begin_src emacs-lisp :tangle yes
+  (use-package
+   cape
+   :bind
+   ("C-c u p" . completion-at-point)
+   ("C-c u f" . cape-file)
+   ("C-c u e" . cape-emoji)
+   ("C-c u k" . cape-keyword))
+
+  (use-package
+   yasnippet-capf
+   :ensure t
+   :after cape
+   :bind ("C-c u y" . yasnippet-capf))
+#+end_src
 ** Eglot breadcrumbs
 #+begin_src emacs-lisp :tangle yes
   (use-package breadcrumb :init (breadcrumb-mode 1))
@@ -1276,7 +1295,7 @@ Config options to reduce the logging and improve the performance.
    (:map
     eglot-mode-map
     ("C-c e r" . eglot-rename)
-    ("C-c e f" . eglot-format)
+    ("C-c e f" . eglot-format-buffer)
     ("C-c e a" . eglot-code-actions)
     ("C-c e o" . eglot-code-action-organize-imports)
     ("C-c e i" . eglot-code-action-inline)
@@ -1406,11 +1425,34 @@ Config options to reduce the logging and improve the performance.
       (setq-local format-all-formatters
                   '(("Emacs Lisp" elisp-autofmt))))))
 #+end_src
-** Go
+** COMMENT Go
 #+begin_src emacs-lisp :tangle yes
   (use-package
    go-ts-mode
-   :mode ("\\.go\\'" . go-ts-mode) ("/go\\.mod\\'" . go-mod-ts-mode))
+   :mode ("\\.go\\'" . go-ts-mode) ("/go\\.mod\\'" . go-mod-ts-mode)
+   :hook
+   ((go-ts-mode
+     .
+     (lambda ()
+       (indent-bars-mode -1)
+       (setq-local indent-tabs-mode t)
+       (setq-local tab-width 8)
+       (setq-local indent-bars-spacing 8)
+       (setq-local standard-indent 8)
+       (dtrt-indent-mode -1)
+       (eglot-format-buffer)
+       (indent-bars-mode t)))
+    (go-mod-ts-mode
+     .
+     (lambda ()
+       (indent-bars-mode -1)
+       (setq-local indent-tabs-mode t)
+       (setq-local tab-width 8)
+       (setq-local indent-bars-spacing 8)
+       (setq-local standard-indent 8)
+       (dtrt-indent-mode -1)
+       (eglot-format-buffer)
+       (indent-bars-mode t)))))
 #+end_src
 ** Markdown
 #+begin_src emacs-lisp :tangle yes

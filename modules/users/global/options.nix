@@ -21,6 +21,10 @@ in {
   };
 
   options.wolf.languages = {
+    go = mkOption {
+      type = bool;
+      default = roles.programming;
+    };
     python = mkOption {
       type = bool;
       default = roles.programming;

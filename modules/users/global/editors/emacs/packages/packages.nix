@@ -39,11 +39,13 @@ in {
         beframe
         breadcrumb
         emacscodeium
+        cape
         combobulate
         consult
         consult-flyspell
         consult-yasnippet
         corfu
+        corfu-candidate-overlay
         devdocs
         direnv
         dtrt-indent
@@ -86,6 +88,7 @@ in {
         which-key
         yaml-pro
         yasnippet
+        yasnippet-capf
         yasnippet-snippets
       ];
 

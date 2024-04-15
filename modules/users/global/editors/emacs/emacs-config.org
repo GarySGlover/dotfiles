@@ -130,9 +130,9 @@ Inhibit electric indent from re-indenting.
    dtrt-indent
    :init
    (setopt dtrt-indent-global-mode t)
-   (setopt indent-tabs-mode nil)
-   (setopt tab-width 2)
-   (setopt standard-indent 2)
+   ;; (setopt indent-tabs-mode nil)
+   ;; (setopt tab-width 2)
+   ;; (setopt standard-indent 2)
    ;; (setopt electric-indent-inhibit t)
    )
 #+end_src
@@ -1268,6 +1268,13 @@ Dired nerd icons to show icons for files and folders
 #+begin_src emacs-lisp :tangle yes
   (use-package
    format-all
+   :ensure t
+   :init
+   (defmacro format-all-update-formatter (langid formatter)
+    `(setq-default format-all-formatters
+           (cons
+            '(,langid ,formatter)
+            (assq-delete-all ,langid format-all-formatters))))
    :commands (format-all-mode define-format-all-formatter)
    :bind (:map prog-mode-map ("C-c f" . format-all-region-or-buffer))
    :hook
@@ -1390,8 +1397,7 @@ Config options to reduce the logging and improve the performance.
    (bash-ts-mode
     .
     (lambda ()
-      (setq-local
-       format-all-formatters '(("Shell" (shfmt "-i" "2" "-ci")))))))
+      (format-all-update-formatter "Shell" (shfmt "-i" "2" "-ci")))))
 #+end_src
 ** CMake
 #+begin_src emacs-lisp :tangle yes
@@ -1403,32 +1409,28 @@ Config options to reduce the logging and improve the performance.
 #+end_src
 ** Emacs Lisp
 #+begin_src emacs-lisp :tangle yes
-  (define-format-all-formatter
-   elisp-autofmt
-   (:executable)
-   (:install)
-   (:languages "Emacs Lisp")
-   (:features region)
-   (:format
-    (format-all--buffer-native
-     'elisp-autofmt-mode
-     (if region
-         (lambda () (elisp-autofmt-region (car region) (cdr region)))
-       (lambda () (elisp-autofmt-region (point-min) (point-max)))))))
-
   (use-package
    elisp-mode
-   :hook
-   (emacs-lisp-mode
-    .
-    (lambda ()
-      (setq-local format-all-formatters
-                  '(("Emacs Lisp" elisp-autofmt))))))
+   :init
+   (define-format-all-formatter
+    elisp-autofmt
+    (:executable)
+    (:install)
+    (:languages "Emacs Lisp")
+    (:features region)
+    (:format
+     (format-all--buffer-native
+      'elisp-autofmt-mode
+      (if region
+          (lambda () (elisp-autofmt-region (car region) (cdr region)))
+        (lambda () (elisp-autofmt-region (point-min) (point-max)))))))
+   (format-all-update-formatter "Emacs Lisp" elisp-autofmt))
 #+end_src
-** COMMENT Go
+** Go
 #+begin_src emacs-lisp :tangle yes
   (use-package
    go-ts-mode
+   :init (format-all-update-formatter "Go" goimports)
    :mode ("\\.go\\'" . go-ts-mode) ("/go\\.mod\\'" . go-mod-ts-mode)
    :hook
    ((go-ts-mode
@@ -1472,14 +1474,12 @@ Config options to reduce the logging and improve the performance.
     (:languages "nim")
     (:features)
     (:format (format-all--buffer-easy executable "-")))
+   (format-all-update-formatter "nim" nph)
    (setopt nim-ts-mode--font-base-theme (car custom-enabled-themes))
    :defer t
    :config
    (add-to-list
-    'eglot-server-programs '(nim-ts-mode . ("nimlangserver")))
-   :hook
-   (nim-ts-mode
-    . (lambda () (setq-local format-all-formatters '(("nim" nph))))))
+    'eglot-server-programs '(nim-ts-mode . ("nimlangserver"))))
   (defun flymake-diag-region-drop-col (fun buffer line &optional col)
     (message "Running clover flymake diag")
     (apply fun buffer line))
@@ -1495,9 +1495,10 @@ Config options to reduce the logging and improve the performance.
     (use-package
      nix-ts-mode
      :defer t
+     :init (format-all-update-formatter "Nix" alejandra)
      :mode "\\.nix\\'"
-     :config (add-to-list 'eglot-server-programs '(nix-ts-mode . ("nixd")))
-     :hook (nix-ts-mode . (lambda () (setq-local format-all-formatters '(("Nix" alejandra))))))
+     :config
+     (add-to-list 'eglot-server-programs '(nix-ts-mode . ("nixd"))))
 #+end_src
 ** Python
 #+begin_src emacs-lisp :tangle yes
@@ -1508,11 +1509,11 @@ Config options to reduce the logging and improve the performance.
    (4lc/org-babel-add-language 'python)
    (setf (cdr (rassoc 'python-mode auto-mode-alist)) 'python-ts-mode)
    (setf (cdr (rassoc 'python-mode interpreter-mode-alist)) 'python-ts-mode)
+   (format-all-update-formatter "Python" black)
    :hook
    (python-ts-mode
     .
     (lambda ()
-      (setq-local format-all-formatters '(("Python" black)))
       (setq-local python-flymake-command '("flake8" "-"))
       (setopt eglot-workspace-configuration '(:python.\analysis (:typeCheckingMode "strict"))))))
 #+end_src
@@ -1542,28 +1543,25 @@ Config options to reduce the logging and improve the performance.
 #+end_src
 ** Yaml
 #+begin_src emacs-lisp :tangle yes
-  (define-format-all-formatter
-   yamlfmt
-   (:executable "yamlfmt")
-   (:install)
-   (:languages "YAML")
-   (:features)
-   (:format
-    (if (project-current)
-        (format-all--buffer-easy
-         executable "-conf"
-         (expand-file-name
-          (s-concat (project-root (project-current)) ".yamlfmt"))
-         "-")
-      (format-all--buffer-easy executable "-"))))
-
   (use-package
    yaml-ts-mode
-   :defer t
-   :hook
-   (yaml-ts-mode
-    .
-    (lambda () (setq-local format-all-formatters '(("YAML" yamlfmt))))))
+   :init
+   (define-format-all-formatter
+    yamlfmt
+    (:executable "yamlfmt")
+    (:install)
+    (:languages "YAML")
+    (:features)
+    (:format
+     (if (project-current)
+         (format-all--buffer-easy
+          executable "-conf"
+          (expand-file-name
+           (s-concat (project-root (project-current)) ".yamlfmt"))
+          "-")
+       (format-all--buffer-easy executable "-"))))
+   (format-all-update-formatter "YAML" yamlfmt)
+   :defer t)
 
   (use-package
    yaml-pro

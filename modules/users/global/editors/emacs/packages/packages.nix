@@ -109,6 +109,12 @@ in {
         else "";
     };
 
-    home.file.".config/emacs/var/tree-sitter".source = "${pkgs.emacsPackages.treesit-grammars.with-all-grammars}/lib";
+    home.file = {
+      ".config/emacs/var/tree-sitter".source = "${pkgs.emacsPackages.treesit-grammars.with-all-grammars}/lib";
+      ".config/emacs/codeium/codeium_language_server" = {
+        source = config.lib.file.mkOutOfStoreSymlink "${pkgs.codeium}/bin/codeium_language_server";
+        executable = true;
+      };
+    };
   };
 }

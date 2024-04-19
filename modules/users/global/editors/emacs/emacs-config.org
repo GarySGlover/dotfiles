@@ -427,6 +427,7 @@ Popup to show available shortcut keys in current mode
   (use-package
    codeium
    :init
+   ;; (setq-local completion-in-region-function #'consult-completion-in-region)
    (defalias
      'cape-codeium
      (cape-capf-interactive #'codeium-completion-at-point))

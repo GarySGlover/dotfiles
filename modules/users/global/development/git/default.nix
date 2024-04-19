@@ -41,6 +41,13 @@ in {
         github = mkIf (hasAttr "github_user" secrets) {
           user = "${secrets.github_user}";
         };
+        remote.origin = {
+          fetch = [
+            "+refs/heads/*:refs/remotes/origin/*"
+            "+refs/tags/*:refs/tags/*"
+          ];
+          prune = true;
+        };
         credential.helper = "store";
       };
       ignores = [

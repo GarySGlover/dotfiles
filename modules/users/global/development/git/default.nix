@@ -9,20 +9,41 @@ with builtins; let
   secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
 in {
   config = {
-    xdg.configFile."git/templates/hooks/pre-commit" = {
-      text = ''
-        #!/usr/bin/env bash
-        # start templated
-        INSTALL_PYTHON=python3
-        ARGS=(hook-impl --config=.pre-commit-config.yaml --hook-type=pre-commit --skip-on-missing-config)
-        # end templated
+    xdg.configFile = {
+      "git/templates/hooks/pre-commit" = {
+        text = ''
+          #!/usr/bin/env bash
+          # start templated
+          INSTALL_PYTHON=python3
+          ARGS=(hook-impl --config=.pre-commit-config.yaml --hook-type=pre-commit --skip-on-missing-config)
+          # end templated
 
-        HERE="$(cd "$(dirname "$0")" && pwd)"
-        ARGS+=(--hook-dir "$HERE" -- "$@")
+          HERE="$(cd "$(dirname "$0")" && pwd)"
+          ARGS+=(--hook-dir "$HERE" -- "$@")
 
-        exec /usr/bin/env pre-commit "''${ARGS[@]}"
-      '';
-      executable = true;
+          exec /usr/bin/env pre-commit "''${ARGS[@]}"
+        '';
+        executable = true;
+      };
+      "git/templates/hooks/post-clone" = {
+        text = ''
+          #!/bin/bash
+
+          # Change to the directory of the cloned repository
+          cd "$1"
+
+          # Check if it's a bare repository
+          if [ -d ".git" ]; then
+              echo "This is not a bare repository. Exiting..."
+              exit 0
+          fi
+
+          # Delete all local branches except master/main
+          git for-each-ref --format='%(refname:short)' refs/heads | xargs -n 1 git branch -D
+
+        '';
+        executable = true;
+      };
     };
 
     home.packages = with pkgs; [
@@ -44,7 +65,6 @@ in {
         remote.origin = {
           fetch = [
             "+refs/heads/*:refs/remotes/origin/*"
-            "+refs/tags/*:refs/tags/*"
           ];
           prune = true;
         };

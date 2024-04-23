@@ -77,7 +77,6 @@ in {
         pandoc-mode
         rainbow-delimiters
         sly
-        smartparens
         terraform-doc
         terraform-mode
         transient

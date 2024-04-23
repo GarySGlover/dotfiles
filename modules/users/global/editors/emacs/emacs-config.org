@@ -1355,36 +1355,18 @@ Config options to reduce the logging and improve the performance.
    (prog-mode . format-all-mode)
    (yaml-ts-mode . format-all-mode))
 #+end_src
-** Smart Parens
+** Electric Pair Highlighted region only
 #+begin_src emacs-lisp :tangle yes
   (use-package
-   smartparens
-   :ensure smartparens
-   :hook (prog-mode text-mode markdown-mode)
-   :config (require 'smartparens-config)
-   :bind
-   (:map
-    smartparens-mode-map
-    ("C-M-f" . sp-forward-sexp)
-    ("C-M-b" . sp-backward-sexp)
-    ("C-M-u" . sp-backward-up-sexp)
-    ("C-M-d" . sp-down-sexp)
-    ("C-M-k" . sp-kill-sexp)
-    ("C-M-w" . sp-copy-sexp)
-    ("C-M-SPC" . sp-mark-sexp)
-    ("M-<backspace>" . sp-backward-kill-word)
-    ("C-<backspace>" . sp-backward-delete-char)
-    ("C-M-(" . sp-wrap-round)
-    ("C-M-[" . sp-wrap-square)
-    ("C-M-{" . sp-wrap-curly)
-    ("C-M-t" . sp-transpose-sexp)
-    ("C-M-^" . sp-splice-sexp)
-    ("C-M-s" . sp-split-sexp)
-    ("C-M-r" . sp-rewrap-sexp)
-    ("C-M-f" . sp-forward-sexp)
-    ("C-M-b" . sp-backward-sexp)
-    ("C-M-n" . sp-next-sexp)
-    ("C-M-p" . sp-previous-sexp)))
+   elec-pair
+   :init
+   (defun only-if-use-region (func &rest args)
+     (if (use-region-p)
+         (apply func args)))
+   (advice-add
+    'electric-pair-post-self-insert-function
+    :around 'only-if-use-region)
+   (electric-pair-mode t))
 #+end_src
 ** Treesitter
 #+begin_src emacs-lisp :tangle yes

@@ -1231,20 +1231,32 @@ Dired nerd icons to show icons for files and folders
 #+begin_src emacs-lisp :tangle yes
   (use-package
    corfu
-   :init (setopt global-corfu-mode t)
+   :init
+   (setopt global-corfu-mode t)
+   (defun corfu-move-to-minibuffer ()
+     (interactive)
+     (pcase completion-in-region--data
+       (`(,beg ,end ,table ,pred ,extras)
+        (let ((completion-extra-properties extras)
+              completion-cycle-threshold
+              completion-cycling)
+          (consult-completion-in-region beg end table pred)))))
+   (add-to-list 'corfu-continue-commands #'corfu-move-to-minibuffer)
    :config
    (setopt corfu-auto t)
    (setopt corfu-popupinfo-mode t)
    (setopt corfu-popupinfo-delay '(0.5 . 0.5))
    (defun corfu-enable-in-minibuffer ()
      "Enable Corfu in the minibuffer if `completion-at-point' is bound."
-     (when (where-is-internal #'completion-at-point (list (current-local-map)))
+     (when (where-is-internal #'completion-at-point
+                              (list (current-local-map)))
        (setq-local corfu-auto t) ;; Enable/disable auto completion
        (setq-local
         corfu-echo-delay nil ;; Disable automatic echo and popup
         corfu-popupinfo-delay nil)
        (corfu-mode 1)))
-   :hook (minibuffer-setup . corfu-enable-in-minibuffer))
+   :hook (minibuffer-setup . corfu-enable-in-minibuffer)
+   :bind (:map corfu-map ("M-m" . corfu-move-to-minibuffer)))
 #+end_src
 
 #+begin_src emacs-lisp :tangle yes
@@ -1334,11 +1346,34 @@ Config options to reduce the logging and improve the performance.
 #+end_src
 ** Smart Parens
 #+begin_src emacs-lisp :tangle yes
-  (use-package smartparens
-    :ensure smartparens
-    :hook (prog-mode text-mode markdown-mode)
-    :config
-    (require 'smartparens-config))
+  (use-package
+   smartparens
+   :ensure smartparens
+   :hook (prog-mode text-mode markdown-mode)
+   :config (require 'smartparens-config)
+   :bind
+   (:map
+    smartparens-mode-map
+    ("C-M-f" . sp-forward-sexp)
+    ("C-M-b" . sp-backward-sexp)
+    ("C-M-u" . sp-backward-up-sexp)
+    ("C-M-d" . sp-down-sexp)
+    ("C-M-k" . sp-kill-sexp)
+    ("C-M-w" . sp-copy-sexp)
+    ("C-M-SPC" . sp-mark-sexp)
+    ("M-<backspace>" . sp-backward-kill-word)
+    ("C-<backspace>" . sp-backward-delete-char)
+    ("C-M-(" . sp-wrap-round)
+    ("C-M-[" . sp-wrap-square)
+    ("C-M-{" . sp-wrap-curly)
+    ("C-M-t" . sp-transpose-sexp)
+    ("C-M-^" . sp-splice-sexp)
+    ("C-M-s" . sp-split-sexp)
+    ("C-M-r" . sp-rewrap-sexp)
+    ("C-M-f" . sp-forward-sexp)
+    ("C-M-b" . sp-backward-sexp)
+    ("C-M-n" . sp-next-sexp)
+    ("C-M-p" . sp-previous-sexp)))
 #+end_src
 ** Treesitter
 #+begin_src emacs-lisp :tangle yes

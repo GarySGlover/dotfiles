@@ -1191,28 +1191,20 @@ Dired nerd icons to show icons for files and folders
   (use-package
    eat
    :init
-   (defun 4lc/eat-program (name)
-     (interactive)
-     (let ((eat-buffer-name (format "*%s*" name))
-           (eat-kill-buffer-on-exit t))
-       (eat name)))
+  (defmacro 4lc/gen-eat (name)
+    `(defun ,(intern (format "4lc/eat-%s" name)) ()
+       (interactive)
+       (let ((eat-buffer-name ,(format "*%s*" name))
+             (eat-kill-buffer-on-exit t))
+         (eat ,(prin1-to-string name)))))
+   (-each
+    '(btop k9s fish bash zsh)
+    (lambda (name) (eval `(4lc/gen-eat ,name))))
    :bind
-   (("C-c p b" .
-     (lambda ()
-       (interactive)
-       (4lc/eat-program "btop")))
-    ("C-c p k" .
-     (lambda ()
-       (interactive)
-       (4lc/eat-program "k9s")))
-    ("C-c p f" .
-     (lambda ()
-       (interactive)
-       (4lc/eat-program "fish")))
-    ("C-c p s" .
-     (lambda ()
-       (interactive)
-       (4lc/eat-program "bash")))))
+   (("C-c p b" . 4lc/eat-btop)
+    ("C-c p k" . 4lc/eat-k9s)
+    ("C-c p f" . 4lc/eat-fish)
+    ("C-c p s" . 4lc/eat-bash)))
 #+end_src
 * Programming
 ** Compilation

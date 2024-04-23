@@ -815,10 +815,19 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
   (use-package
    magit
    :demand t
-   :config (setq magit-dispnlay-buffer-function #'display-buffer)
+   :config
+   (defun 4lc/magit-post-clone-hook ()
+     "Delete local branches after cloning if the repository is a bare clone."
+     (unless (file-exists-p (expand-file-name ".git" default-directory))
+       (cd default-directory)
+       (shell-command
+        "git for-each-ref --format='%\(refname:short\)' refs/heads | grep -v 'master\\|main' | xargs -n 1 git branch -D")))
+   (add-hook 'magit-post-clone-hook #'4lc/magit-post-clone-hook)
+   (setq magit-dispnlay-buffer-function #'display-buffer)
    (advice-add
     'magit-worktree-delete
-    :after (lambda (&optional WORKTREE) (project-forget-zombie-projects)))
+    :after
+    (lambda (&optional WORKTREE) (project-forget-zombie-projects)))
    :bind (("C-c g" . 4lc/magit-status) ("C-x p m" . magit-project-status)))
 #+end_src
 

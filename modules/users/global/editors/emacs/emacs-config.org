@@ -819,7 +819,7 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
    (advice-add
     'magit-worktree-delete
     :after (lambda (&optional WORKTREE) (project-forget-zombie-projects)))
-   :bind (("C-c g" . magit-status) ("C-x p m" . magit-project-status)))
+   :bind (("C-c g" . 4lc/magit-status) ("C-x p m" . magit-project-status)))
 #+end_src
 
 Easy look through files git history
@@ -841,6 +841,16 @@ Easy look through files git history
            (-filter
             (lambda (d) (file-directory-p (concat project-root d)))
             (directory-files project-root nil "\\`[^.]")))))))
+
+  (defun 4lc/magit-status ()
+    "Call magit-status, but if called with the prefix operation
+  it should call magit-status-next"
+    (interactive)
+    (if (equal current-prefix-arg '(4))
+        (progn
+          (call-interactively 'magit-status-next)
+          (setq current-prefix-arg nil))
+      (call-interactively 'magit-status)))
 #+end_src
 * Navigation
 ** Avy

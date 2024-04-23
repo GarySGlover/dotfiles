@@ -605,7 +605,8 @@ Functions to directly set the height and width of windows as either percentage o
           `("^\\*scratch.*\\*$"
             "^\\*GNU Emacs\\*$"
             "^\\*Kubel:.*\\*$"
-            "^\\*fish\\*$"
+            "^\\*fish.*\\*$"
+            "^\\*.**eat\\*$"
             "[Ee]diff")))
      (-each
       exceptions

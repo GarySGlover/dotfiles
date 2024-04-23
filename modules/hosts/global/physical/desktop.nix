@@ -12,12 +12,14 @@ with lib; {
 
     services.xserver = {
       enable = true;
-      displayManager.sddm = {enable = true;};
-      displayManager.defaultSession = "hyprland";
+      # Configure keymap in X11
+      xkb.layout = "gb";
     };
 
-    # Configure keymap in X11
-    services.xserver.xkb.layout = "gb";
+    services.displayManager = {
+      sddm = {enable = true;};
+      defaultSession = "hyprland";
+    };
 
     # Enable sound.
     hardware.pulseaudio.enable = false;

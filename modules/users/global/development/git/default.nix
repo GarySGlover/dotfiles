@@ -64,7 +64,6 @@ in {
         };
         remote.origin = {
           fetch = [
-            "+refs/heads/*:refs/remotes/origin/*"
           ];
           prune = true;
         };

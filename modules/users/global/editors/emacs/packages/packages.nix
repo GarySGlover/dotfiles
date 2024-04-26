@@ -75,6 +75,7 @@ in {
         no-littering
         orderless
         pandoc-mode
+        powershell
         rainbow-delimiters
         sly
         terraform-doc

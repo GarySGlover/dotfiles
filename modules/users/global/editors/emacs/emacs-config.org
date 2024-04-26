@@ -851,11 +851,11 @@ Easy look through files git history
             (lambda (d) (file-directory-p (concat project-root d)))
             (directory-files project-root nil "\\`[^.]")))))))
 
-  (defun 4lc/magit-status ()
+  (defun 4lc/magit-status (arg)
     "Call magit-status, but if called with the prefix operation
   it should call magit-status-next"
-    (interactive)
-    (if (equal current-prefix-arg '(4))
+    (interactive "P")
+    (if (equal arg '(4))
         (progn
           (call-interactively 'magit-status-next)
           (setq current-prefix-arg nil))

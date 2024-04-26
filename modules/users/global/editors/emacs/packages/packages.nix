@@ -90,6 +90,7 @@ in {
         yasnippet
         yasnippet-capf
         yasnippet-snippets
+        zig-mode
       ];
 
     # Dictionaries for use with flyspell

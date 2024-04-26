@@ -1650,3 +1650,8 @@ Config options to reduce the logging and improve the performance.
    :init (4lc/org-babel-add-language 'lisp)
    :custom (inferior-lisp-program "sbcl"))
 #+end_src
+** ZIG
+#+begin_src emacs-lisp :tangle yes
+  (use-package zig-mode
+    :mode ("\\.zig\\'" . zig-mode))
+#+end_src

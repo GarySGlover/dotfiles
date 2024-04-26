@@ -10,7 +10,6 @@ with lib; {
       go
       gopls
       gotools
-      tinygo
     ];
   };
 }

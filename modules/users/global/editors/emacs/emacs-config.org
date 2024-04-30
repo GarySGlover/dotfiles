@@ -607,6 +607,7 @@ Functions to directly set the height and width of windows as either percentage o
             "^\\*Kubel:.*\\*$"
             "^\\*fish.*\\*$"
             "^\\*.**eat\\*$"
+            "^\\*.**eww*\\*$"
             "[Ee]diff")))
      (-each
       exceptions

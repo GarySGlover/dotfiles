@@ -38,7 +38,6 @@ in {
         avy
         beframe
         breadcrumb
-        emacscodeium
         cape
         combobulate
         consult
@@ -52,6 +51,7 @@ in {
         eat
         ef-themes
         elisp-autofmt
+        emacscodeium
         embark
         embark-consult
         exec-path-from-shell
@@ -76,6 +76,7 @@ in {
         orderless
         pandoc-mode
         powershell
+        quickrun
         rainbow-delimiters
         sly
         terraform-doc

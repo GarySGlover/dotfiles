@@ -21,7 +21,6 @@
 | C-c o  |                      |
 | C-c p  | >eat-programs        |
 | C-c q  |                      |
-| C-c r  |                      |
 | C-c s  | git time machine     |
 | C-c t  | >transparency        |
 | C-c u  |                      |
@@ -32,10 +31,11 @@
 | C-c z  |                      |
 *** Local
 **** Prog mode
-| Prefix | Name     |
-|--------+----------|
-| C-c e  | >eglot   |
-| C-c m  | >compile |
+| Prefix | Name      |
+|--------+-----------|
+| C-c e  | >eglot    |
+| C-c m  | >compile  |
+| C-c r  | >quickrun |
 ** Magit ediff
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 (setq ediff-split-window-function 'split-window-horizontally)
@@ -427,7 +427,7 @@ Popup to show available shortcut keys in current mode
   (use-package
    codeium
    :init
-   ;; (setq-local completion-in-region-function #'consult-completion-in-region)
+   (add-to-list 'completion-at-point-functions #'codeium-completion-at-point)
    (defalias
      'cape-codeium
      (cape-capf-interactive #'codeium-completion-at-point))
@@ -1415,6 +1415,11 @@ Config options to reduce the logging and improve the performance.
    :custom
    (setopt
     treesit-extra-load-path '("~/.config/emacs/var/tree-sitter")))
+#+end_src
+** Code running
+#+begin_src emacs-lisp :tangle yes
+  (use-package quickrun
+    :bind (("C-c r" . quickrun)))
 #+end_src
 * Languages
 ** Bash

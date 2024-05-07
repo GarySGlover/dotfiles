@@ -1446,6 +1446,7 @@ Config options to reduce the logging and improve the performance.
    sh-script
    :init
    (add-to-list 'major-mode-remap-alist (cons 'sh-mode 'bash-ts-mode))
+   (4lc/org-babel-add-language 'shell)
    :config (setopt sh-basic-offset 2)
    :hook
    (bash-ts-mode

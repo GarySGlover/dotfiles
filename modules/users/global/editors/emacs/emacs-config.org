@@ -1096,6 +1096,14 @@ Indent bars
      (org-babel-do-load-languages
       'org-babel-load-languages
       (add-to-list 'org-babel-load-languages `(,lang . t))))
+   (defun 4lc/org-src-lang-override (mode)
+     (let ((m (cdr (assoc mode major-mode-remap-alist))))
+       (if m
+           m
+         mode)))
+   (advice-add
+    #'org-src-get-lang-mode
+    :filter-return #'4lc/org-src-lang-override)
    :config
    (setopt org-src-window-setup 'plain)
    (setopt org-startup-indented t)
@@ -1318,7 +1326,7 @@ Dired replacement
     `(setq-default format-all-formatters
            (cons
             '(,langid ,formatter)
-            (assq-delete-all ,langid format-all-formatters))))
+            (assoc-delete-all ,langid format-all-formatters))))
    :commands (format-all-mode define-format-all-formatter)
    :bind (:map prog-mode-map ("C-c f" . format-all-region-or-buffer))
    :hook
@@ -1445,6 +1453,16 @@ Config options to reduce the logging and improve the performance.
   (use-package
    sh-script
    :init
+   (define-format-all-formatter 4lc/shfmt
+    (:executable "shfmt")
+    (:install)
+    (:languages "Shell")
+    (:features)
+    (:format
+     (format-all--buffer-easy
+      executable
+      (when (buffer-file-name)
+          (list "-filename" (buffer-file-name))))))
    (add-to-list 'major-mode-remap-alist (cons 'sh-mode 'bash-ts-mode))
    (4lc/org-babel-add-language 'shell)
    :config (setopt sh-basic-offset 2)
@@ -1452,7 +1470,7 @@ Config options to reduce the logging and improve the performance.
    (bash-ts-mode
     .
     (lambda ()
-      (format-all-update-formatter "Shell" (shfmt "-i" "2" "-ci")))))
+      (format-all-update-formatter "Shell" (4lc/shfmt "-i" "4" "-ci")))))
 #+end_src
 ** CMake
 #+begin_src emacs-lisp :tangle yes

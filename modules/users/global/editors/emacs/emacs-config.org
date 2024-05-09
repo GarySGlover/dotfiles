@@ -1048,15 +1048,6 @@ Which-key for Embark
    (visual-line-mode . visual-fill-column-mode)
    (text-mode-hook . (lambda () (visual-line-mode t))))
 #+end_src
-** Highlight current line
-#+begin_src emacs-lisp :tangle yes
-  (use-package
-    hl-line
-    :init
-    (setopt global-hl-line-sticky-flag nil)
-    (setopt hl-line-sticky-flag nil)
-    (global-hl-line-mode t))
-#+end_src
 ** Highlight indentation
 Indent bars
 #+begin_src emacs-lisp :tangle yes

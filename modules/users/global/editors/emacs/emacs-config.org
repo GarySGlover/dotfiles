@@ -1181,10 +1181,28 @@ Indent bars
  :bind (:map dired-mode-map ("C-+" . dired-create-empty-file))
    :hook (dired-mode . dired-hide-details-mode))
 #+end_src
-
-Dired nerd icons to show icons for files and folders
+** Dirvish
+Dired replacement
 #+begin_src emacs-lisp :tangle yes
-  (use-package nerd-icons-dired :after dired :hook (dired-mode . nerd-icons-dired-mode))
+  (use-package
+   dirvish
+   :ensure t
+   :init (dirvish-override-dired-mode)
+   :config
+   (setq dirvish-attributes
+         '(nerd-icons collapse git-msg file-time file-size))
+   :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
+   (:map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
+    ("a" . dirvish-quick-access)
+    ("f" . dirvish-file-info-menu)
+    ("y" . dirvish-yank-menu)
+    ("N" . dirvish-narrow)
+    ("s" . dirvish-quicksort) ; remapped `dired-sort-toggle-or-edit'
+    ("TAB" . dirvish-subtree-toggle)
+    ("M-l" . dirvish-ls-switches-menu)
+    ("M-m" . dirvish-mark-menu)
+    ("M-s" . dirvish-setup-menu)
+    ("M-e" . dirvish-emerge-menu)))
 #+end_src
 ** Kubernetes
 #+begin_src emacs-lisp :tangle yes

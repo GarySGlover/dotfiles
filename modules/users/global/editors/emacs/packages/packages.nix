@@ -47,6 +47,7 @@ in {
         corfu-candidate-overlay
         devdocs
         direnv
+        dirvish
         dtrt-indent
         eat
         ef-themes
@@ -75,6 +76,7 @@ in {
         no-littering
         orderless
         pandoc-mode
+        pdf-tools
         powershell
         quickrun
         rainbow-delimiters

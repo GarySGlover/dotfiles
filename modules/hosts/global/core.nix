@@ -13,6 +13,9 @@
   # Udisk2 Disk Auto Mounting
   services.udisks2.enable = true;
 
+  # SSD Trimming
+  services.fstrim.enable = true;
+
   # Default sops config
   sops.defaultSopsFile = ../../../secrets/global.yaml;
 

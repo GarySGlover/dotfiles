@@ -21,16 +21,25 @@
   fileSystems."/" = {
     device = "/dev/disk/by-label/root";
     fsType = "ext4";
+    options = [
+      "discard"
+    ];
   };
 
   fileSystems."/boot" = {
     device = "/dev/disk/by-label/BOOT";
     fsType = "vfat";
+    options = [
+      "discard"
+    ];
   };
 
   fileSystems."/home" = {
     device = "/dev/disk/by-label/home";
     fsType = "ext4";
+    options = [
+      "discard"
+    ];
   };
 
   swapDevices = [];

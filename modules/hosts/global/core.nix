@@ -8,7 +8,7 @@
   networking.hostName = "${host}";
 
   # Enable touchpad support (enabled default in most desktopManager).
-  services.xserver.libinput.enable = true;
+  services.libinput.enable = true;
 
   # Udisk2 Disk Auto Mounting
   services.udisks2.enable = true;

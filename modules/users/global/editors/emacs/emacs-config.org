@@ -824,7 +824,8 @@ Using Magit as the git porcelain. Is configured to use the same window rather th
        (shell-command
         "git for-each-ref --format='%\(refname:short\)' refs/heads | grep -v 'master\\|main' | xargs -n 1 git branch -D")))
    (add-hook 'magit-post-clone-hook #'4lc/magit-post-clone-hook)
-   (setq magit-dispnlay-buffer-function #'display-buffer)
+   (setq magit-display-buffer-function #'display-buffer)
+   (setq-default magit-clone-set-remote.pushDefault t)
    (advice-add
     'magit-worktree-delete
     :after
@@ -1180,29 +1181,6 @@ Indent bars
  :bind (:map dired-mode-map ("C-+" . dired-create-empty-file))
    :hook (dired-mode . dired-hide-details-mode))
 #+end_src
-** Dirvish
-Dired replacement
-#+begin_src emacs-lisp :tangle yes
-  (use-package
-   dirvish
-   :ensure t
-   :init (dirvish-override-dired-mode)
-   :config
-   (setq dirvish-attributes
-         '(nerd-icons collapse git-msg file-time file-size))
-   :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
-   (:map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
-    ("a" . dirvish-quick-access)
-    ("f" . dirvish-file-info-menu)
-    ("y" . dirvish-yank-menu)
-    ("N" . dirvish-narrow)
-    ("s" . dirvish-quicksort) ; remapped `dired-sort-toggle-or-edit'
-    ("TAB" . dirvish-subtree-toggle)
-    ("M-l" . dirvish-ls-switches-menu)
-    ("M-m" . dirvish-mark-menu)
-    ("M-s" . dirvish-setup-menu)
-    ("M-e" . dirvish-emerge-menu)))
-#+end_src
 ** Kubernetes
 #+begin_src emacs-lisp :tangle yes
   (use-package
@@ -1273,6 +1251,7 @@ Dired replacement
    (add-to-list 'corfu-continue-commands #'corfu-move-to-minibuffer)
    :config
    (setopt corfu-auto t)
+   (setopt corfu-quit-no-match t)
    (setopt corfu-popupinfo-mode t)
    (setopt corfu-popupinfo-delay '(0.5 . 0.5))
    (defun corfu-enable-in-minibuffer ()

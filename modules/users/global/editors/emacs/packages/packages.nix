@@ -48,7 +48,6 @@ in {
         corfu-candidate-overlay
         devdocs
         direnv
-        dirvish
         dtrt-indent
         eat
         ef-themes

@@ -170,7 +170,16 @@
           inherit host;
           users = v.users;
         })
-      (filterAttrs (n: v: v.nixos) hostCfgs);
+      (filterAttrs (n: v: v.nixos) hostCfgs)
+      // {
+        live = nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            (nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix")
+            ./modules/hosts/live/live.nix
+          ];
+        };
+      };
 
     homeConfigurations = with builtins;
     with lib.lists;

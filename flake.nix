@@ -120,6 +120,7 @@
                 inherit extraSpecialArgs;
                 useGlobalPkgs = true;
                 useUserPackages = true;
+                backupFileExtension = "hm-backup";
                 users = userHome;
                 sharedModules =
                   [

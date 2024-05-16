@@ -4,8 +4,7 @@
   pkgs,
   ...
 }:
-with lib; let
-in {
+with lib; {
   config = mkIf config.wolf.languages.json {
     home.packages = with pkgs; [
       jq

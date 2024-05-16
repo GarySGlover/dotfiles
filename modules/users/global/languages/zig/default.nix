@@ -5,7 +5,7 @@
   ...
 }:
 with lib; {
-  config = mkIf config.wolf.languages.go {
+  config = mkIf config.wolf.languages.zig {
     home.packages = with pkgs; [
       zig
     ];

@@ -5,7 +5,7 @@
   ...
 }:
 with lib; {
-  config = {
+  config = mkIf config.wolf.languages.lisp {
     home.packages = with pkgs; [
       sbcl
     ];

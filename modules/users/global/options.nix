@@ -9,76 +9,30 @@ with types; let
   roles = config.wolf.roles;
 in {
   options.wolf = {
-    host = mkOption {
-      type = str;
-    };
-    secretsPath = mkOption {
-      type = path;
-    };
-    user.interactive = mkOption {
-      type = bool;
-    };
+    host = mkOption {type = str;};
+    secretsPath = mkOption {type = path;};
+    user.interactive = mkOption {type = bool;};
   };
 
   options.wolf.languages = {
-    go = mkOption {
-      type = bool;
-      default = roles.programming;
-    };
-    python = mkOption {
-      type = bool;
-      default = roles.programming;
-    };
-    nix = mkOption {
-      type = bool;
-      default = roles.programming;
-    };
-    json = mkOption {
-      type = bool;
-      default = roles.programming;
-    };
-    nim = mkOption {
-      type = bool;
-      default = roles.programming;
-    };
+    go = mkOption {type = bool;};
+    json = mkOption {type = bool;};
+    lisp = mkOption {type = bool;};
+    nim = mkOption {type = bool;};
+    nix = mkOption {type = bool;};
+    powershell = mkOption {type = bool;};
+    python = mkOption {type = bool;};
+    zig = mkOption {type = bool;};
   };
 
   options.wolf.roles = {
-    devops = mkOption {
-      type = bool;
-      default = false;
-    };
-    desktop = mkOption {
-      type = bool;
-      default = roles.gaming;
-    };
-    gaming = mkOption {
-      type = bool;
-      default = false;
-    };
-    gui = mkOption {
-      type = bool;
-      default = roles.gaming || roles.desktop;
-    };
-    programming = mkOption {
-      type = bool;
-      default = false;
-    };
-    editing = mkOption {
-      type = bool;
-      default = roles.internet || roles.programming;
-    };
-    internet = mkOption {
-      type = bool;
-      default = false;
-    };
-    cad = mkOption {
-      type = bool;
-      default = false;
-    };
-    work = mkOption {
-      type = bool;
-      default = false;
-    };
+    cad = mkOption {type = bool;};
+    desktop = mkOption {type = bool;};
+    devops = mkOption {type = bool;};
+    editing = mkOption {type = bool;};
+    gaming = mkOption {type = bool;};
+    internet = mkOption {type = bool;};
+    programming = mkOption {type = bool;};
+    work = mkOption {type = bool;};
   };
 }

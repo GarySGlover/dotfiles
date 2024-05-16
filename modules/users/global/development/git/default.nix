@@ -47,9 +47,7 @@ in {
     };
 
     home.packages = with pkgs; [
-      python312
       pre-commit
-      go
     ];
 
     programs.git = {

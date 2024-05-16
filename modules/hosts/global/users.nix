@@ -4,9 +4,9 @@
   pkgs,
   users,
   ...
-}:
-with lib;
-with builtins; let
+}: let
+  inherit (builtins) mapAttrs hasAttr listToAttrs filterAttrs;
+  inherit (lib.lists) any head;
   adminUser = head users;
   createUsers = mapAttrs (n: v:
     v
@@ -40,18 +40,17 @@ with builtins; let
     };
   };
 in {
-  sops.secrets = with builtins;
-    listToAttrs (
-      map (x: {
-        name = "${x}-password";
-        value = {
-          "neededForUsers" = true;
-        };
-      })
-      users
-    );
+  sops.secrets = listToAttrs (
+    map (x: {
+      name = "${x}-password";
+      value = {
+        "neededForUsers" = true;
+      };
+    })
+    users
+  );
 
   programs.fish.enable = true;
 
-  users.users = filterAttrs (n: v: lists.any (i: i == n) users) createUsers;
+  users.users = filterAttrs (n: v: any (i: i == n) users) createUsers;
 }

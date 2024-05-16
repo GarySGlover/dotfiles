@@ -1,12 +1,6 @@
-{
-  lib,
-  pkgs,
-  config,
-  ...
-}:
-with lib;
-with types; let
-  roles = config.wolf.roles;
+{lib, ...}: let
+  inherit (lib) mkOption types;
+  inherit (types) str path bool;
 in {
   options.wolf = {
     host = mkOption {type = str;};

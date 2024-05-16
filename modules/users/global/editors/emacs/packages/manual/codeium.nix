@@ -3,7 +3,7 @@
   fetchFromGitHub,
   ...
 }:
-trivialBuild rec {
+trivialBuild {
   pname = "codeium.el";
   version = "202403.1.8.10";
   src = fetchFromGitHub {

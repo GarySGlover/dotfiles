@@ -2,8 +2,9 @@
   config,
   lib,
   ...
-}:
-with lib; {
+}: let
+  inherit (lib) mkIf;
+in {
   config = mkIf config.wolf.roles.desktop {
     programs.kitty = {
       enable = true;

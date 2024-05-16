@@ -3,10 +3,8 @@
   config,
   lib,
   ...
-}:
-with lib;
-with builtins; let
-  secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
+}: let
+  inherit (lib) mkIf;
 in {
   config = mkIf config.wolf.roles.editing {
     programs.emacs = {

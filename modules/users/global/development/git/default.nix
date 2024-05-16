@@ -3,9 +3,10 @@
   lib,
   pkgs,
   ...
-}:
-with lib;
-with builtins; let
+}: let
+  inherit (builtins) hasAttr;
+  inherit (lib) mkIf;
+  inherit (lib.lists) forEach;
   secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
 in {
   config = {
@@ -67,14 +68,11 @@ in {
         };
         credential.helper = "store";
       };
-      ignores = [
-        "/.worktree/"
-      ];
       aliases = {
         fetchp = "fetch --force";
       };
       includes =
-        lists.forEach secrets.git_remotes_emails (x: {
+        forEach secrets.git_remotes_emails (x: {
           condition = "hasconfig:remote.*.url:${x.condition}";
           contents = {
             user = {
@@ -82,7 +80,7 @@ in {
             };
           };
         })
-        ++ lists.forEach secrets.git_folders_emails (x: {
+        ++ forEach secrets.git_folders_emails (x: {
           condition = "gitdir:${x.condition}";
           contents = {
             user = {

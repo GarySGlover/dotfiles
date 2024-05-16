@@ -1,12 +1,11 @@
 {
   melpaBuild,
   writeText,
-  lib,
   fetchFromGitHub,
   compat,
   ...
 }:
-melpaBuild rec {
+melpaBuild {
   pname = "indent-bars";
   ename = "indent-bars";
   version = "20240228.0.2.3";

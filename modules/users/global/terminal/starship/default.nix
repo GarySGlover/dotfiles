@@ -1,9 +1,4 @@
 {
-  config,
-  lib,
-  ...
-}:
-with lib; {
   config = {
     programs.starship = {
       enable = true;
@@ -40,11 +35,6 @@ with lib; {
         time = {
           disabled = false;
         };
-        # custom.direnv = {
-        #   format = "[\\[direnv\\]]($style) ";
-        #   style = "fg:yellow dimmed";
-        #   when = "env | grep -E '^DIRENV_FILE='";
-        # };
       };
     };
   };

@@ -1,11 +1,10 @@
 {
   melpaBuild,
   writeText,
-  lib,
   fetchFromGitHub,
   ...
 }:
-melpaBuild rec {
+melpaBuild {
   pname = "combobulate";
   ename = "combobulate";
   version = "20240201.0";

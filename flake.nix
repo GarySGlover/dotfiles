@@ -20,31 +20,29 @@
 
   outputs = {
     emacs-overlay,
-    flake-utils,
     home-manager,
     nixpkgs,
-    self,
     sops-nix,
     ...
   }: let
+    inherit (lib) pathExists hasSuffix mapAttrsToList forEach flatten;
+    inherit (builtins) readDir head match mapAttrs filterAttrs listToAttrs attrValues;
     system =
       if builtins ? currentSystem
-      then builtins.currentSystem
+      then builtins.currentSystemp
       else "x86_64-linux";
-    listNixFilesRecursive = with builtins;
-    with lib;
-      dir:
-        flatten (mapAttrsToList (name: type: let
-          path = dir + "/${name}";
-        in
-          if type == "directory"
-          then
-            if pathExists (dir + "/${name}/default.nix")
-            then path
-            else listNixFilesRecursive path
-          else if hasSuffix ".nix" name
+    listNixFilesRecursive = dir:
+      flatten (mapAttrsToList (name: type: let
+        path = dir + "/${name}";
+      in
+        if type == "directory"
+        then
+          if pathExists (dir + "/${name}/default.nix")
           then path
-          else []) (readDir dir));
+          else listNixFilesRecursive path
+        else if hasSuffix ".nix" name
+        then path
+        else []) (readDir dir));
 
     tree-sitter-grammars = import ./modules/overlays/tree-sitter-grammars.nix;
 
@@ -62,15 +60,14 @@
     extraSpecialArgs = {inherit pkgs;};
 
     mkHomeCfg = name: let
-      user = "${builtins.head (builtins.match "(.+)@.+" name)}";
-      host = "${builtins.head (builtins.match ".+@(.+)" name)}";
+      user = "${head (match "(.+)@.+" name)}";
+      host = "${head (match ".+@(.+)" name)}";
     in {
       inherit name;
       value = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         inherit extraSpecialArgs;
-        modules = with builtins;
-        with lib.lists;
+        modules =
           [
             ({...}: {
               home.username = user;
@@ -89,23 +86,21 @@
       host,
       users,
     }: let
-      userHome = with builtins;
-      with lib.lists;
-        listToAttrs (
-          forEach users (
-            user: {
-              name = "${user}";
-              value = {pkgs, ...}: {
-                home.username = "${user}";
-                home.homeDirectory = lib.mkForce "/home/${user}";
-                wolf.secretsPath = ./secrets;
-                imports = listNixFilesRecursive ./modules/users/${user};
-              };
-            }
-          )
-        );
-      hostLegacyModule = with builtins;
-      with lib.lists; optionals (pathExists ./hosts/${host}) [./hosts/${host}];
+      inherit (lib.lists) forEach listToAttrs optionals;
+      userHome = listToAttrs (
+        forEach users (
+          user: {
+            name = "${user}";
+            value = {
+              home.username = "${user}";
+              home.homeDirectory = lib.mkForce "/home/${user}";
+              wolf.secretsPath = ./secrets;
+              imports = listNixFilesRecursive ./modules/users/${user};
+            };
+          }
+        )
+      );
+      hostLegacyModule = optionals (pathExists ./hosts/${host}) [./hosts/${host}];
       specialArgs = {inherit host users;};
     in
       lib.nixosSystem {
@@ -152,20 +147,17 @@
       };
     };
 
-    homeCfgs = with builtins;
-    with lib.lists;
-      flatten (
-        attrValues (
-          mapAttrs (host: v:
-            forEach v.users (
-              user: "${user}@${host}"
-            ))
-          hostCfgs
-        )
-      );
+    homeCfgs = flatten (
+      attrValues (
+        mapAttrs (host: v:
+          forEach v.users (
+            user: "${user}@${host}"
+          ))
+        hostCfgs
+      )
+    );
   in {
-    nixosConfigurations = with builtins;
-    with lib;
+    nixosConfigurations =
       mapAttrs (host: v:
         mkNixOsCfg {
           inherit host;
@@ -182,13 +174,11 @@
         };
       };
 
-    homeConfigurations = with builtins;
-    with lib.lists;
-      listToAttrs (
-        forEach homeCfgs (
-          name: mkHomeCfg name
-        )
-      );
+    homeConfigurations = listToAttrs (
+      forEach homeCfgs (
+        name: mkHomeCfg name
+      )
+    );
 
     devShells.${system}.default = pkgs.mkShell {
       packages = with pkgs; [

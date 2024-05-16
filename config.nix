@@ -1,4 +1,6 @@
-{lib, ...}: {
+{lib, ...}: let
+  inherit (lib) elem getName;
+in {
   # Enable Steam for gaming
   packageOverrides = pkgs: {
     steam = pkgs.steam.override {
@@ -19,16 +21,14 @@
     };
   };
 
-  allowUnfreePredicate = with builtins;
-  with lib;
-    pkg:
-      elem (getName pkg) [
-        "codeium"
-        "steam"
-        "steam-original"
-        "steam-run"
-        "terraform"
-      ];
+  allowUnfreePredicate = pkg:
+    elem (getName pkg) [
+      "codeium"
+      "steam"
+      "steam-original"
+      "steam-run"
+      "terraform"
+    ];
 
   rocmSupport = true; # AMD Cuda support
 }

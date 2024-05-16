@@ -3,8 +3,8 @@
   pkgs,
   lib,
   ...
-}:
-with lib; let
+}: let
+  inherit (lib) mkIf;
   roles = config.wolf.roles;
 in {
   config = mkIf (roles.editing || roles.desktop) {

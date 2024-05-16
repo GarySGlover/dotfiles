@@ -3,8 +3,9 @@
   pkgs,
   lib,
   ...
-}:
-with lib; {
+}: let
+  inherit (lib) mkIf;
+in {
   config = mkIf config.wolf.languages.python {
     home.file."${config.xdg.configHome}/black".text = ''
       [tool.black]

@@ -4,14 +4,14 @@
   pkgs,
   ...
 }: let
+  inherit (lib) mkIf;
   kicad = pkgs.kicad.override {
     addons = with pkgs.kicadAddons; [kikit kikit-library];
   };
-in
-  with lib; {
-    config = mkIf config.wolf.roles.cad {
-      home.packages = [
-        kicad
-      ];
-    };
-  }
+in {
+  config = mkIf config.wolf.roles.cad {
+    home.packages = [
+      kicad
+    ];
+  };
+}

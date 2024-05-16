@@ -1,11 +1,10 @@
 {
-  pkgs,
-  config,
   lib,
+  config,
+  pkgs,
   ...
-}:
-with lib;
-with builtins; let
+}: let
+  inherit (lib) mkIf hasAttr;
   secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
 
   epkgs = pkgs.emacsPackages;
@@ -29,72 +28,75 @@ with builtins; let
     inherit (pkgs) fetchFromGitHub writeText;
     inherit (epkgs) melpaBuild nim-mode;
   };
+
+  emacsExtraPackagesLocal = [
+    combobulate
+    emacscodeium
+    indent-bars
+    nim-ts-mode
+  ];
+  emacsExtraPackages = with epkgs; [
+    ox-gfm
+    ace-window
+    auto-yasnippet
+    avy
+    beframe
+    breadcrumb
+    cape
+    consult
+    consult-flyspell
+    consult-yasnippet
+    corfu
+    corfu-candidate-overlay
+    devdocs
+    direnv
+    dtrt-indent
+    eat
+    ef-themes
+    elisp-autofmt
+    embark
+    embark-consult
+    exec-path-from-shell
+    format-all
+    gcmh
+    git-timemachine
+    gptel
+    helpful
+    json-mode
+    json-navigator
+    kubel
+    magit
+    marginalia
+    markdown-mode
+    mini-frame
+    nerd-icons-completion
+    nerd-icons-dired
+    nix-ts-mode
+    no-littering
+    orderless
+    pandoc-mode
+    pdf-tools
+    powershell
+    quickrun
+    rainbow-delimiters
+    sly
+    terraform-doc
+    terraform-mode
+    transient
+    treesit-grammars.with-all-grammars
+    verb
+    vertico
+    visual-fill-column
+    which-key
+    yaml-pro
+    yasnippet
+    yasnippet-capf
+    yasnippet-snippets
+    zig-mode
+  ];
 in {
   config = mkIf config.wolf.roles.editing {
-    programs.emacs.extraPackages = epkgs:
-      with epkgs; [
-        ox-gfm
-        ace-window
-        auto-yasnippet
-        avy
-        beframe
-        breadcrumb
-        cape
-        combobulate
-        consult
-        consult-flyspell
-        consult-yasnippet
-        corfu
-        corfu-candidate-overlay
-        devdocs
-        direnv
-        dtrt-indent
-        eat
-        ef-themes
-        elisp-autofmt
-        emacscodeium
-        embark
-        embark-consult
-        exec-path-from-shell
-        format-all
-        gcmh
-        git-timemachine
-        gptel
-        helpful
-        indent-bars
-        json-mode
-        json-navigator
-        kubel
-        magit
-        marginalia
-        markdown-mode
-        mini-frame
-        nerd-icons-completion
-        nerd-icons-dired
-        nim-ts-mode
-        nix-ts-mode
-        no-littering
-        orderless
-        pandoc-mode
-        pdf-tools
-        powershell
-        quickrun
-        rainbow-delimiters
-        sly
-        terraform-doc
-        terraform-mode
-        transient
-        treesit-grammars.with-all-grammars
-        verb
-        vertico
-        visual-fill-column
-        which-key
-        yaml-pro
-        yasnippet
-        yasnippet-capf
-        yasnippet-snippets
-        zig-mode
-      ];
+    programs.emacs.extraPackages = epkgs: emacsExtraPackages ++ emacsExtraPackagesLocal;
 
     # Dictionaries for use with flyspell
     home.packages = with pkgs; [

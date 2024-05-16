@@ -2,8 +2,8 @@
   config,
   lib,
   ...
-}:
-with lib; let
+}: let
+  inherit (lib.lists) any;
   opt = config.wolf;
   internet_hosts = ["auberon" "belisarius"];
 in {
@@ -15,7 +15,7 @@ in {
       cad = false;
       programming = true;
       internet =
-        if lists.any (i: opt.host == i) internet_hosts
+        if any (i: opt.host == i) internet_hosts
         then true
         else false;
       work = true;

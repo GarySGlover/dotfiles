@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  ...
-}:
-with lib; let
+{config, ...}: let
   opt = config.wolf;
   host_role = {
     auberon = [];
@@ -25,6 +20,9 @@ with lib; let
   };
   host_languages = {
     auberon = ["nix"];
+    belisarius = [
+      "nix"
+    ];
     clover-z270pd3 = [
       "nix"
       "json"

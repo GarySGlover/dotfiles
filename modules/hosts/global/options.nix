@@ -1,12 +1,6 @@
-{
-  lib,
-  pkgs,
-  config,
-  ...
-}:
-with lib;
-with types; let
-  roles = config.wolf.system;
+{lib, ...}: let
+  inherit (lib) mkOption types;
+  inherit (types) bool;
 in {
   options.wolf.system = {
     physical = mkOption {

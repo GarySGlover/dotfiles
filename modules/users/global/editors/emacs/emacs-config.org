@@ -700,7 +700,7 @@ Setup the main theme and fonts used within this emacs configuration.
             (random (length ef-themes-dark-themes))
             ef-themes-dark-themes)))
      (setopt ef-themes-to-toggle `(,light ,dark))
-     (ef-themes-select dark)))
+     (ef-themes-select light)))
 #+end_src
 
 ** Alert notification

@@ -5,8 +5,9 @@
   users,
   ...
 }: let
-  inherit (builtins) mapAttrs hasAttr listToAttrs filterAttrs;
-  inherit (lib.lists) any head;
+  inherit (builtins) mapAttrs hasAttr listToAttrs;
+  inherit (lib) any head filterAttrs;
+
   adminUser = head users;
   createUsers = mapAttrs (n: v:
     v

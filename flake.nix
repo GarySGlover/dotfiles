@@ -25,8 +25,10 @@
     sops-nix,
     ...
   }: let
-    inherit (lib) pathExists hasSuffix mapAttrsToList forEach flatten;
-    inherit (builtins) readDir head match mapAttrs filterAttrs listToAttrs attrValues;
+    lib = nixpkgs.lib;
+    inherit (lib) pathExists hasSuffix mapAttrsToList forEach flatten filterAttrs mkForce nixosSystem;
+    inherit (builtins) readDir head match mapAttrs listToAttrs attrValues;
+
     system =
       if builtins ? currentSystem
       then builtins.currentSystemp
@@ -55,8 +57,6 @@
       ];
     };
 
-    lib = nixpkgs.lib;
-
     extraSpecialArgs = {inherit pkgs;};
 
     mkHomeCfg = name: let
@@ -71,12 +71,11 @@
           [
             ({...}: {
               home.username = user;
-              home.homeDirectory = lib.mkForce "/home/${user}";
+              home.homeDirectory = mkForce "/home/${user}";
               wolf.host = host;
               wolf.secretsPath = ./secrets;
             })
           ]
-          ++ [./modules/users/global/temp_packages/temp.nix]
           ++ listNixFilesRecursive ./modules/users/global
           ++ listNixFilesRecursive ./modules/users/${user};
       };
@@ -86,14 +85,14 @@
       host,
       users,
     }: let
-      inherit (lib.lists) forEach listToAttrs optionals;
+      inherit (lib) forEach listToAttrs optionals;
       userHome = listToAttrs (
         forEach users (
           user: {
             name = "${user}";
             value = {
               home.username = "${user}";
-              home.homeDirectory = lib.mkForce "/home/${user}";
+              home.homeDirectory = mkForce "/home/${user}";
               wolf.secretsPath = ./secrets;
               imports = listNixFilesRecursive ./modules/users/${user};
             };
@@ -103,7 +102,7 @@
       hostLegacyModule = optionals (pathExists ./hosts/${host}) [./hosts/${host}];
       specialArgs = {inherit host users;};
     in
-      lib.nixosSystem {
+      nixosSystem {
         inherit system specialArgs;
         inherit pkgs;
         modules =
@@ -165,7 +164,7 @@
         })
       (filterAttrs (n: v: v.nixos) hostCfgs)
       // {
-        live = nixpkgs.lib.nixosSystem {
+        live = nixosSystem {
           inherit system;
           modules = [
             (nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix")

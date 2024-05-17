@@ -3,7 +3,7 @@
   lib,
   ...
 }: let
-  inherit (lib.lists) any;
+  inherit (lib) any;
   opt = config.wolf;
   internet_hosts = ["auberon" "belisarius"];
 in {

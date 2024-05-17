@@ -4,7 +4,7 @@ in {
   config = {
     programs.ssh = {
       enable = true;
-      extraConfig = "AddKeysToAgent yes";
+      addKeysToAgent = "yes";
       forwardAgent = true;
       compression = true;
       matchBlocks = {

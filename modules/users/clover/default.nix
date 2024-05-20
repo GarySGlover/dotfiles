@@ -19,12 +19,9 @@
     ];
   };
   host_languages = {
-    auberon = ["nix"];
-    belisarius = [
-      "nix"
-    ];
+    auberon = [];
+    belisarius = [];
     clover-z270pd3 = [
-      "nix"
       "json"
     ];
   };
@@ -34,7 +31,7 @@ in {
       cad = builtins.elem "cad" host_role."${opt.host}";
       desktop = builtins.elem "desktop" host_role."${opt.host}";
       devops = builtins.elem "devops" host_role."${opt.host}";
-      editing = builtins.elem "editing" host_role."${opt.host}";
+      editing = opt.roles.programming || builtins.elem "editing" host_role."${opt.host}";
       gaming = builtins.elem "gaming" host_role."${opt.host}";
       internet = builtins.elem "internet" host_role."${opt.host}";
       programming = builtins.elem "programming" host_role."${opt.host}";
@@ -46,9 +43,9 @@ in {
       json = builtins.elem "json" host_languages."${opt.host}";
       lisp = builtins.elem "lisp" host_languages."${opt.host}";
       nim = builtins.elem "nim" host_languages."${opt.host}";
-      nix = builtins.elem "nix" host_languages."${opt.host}";
+      nix = opt.roles.editing || builtins.elem "nix" host_languages."${opt.host}";
       powershell = builtins.elem "powershell" host_languages."${opt.host}";
-      python = builtins.elem "python" host_languages."${opt.host}";
+      python = opt.roles.editing || builtins.elem "python" host_languages."${opt.host}";
       zig = builtins.elem "zig" host_languages."${opt.host}";
     };
     user.interactive = true;

@@ -388,7 +388,7 @@ Popup to show available shortcut keys in current mode
    (which-key-show-early-on-C-h t "Press C-h to show commands")
    (which-key-idle-delay 1 "Delay which key normal display")
    (which-key-idle-secondary-delay 0.05 "Quicker which-key subsequest display")
-   (which-key-max-display-columns 3)
+   (which-key-max-description-length (- (/ (frame-width) 2) 1))
    (which-key-show-remaining-keys t))
 #+end_src
 

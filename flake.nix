@@ -1,5 +1,5 @@
 {
-  description = "Clover Nix Configurtaion";
+  description = "Clover Nix Configuration";
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixpkgs-unstable";

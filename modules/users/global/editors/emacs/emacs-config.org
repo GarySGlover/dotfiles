@@ -1303,6 +1303,131 @@ Indent bars
    (prog-mode . format-all-mode)
    (yaml-ts-mode . format-all-mode))
 #+end_src
+
+Format all modification to  ask for projects and files if should format.
+
+#+begin_src emacs-lisp :tangle yes
+  (defvar 4lc/file-format-answers (make-hash-table :test 'equal)
+    "Hash table to store user answers about formatting individual files.")
+
+  (defvar 4lc/project-format-answers (make-hash-table :test 'equal)
+    "Hash table to store user answers about formatting files in projects.")
+
+  (defvar 4lc/format-file
+    (expand-file-name "format-answers.el" user-emacs-directory)
+    "File path to store format answers.")
+
+  (defconst 4lc/no-format '4lc/no-format
+    "Marker value indicating that formatting is not desired.")
+
+  (defun 4lc/load-format-answers ()
+    "Load format answers from disk, cleaning up any zombie entries."
+    (when (file-exists-p 4lc/format-file)
+      (with-temp-buffer
+        (insert-file-contents 4lc/format-file)
+        (let ((data (read (current-buffer))))
+          (setq 4lc/file-format-answers (car data))
+          (setq 4lc/project-format-answers (cdr data))
+          (4lc/clean-format-answers)))))
+
+  (defun 4lc/save-format-answers ()
+    "Save format answers to disk."
+    (with-temp-file 4lc/format-file
+      (prin1 (cons 4lc/file-format-answers 4lc/project-format-answers)
+             (current-buffer))))
+
+  (defun 4lc/clean-format-answers ()
+    "Clean up zombie entries in format answers."
+    (maphash
+     (lambda (key _)
+       (unless (file-exists-p key)
+         (remhash key 4lc/file-format-answers)))
+     4lc/file-format-answers)
+    (maphash
+     (lambda (key _)
+       (unless (file-exists-p key)
+         (remhash key 4lc/project-format-answers)))
+     4lc/project-format-answers))
+
+  (defun 4lc/project-root ()
+    "Get the root directory of the current project using project.el."
+    (when-let ((project (project-current)))
+      (expand-file-name (car (project-roots project)))))
+
+  (defun 4lc/ask-to-format (orig-fun &rest args)
+    "Ask the user if they want to format the current buffer before saving."
+    (let ((file (buffer-file-name))
+          (project (4lc/project-root)))
+      (cond
+       ;; Case: file has saved answer
+       ((and file (gethash file 4lc/file-format-answers))
+        (when (eq (gethash file 4lc/file-format-answers) t)
+          (apply orig-fun args)))
+       ;; Case: file is part of a project and project has saved answer
+       ((and project (gethash project 4lc/project-format-answers))
+        (when (eq (gethash project 4lc/project-format-answers) t)
+          (apply orig-fun args)))
+       ;; Case: file is part of a project and project doesn't have saved answer
+       ((and project (not (gethash project 4lc/project-format-answers)))
+        (let ((answer
+               (y-or-n-p
+                (format "Do you want to format buffers in project %s? "
+                        project))))
+          (puthash
+           project (or answer 4lc/no-format) 4lc/project-format-answers)
+          (4lc/save-format-answers)
+          (when answer
+            (apply orig-fun args))))
+
+       ;; Case: file is not part of a project
+       (file
+        (let ((answer
+               (y-or-n-p
+                (format "Do you want to format buffer %s? " file))))
+          (puthash
+           file (or answer 4lc/no-format) 4lc/file-format-answers)
+          (4lc/save-format-answers)
+          (when answer
+            (apply orig-fun args))))
+
+       ;; Default case: format-all
+       (t
+        (apply orig-fun args)))))
+
+  (advice-add 'format-all--buffer-from-hook :around #'4lc/ask-to-format)
+
+  (defun 4lc/clear-file-format-answer ()
+    "Clear the format answer for the current file."
+    (interactive)
+    (let ((file (buffer-file-name)))
+      (when file
+        (remhash file 4lc/file-format-answers)
+        (4lc/save-format-answers)
+        (message "Cleared format answer for file: %s" file))))
+
+  (defun 4lc/clear-project-format-answer ()
+    "Clear the format answer for the current project."
+    (interactive)
+    (let ((project (4lc/project-root)))
+      (when project
+        (remhash project 4lc/project-format-answers)
+        (4lc/save-format-answers)
+        (message "Cleared format answer for project: %s" project))))
+
+  (defun 4lc/ask-and-store-format-option-for-current-file ()
+    "Ask the user if they want to format the current buffer's file and store the answer."
+    (interactive)
+    (let ((file (buffer-file-name))
+          (no-format-marker '4lc/no-format))
+      (if file
+          (let ((answer (y-or-n-p (format "Do you want to format buffer %s? " file))))
+            (puthash file (if answer t no-format-marker) 4lc/file-format-answers)
+            (4lc/save-format-answers)
+            (message "Saved format answer for file: %s" file))
+        (message "Current buffer is not associated with a file."))))
+
+  (4lc/load-format-answers)
+#+end_src
 ** Language ID
 #+begin_src emacs-lisp :tangle yes
   (use-package

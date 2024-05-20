@@ -1293,15 +1293,20 @@ Indent bars
    :ensure t
    :init
    (defmacro format-all-update-formatter (langid formatter)
-    `(setq-default format-all-formatters
-           (cons
-            '(,langid ,formatter)
-            (assoc-delete-all ,langid format-all-formatters))))
+     `(setq-default format-all-formatters
+                    (cons
+                     '(,langid ,formatter)
+                     (assoc-delete-all ,langid format-all-formatters))))
    :commands (format-all-mode define-format-all-formatter)
-   :bind (:map prog-mode-map ("C-c f" . format-all-region-or-buffer))
-   :hook
-   (prog-mode . format-all-mode)
-   (yaml-ts-mode . format-all-mode))
+   :bind
+   (:map
+    prog-mode-map
+    ("C-c f f" . format-all-region-or-buffer)
+    ("C-c f a" . 4lc/ask-and-store-format-option-for-current-file)
+    ("C-c f p" . 4lc/ask-and-store-format-option-for-current-file)
+    ("C-c f c" . 4lc/clear-project-format-answer)
+    ("C-c f k" . 4lc/clear-file-format-answer))
+   :hook (prog-mode . format-all-mode) (yaml-ts-mode . format-all-mode))
 #+end_src
 
 Format all modification to  ask for projects and files if should format.
@@ -1378,7 +1383,6 @@ Format all modification to  ask for projects and files if should format.
           (4lc/save-format-answers)
           (when answer
             (apply orig-fun args))))
-
        ;; Case: file is not part of a project
        (file
         (let ((answer
@@ -1389,7 +1393,6 @@ Format all modification to  ask for projects and files if should format.
           (4lc/save-format-answers)
           (when answer
             (apply orig-fun args))))
-
        ;; Default case: format-all
        (t
         (apply orig-fun args)))))

@@ -416,7 +416,7 @@ Popup to show available shortcut keys in current mode
        (apply f args)))
    (advice-add 'gptel-curl-get-response :around #'4lc/gptel-y-n)
    (advice-add 'gptel--url-get-response :around #'4lc/gptel-y-n)
-   :config (setopt gptel-model "gpt-4-turbo-preview")
+   :config (setopt gptel-model "gpt-4o")
    :commands (gptel)
    :bind ("C-c c" . gptel-send)
    :hook ((prog-mode yaml-mode) . 4lc/set-gptel-directive))

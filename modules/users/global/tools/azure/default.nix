@@ -4,12 +4,15 @@
   pkgs,
   ...
 }: let
-  inherit (lib) mkIf;
+  inherit (lib) mkIf isDerivation;
+  inherit (builtins) filter attrValues;
+
+  azure-cli = pkgs.azure-cli.withExtensions (filter (item: isDerivation item) (attrValues pkgs.azure-cli-extensions));
+  packages = with pkgs; [
+    kubelogin
+  ];
 in {
   config = mkIf config.wolf.roles.devops {
-    home.packages = with pkgs; [
-      azure-cli
-      kubelogin
-    ];
+    home.packages = packages ++ [azure-cli];
   };
 }

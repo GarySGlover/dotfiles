@@ -24,6 +24,7 @@ in {
   allowUnfreePredicate = pkg:
     elem (getName pkg) [
       "codeium"
+      "immersed-vr"
       "steam"
       "steam-original"
       "steam-run"

@@ -8,6 +8,7 @@
       wlr-randr
       nwg-displays
       pandoc
+      dmenu-wayland
     ];
     assertions = [
       {

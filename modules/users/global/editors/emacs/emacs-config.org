@@ -793,7 +793,10 @@ For completions windows
 * Project Management
 ** Project
 #+begin_src emacs-lisp :tangle yes
-  (use-package project :bind ("C-x p t" . eat-project))
+  (use-package
+   project
+   :config (project-forget-projects-under "~/Next-Technology" t)
+   :bind ("C-x p t" . eat-project))
 #+end_src
 ** Version control
 Using Magit as the git porcelain. Is configured to use the same window rather than open a new one for all operations possible. As some operations such as commit open the diff window as well, those buffers open in a seperate window.
@@ -827,17 +830,17 @@ Easy look through files git history
 
 #+begin_src emacs-lisp :tangle yes
   (defun magit-status-next ()
-      (interactive)
-      (let ((project-root "~/Next-Technology/"))
-        (magit-status
-         (completing-read
-          "Project: "
-          (mapcan
-           (lambda (d)
-             (directory-files (concat project-root d) t "\\`[^.]"))
-           (-filter
-            (lambda (d) (file-directory-p (concat project-root d)))
-            (directory-files project-root nil "\\`[^.]")))))))
+    (interactive)
+    (let ((project-root "~/Next-Technology/"))
+      (magit-status
+       (completing-read
+        "Project: "
+        (mapcan
+         (lambda (d)
+           (directory-files (concat project-root d) t "\\`[^.]"))
+         (-filter
+          (lambda (d) (file-directory-p (concat project-root d)))
+          (directory-files project-root nil "\\`[^.]")))))))
 
   (defun 4lc/magit-status (arg)
     "Call magit-status, but if called with the prefix operation

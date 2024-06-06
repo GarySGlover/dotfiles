@@ -427,7 +427,6 @@ Popup to show available shortcut keys in current mode
   (use-package
    codeium
    :init
-   (add-to-list 'completion-at-point-functions #'codeium-completion-at-point)
    (defalias
      'cape-codeium
      (cape-capf-interactive #'codeium-completion-at-point))
@@ -686,21 +685,10 @@ Setup the main theme and fonts used within this emacs configuration.
   (setopt nerd-icons-font-family "FiraCode Nerd Font")
 
   (use-package
-   ef-themes
+   emacs
    :config
-   (let* ((ef-allowed-light-themes
-           (seq-difference
-            ef-themes-light-themes '(ef-cyprus ef-frost ef-light)))
-          (light
-           (nth
-            (random (length ef-allowed-light-themes))
-            ef-allowed-light-themes))
-          (dark
-           (nth
-            (random (length ef-themes-dark-themes))
-            ef-themes-dark-themes)))
-     (setopt ef-themes-to-toggle `(,light ,dark))
-     (ef-themes-select light)))
+   (load-theme 'modus-operandi t)
+   :bind ("<f5>" . modus-themes-toggle))
 #+end_src
 
 ** Alert notification

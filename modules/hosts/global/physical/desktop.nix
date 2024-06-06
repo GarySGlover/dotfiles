@@ -11,6 +11,11 @@ in {
       xwayland.enable = true;
     };
 
+    programs.sway = {
+      enable = true;
+      wrapperFeatures.gtk = true;
+    };
+
     services.xserver = {
       enable = true;
       # Configure keymap in X11

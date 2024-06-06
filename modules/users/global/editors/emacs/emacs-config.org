@@ -128,13 +128,11 @@ Inhibit electric indent from re-indenting.
 #+begin_src emacs-lisp :tangle yes
   (use-package
    dtrt-indent
-   :init
-   (setopt dtrt-indent-global-mode t)
-   ;; (setopt indent-tabs-mode nil)
-   ;; (setopt tab-width 2)
-   ;; (setopt standard-indent 2)
-   ;; (setopt electric-indent-inhibit t)
-   )
+   :init (setopt dtrt-indent-global-mode t)
+   (defun 4lc/dtrt-indent-after-enable ()
+     (when (bound-and-true-p indent-bars-mode)
+       (indent-bars-reset)))
+   :hook (dtrt-indent-mode . 4lc/dtrt-indent-after-enable))
 #+end_src
 
 ** Repeat mode

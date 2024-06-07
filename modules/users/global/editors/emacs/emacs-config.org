@@ -1459,16 +1459,6 @@ Config options to reduce the logging and improve the performance.
 #+begin_src emacs-lisp :tangle yes
   (use-package yasnippet :init (yas-global-mode 1))
 #+end_src
- ** Format all
-#+begin_src emacs-lisp :tangle yes
-  (use-package
-   format-all
-   :commands (format-all-mode define-format-all-formatter)
-   :bind (:map prog-mode-map ("C-c f" . format-all-region-or-buffer))
-   :hook
-   (prog-mode . format-all-mode)
-   (yaml-ts-mode . format-all-mode))
-#+end_src
 ** Electric Pair Highlighted region only
 #+begin_src emacs-lisp :tangle yes
   (use-package

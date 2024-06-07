@@ -1213,15 +1213,19 @@ Indent bars
 * Programming
 ** Compilation
 #+begin_src emacs-lisp :tangle yes
-  (use-package compile
-    :init
-    (defun compile-comint ()
-      (interactive)
-      (compile (eval compile-command) t))
-    :bind (:map prog-mode-map
-                ("C-c m c" . compile)
-                ("C-c m r" . recompile)
-                ("C-c m i" . compile-comint)))
+  (use-package
+   compile
+   :init
+   (defun compile-comint ()
+     (interactive)
+     (compile (eval compile-command) t))
+   :config (setopt save-some-buffers-default-predicate #'save-some-buffers-root)
+   :bind
+   (:map
+    prog-mode-map
+    ("C-c m c" . compile)
+    ("C-c m r" . recompile)
+    ("C-c m i" . compile-comint)))
 #+end_src
 ** Completion
 #+begin_src emacs-lisp :tangle yes

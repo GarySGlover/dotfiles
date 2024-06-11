@@ -581,7 +581,7 @@ Functions to directly set the height and width of windows as either percentage o
             "^COMMIT_EDITMSG$"
             "^\\*Embark .*\\*$"
             ,(4lc/display-buffer-derived-mode-p 'dired-mode)
-            "^\\*format-all-errors\\*$"
+            ("^\\*format-all-errors\\*$" 1)
             "^\\*Org Help\\*$")))
      (-each
       buffer-rules
@@ -598,7 +598,8 @@ Functions to directly set the height and width of windows as either percentage o
             "^\\*Occur\\*$"
             "^\\*refs.*$"
             "^\\*Flymake.*\\*$"
-            "^\\*Embark.*\\*$")))
+            "^\\*Embark.*\\*$"
+            "^\\*yaml-pro-edit\\*$")))
      (-each
       buffer-rules
       (lambda (item) (4lc/display-buffer-alist-bottom item))))

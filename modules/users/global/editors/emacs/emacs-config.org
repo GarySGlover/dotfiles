@@ -684,8 +684,7 @@ Setup the main theme and fonts used within this emacs configuration.
 
   (use-package
    emacs
-   :config
-   (load-theme 'modus-operandi t)
+   :init (load-theme 'modus-operandi t)
    :bind ("<f5>" . modus-themes-toggle))
 #+end_src
 
@@ -1038,12 +1037,11 @@ Which-key for Embark
    (visual-line-mode . visual-fill-column-mode)
    (text-mode-hook . (lambda () (visual-line-mode t))))
 #+end_src
-** Highlight indentation
+** COMMENT Highlight indentation
 Indent bars
 #+begin_src emacs-lisp :tangle yes
   (use-package
     indent-bars
-    :demand t
     :config
     (setopt indent-bars-pattern ".")
     (setopt indent-bars-width-frac 0.1)

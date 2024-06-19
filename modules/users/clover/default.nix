@@ -20,7 +20,10 @@
   };
   host_languages = {
     auberon = [];
-    belisarius = [];
+    belisarius = [
+      "go"
+      "json"
+    ];
     clover-z270pd3 = [
       "json"
     ];

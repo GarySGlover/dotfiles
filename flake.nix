@@ -31,7 +31,7 @@
 
     system =
       if builtins ? currentSystem
-      then builtins.currentSystemp
+      then builtins.currentSystem
       else "x86_64-linux";
     listNixFilesRecursive = dir:
       flatten (mapAttrsToList (name: type: let

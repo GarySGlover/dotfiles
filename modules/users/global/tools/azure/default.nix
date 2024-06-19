@@ -7,7 +7,14 @@
   inherit (lib) mkIf isDerivation;
   inherit (builtins) filter attrValues;
 
-  azure-cli = pkgs.azure-cli.withExtensions (filter (item: isDerivation item) (attrValues pkgs.azure-cli-extensions));
+  excludedExtensions = ["connection-monitor-preview"];
+
+  isDesiredExtension = item: let
+    name = item.pname or "";
+  in
+    !(lib.elem name excludedExtensions) && isDerivation item;
+
+  azure-cli = pkgs.azure-cli.withExtensions (filter isDesiredExtension (attrValues pkgs.azure-cli-extensions));
   packages = with pkgs; [
     kubelogin
   ];

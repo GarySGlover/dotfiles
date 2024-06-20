@@ -60,10 +60,9 @@ in {
         github = mkIf (hasAttr "github_user" secrets) {
           user = "${secrets.github_user}";
         };
-        remote.origin = {
-          fetch = [
-          ];
+        fetch = {
           prune = true;
+          pruneTags = true;
         };
         credential.helper = "store";
       };

@@ -51,6 +51,10 @@ Doesn't work with wayland: https://github.com/tecosaur/emacs-everywhere/issues/5
 
 * Initialisation
 This section contains basic configurations for Emacs to tidy up the interface and set some defaults for the inbuilt modules that don't fit into other categories.
+** Byte compile warnings
+#+begin_src emacs-lisp :tangle yes
+  (setq native-comp-async-report-warnings-errors nil)
+#+end_src
 ** Lexical Binding
 #+begin_src emacs-lisp :tangle yes
   ;; -*- lexical-binding: t -*-

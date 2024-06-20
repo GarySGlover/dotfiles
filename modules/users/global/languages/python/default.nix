@@ -18,7 +18,7 @@ in {
       python312Packages.flake8
       python312Packages.pipx
       python312Packages.pip
-      nodePackages.pyright
+      pyright
     ];
 
     home.sessionPath = [

@@ -406,7 +406,7 @@ Popup to show available shortcut keys in current mode
      (let ((lang (language-id-buffer)))
        (when lang
          (unless (assoc (intern (downcase lang)) gptel-directives)
-           (let ((prompt (format "Respond with %s code only" lang)))
+           (let ((prompt (format "Respond with %s code only. No quotes." lang)))
              (setq-local gptel-directives
                          (append
                           `((,(intern (downcase lang)) . ,prompt)) gptel-directives))

@@ -36,7 +36,6 @@
     nim-ts-mode
   ];
   emacsExtraPackages = with epkgs; [
-    ox-gfm
     ace-window
     auto-yasnippet
     avy
@@ -68,12 +67,14 @@
     magit
     marginalia
     markdown-mode
+    meow
     mini-frame
     nerd-icons-completion
     nerd-icons-dired
     nix-ts-mode
     no-littering
     orderless
+    ox-gfm
     pandoc-mode
     pdf-tools
     powershell

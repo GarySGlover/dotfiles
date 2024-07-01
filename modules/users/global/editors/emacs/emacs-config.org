@@ -4,31 +4,31 @@
 * Info
 ** Key Bindings
 *** Global
-| Prefix | Name                 |
-|--------+----------------------|
-| C-c a  | avy char             |
-| C-c b  | beframe              |
-| C-c c  | chatgpt-send         |
-| C-c d  | >consult             |
-| C-c f  | format-all           |
-| C-c g  | magit                |
-| C-c h  |                      |
-| C-c i  |                      |
-| C-c j  |                      |
-| C-c k  |                      |
-| C-c l  |                      |
-| C-c n  |                      |
-| C-c o  |                      |
-| C-c p  | >eat-programs        |
-| C-c q  |                      |
-| C-c s  | git time machine     |
-| C-c t  | >transparency        |
-| C-c u  |                      |
-| C-c v  | single window toggle |
-| C-c w  |                      |
-| C-c x  |                      |
-| C-c y  |                      |
-| C-c z  |                      |
+| Prefix | Name                    |
+|--------+-------------------------|
+| C-c a  | avy char                |
+| C-c b  | beframe                 |
+| C-c c  | chatgpt-send            |
+| C-c d  | >consult                |
+| C-c f  | format-all              |
+| C-c g  | magit                   |
+| C-c h  |                         |
+| C-c i  |                         |
+| C-c j  |                         |
+| C-c k  |                         |
+| C-c l  |                         |
+| C-c n  |                         |
+| C-c o  | >completion             |
+| C-c p  | >eat-programs           |
+| C-c q  |                         |
+| C-c s  | git time machine        |
+| C-c t  | >transparency           |
+| C-c u  | meow-unviersal-argument |
+| C-c v  | single window toggle    |
+| C-c w  |                         |
+| C-c x  |                         |
+| C-c y  |                         |
+| C-c z  |                         |
 *** Local
 **** Prog mode
 | Prefix | Name      |
@@ -139,30 +139,6 @@ Inhibit electric indent from re-indenting.
    :hook (dtrt-indent-mode . 4lc/dtrt-indent-after-enable))
 #+end_src
 
-** Repeat mode
-#+begin_src emacs-lisp :lexical t :tangle yes
-  (defun repeat-help--which-key-popup ()
-    (if-let ((cmd (or this-command real-this-command))
-             (keymap
-              (or repeat-map (repeat--command-property 'repeat-map))))
-      (run-at-time
-       0 nil
-       (lambda ()
-         (which-key--create-buffer-and-show nil (symbol-value keymap))))
-      (which-key--hide-popup)))
-#+end_src
-
-#+begin_src emacs-lisp :tangle yes
-  (use-package
-   repeat
-   :init (setopt repeat-mode t)
-
-   :config
-   ;; Disable the built-in repeat-mode hinting
-   (setopt repeat-echo-function #'ignore)
-
-   (advice-add 'repeat-post-hook :after 'repeat-help--which-key-popup))
-#+end_src
 * Core Utilities
 Utilities for Emacs that support further parts of the configuration.
 ** Direnv
@@ -385,7 +361,7 @@ Popup to show available shortcut keys in current mode
     help-map
     ("C-h" . which-key-C-h-dispatch)
     ("M-w" . which-key-show-top-level)
-    ("M-m" . which-key-show-major-movhede))
+    ("M-m" . which-key-show-major-mode))
    :custom
    (which-key-show-early-on-C-h t "Press C-h to show commands")
    (which-key-idle-delay 1 "Delay which key normal display")
@@ -436,7 +412,7 @@ Popup to show available shortcut keys in current mode
    (setq codeium/metadata/api_key
          "7cf3b1f3-b8b5-4de1-bc7e-3b95904604bf")
    :autoload codeium-completion-at-point
-   :bind ("C-c u c" . cape-codeium))
+   :bind ("C-c o c" . cape-codeium))
 #+end_src
 * Window  Management
 ** Window visited order
@@ -551,8 +527,18 @@ Functions to directly set the height and width of windows as either percentage o
        (display-buffer-in-side-window)
        (window-height . 0.3)
        (side . bottom)
-       (slot . 1)
+       (slot . 0)
        (window-parameters . ((no-delete-other-windows . t))))))
+
+  (defun 4lc/display-buffer-alist-top (title)
+      (add-to-list
+       'display-buffer-alist
+       `(,title
+         (display-buffer-in-side-window)
+         (window-height . 0.3)
+         (side . top)
+         (slot . 0)
+         (window-parameters . ((no-delete-other-windows . t))))))
 
   (defun 4lc/display-buffer-derived-mode-p (mode)
     `(lambda (buffer-name action)
@@ -602,7 +588,7 @@ Functions to directly set the height and width of windows as either percentage o
             "^\\*yaml-pro-edit\\*$")))
      (-each
       buffer-rules
-      (lambda (item) (4lc/display-buffer-alist-bottom item))))
+      (lambda (item) (4lc/display-buffer-alist-top item))))
    (let ((exceptions
           `("^\\*scratch.*\\*$"
             "^\\*GNU Emacs\\*$"
@@ -1028,6 +1014,95 @@ Which-key for Embark
   (use-package vertico :init (vertico-mode) :bind (:map vertico-map ("M-s" . vertico-suspend)))
 #+end_src
 * Editing
+** Modal Editing
+#+begin_src emacs-lisp :tangle yes
+  (use-package
+   meow
+   :init (meow-global-mode 1)
+   :config (setopt meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
+   (meow-motion-overwrite-define-key
+    '("j" . meow-next) '("k" . meow-prev) '("<escape>" . ignore))
+   (meow-leader-define-key
+    ;; SPC j/k will run the original command in MOTION state.
+    '("j" . "H-j")
+    '("k" . "H-k")
+    '("u" . meow-universal-argument)
+    ;; Use SPC (0-9) for digit arguments.
+    '("1" . meow-digit-argument)
+    '("2" . meow-digit-argument)
+    '("3" . meow-digit-argument)
+    '("4" . meow-digit-argument)
+    '("5" . meow-digit-argument)
+    '("6" . meow-digit-argument)
+    '("7" . meow-digit-argument)
+    '("8" . meow-digit-argument)
+    '("9" . meow-digit-argument)
+    '("0" . meow-digit-argument)
+    '("/" . meow-keypad-describe-key)
+    '("?" . meow-cheatsheet))
+   (meow-normal-define-key
+    '("0" . meow-expand-0)
+    '("9" . meow-expand-9)
+    '("8" . meow-expand-8)
+    '("7" . meow-expand-7)
+    '("6" . meow-expand-6)
+    '("5" . meow-expand-5)
+    '("4" . meow-expand-4)
+    '("3" . meow-expand-3)
+    '("2" . meow-expand-2)
+    '("1" . meow-expand-1)
+    '("-" . negative-argument)
+    '(";" . meow-reverse)
+    '("," . meow-inner-of-thing)
+    '("." . meow-bounds-of-thing)
+    '("[" . meow-beginning-of-thing)
+    '("]" . meow-end-of-thing)
+    '("a" . meow-append)
+    '("A" . meow-open-below)
+    '("b" . meow-back-word)
+    '("B" . meow-back-symbol)
+    '("c" . meow-change)
+    '("d" . meow-delete)
+    '("D" . meow-backward-delete)
+    '("e" . meow-next-word)
+    '("E" . meow-next-symbol)
+    '("f" . meow-find)
+    '("g" . meow-cancel-selection)
+    '("G" . meow-grab)
+    '("h" . meow-left)
+    '("H" . meow-left-expand)
+    '("i" . meow-insert)
+    '("I" . meow-open-above)
+    '("j" . meow-next)
+    '("J" . meow-next-expand)
+    '("k" . meow-prev)
+    '("K" . meow-prev-expand)
+    '("l" . meow-right)
+    '("L" . meow-right-expand)
+    '("m" . meow-join)
+    '("n" . meow-search)
+    '("o" . meow-block)
+    '("O" . meow-to-block)
+    '("p" . meow-yank)
+    '("q" . meow-quit)
+    '("Q" . meow-goto-line)
+    '("r" . meow-replace)
+    '("R" . meow-swap-grab)
+    '("s" . meow-kill)
+    '("t" . meow-till)
+    '("u" . meow-undo)
+    '("U" . meow-undo-in-selection)
+    '("v" . meow-visit)
+    '("w" . meow-mark-word)
+    '("W" . meow-mark-symbol)
+    '("x" . meow-line)
+    '("X" . meow-goto-line)
+    '("y" . meow-save)
+    '("Y" . meow-sync-grab)
+    '("z" . meow-pop-selection)
+    '("'" . repeat)
+    '("<escape>" . ignore)))
+#+end_src
 ** Column Indicator
 #+begin_src emacs-lisp :tangle yes
   (use-package
@@ -1267,16 +1342,16 @@ Indent bars
   (use-package
    cape
    :bind
-   ("C-c u p" . completion-at-point)
-   ("C-c u f" . cape-file)
-   ("C-c u e" . cape-emoji)
-   ("C-c u k" . cape-keyword))
+   ("C-c o p" . completion-at-point)
+   ("C-c o f" . cape-file)
+   ("C-c o e" . cape-emoji)
+   ("C-c o k" . cape-keyword))
 
   (use-package
    yasnippet-capf
    :ensure t
    :after cape
-   :bind ("C-c u y" . yasnippet-capf))
+   :bind ("C-c o y" . yasnippet-capf))
 #+end_src
 ** Eglot breadcrumbs
 #+begin_src emacs-lisp :tangle yes

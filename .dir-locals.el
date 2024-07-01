@@ -2,7 +2,8 @@
   .
   ((eval .
          (progn
-           (setq compile-command "nix flake check")
+           (setq compile-command
+                 "nix flake check ./. --show-trace --all-systems")
            (add-hook 'after-save-hook
                      (lambda ()
                        (let ((default-directory

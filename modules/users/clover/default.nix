@@ -1,7 +1,16 @@
 {config, ...}: let
   opt = config.wolf;
   host_role = {
-    auberon = [];
+    auberon = [
+      "cad"
+      "desktop"
+      "devops"
+      "editing"
+      "gaming"
+      "internet"
+      "programming"
+      "work"
+    ];
     belisarius = [
       "cad"
       "desktop"
@@ -19,7 +28,16 @@
     ];
   };
   host_languages = {
-    auberon = [];
+    auberon = [
+      "go"
+      "json"
+      "lisp"
+      "nim"
+      "nix"
+      "powershell"
+      "python"
+      "zig"
+    ];
     belisarius = [
       "go"
       "json"

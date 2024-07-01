@@ -19,6 +19,7 @@
   };
 
   outputs = {
+    self,
     emacs-overlay,
     home-manager,
     nixpkgs,

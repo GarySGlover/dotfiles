@@ -23,6 +23,7 @@ in {
 
   allowUnfreePredicate = pkg:
     elem (getName pkg) [
+      "aspell-dict-en-science"
       "codeium"
       "steam"
       "steam-original"

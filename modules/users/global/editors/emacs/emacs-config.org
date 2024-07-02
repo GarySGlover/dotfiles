@@ -1019,7 +1019,9 @@ Which-key for Embark
   (use-package
    meow
    :init (meow-global-mode 1)
-   :config (setopt meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
+   :config
+   (setopt meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
+   (setopt meow-use-clipboard t)
    (meow-motion-overwrite-define-key
     '("j" . meow-next) '("k" . meow-prev) '("<escape>" . ignore))
    (meow-leader-define-key

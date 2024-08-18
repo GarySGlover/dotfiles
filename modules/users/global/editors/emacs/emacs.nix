@@ -10,10 +10,6 @@ in {
     programs.emacs = {
       enable = true;
       package = pkgs.emacs29-pgtk;
-      extraConfig = ''
-        (delete-file (expand-file-name "emacs-config.el" "~/.config/emacs"))
-        (org-babel-load-file (expand-file-name "emacs-config.org" "~/.config/emacs"))
-      '';
     };
     services.emacs = {
       enable = true;
@@ -21,7 +17,8 @@ in {
     };
 
     xdg.configFile."emacs/emacs-config.org".source = ./emacs-config.org;
-
+    xdg.configFile."emacs/early-init.el".source = ./early-init.el;
+    xdg.configFile."emacs/init.el".source = ./init.el;
     home.packages = with pkgs; [
       alejandra
       nixd

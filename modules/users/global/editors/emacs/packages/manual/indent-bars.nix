@@ -8,13 +8,13 @@
 melpaBuild {
   pname = "indent-bars";
   ename = "indent-bars";
-  version = "20240601.0.6.2";
+  version = "20240724.0.7.0";
 
   src = fetchFromGitHub {
     owner = "jdtsmith";
     repo = "indent-bars";
-    rev = "2216793de857cc21a1faba95361446dacdc8f3f5";
-    sha256 = "sha256-I+W3zXk7lza8XTuw/O7sXlXfn8wALtO6kMlj+nF5nfE=";
+    rev = "c02ded1991f88d7d139b769e439e9244ac4d425a";
+    sha256 = "sha256-MOYKMswk0iyJzncgJXm0eOyzE+PmITmhWENJ8V9tzD0=";
   };
 
   # Require to prevent file not found error

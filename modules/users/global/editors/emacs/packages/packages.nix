@@ -29,71 +29,86 @@
     inherit (epkgs) melpaBuild nim-mode;
   };
 
+  org-modern-indent = pkgs.callPackage ./manual/org-modern-indent.nix {
+    inherit (pkgs) fetchFromGitHub writeText;
+    inherit (epkgs) melpaBuild compat;
+  };
+
   emacsExtraPackagesLocal = [
     combobulate
     emacscodeium
     indent-bars
     nim-ts-mode
+    org-modern-indent
   ];
+
   emacsExtraPackages = with epkgs; [
     ace-window
-    auto-yasnippet
-    avy
-    beframe
-    breadcrumb
+    aggressive-indent
+    # auto-yasnippet
+    # avy
+    # beframe
+    # breadcrumb
     cape
-    consult
-    consult-flyspell
-    consult-yasnippet
+    # consult
+    # consult-flyspell
+    # consult-yasnippet
     corfu
     corfu-candidate-overlay
-    devdocs
-    direnv
-    dtrt-indent
-    eat
-    ef-themes
+    # devdocs
+    # direnv
+    # dtrt-indent
+    # eat
+    # ef-themes
     elisp-autofmt
-    embark
-    embark-consult
-    exec-path-from-shell
-    format-all
-    gcmh
-    git-timemachine
-    gptel
-    helpful
-    json-mode
-    json-navigator
-    kubel
+    # embark
+    # embark-consult
+    # exec-path-from-shell
+    # format-all
+    general
+    # gcmh
+    # git-timemachine
+    # gptel
+    # helpful
+    hyperbole
+    hydra
+    # json-mode
+    # json-navigator
+    # kubel
+    keycast
     magit
-    marginalia
-    markdown-mode
+    # marginalia
+    # markdown-mode
     meow
-    mini-frame
-    nerd-icons-completion
-    nerd-icons-dired
+    # mini-frame
+    # nerd-icons-completion
+    # nerd-icons-dired
     nix-ts-mode
-    no-littering
+    # no-littering
     orderless
-    ox-gfm
-    pandoc-mode
-    pdf-tools
-    powershell
-    quickrun
-    rainbow-delimiters
-    sly
-    terraform-doc
-    terraform-mode
+    org-modern
+    org-modern-indent
+    # ox-gfm
+    # pandoc-mode
+    # pdf-tools
+    # powershell
+    # quickrun
+    # rainbow-delimiters
+    # sly
+    standard-themes
+    # terraform-doc
+    # terraform-mode
     transient
-    treesit-grammars.with-all-grammars
-    verb
+    # treesit-grammars.with-all-grammars
+    # verb
     vertico
-    visual-fill-column
-    which-key
-    yaml-pro
+    # visual-fill-column
+    # which-key
+    # yaml-pro
     yasnippet
     yasnippet-capf
     yasnippet-snippets
-    zig-mode
+    # zig-mode
   ];
 in {
   config = mkIf config.wolf.roles.editing {

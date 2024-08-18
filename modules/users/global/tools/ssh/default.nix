@@ -10,7 +10,7 @@ in {
       matchBlocks = {
         "ssh.dev.azure.com" = {
           hostname = "ssh.dev.azure.com";
-          identityFile = "${homeDir}/.ssh/id_ed25519_dev.azure.com";
+          identityFile = "${homeDir}/.ssh/id_rsa_dev.azure.com";
         };
         "github.com" = {
           hostname = "github.com";

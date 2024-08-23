@@ -15,6 +15,7 @@ in {
       fira-code
       fira-code-symbols
       (nerdfonts.override {fonts = ["FiraCode"];})
+      iosevka
     ];
   };
 }

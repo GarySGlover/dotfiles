@@ -55,13 +55,14 @@
     # consult-yasnippet
     corfu
     corfu-candidate-overlay
+    denote
     # devdocs
     # direnv
     # dtrt-indent
     # eat
     # ef-themes
     elisp-autofmt
-    # embark
+    embark
     # embark-consult
     # exec-path-from-shell
     # format-all
@@ -77,7 +78,7 @@
     # kubel
     keycast
     magit
-    # marginalia
+    marginalia
     # markdown-mode
     meow
     # mini-frame
@@ -99,7 +100,7 @@
     # terraform-doc
     # terraform-mode
     transient
-    # treesit-grammars.with-all-grammars
+    treesit-grammars.with-all-grammars
     # verb
     vertico
     # visual-fill-column

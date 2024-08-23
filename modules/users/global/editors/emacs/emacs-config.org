@@ -40,6 +40,7 @@ package manager.
 * Key Bindings
 ** Meow
 This is the meow modal editing suite.
+
 #+begin_src emacs-lisp :tangle yes
   (use-package
    meow
@@ -97,6 +98,7 @@ This is the meow modal editing suite.
     '("b" . meow-back-word)
     '("B" . meow-back-symbol)
     '("c" . meow-change)
+    '("C" . cloveynit-global-dispatch)
     '("d" . meow-delete)
     '("D" . meow-backward-delete)
     '("e" . meow-next-word)
@@ -145,7 +147,8 @@ This is the meow modal editing suite.
     (general-define-key
      :keymaps 'global-map
      "<f5>" #'standard-themes-toggle
-     "M-S" #'vertico-suspend)
+     "M-S" #'vertico-suspend
+     "C-." #'embark-act)
     (with-eval-after-load 'corfu-candidate-overlay
       (general-define-key
        :keymaps 'corfu-candidate-overlay-completion-map
@@ -154,7 +157,20 @@ This is the meow modal editing suite.
 #+end_src
 ** TODO Hydra
 ** TODO Transient
+Transient allows the creation and mapping of keybindings through
+menus. Initial configuration is to tie into meow, having a
+global-dispatch map available in all buffers that links to custom
+package maps. In the future I shall try to create a local mode map
+that applies to certian major/minor modes.
 
+#+begin_src emacs-lisp :tangle yes
+  (use-package transient
+    :init
+    (transient-define-prefix cloveynit-global-dispatch ()
+      "Global transient menu"
+      [["Default"
+        ("n" "Denote" cloveynit-denote-dispatch)]]))
+#+end_src
 * UI Enhancements
 ** Basic display changes
 #+begin_src emacs-lisp :tangle yes
@@ -252,6 +268,31 @@ candidate in a popup.
     :after corfu
     :hook (global-corfu-mode . corfu-popupinfo-mode))
 #+end_src
+
+** Fonts
+Set default font to be used with general text.
+Use a coding font for fixed pitch and overwrite the default font in prog-mode buffers to
+use the same.
+#+begin_src emacs-lisp :tangle yes
+  (defun cc/global-face ()
+    (set-face-attribute 'default nil :family "FiraCode Nerd Font")
+    (set-face-attribute 'fixed-pitch nil :family "FiraCode Nerd Font")
+    (set-face-attribute 'fixed-pitch-serif nil :family "FiraCode Nerd Font")
+    (set-face-attribute 'variable-pitch nil :family "FiraCode Nerd Font"))
+
+  (defun cc/text-face ()
+    (setq buffer-face-mode-face '(:family "Iosevka"))
+    (buffer-face-mode))
+
+  (if (daemonp)
+      (add-hook 'server-after-make-frame-hook
+                (lambda (frame)
+                  (with-selected-frame frame
+                    (cc/global-face))))
+    (cc/global-face))
+
+  (add-hook 'text-mode-hook #'cc/text-face)
+#+end_src
 ** TODO Consult
 ** TODO Eglot
 Will need to update Corfu for Eglot
@@ -264,18 +305,76 @@ Display the keys pressed and the associated command in the header line.
     :commands  (keycast-header-line-mode)
     :init (keycast-header-line-mode))
 #+end_src
-** TODO [#A] Mode Line
+** TODO Embark
+#+begin_src emacs-lisp :tangle yes
+  (use-package embark)
+#+end_src
+** TODO Marginalia
+#+begin_src emacs-lisp :tangle yes
+  (use-package marginalia
+    :init
+    (marginalia-mode))
+#+end_src
+** TODO [#B] Mode Line
 #+begin_src emacs-lisp :tangle no
-  (defun clover-mode-line-buffer ()
+  (setq-default mode-line-format
+                '("%e" mode-line-front-space
+                  (:propertize
+                   ("" mode-line-mule-info mode-line-client mode-line-modified
+                    mode-line-remote)
+                   display (min-width (5.0)))
+                  mode-line-frame-identification mode-line-buffer-identification "   "
+                  mode-line-position (vc-mode vc-mode) "  "
+                  mode-line-modes mode-line-misc-info mode-line-end-spaces))
+
+
+  ;; (custom-set-faces '(mode-line ((t :background "CadetBlue4")))
+  ;;                   '(mode-line-inactive ((t :background "CadetBlue4"))))
+  ;; Meow state
+  ;; read only state?
+  ;; narrowed
+  ;; buffer name / filename (colour for modified)
+  ;; Mode
+  ;; Git branch
+  ;; Line/Column?
+  ;; Flymake
+
+  (defface cloveynit-mode-line-buffer-file-modified '((default :background "#6C3483" :weight bold))
+    "Face for modified file buffers")
+
+  (defface cloveynit-mode-line-buffer-file '((default :background "#34495E" :weight bold))
+    "Face for file buffers")
+
+  (defface cloveynit-mode-line-buffer-normal '((default :background "SpringGreen1" :weight bold))
+    "Face for normal buffers")
+
+  (defun cloveynit-mode-line--buffer-name ()
+    (buffer-name))
+
+  (defun cloveynit-mode-line--buffer-name-selected ()
     (let ((face (cond
-                 ((and (buffer-file-name) (buffer-modified-p)) 'error)
-                 ((buffer-file-name) 'success)
-                 (t 'warning))))
-      (format "%s" (propertize (buffer-name) 'face face))))
+                 ((and (buffer-file-name) (buffer-modified-p)) 'cloveynit-mode-line-buffer-file-modified)
+                 ((buffer-file-name) 'cloveynit-mode-line-buffer-file)
+                 (t 'cloveynit-mode-line-buffer-normal))))
+      (propertize (cloveynit-mode-line--buffer-name) 'face face)))
+
+  (defvar-local cloveynit-mode-line-buffer-name
+      '(:eval
+        (if (mode-line-window-selected-p)
+            (cloveynit-mode-line--buffer-name-selected)
+          (cloveynit-mode-line--buffer-name))))
+
+  ;; (defun clover-mode-line-buffer ()
+  ;;   (let ((face (cond
+  ;; 	       ((and (buffer-file-name) (buffer-modified-p)) 'error)
+  ;; 	       ((buffer-file-name) 'success)
+  ;; 	       (t 'warning))))
+  ;;     (format "%s" (propertize (buffer-name) 'face face))))
+
+  (put 'cloveynit-mode-line-buffer-name 'risky-local-variable t)
 
   (setq-default mode-line-format
-                '(:eval (clover-mode-line-buffer)
-                        ))
+                '("" cloveynit-mode-line-buffer-name))
 #+end_src
 * Information Management
 ** TODO Hyperbole
@@ -304,7 +403,41 @@ Styling package for org mode buffers.
     :hook (org-mode . org-modern-indent-mode))
 #+end_src
 
-** TODO Denote
+** TODO [#A] Denote
+(add-hook 'dired-mode-hook #'denote-dired-mode)
+#+begin_src emacs-lisp :tangle yes
+  (use-package denote
+    :demand t
+    :config
+    (denote-rename-buffer-mode t)
+    (setopt
+     denote-directory "/home/clover/notes/"
+     denote-file-type 'org
+     denote-date-prompt-use-org-read-date t)
+    :hook (dired-mode . denote-dired-mode))
+#+end_src
+
+*** Denote Transient
+#+begin_src emacs-lisp :tangle yes
+  (transient-define-prefix cloveynit-denote-dispatch ()
+    "Transient for Denote commands"
+    [["Notes"
+      ("n" "New" denote)
+      ("c" "Region" denote-region)
+      ("N" "Type" denote-type)
+      ("d" "Date" denote-date)
+      ("z" "Signature" denote-signature)
+      ("t" "Template" denote-template)]
+     ["Links"
+      ("i" "Link" denote-link)
+      ("I" "Add" denote-add-links)
+      ("b" "Backlinks" denote-backlinks)
+      ("f" "Find" denote-find-link)
+      ("F" "Find Backlink" denote-find-backlink)]]
+    ["File"
+     [("r" "Rename" denote-rename-file)
+      ("R" "Rename from front matter" denote-rename-file-using-front-matter)]])
+#+end_src
 * Editing Enhancements
 ** Yasnippets
 #+begin_src emacs-lisp :tangle yes

@@ -1,6 +1,24 @@
 #+property: header-args :results silent
 #+STARTUP: content
 
+
+#+begin_src emacs-lisp :tangle yes
+  (defvar cloveynit-magit-feature-base-directory
+    (expand-file-name "feature" "~/")
+    "Default directory for git worktree feature branches")
+
+  (defun cloveynit-magit-feature-worktree-branch (work-item title repo-name)
+    (interactive
+     `(,(read-string "Work item reference: ")
+       ,(read-string "Work item title: ")
+       ,(read-string "Repository name: " (project-name (project-current)))))
+    (let ((path (expand-file-name (s-concat work-item "-" (denote-sluggify-title title) "__" repo-name) cloveynit-magit-feature-base-directory))
+  	(branch (s-concat "feature/" work-item "-" (denote-sluggify-title title)))
+  	(start-point (magit-read-starting-point "Starting branch: ")))
+      (magit-worktree-branch path branch start-point)))
+#+end_src
+
+
 * Temporary additions
 ** Denote
 #+begin_src emacs-lisp :tangle yes

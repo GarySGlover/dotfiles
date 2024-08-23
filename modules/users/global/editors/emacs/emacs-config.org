@@ -1,6 +1,14 @@
 #+property: header-args :results silent
 #+STARTUP: content
 
+* Temporary additions
+** Denote
+#+begin_src emacs-lisp :tangle yes
+  (use-package denote
+    :init
+    (setopt denote-directory (expand-file-name "~/notes"))
+    (add-hook 'dired-mode-hook #'denote-dired-mode))
+#+end_src
 * Info
 ** Key Bindings
 *** Global

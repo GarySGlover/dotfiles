@@ -48,6 +48,7 @@
     corfu
     corfu-candidate-overlay
     devdocs
+    denote
     direnv
     dtrt-indent
     eat

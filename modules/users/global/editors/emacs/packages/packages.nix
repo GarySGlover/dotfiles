@@ -50,7 +50,7 @@
     # beframe
     # breadcrumb
     cape
-    # consult
+    consult
     # consult-flyspell
     # consult-yasnippet
     corfu
@@ -63,14 +63,14 @@
     # ef-themes
     elisp-autofmt
     embark
-    # embark-consult
+    embark-consult
     # exec-path-from-shell
     # format-all
     general
     # gcmh
     # git-timemachine
     # gptel
-    # helpful
+    helpful
     hyperbole
     hydra
     # json-mode

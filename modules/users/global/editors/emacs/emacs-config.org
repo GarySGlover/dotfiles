@@ -169,6 +169,9 @@ that applies to certian major/minor modes.
     (transient-define-prefix cloveynit-global-dispatch ()
       "Global transient menu"
       [["Default"
+        ("c" "Consult" cloveynit-consult-dispatch)
+        ("g" "Magit" magit-dispatch)
+        ("h" "Help" cloveynit-helpful-dispatch)
         ("n" "Denote" cloveynit-denote-dispatch)]]))
 #+end_src
 * UI Enhancements
@@ -293,11 +296,45 @@ use the same.
 
   (add-hook 'text-mode-hook #'cc/text-face)
 #+end_src
-** TODO Consult
-** TODO Eglot
-Will need to update Corfu for Eglot
-** TODO Indent Bars
-** TODO Rainbow delimaters
+** Consult
+#+begin_src emacs-lisp :tangle yes
+  (use-package consult
+    :init
+    (setopt
+     xref-show-xrefs-function #'consult-xref
+     xref-show-definitions-function #'consult-xref))
+
+  (transient-define-prefix cloveynit-consult-dispatch ()
+    "Transient for Consult commands"
+    [["Buffers"
+      ("b" "Switch" consult-buffer)
+      ("o" "Other window" consult-buffer-other-window)
+      ("j" "Project" consult-project-buffer)]
+     ["Editing"
+      ("y" "Yank" consult-yank-from-kill-ring)
+      ("p" "Pop" consult-yank-pop)
+      ("r" "Replace" consult-yank-replace)
+      ("k" "KMacro" consult-kmacro)]
+     ["Navigation"
+      ("t" "Goto line" consult-goto-line)
+      ("m" "Mark" consult-mark)
+      ("M" "Global mark" consult-global-mark)
+      ("i" "imenu" consult-imenu :if-not-derived org-mode)
+      ("i" "Org Heading" consult-org-heading :if-derived org-mode)
+      ("n" "imenu multi" consult-imenu-multi)]
+     ["Search"
+      ("l" "Line" consult-line)
+      ("L" "Line multi" consult-line-multi)
+      ("e" "Keep lines" consult-keep-lines)
+      ("c" "Focus" consult-focus-lines)] ; Need to account for showing again, call with C-u prefix
+     ["Find"
+      ("g" "Grep" consult-ripgrep)
+      ("G" "Git grep" consult-git-grep)
+      ("f" "Find" consult-fd)]
+     ])
+#+end_src
+** TODO [#C] Indent Bars
+** TODO [#C] Rainbow delimaters
 ** Keycast
 Display the keys pressed and the associated command in the header line.
 #+begin_src emacs-lisp :tangle yes
@@ -305,17 +342,17 @@ Display the keys pressed and the associated command in the header line.
     :commands  (keycast-header-line-mode)
     :init (keycast-header-line-mode))
 #+end_src
-** TODO Embark
+** TODO [#B] Embark
 #+begin_src emacs-lisp :tangle yes
   (use-package embark)
 #+end_src
-** TODO Marginalia
+** TODO [#B] Marginalia
 #+begin_src emacs-lisp :tangle yes
   (use-package marginalia
     :init
     (marginalia-mode))
 #+end_src
-** TODO [#B] Mode Line
+** TODO [#C] Mode Line
 #+begin_src emacs-lisp :tangle no
   (setq-default mode-line-format
                 '("%e" mode-line-front-space
@@ -402,7 +439,7 @@ Styling package for org mode buffers.
   (use-package org-modern-indent
     :hook (org-mode . org-modern-indent-mode))
 #+end_src
-
+*** TODO [#C] OB Mermaid
 ** TODO [#A] Denote
 (add-hook 'dired-mode-hook #'denote-dired-mode)
 #+begin_src emacs-lisp :tangle yes
@@ -457,18 +494,49 @@ newlines.
   (use-package aggressive-indent
     :hook (emacs-lisp-mode . aggressive-indent-mode))
 #+end_src
-** TODO GPTel
-** TODO Codeium
-** TODO Format All
-** TODO Treesitter
-** TODO Spelling
+** TODO [#B] GPTel
+** TODO [#B] Codeium
+** TODO [#A] Eglot
+Will need to update Corfu for Eglot
+
+** TODO [#A] Format All
+** TODO [#A] Treesitter
+** TODO [#B] Spelling
 * Programming Languages
+** Nix
+#+begin_src emacs-lisp :tangle yes
+  (use-package nix-ts-mode
+    :mode "\\.nix\\'")
+#+end_src
 * Version Control
-** TODO Magit
-** TODO Diff-HL
+** TODO [#A] Magit
+** TODO [#C] Diff-HL
 * Project Management
 * Utilities
-** TODO Helpful
-** TODO Which Key
-** TODO Dired
+** Helpful
+Improved help display.
+#+begin_src emacs-lisp :tangle yes
+  (use-package helpful
+    :commands
+    (helpful-callable
+     helpful-function
+     helpful-macro
+     helpful-command
+     helpful-key
+     helpful-variable
+     helpful-at-point)
+    :init
+    (transient-define-prefix cloveynit-helpful-dispatch ()
+      "Transient for Help commands"
+      ["Helpful"
+       [("c" "Callable" helpful-callable)
+        ("f" "Function" helpful-function)
+        ("x" "Command" helpful-command)
+        ("m" "Macro" helpful-macro)
+        ("k" "Key" helpful-key)
+        ("v" "Variable" helpful-variable)
+        ("p" "At point" helpful-at-point)]]))
+
+#+end_src
+** TODO [#A] Dired
 * Custom Functions

@@ -521,6 +521,16 @@ Will need to update Corfu for Eglot
 
 ** TODO [#A] Format All
 ** TODO [#A] Treesitter
+#+begin_src emacs-lisp :tangle yes
+  (use-package treesit
+    :defer t
+    :init
+    ;; (setopt major-mode-remap-alist (treesit-auto--build-major-mode-remap-alist))
+    :config
+    (setopt
+     treesit-font-lock-level 4
+     treesit-extra-load-path `(,(expand-file-name "~/.config/emacs/var/tree-sitter"))))
+#+end_src
 ** TODO [#B] Spelling
 * Programming Languages
 ** Nix

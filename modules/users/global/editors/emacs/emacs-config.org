@@ -187,12 +187,6 @@ that applies to certian major/minor modes.
     [["Modes"
       ]])
 
-  (transient-define-prefix cloveynit-project-dispatch ()
-    "Transient for managing projects"
-    [["Project"
-      ("d" "Dired" project-dired)
-      ]])
-
   (transient-define-prefix cloveynit-window-dispatch ()
     "Transient for managing windows"
     [["Windows"
@@ -460,7 +454,8 @@ Display the keys pressed and the associated command in the header line.
     :config
     (setopt
      org-pretty-entities t
-     org-startup-indented t))
+     org-startup-indented t
+     org-src-window-setup 'other-window))
 #+end_src
 *** Org Modern
 Styling package for org mode buffers.
@@ -558,11 +553,55 @@ Will need to update Corfu for Eglot
   (use-package treesit
     :defer t
     :init
-    ;; (setopt major-mode-remap-alist (treesit-auto--build-major-mode-remap-alist))
+    (defun cloveynit/report-unused-ts-modes ()
+      "Report TreeSitter modes that are not mapped in major-mode-remap-alist or auto-mode-alist."
+      (let ((ts-modes (apropos-internal "-ts-mode$" 'functionp)))
+        (dolist (ts-mode ts-modes)
+          (let ((used-in-major-mode-remap-alist
+                 (seq-some (lambda (entry)
+                             (equal ts-mode (cdr entry)))
+                           major-mode-remap-alist))
+                (used-in-auto-mode-alist
+                 (seq-some (lambda (entry)
+                             (equal ts-mode (cdr entry)))
+                           auto-mode-alist)))
+            (unless (or used-in-major-mode-remap-alist used-in-auto-mode-alist)
+              (warn "TS Mode not mapped: %s" ts-mode))))))
+
     :config
     (setopt
      treesit-font-lock-level 4
-     treesit-extra-load-path `(,(expand-file-name "~/.config/emacs/var/tree-sitter"))))
+     treesit-extra-load-path `(,(expand-file-name "~/.config/emacs/var/tree-sitter"))
+     major-mode-remap-alist '(
+    			    (sh-mode . bash-ts-mode)
+    			    (c++-mode . c++-ts-mode)
+    			    (c-or-c++-mode . c-or-c++-ts-mode)
+    			    (c-mode . c-ts-mode)
+    			    (cmake-mode . cmake-ts-mode)
+    			    (csharp-mode . csharp-ts-mode)
+    			    (css-mode . css-ts-mode)
+    			    (indent-bars-mode . indent-bars-ts-mode)
+    			    (java-mode . java-ts-mode)
+    			    (javascript-mode . js-ts-mode)
+    			    (js-json-mode . json-ts-mode)
+    			    (nim-mode . nim-ts-mode)
+    			    (python-mode . python-ts-mode)
+    			    (ruby-mode . ruby-ts-mode)
+    			    (conf-toml-mode . toml-ts-mode)))
+    (dolist (mode-assoc
+    	   '(("\\(?:Dockerfile\\(?:\\..*\\)?\\|\\.[Dd]ockerfile\\)\\'"
+    	      . dockerfile-ts-mode)
+    	     ("/go\\.mod\\'" . go-mod-ts-mode)
+    	     ("\\.go\\'" . go-ts-mode)
+  	     ("\\.nix\\'" . nix-ts-mode)
+  	     ("\\.rs\\'" . rust-ts-mode)
+  	     ("\\.ts\\'" . typescript-ts-mode)
+  	     ("\\.tsx\\'" . tsx-ts-mode)
+  	     ("\\.ya?ml\\'" . yaml-ts-mode)))
+      (add-to-list 'auto-mode-alist mode-assoc))
+
+
+    (cloveynit/report-unused-ts-modes))
 #+end_src
 ** TODO [#B] Spelling
 * Programming Languages
@@ -581,7 +620,11 @@ Will need to update Corfu for Eglot
 ** TODO [#B] Project
 Project is the in-built project management package.
 #+begin_src emacs-lisp :tangle yes
-
+  (transient-define-prefix cloveynit-project-dispatch ()
+    "Transient for managing projects"
+    [["Project"
+      ("d" "Dired" project-dired)
+      ]])
 #+end_src
 * Utilities
 ** Helpful

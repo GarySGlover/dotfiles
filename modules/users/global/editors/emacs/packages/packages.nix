@@ -43,6 +43,9 @@
   ];
 
   emacsExtraPackages = with epkgs; [
+    flymake
+    eldoc
+    project
     ace-window
     aggressive-indent
     # auto-yasnippet
@@ -61,6 +64,7 @@
     # dtrt-indent
     # eat
     # ef-themes
+    eglot
     elisp-autofmt
     embark
     embark-consult
@@ -87,6 +91,7 @@
     nix-ts-mode
     # no-littering
     orderless
+    org
     org-modern
     org-modern-indent
     # ox-gfm

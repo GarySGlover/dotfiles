@@ -46,6 +46,7 @@ This is the meow modal editing suite.
     meow
     :init (meow-global-mode 1)
     :config
+    (add-to-list 'meow-selection-command-fallback '(meow-replace . meow-yank))
     (setopt
      meow-cheatsheet-layout meow-cheatsheet-layout-qwerty
      meow-use-clipboard t)
@@ -55,7 +56,7 @@ This is the meow modal editing suite.
      '("j" . meow-next)
      '("k" . meow-prev)
      '("l" . meow-right)
-     '("C" . cloveynit-global-dispatch)
+     '("r" . cloveynit-global-dispatch)
      '("<escape>" . ignore))
     (meow-leader-define-key
      ;; Allow SPC h/j/k/l to run the original command that will be bound to H-<h/j/k/l>
@@ -63,7 +64,7 @@ This is the meow modal editing suite.
      '("j" . "H-j")
      '("k" . "H-k")
      '("l" . "H-l")
-     '("C" . "H-C")
+     '("r" . "H-C")
      ;; Use SPC (0-9) for digit arguments.
      '("1" . meow-digit-argument)
      '("2" . meow-digit-argument)
@@ -100,7 +101,6 @@ This is the meow modal editing suite.
      '("b" . meow-back-word)
      '("B" . meow-back-symbol)
      '("c" . meow-change)
-     '("C" . cloveynit-global-dispatch)
      '("d" . meow-delete)
      '("D" . meow-backward-delete)
      '("e" . meow-next-word)
@@ -122,10 +122,9 @@ This is the meow modal editing suite.
      '("n" . meow-search)
      '("o" . meow-block)
      '("O" . meow-to-block)
-     '("p" . meow-yank)
+     '("p" . meow-replace)
      '("q" . meow-quit)
-     '("Q" . meow-goto-line)
-     '("r" . meow-replace)
+     '("r" . cloveynit-global-dispatch)
      '("R" . meow-swap-grab)
      '("s" . meow-kill)
      '("t" . meow-till)
@@ -171,10 +170,44 @@ that applies to certian major/minor modes.
     (transient-define-prefix cloveynit-global-dispatch ()
       "Global transient menu"
       [["Default"
+        ("a" "Generic" cloveynit-global-generic-dispatch)
         ("c" "Consult" cloveynit-consult-dispatch)
         ("g" "Magit" magit-dispatch)
         ("h" "Help" cloveynit-helpful-dispatch)
-        ("n" "Denote" cloveynit-denote-dispatch)]]))
+        ("n" "Denote" cloveynit-denote-dispatch)
+        ("p" "Project" cloveynit-project-dispatch)
+        ("m" "Modes" cloveynit-modes-dispatch)
+        ("w" "Window" cloveynit-window-dispatch)
+        ]]))
+#+end_src
+*** Place holder transients
+#+begin_src emacs-lisp :tangle yes
+  (transient-define-prefix cloveynit-modes-dispatch ()
+    "Transient for toggling minor modes"
+    [["Modes"
+      ]])
+
+  (transient-define-prefix cloveynit-project-dispatch ()
+    "Transient for managing projects"
+    [["Project"
+      ("d" "Dired" project-dired)
+      ]])
+
+  (transient-define-prefix cloveynit-window-dispatch ()
+    "Transient for managing windows"
+    [["Windows"
+      ]])
+
+#+end_src
+*** Global generic transient
+This transient is to provide a place for common commands, that don't
+fit in as part of any other group.
+#+begin_src emacs-lisp :tangle yes
+  (transient-define-prefix cloveynit-global-generic-dispatch ()
+    "Global generic transient"
+    [["Narrowing"
+      ("n" "Narrow" narrow-to-region)
+      ("w" "Widen" widen :if (buffer-narrowed-p))]])
 #+end_src
 * UI Enhancements
 ** Basic display changes
@@ -184,7 +217,7 @@ that applies to certian major/minor modes.
    tool-bar-mode nil
    menu-bar-mode nil)
 #+end_src
-** Theme
+** Theme.
 #+begin_src emacs-lisp :tangle yes
   (use-package standard-themes
     :init
@@ -416,12 +449,12 @@ Display the keys pressed and the associated command in the header line.
                 '("" cloveynit-mode-line-buffer-name))
 #+end_src
 * Information Management
-** TODO Hyperbole
+** TODO [#A] Hyperbole
 #+begin_src emacs-lisp :tangle yes
   (use-package hyperbole
     :init (hyperbole-mode 1))
 #+end_src
-** TODO Org Mode
+** TODO [#B] Org Mode
 #+begin_src emacs-lisp :tangle yes
   (use-package org
     :config
@@ -539,9 +572,17 @@ Will need to update Corfu for Eglot
     :mode "\\.nix\\'")
 #+end_src
 * Version Control
-** TODO [#A] Magit
+** Magit
+#+begin_src emacs-lisp :tangle yes
+  (use-package magit)
+#+end_src
 ** TODO [#C] Diff-HL
 * Project Management
+** TODO [#B] Project
+Project is the in-built project management package.
+#+begin_src emacs-lisp :tangle yes
+
+#+end_src
 * Utilities
 ** Helpful
 Improved help display.
@@ -569,4 +610,5 @@ Improved help display.
 
 #+end_src
 ** TODO [#A] Dired
+** TODO [#A] Ediff
 * Custom Functions

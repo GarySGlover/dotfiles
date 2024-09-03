@@ -154,7 +154,11 @@ This is the meow modal editing suite.
       (general-define-key
        :keymaps 'corfu-candidate-overlay-completion-map
        "C-n" #'completion-at-point
-       "<tab>" #'corfu-candidate-overlay-complete-at-point)))
+       "<tab>" #'corfu-candidate-overlay-complete-at-point))
+    (with-eval-after-load 'transient
+      (general-define-key
+       :keymaps 'transient-base-map
+       "<escape>" 'transient-quit-all)))
 #+end_src
 ** TODO Hydra
 ** TODO Transient
@@ -564,16 +568,18 @@ Will need to update Corfu for Eglot
                 (used-in-auto-mode-alist
                  (seq-some (lambda (entry)
                              (equal ts-mode (cdr entry)))
-                           auto-mode-alist)))
-            (unless (or used-in-major-mode-remap-alist used-in-auto-mode-alist)
+                           auto-mode-alist))
+  	      (excluded
+  	       (seq-some (lambda (entry) (equal ts-mode entry))
+  			 '(sh--redirect-bash-ts-mode))))
+            (unless (or used-in-major-mode-remap-alist used-in-auto-mode-alist excluded)
               (warn "TS Mode not mapped: %s" ts-mode))))))
 
     :config
     (setopt
      treesit-font-lock-level 4
      treesit-extra-load-path `(,(expand-file-name "~/.config/emacs/var/tree-sitter"))
-     major-mode-remap-alist '(
-    			    (sh-mode . bash-ts-mode)
+     major-mode-remap-alist '((sh-mode . bash-ts-mode)
     			    (c++-mode . c++-ts-mode)
     			    (c-or-c++-mode . c-or-c++-ts-mode)
     			    (c-mode . c-ts-mode)
@@ -617,14 +623,47 @@ Will need to update Corfu for Eglot
 #+end_src
 ** TODO [#C] Diff-HL
 * Project Management
-** TODO [#B] Project
+** Project
 Project is the in-built project management package.
 #+begin_src emacs-lisp :tangle yes
+  (defun cloveynit-project--dispact-wrap-command (cmd)
+    "Wrap command CMD to optionally display buffer in another window."
+    (interactive)
+    (let ((display-buffer-overriding-action
+           (if (transient-arg-value "other window" (transient-args transient-current-command))
+               '(display-buffer-reuse-window (inhibit-same-window . t))
+             display-buffer-overriding-action)))
+      (call-interactively cmd)))
+
   (transient-define-prefix cloveynit-project-dispatch ()
-    "Transient for managing projects"
-    [["Project"
-      ("d" "Dired" project-dired)
-      ]])
+    "Transient for project.el commands."
+    [["Buffers and Files"
+      ("B" "List Buffers" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-list-buffers)))
+      ("b" "Consult Buffer" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'consult-project-buffer)))
+      ("s" "Switch to Buffer" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-switch-to-buffer)))
+      ("f" "Find File" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-find-file)))
+      ("d" "Dired" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-dired)))
+      ("F" "Find Directory" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-find-dir)))]
+     ["Search and Replace"
+      ("r" "Find Regexp" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-find-regexp)))
+      ("q" "Query Replace" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-query-replace-regexp)))]
+     ["Project Actions"
+      ("c" "Compile" project-compile)
+      ("e" "Eshell" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-eshell)))
+      ("t" "Shell" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-shell)))
+      ("x" "Shell Command" project-shell-command)
+      ("a" "Async Shell Command" project-async-shell-command)
+      ("v" "VC-Dir" project-vc-dir)
+      ("m" "Magit Status" magit-project-status)]
+     ["Manage Projects"
+      ("S" "Switch Project" project-switch-project)
+      ("k" "Kill Buffers" project-kill-buffers)
+      ("p" "Forget Project" project-forget-project)
+      ("P" "Forget Projects Under" project-forget-projects-under)
+      ("z" "Forget Zombie Projects" project-forget-zombie-projects)
+      ("R" "Remember Projects Under" project-remember-projects-under)]
+     ["Options"
+      ("o" "Force Display in Other Window" "other window")]])
 #+end_src
 * Utilities
 ** Helpful

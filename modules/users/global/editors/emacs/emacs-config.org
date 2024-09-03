@@ -64,7 +64,7 @@ This is the meow modal editing suite.
      '("j" . "H-j")
      '("k" . "H-k")
      '("l" . "H-l")
-     '("r" . "H-C")
+     '("r" . "H-r")
      ;; Use SPC (0-9) for digit arguments.
      '("1" . meow-digit-argument)
      '("2" . meow-digit-argument)
@@ -459,7 +459,8 @@ Display the keys pressed and the associated command in the header line.
     (setopt
      org-pretty-entities t
      org-startup-indented t
-     org-src-window-setup 'other-window))
+     org-src-window-setup 'other-window
+     org-todo-keywords '((sequence "TODO(t)" "ACTIVE(a!)" "SCHEDULED(s@)" "HOLD(h@)" "|" "DONE(d@)" "CANCELED(c@)"))))
 #+end_src
 *** Org Modern
 Styling package for org mode buffers.
@@ -471,6 +472,13 @@ Styling package for org mode buffers.
 #+begin_src emacs-lisp :tangle yes
   (use-package org-modern-indent
     :hook (org-mode . org-modern-indent-mode))
+#+end_src
+*** Org Agenda
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-agenda
+    :after org
+    :config
+    (setopt org-agenda-files `(,(expand-file-name "agenda/" "~/"))))
 #+end_src
 *** TODO [#C] OB Mermaid
 ** Denote
@@ -484,7 +492,7 @@ are easily processed and consumed using normal file management tools.
     :config
     (denote-rename-buffer-mode t)
     (setopt
-     denote-directory "/home/clover/notes/"
+     denote-directory (expand-file-name "notes/" "~/")
      denote-file-type 'org
      denote-date-prompt-use-org-read-date t)
     :hook (dired-mode . denote-dired-mode))

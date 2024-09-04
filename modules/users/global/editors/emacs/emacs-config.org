@@ -469,25 +469,47 @@ Display the keys pressed and the associated command in the header line.
      org-src-window-setup 'other-window
      org-todo-keywords '((sequence "TODO(t)" "ACTIVE(a!)" "SCHEDULED(s@)" "HOLD(h@)" "|" "DONE(d@)" "CANCELED(c@)"))))
 #+end_src
-*** Org Modern
+*** Modern
 Styling package for org mode buffers.
 #+begin_src emacs-lisp :tangle yes
   (use-package org-modern
     :hook (org-mode . org-modern-mode))
 #+end_src
-*** Org Modern Indent
+*** Modern Indent
 #+begin_src emacs-lisp :tangle yes
   (use-package org-modern-indent
     :hook (org-mode . org-modern-indent-mode))
 #+end_src
-*** Org Agenda
+*** Agenda
 #+begin_src emacs-lisp :tangle yes
   (use-package org-agenda
     :after org
     :config
     (setopt org-agenda-files `(,(expand-file-name "agenda/" "~/"))))
 #+end_src
-*** TODO [#C] OB Mermaid
+*** Babel
+#+begin_src emacs-lisp :tangle yes
+  (use-package ob-core
+    :config
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((emacs-lisp . t)
+       (shell . t)))
+
+    (defun cloveynit-org-confirm-babel-evaluate (lang body)
+      "Custom confirmation function for evaluating code blocks.
+  Check if `org-confirm-babel-evaluate` is set for the buffer.
+  If not, prompt the user whether to allow running all code blocks silently."
+      (unless (local-variable-p 'org-confirm-babel-evaluate)
+        (if (yes-or-no-p "Run buffer code blocks without confirmation?")
+            (setq-local org-confirm-babel-evaluate nil)
+  	(setq-local org-confirm-babel-evaluate t)))
+      org-confirm-babel-evaluate)
+
+    (setopt org-confirm-babel-evaluate 'cloveynit-org-confirm-babel-evaluate))
+#+end_src
+**** TODO [#C] OB Mermaid
+
 ** Denote
 Denote is a note taking package that works on one note per file and
 uses the filename for all metadata. Benefit of this is that the notes

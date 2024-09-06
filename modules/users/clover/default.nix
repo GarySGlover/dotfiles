@@ -14,6 +14,7 @@
     belisarius = [
       "cad"
       "desktop"
+      "devops"
       "editing"
       "gaming"
       "internet"

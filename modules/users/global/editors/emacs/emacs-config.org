@@ -167,7 +167,6 @@ This is the meow modal editing suite.
        "%" 'cloveynit-dired-regexp
        "*" 'cloveynit-dired-marking)))
 #+end_src
-** TODO Hydra
 ** TODO Transient
 Transient allows the creation and mapping of keybindings through
 menus. Initial configuration is to tie into meow, having a
@@ -185,6 +184,7 @@ that applies to certian major/minor modes.
         ("c" "Consult" cloveynit-consult-dispatch)
         ("g" "Magit" magit-dispatch)
         ("h" "Help" cloveynit-helpful-dispatch)
+        ("l" "Gptel" gptel-menu)
         ("n" "Denote" cloveynit-denote-dispatch)
         ("p" "Project" cloveynit-project-dispatch)
         ("m" "Modes" cloveynit-modes-dispatch)
@@ -584,6 +584,17 @@ newlines.
     :hook (emacs-lisp-mode . aggressive-indent-mode))
 #+end_src
 ** TODO [#B] GPTel
+#+begin_src emacs-lisp :tangle yes
+  (use-package gptel
+    :commands
+    (gptel
+     gptel-send
+     gptel-menu)
+    :config
+    (setopt
+     gptel-model "gpt-4o-mini"
+     gptel-default-mode 'org-mode))
+ #+end_src
 ** TODO [#B] Codeium
 ** TODO [#A] Eglot
 Will need to update Corfu for Eglot
@@ -729,7 +740,7 @@ Improved help display.
 
 #+end_src
 ** TODO [#A] Dired
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp :tangle yes
   (transient-define-prefix cloveynit-dired-dispatch ()
     "Main transient for Dired commands."
     ["Dired Commands"

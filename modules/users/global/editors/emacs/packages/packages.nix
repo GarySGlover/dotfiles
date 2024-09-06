@@ -73,10 +73,10 @@
     general
     # gcmh
     # git-timemachine
-    # gptel
+    gptel
     helpful
     hyperbole
-    hydra
+    # hydra
     # json-mode
     # json-navigator
     # kubel

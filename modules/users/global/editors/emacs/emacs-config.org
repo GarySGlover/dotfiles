@@ -3,7 +3,7 @@
 #+property: header-args :results silent
 #+STARTUP: content
 
-* Core Emacs
+* General Settingss
 ** Lexical Binding
 Configure lexical binding for the rest of this init. A lexically-bound variable
 has lexical scope, meaning that any reference to the variable must be
@@ -36,6 +36,8 @@ package manager.
     :custom
     (package-archives nil "Remove all package download locations"))
 #+end_src
+
+* Performance Settings
 
 * Key Bindings
 ** Meow
@@ -222,7 +224,7 @@ fit in as part of any other group.
    tool-bar-mode nil
    menu-bar-mode nil)
 #+end_src
-** Theme.
+** Theme
 #+begin_src emacs-lisp :tangle yes
   (use-package standard-themes
     :init
@@ -596,9 +598,6 @@ newlines.
      gptel-default-mode 'org-mode))
  #+end_src
 ** TODO [#B] Codeium
-** TODO [#A] Eglot
-Will need to update Corfu for Eglot
-
 ** TODO [#A] Format All
 ** TODO [#A] Treesitter
 #+begin_src emacs-lisp :tangle yes
@@ -658,12 +657,37 @@ Will need to update Corfu for Eglot
     (cloveynit/report-unused-ts-modes))
 #+end_src
 ** TODO [#B] Spelling
-* Programming Languages
+* Programming
+** Flymake
+#+begin_src emacs-lisp :tangle yes
+  (use-package flymake
+    :hook (prog-mode . flymake-mode))
+#+end_src
+** TODO [#A] Eglot
+Will need to update Corfu for Eglot
+
+** Eldoc
+#+begin_src emacs-lisp :tangle yes
+(use-package eldoc
+  :config
+  (setopt eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly))
+#+end_src
+
 ** Nix
 #+begin_src emacs-lisp :tangle yes
   (use-package nix-ts-mode
     :mode "\\.nix\\'")
 #+end_src
+
+** Sh
+#+begin_src emacs-lisp :tangle yes
+  (use-package sh-script
+    :init
+    (setopt
+     sh-shell "bash"
+     sh-shell-file "bash"))
+#+end_src
+
 * Version Control
 ** Magit
 #+begin_src emacs-lisp :tangle yes
@@ -741,21 +765,34 @@ Improved help display.
 #+end_src
 ** TODO [#A] Dired
 #+begin_src emacs-lisp :tangle yes
+  (defface cloveynit-dired-sub-transient-face
+    '((t :foreground "orange" :weight bold))
+    "Face for sub-transient commands.")
+
+  (defun cloveynit-dired-highlight (name)
+    "Helper function to highlight sub-transient commands."
+    (propertize (concat name " >>") 'face 'cloveynit-dired-sub-transient-face))
+
   (transient-define-prefix cloveynit-dired-dispatch ()
     "Main transient for Dired commands."
     ["Dired Commands"
-     ["File Operations"
+
+     ["File Opening"
       ("RET" "Find file" dired-find-file)
       ("C-o" "Display file" dired-display-file)
       ("+" "Create directory" dired-create-directory)
-      ("=" "Diff" dired-diff)
+      ("=" "Diff" dired-diff)]
+
+     ["File Management"
       ("C" "Copy" dired-do-copy)
       ("D" "Delete" dired-do-delete)
       ("R" "Rename" dired-do-rename)
       ("S" "Symlink" dired-do-symlink)
       ("Z" "Compress" dired-do-compress)
       ("c" "Compress to" dired-do-compress-to)
-      ("B" "Byte compile" dired-do-byte-compile)
+      ("B" "Byte compile" dired-do-byte-compile)]
+
+     ["Advanced File Operations"
       ("H" "Hardlink" dired-do-hardlink)
       ("I" "Info" dired-do-info)
       ("L" "Load" dired-do-load)
@@ -775,12 +812,15 @@ Improved help display.
       ("x" "Delete flagged" dired-do-flagged-delete)
       ("U" "Unmark all" dired-unmark-all-marks)
       ("DEL" "Unmark backward" dired-unmark-backward)
-      ("*" "Marking" cloveynit-dired-marking)]
+      ("*" (lambda () (cloveynit-dired-highlight "Marking commands")) cloveynit-dired-marking)]
 
-     ["Viewing and Navigation"
+     ["File Viewing"
       ("v" "View file" dired-view-file)
       ("o" "Open in other window" dired-find-file-other-window)
       ("a" "Find alternate file" dired-find-alternate-file)
+      ("y" "Show file type" dired-show-file-type)]
+
+     ["Directory Navigation"
       ("^" "Up directory" dired-up-directory)
       ("<" "Previous dirline" dired-prev-dirline)
       (">" "Next dirline" dired-next-dirline)
@@ -791,17 +831,17 @@ Improved help display.
       ("s" "Sort toggle" dired-sort-toggle-or-edit)
       ("." "Clean directory" dired-clean-directory)
       ("$" "Hide subdir" dired-hide-subdir)
-      ("(" "Hide details" dired-hide-details-mode)
-      ("y" "Show file type" dired-show-file-type)]
+      ("(" "Hide details" dired-hide-details-mode)]
 
      ["Special Operations"
       ("A" "Find regexp" dired-do-find-regexp)
       ("Q" "Find regexp & replace" dired-do-find-regexp-and-replace)
       ("X" "Shell command" dired-do-shell-command)
       ("&" "Async shell command" dired-do-async-shell-command)
-      ("%" "Regexp" cloveynit-dired-regexp)
-      ("C-t" "Image Dired" cloveynit-dired-image-dired)]
-     ])
+      ("%" (lambda () (cloveynit-dired-highlight "Regexp commands")) cloveynit-dired-regexp)]
+
+     ["Image Dired"
+      ("C-t" (lambda () (cloveynit-dired-highlight "Image Dired commands")) cloveynit-dired-image-dired)]])
 
   (transient-define-prefix cloveynit-dired-image-dired ()
     "Transient for Image Dired commands."

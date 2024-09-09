@@ -120,10 +120,12 @@ in {
   config = mkIf config.wolf.roles.editing {
     programs.emacs.extraPackages = epkgs: emacsExtraPackages ++ emacsExtraPackagesLocal;
 
-    # Dictionaries for use with flyspell
     home.packages = with pkgs; [
+      # Dictionaries for use with flyspell
       (aspellWithDicts (ds: with ds; [en en-computers en-science]))
-      codeium
+
+      # Codeium language server binary
+      # codeium
     ];
 
     # Populate authinfo for gptel to use chatgpt api

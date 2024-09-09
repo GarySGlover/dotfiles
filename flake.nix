@@ -47,14 +47,13 @@
         then path
         else []) (readDir dir));
 
-    tree-sitter-grammars = import ./modules/overlays/tree-sitter-grammars.nix;
-
     pkgs = import nixpkgs {
       inherit system;
       config = import ./config.nix {inherit lib;};
       overlays = [
         emacs-overlay.overlay
-        tree-sitter-grammars
+        (import ./modules/overlays/tree-sitter-grammars.nix)
+	(import ./modules/overlays/codeium.nix)
       ];
     };
 

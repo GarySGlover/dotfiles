@@ -24,7 +24,7 @@ in {
 
     services.displayManager = {
       sddm = {enable = true;};
-      defaultSession = "hyprland";
+      defaultSession = "sway";
     };
 
     # Enable sound.

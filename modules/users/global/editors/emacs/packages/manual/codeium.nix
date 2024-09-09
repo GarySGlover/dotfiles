@@ -5,11 +5,11 @@
 }:
 trivialBuild {
   pname = "codeium.el";
-  version = "202403.1.8.10";
+  version = "202408.1.12.0";
   src = fetchFromGitHub {
     owner = "Exafunction";
     repo = "codeium.el";
-    rev = "e8bab83f95626541afa5ea2298aa80ccc7567d53";
-    sha256 = "sha256-9Vxd9UtVOY2t+br+O8aBampp0x18OznHoo4CljHTYf0=";
+    rev = "08d5ecfa74d960cf18af46c2d7fa0449d789d73b";
+    sha256 = "sha256-NnCpoGMJKBsPa7KtavEg/4+tdqbrCCemvYYT1p6BcdY=";
   };
 }

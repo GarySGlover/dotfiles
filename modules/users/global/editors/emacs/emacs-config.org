@@ -3,7 +3,7 @@
 #+property: header-args :results silent
 #+STARTUP: content
 
-* General Settingss
+* General Settings
 ** Lexical Binding
 Configure lexical binding for the rest of this init. A lexically-bound variable
 has lexical scope, meaning that any reference to the variable must be
@@ -152,6 +152,10 @@ This is the meow modal editing suite.
      "<f5>" #'standard-themes-toggle
      "M-S" #'vertico-suspend
      "C-." #'embark-act)
+    (with-eval-after-load 'org
+      (general-define-key
+       :keymaps 'org-mode-map
+       "C-M-<return>" #'org-meta-return))
     (with-eval-after-load 'corfu-candidate-overlay
       (general-define-key
        :keymaps 'corfu-candidate-overlay-completion-map
@@ -388,7 +392,8 @@ Display the keys pressed and the associated command in the header line.
 #+begin_src emacs-lisp :tangle yes
   (use-package embark)
 #+end_src
-** TODO [#B] Marginalia
+** Marginalia
+
 #+begin_src emacs-lisp :tangle yes
   (use-package marginalia
     :init
@@ -469,7 +474,8 @@ Display the keys pressed and the associated command in the header line.
      org-pretty-entities t
      org-startup-indented t
      org-src-window-setup 'other-window
-     org-todo-keywords '((sequence "TODO(t)" "ACTIVE(a!)" "SCHEDULED(s@)" "HOLD(h@)" "|" "DONE(d@)" "CANCELED(c@)"))))
+     org-todo-keywords '((sequence "TODO(t)" "ACTIVE(a!)" "SCHEDULED(s@)" "HOLD(h@)" "|" "DONE(d@)" "CANCELED(c@)")))
+    (add-to-list 'org-src-lang-modes '("yaml" . "yaml-ts")))
 #+end_src
 *** Modern
 Styling package for org mode buffers.
@@ -511,7 +517,10 @@ Styling package for org mode buffers.
     (setopt org-confirm-babel-evaluate 'cloveynit-org-confirm-babel-evaluate))
 #+end_src
 **** TODO [#C] OB Mermaid
-
+**** OBAsync
+#+begin_src emacs-lisp :tangle yes
+  (use-package ob-async)
+#+end_src
 ** Denote
 Denote is a note taking package that works on one note per file and
 uses the filename for all metadata. Benefit of this is that the notes
@@ -599,7 +608,7 @@ newlines.
  #+end_src
 ** TODO [#B] Codeium
 ** TODO [#A] Format All
-** TODO [#A] Treesitter
+** Treesitter
 #+begin_src emacs-lisp :tangle yes
   (use-package treesit
     :defer t
@@ -652,7 +661,6 @@ newlines.
   	     ("\\.tsx\\'" . tsx-ts-mode)
   	     ("\\.ya?ml\\'" . yaml-ts-mode)))
       (add-to-list 'auto-mode-alist mode-assoc))
-
 
     (cloveynit/report-unused-ts-modes))
 #+end_src
@@ -763,7 +771,7 @@ Improved help display.
         ("p" "At point" helpful-at-point)]]))
 
 #+end_src
-** TODO [#A] Dired
+** Dired
 #+begin_src emacs-lisp :tangle yes
   (defface cloveynit-dired-sub-transient-face
     '((t :foreground "orange" :weight bold))

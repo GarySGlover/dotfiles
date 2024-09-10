@@ -43,57 +43,29 @@
   ];
 
   emacsExtraPackages = with epkgs; [
-    # flymake
-    # eldoc
-    # eglot
-    # project
-    ace-window
-    aggressive-indent
     # auto-yasnippet
     # avy
     # beframe
     # breadcrumb
-    cape
-    consult
     # consult-flyspell
     # consult-yasnippet
-    corfu
-    corfu-candidate-overlay
-    denote
     # devdocs
     # direnv
     # dtrt-indent
     # eat
-    # ef-themes
-    elisp-autofmt
-    embark
-    embark-consult
+    # eglot
     # exec-path-from-shell
     # format-all
-    general
     # gcmh
     # git-timemachine
-    gptel
-    helpful
-    hyperbole
-    # hydra
     # json-mode
     # json-navigator
     # kubel
-    keycast
-    magit
-    marginalia
     # markdown-mode
-    meow
     # mini-frame
     # nerd-icons-completion
     # nerd-icons-dired
-    nix-ts-mode
     # no-littering
-    orderless
-    org
-    org-modern
-    org-modern-indent
     # ox-gfm
     # pandoc-mode
     # pdf-tools
@@ -101,20 +73,44 @@
     # quickrun
     # rainbow-delimiters
     # sly
-    standard-themes
     # terraform-doc
     # terraform-mode
-    transient
-    treesit-grammars.with-all-grammars
     # verb
-    vertico
     # visual-fill-column
     # which-key
     # yaml-pro
+    # zig-mode
+    ace-window
+    aggressive-indent
+    cape
+    consult
+    corfu
+    corfu-candidate-overlay
+    denote
+    elisp-autofmt
+    embark
+    embark-consult
+    general
+    gptel
+    helpful
+    hyperbole
+    keycast
+    magit
+    marginalia
+    meow
+    nix-ts-mode
+    ob-async
+    orderless
+    org
+    org-modern
+    org-modern-indent
+    standard-themes
+    transient
+    treesit-grammars.with-all-grammars
+    vertico
     yasnippet
     yasnippet-capf
     yasnippet-snippets
-    # zig-mode
   ];
 in {
   config = mkIf config.wolf.roles.editing {

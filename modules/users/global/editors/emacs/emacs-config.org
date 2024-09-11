@@ -323,24 +323,26 @@ Set default font to be used with general text.
 Use a coding font for fixed pitch and overwrite the default font in prog-mode buffers to
 use the same.
 #+begin_src emacs-lisp :tangle yes
-  (defun cc/global-face ()
+  (defun cloveynit-after-frame ()
     (set-face-attribute 'default nil :family "FiraCode Nerd Font")
     (set-face-attribute 'fixed-pitch nil :family "FiraCode Nerd Font")
     (set-face-attribute 'fixed-pitch-serif nil :family "FiraCode Nerd Font")
     (set-face-attribute 'variable-pitch nil :family "FiraCode Nerd Font"))
 
-  (defun cc/text-face ()
-    (setq buffer-face-mode-face '(:family "Iosevka"))
+  (defun cloveynit-text-face ()
+    (setopt buffer-face-mode-face '(:family "Iosevka"))
     (buffer-face-mode))
 
-  (if (daemonp)
-      (add-hook 'server-after-make-frame-hook
-                (lambda (frame)
-                  (with-selected-frame frame
-                    (cc/global-face))))
-    (cc/global-face))
+  (defun cloveynit-org-face ()
+    (set-face-attribute 'org-default nil :family "Iosevka"))
 
-  (add-hook 'text-mode-hook #'cc/text-face)
+  (when (daemonp)
+    (add-hook 'server-after-make-frame-hook #'cloveynit-after-frame))
+
+  (cloveynit-after-frame)
+
+  (add-hook 'text-mode-hook #'cloveynit-text-face)
+  (add-hook 'org-mode-hook #'cloveynit-org-face)
 #+end_src
 ** Consult
 #+begin_src emacs-lisp :tangle yes

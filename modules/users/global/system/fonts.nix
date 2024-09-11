@@ -14,8 +14,10 @@ in {
     home.packages = with pkgs; [
       fira-code
       fira-code-symbols
-      (nerdfonts.override {fonts = ["FiraCode"];})
       iosevka
+      nerdfonts
+      eb-garamond
+      noto-fonts
     ];
   };
 }

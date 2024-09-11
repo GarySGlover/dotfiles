@@ -324,25 +324,19 @@ Use a coding font for fixed pitch and overwrite the default font in prog-mode bu
 use the same.
 #+begin_src emacs-lisp :tangle yes
   (defun cloveynit-after-frame ()
-    (set-face-attribute 'default nil :family "FiraCode Nerd Font")
-    (set-face-attribute 'fixed-pitch nil :family "FiraCode Nerd Font")
-    (set-face-attribute 'fixed-pitch-serif nil :family "FiraCode Nerd Font")
-    (set-face-attribute 'variable-pitch nil :family "FiraCode Nerd Font"))
+    (set-face-attribute 'default nil :family "FiraCode Nerd Font" :height 98)
+    (set-face-attribute 'fixed-pitch nil :family "FiraCode Nerd Font" :height 98)
+    (set-face-attribute 'fixed-pitch-serif nil :family "FiraCode Nerd Font" :height 98)
+    (set-face-attribute 'variable-pitch nil :family "FiraCode Nerd Font" :height 98))
 
-  (defun cloveynit-text-face ()
-    (setopt buffer-face-mode-face '(:family "Iosevka"))
-    (buffer-face-mode))
+  (defun cloveynit-text-mode-default-face ()
+    (face-remap-add-relative 'default :family "EB Garamond" :height 120))
+  (add-hook 'text-mode-hook #'cloveynit-text-mode-default-face)
 
-  (defun cloveynit-org-face ()
-    (set-face-attribute 'org-default nil :family "Iosevka"))
+  (if (daemonp)
+      (add-hook 'server-after-make-frame-hook #'cloveynit-after-frame)
+    (cloveynit-after-frame))
 
-  (when (daemonp)
-    (add-hook 'server-after-make-frame-hook #'cloveynit-after-frame))
-
-  (cloveynit-after-frame)
-
-  (add-hook 'text-mode-hook #'cloveynit-text-face)
-  (add-hook 'org-mode-hook #'cloveynit-org-face)
 #+end_src
 ** Consult
 #+begin_src emacs-lisp :tangle yes

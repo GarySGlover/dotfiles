@@ -1,6 +1,8 @@
-{config, ...}: let
+{ config, ... }:
+let
   homeDir = config.home.homeDirectory;
-in {
+in
+{
   config = {
     programs.ssh = {
       enable = true;

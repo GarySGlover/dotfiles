@@ -18,172 +18,194 @@
     emacs-overlay.url = "github:nix-community/emacs-overlay/master";
   };
 
-  outputs = {
-    self,
-    emacs-overlay,
-    home-manager,
-    nixpkgs,
-    sops-nix,
-    ...
-  }: let
-    lib = nixpkgs.lib;
-    inherit (lib) pathExists hasSuffix mapAttrsToList forEach flatten filterAttrs mkForce nixosSystem;
-    inherit (builtins) readDir head match mapAttrs listToAttrs attrValues;
+  outputs =
+    {
+      self,
+      emacs-overlay,
+      home-manager,
+      nixpkgs,
+      sops-nix,
+      ...
+    }:
+    let
+      lib = nixpkgs.lib;
+      inherit (lib)
+        pathExists
+        hasSuffix
+        mapAttrsToList
+        forEach
+        flatten
+        filterAttrs
+        mkForce
+        nixosSystem
+        ;
+      inherit (builtins)
+        readDir
+        head
+        match
+        mapAttrs
+        listToAttrs
+        attrValues
+        ;
 
-    system =
-      if builtins ? currentSystem
-      then builtins.currentSystem
-      else "x86_64-linux";
-    listNixFilesRecursive = dir:
-      flatten (mapAttrsToList (name: type: let
-        path = dir + "/${name}";
-      in
-        if type == "directory"
-        then
-          if pathExists (dir + "/${name}/default.nix")
-          then path
-          else listNixFilesRecursive path
-        else if hasSuffix ".nix" name
-        then path
-        else []) (readDir dir));
+      system = if builtins ? currentSystem then builtins.currentSystem else "x86_64-linux";
+      listNixFilesRecursive =
+        dir:
+        flatten (
+          mapAttrsToList (
+            name: type:
+            let
+              path = dir + "/${name}";
+            in
+            if type == "directory" then
+              if pathExists (dir + "/${name}/default.nix") then path else listNixFilesRecursive path
+            else if hasSuffix ".nix" name then
+              path
+            else
+              [ ]
+          ) (readDir dir)
+        );
 
-    pkgs = import nixpkgs {
-      inherit system;
-      config = import ./config.nix {inherit lib;};
-      overlays = [
-        emacs-overlay.overlay
-        (import ./modules/overlays/tree-sitter-grammars.nix)
-	(import ./modules/overlays/codeium.nix)
-      ];
-    };
-
-    extraSpecialArgs = {inherit pkgs;};
-
-    mkHomeCfg = name: let
-      user = "${head (match "(.+)@.+" name)}";
-      host = "${head (match ".+@(.+)" name)}";
-    in {
-      inherit name;
-      value = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        inherit extraSpecialArgs;
-        modules =
-          [
-            ({...}: {
-              home.username = user;
-              home.homeDirectory = mkForce "/home/${user}";
-              wolf.host = host;
-              wolf.secretsPath = ./secrets;
-            })
-          ]
-          ++ listNixFilesRecursive ./modules/users/global
-          ++ listNixFilesRecursive ./modules/users/${user};
+      pkgs = import nixpkgs {
+        inherit system;
+        config = import ./config.nix { inherit lib; };
+        overlays = [
+          emacs-overlay.overlay
+          (import ./modules/overlays/tree-sitter-grammars.nix)
+          (import ./modules/overlays/codeium.nix)
+        ];
       };
-    };
 
-    mkNixOsCfg = {
-      host,
-      users,
-    }: let
-      inherit (lib) forEach listToAttrs optionals;
-      userHome = listToAttrs (
-        forEach users (
-          user: {
-            name = "${user}";
-            value = {
-              home.username = "${user}";
-              home.homeDirectory = mkForce "/home/${user}";
-              wolf.secretsPath = ./secrets;
-              imports = listNixFilesRecursive ./modules/users/${user};
-            };
-          }
-        )
-      );
-      hostLegacyModule = optionals (pathExists ./hosts/${host}) [./hosts/${host}];
-      specialArgs = {inherit host users;};
-    in
-      nixosSystem {
-        inherit system specialArgs;
+      extraSpecialArgs = {
         inherit pkgs;
-        modules =
-          [
-            sops-nix.nixosModules.sops
-            home-manager.nixosModules.home-manager
-            {
-              home-manager = {
-                inherit extraSpecialArgs;
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                backupFileExtension = "hm-backup";
-                users = userHome;
-                sharedModules =
-                  [
-                    ({...}: {
-                      wolf.host = host;
-                    })
-                  ]
-                  ++ (listNixFilesRecursive ./modules/users/global);
+      };
+
+      mkHomeCfg =
+        name:
+        let
+          user = "${head (match "(.+)@.+" name)}";
+          host = "${head (match ".+@(.+)" name)}";
+        in
+        {
+          inherit name;
+          value = home-manager.lib.homeManagerConfiguration {
+            inherit pkgs;
+            inherit extraSpecialArgs;
+            modules = [
+              (
+                { ... }:
+                {
+                  home.username = user;
+                  home.homeDirectory = mkForce "/home/${user}";
+                  wolf.host = host;
+                  wolf.secretsPath = ./secrets;
+                }
+              )
+            ] ++ listNixFilesRecursive ./modules/users/global ++ listNixFilesRecursive ./modules/users/${user};
+          };
+        };
+
+      mkNixOsCfg =
+        {
+          host,
+          users,
+        }:
+        let
+          inherit (lib) forEach listToAttrs optionals;
+          userHome = listToAttrs (
+            forEach users (user: {
+              name = "${user}";
+              value = {
+                home.username = "${user}";
+                home.homeDirectory = mkForce "/home/${user}";
+                wolf.secretsPath = ./secrets;
+                imports = listNixFilesRecursive ./modules/users/${user};
               };
-            }
-          ]
-          ++ (listNixFilesRecursive ./modules/hosts/global)
-          ++ (listNixFilesRecursive ./modules/hosts/${host})
-          ++ hostLegacyModule;
-      };
+            })
+          );
+          hostLegacyModule = optionals (pathExists ./hosts/${host}) [ ./hosts/${host} ];
+          specialArgs = {
+            inherit host users;
+          };
+        in
+        nixosSystem {
+          inherit system specialArgs;
+          inherit pkgs;
+          modules =
+            [
+              sops-nix.nixosModules.sops
+              home-manager.nixosModules.home-manager
+              {
+                home-manager = {
+                  inherit extraSpecialArgs;
+                  useGlobalPkgs = true;
+                  useUserPackages = true;
+                  backupFileExtension = "hm-backup";
+                  users = userHome;
+                  sharedModules = [
+                    (
+                      { ... }:
+                      {
+                        wolf.host = host;
+                      }
+                    )
+                  ] ++ (listNixFilesRecursive ./modules/users/global);
+                };
+              }
+            ]
+            ++ (listNixFilesRecursive ./modules/hosts/global)
+            ++ (listNixFilesRecursive ./modules/hosts/${host})
+            ++ hostLegacyModule;
+        };
 
-    hostCfgs = {
-      auberon = {
-        nixos = true;
-        users = ["clover" "work"];
-      };
-      belisarius = {
-        nixos = true;
-        users = ["clover"];
-      };
-      clover-z270pd3 = {
-        nixos = false;
-        users = ["clover"];
-      };
-    };
-
-    homeCfgs = flatten (
-      attrValues (
-        mapAttrs (host: v:
-          forEach v.users (
-            user: "${user}@${host}"
-          ))
-        hostCfgs
-      )
-    );
-  in {
-    nixosConfigurations =
-      mapAttrs (host: v:
-        mkNixOsCfg {
-          inherit host;
-          users = v.users;
-        })
-      (filterAttrs (n: v: v.nixos) hostCfgs)
-      // {
-        live = nixosSystem {
-          inherit system;
-          modules = [
-            (nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix")
-            ./modules/hosts/live/live.nix
+      hostCfgs = {
+        auberon = {
+          nixos = true;
+          users = [
+            "clover"
+            "work"
           ];
+        };
+        belisarius = {
+          nixos = true;
+          users = [ "clover" ];
+        };
+        clover-z270pd3 = {
+          nixos = false;
+          users = [ "clover" ];
         };
       };
 
-    homeConfigurations = listToAttrs (
-      forEach homeCfgs (
-        name: mkHomeCfg name
-      )
-    );
+      homeCfgs = flatten (
+        attrValues (mapAttrs (host: v: forEach v.users (user: "${user}@${host}")) hostCfgs)
+      );
+    in
+    {
+      nixosConfigurations =
+        mapAttrs (
+          host: v:
+          mkNixOsCfg {
+            inherit host;
+            users = v.users;
+          }
+        ) (filterAttrs (n: v: v.nixos) hostCfgs)
+        // {
+          live = nixosSystem {
+            inherit system;
+            modules = [
+              (nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix")
+              ./modules/hosts/live/live.nix
+            ];
+          };
+        };
 
-    devShells.${system}.default = pkgs.mkShell {
-      packages = with pkgs; [
-        alejandra
-        nixd
-      ];
+      homeConfigurations = listToAttrs (forEach homeCfgs (name: mkHomeCfg name));
+
+      devShells.${system}.default = pkgs.mkShell {
+        packages = with pkgs; [
+          alejandra
+          nixd
+        ];
+      };
     };
-  };
 }

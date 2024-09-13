@@ -3,11 +3,13 @@
   lib,
   pkgs,
   ...
-}: let
+}:
+let
   inherit (builtins) hasAttr;
   inherit (lib) mkIf forEach;
   secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
-in {
+in
+{
   config = {
     xdg.configFile = {
       "git/templates/hooks/pre-commit" = {

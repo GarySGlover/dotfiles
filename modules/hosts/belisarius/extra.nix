@@ -7,7 +7,7 @@
 
   hardware.steam-hardware.enable = true;
 
-  users.groups.realtime = {};
+  users.groups.realtime = { };
   services.udev.extraRules = ''
     KERNEL=="cpu_dma_latency", GROUP="realtime"
   '';

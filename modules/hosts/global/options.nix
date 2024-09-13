@@ -1,7 +1,9 @@
-{lib, ...}: let
+{ lib, ... }:
+let
   inherit (lib) mkOption types;
   inherit (types) bool;
-in {
+in
+{
   options.wolf.system = {
     physical = mkOption {
       type = bool;

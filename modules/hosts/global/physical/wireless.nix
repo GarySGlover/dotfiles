@@ -2,14 +2,16 @@
   config,
   lib,
   ...
-}: let
+}:
+let
   inherit (lib) mkIf;
-in {
+in
+{
   config = mkIf config.wolf.system.physical {
     # Bluetooth enable
     hardware.bluetooth.enable = true;
 
-    sops.secrets.wireless-env = {};
+    sops.secrets.wireless-env = { };
 
     networking.networkmanager.enable = false;
     networking.wireless = {

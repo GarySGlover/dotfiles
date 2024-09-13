@@ -1,16 +1,18 @@
-{config, ...}: let
+{ config, ... }:
+let
   opt = config.wolf;
   host_role = {
-    auberon = [];
-    belisarius = [];
-    clover-z270pd3 = [];
+    auberon = [ ];
+    belisarius = [ ];
+    clover-z270pd3 = [ ];
   };
   host_languages = {
-    auberon = [];
-    belsarius = [];
-    clover-z270pd3 = [];
+    auberon = [ ];
+    belsarius = [ ];
+    clover-z270pd3 = [ ];
   };
-in {
+in
+{
   wolf = {
     roles = {
       cad = builtins.elem "cad" host_role."${opt.host}";

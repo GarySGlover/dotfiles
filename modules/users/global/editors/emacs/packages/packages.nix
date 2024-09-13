@@ -3,7 +3,8 @@
   config,
   pkgs,
   ...
-}: let
+}:
+let
   inherit (lib) mkIf hasAttr;
   secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
 
@@ -112,13 +113,20 @@
     yasnippet-capf
     yasnippet-snippets
   ];
-in {
+in
+{
   config = mkIf config.wolf.roles.editing {
     programs.emacs.extraPackages = epkgs: emacsExtraPackages ++ emacsExtraPackagesLocal;
 
     home.packages = with pkgs; [
       # Dictionaries for use with flyspell
-      (aspellWithDicts (ds: with ds; [en en-computers en-science]))
+      (aspellWithDicts (
+        ds: with ds; [
+          en
+          en-computers
+          en-science
+        ]
+      ))
 
       # Codeium language server binary
       # codeium
@@ -128,11 +136,12 @@ in {
     home.file.authinfo = {
       target = ".authinfo";
       text =
-        if (hasAttr "openai_token" secrets)
-        then ''
-          machine api.openai.com login apikey password ${secrets.openai_token}
-        ''
-        else "";
+        if (hasAttr "openai_token" secrets) then
+          ''
+            machine api.openai.com login apikey password ${secrets.openai_token}
+          ''
+        else
+          "";
     };
 
     home.file = {

@@ -2,10 +2,13 @@
   lib,
   config,
   ...
-}: let
+}:
+let
   inherit (lib) mkIf;
-in {
+in
+{
   config =
-    mkIf config.wolf.system.physical {
-    };
+    mkIf config.wolf.system.physical
+      {
+      };
 }

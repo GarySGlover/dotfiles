@@ -23,5 +23,5 @@ melpaBuild {
     (combobulate :repo "mickeynp/combobulate" :fetcher github)
   '';
 
-  packageRequires = [];
+  packageRequires = [ ];
 }

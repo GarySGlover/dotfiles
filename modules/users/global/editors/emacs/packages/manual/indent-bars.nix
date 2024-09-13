@@ -24,5 +24,5 @@ melpaBuild {
     (indent-bars :repo "jdtsmith/indent-bars" :fetcher github)
   '';
 
-  packageRequires = [compat];
+  packageRequires = [ compat ];
 }

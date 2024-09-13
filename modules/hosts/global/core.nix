@@ -2,7 +2,8 @@
   pkgs,
   host,
   ...
-}: {
+}:
+{
   # Hostname
   networking.hostName = "${host}";
 

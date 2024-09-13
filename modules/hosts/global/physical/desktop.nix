@@ -2,9 +2,11 @@
   config,
   lib,
   ...
-}: let
+}:
+let
   inherit (lib) mkIf;
-in {
+in
+{
   config = mkIf config.wolf.system.physical {
     programs.hyprland = {
       enable = true;
@@ -23,7 +25,9 @@ in {
     };
 
     services.displayManager = {
-      sddm = {enable = true;};
+      sddm = {
+        enable = true;
+      };
       defaultSession = "sway";
     };
 

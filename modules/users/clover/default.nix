@@ -1,4 +1,5 @@
-{config, ...}: let
+{ config, ... }:
+let
   opt = config.wolf;
   host_role = {
     auberon = [
@@ -47,7 +48,8 @@
       "json"
     ];
   };
-in {
+in
+{
   wolf = {
     roles = {
       cad = builtins.elem "cad" host_role."${opt.host}";

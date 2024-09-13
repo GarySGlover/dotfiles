@@ -1,20 +1,25 @@
-{pkgs, ...}: {
+{ pkgs, lib, ... }:
+let
+  myPackages = with pkgs; [
+    # unzip
+    # jdk21
+    # zip
+    # glxinfo
+    # wlr-randr
+    nwg-displays
+    nixfmt-rfc-style
+  ];
+in
+{
   config = {
-    home.packages = with pkgs; [
-      unzip
-      jdk21
-      zip
-      glxinfo
-      wlr-randr
-      nwg-displays
-      pandoc
-      dmenu-wayland
-    ];
-    assertions = [
-      {
-        assertion = true;
-        message = "Dude, you are still using temp packages";
-      }
-    ];
+    home.packages = myPackages;
+    warnings =
+      if myPackages != [ ] then
+        [
+          "Still using temporary packages: "
+        ]
+        ++ (map (pkg: pkg.name) myPackages)
+      else
+        [ ];
   };
 }

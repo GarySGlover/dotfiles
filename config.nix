@@ -1,11 +1,13 @@
-{lib, ...}: let
+{ lib, ... }:
+let
   inherit (lib) elem getName;
-in {
+in
+{
   # Enable Steam for gaming
   packageOverrides = pkgs: {
     steam = pkgs.steam.override {
-      extraPkgs = pkgs:
-        with pkgs; [
+      extraPkgs =
+        pkgs: with pkgs; [
           keyutils
           libgdiplus
           libkrb5
@@ -21,7 +23,8 @@ in {
     };
   };
 
-  allowUnfreePredicate = pkg:
+  allowUnfreePredicate =
+    pkg:
     elem (getName pkg) [
       "aspell-dict-en-science"
       "codeium"

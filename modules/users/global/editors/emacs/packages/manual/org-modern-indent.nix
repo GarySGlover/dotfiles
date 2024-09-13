@@ -24,5 +24,5 @@ melpaBuild {
     (org-modern-indent :repo "jdtsmith/org-modern-indent" :fetcher github)
   '';
 
-  packageRequires = [compat];
+  packageRequires = [ compat ];
 }

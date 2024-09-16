@@ -252,7 +252,8 @@ integrates well with other packages like Consult and Marginalia.
     :config
     (setopt
      enable-recursive-minibuffers t
-     vertico-cycle t))
+     vertico-cycle t
+     vertico-buffer-display-action '(display-buffer-in-side-window (side . left))))
 #+end_src
 *** Multiform
 Allows for the setting of different display forms for Vertico for
@@ -386,7 +387,9 @@ Display the keys pressed and the associated command in the header line.
 #+end_src
 ** TODO [#B] Embark
 #+begin_src emacs-lisp :tangle yes
-  (use-package embark)
+  (use-package embark
+    :config
+    (setopt embark-verbose-indicator-display-action '(display-buffer-in-side-window (side . left))))
 #+end_src
 ** Marginalia
 
@@ -897,4 +900,34 @@ Improved help display.
      ("u" "Upcase" dired-upcase)])
 #+end_src
 ** TODO [#A] Ediff
+** Ace-Window
+#+begin_src emacs-lisp :tangle yes
+  (use-package ace-window
+    :init (advice-add 'display-buffer-pop-up-window :around #'display-buffer-ace-window)
+    :commands (ace-window aw-select display-buffer-ace-window)
+    :config
+    (defun cloveynit-aw-select-force ()
+      (let ((window nil))
+        (while (not window)
+  	(condition-case nil
+  	    (setq window (aw-select nil))
+  	  (error nil)))
+        window))
+
+    (defun display-buffer-ace-window (f buffer alist)
+      (let ((initial-window-count (length (window-list))))
+        (if (eq initial-window-count 1)
+  	  (funcall f buffer alist)
+  	(let* ((aw-dispatch-always t)
+  	       (aw-scope 'frame)
+  	       (original-window (selected-window))
+                 (window (progn
+  			 (message (format "Switching to: %s" buffer))
+  			 (cloveynit-aw-select-force)))
+  	       (new-window-p (> (length (window-list)) initial-window-count))
+  	       (window-type (if new-window-p 'window 'reuse)))
+  	  (progn
+  	    (select-window original-window)
+  	    (window--display-buffer buffer window window-type alist)))))))
+#+end_src
 * Custom Functions

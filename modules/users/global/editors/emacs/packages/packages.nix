@@ -62,7 +62,6 @@ let
     # json-mode
     # json-navigator
     # kubel
-    # markdown-mode
     # mini-frame
     # nerd-icons-completion
     # nerd-icons-dired
@@ -98,6 +97,7 @@ let
     keycast
     magit
     marginalia
+    markdown-mode
     meow
     nix-ts-mode
     ob-async
@@ -105,6 +105,7 @@ let
     org
     org-modern
     org-modern-indent
+    ox-pandoc
     standard-themes
     transient
     treesit-grammars.with-all-grammars
@@ -130,6 +131,8 @@ in
 
       # Codeium language server binary
       # codeium
+
+      pandoc
     ];
 
     # Populate authinfo for gptel to use chatgpt api

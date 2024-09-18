@@ -79,6 +79,7 @@ let
     elisp-autofmt
     embark
     embark-consult
+    exec-path-from-shell
     format-all
     general
     gptel
@@ -99,8 +100,8 @@ let
     standard-themes
     transient
     treesit-grammars.with-all-grammars
-    vertico
     verb
+    vertico
     yasnippet
     yasnippet-capf
     yasnippet-snippets

@@ -75,6 +75,21 @@ package manager.
 #+end_src
 
 * Performance Settings
+* WSL Fixes
+#+begin_src emacs-lisp :tangle yes
+  (use-package exec-path-from-shell
+    :demand t
+    :config
+    (exec-path-from-shell-copy-env "SSH_AGENT_PID")
+    (exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
+    (exec-path-from-shell-copy-env "https_proxy")
+    (exec-path-from-shell-copy-env "http_proxy"))
+#+end_src
+** Clipboard copy
+#+begin_src emacs-lisp :tangle yes
+  (use-package emacs
+    :config (setopt select-active-regions nil))
+#+end_src
 
 * Key Bindings
 ** Meow

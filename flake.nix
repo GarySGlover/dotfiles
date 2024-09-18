@@ -173,6 +173,10 @@
           nixos = false;
           users = [ "clover" ];
         };
+        MW-RSY-GPRG8C3 = {
+          nixos = false;
+          users = [ "gary" ];
+        };
       };
 
       homeCfgs = flatten (

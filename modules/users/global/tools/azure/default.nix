@@ -11,6 +11,7 @@ let
   excludedExtensions = [
     "connection-monitor-preview"
     "blockchain"
+    "aks-preview"
   ];
 
   isDesiredExtension =

@@ -4,6 +4,13 @@
 #+STARTUP: content
 
 * General Settings
+** Emacs Server
+#+begin_src emacs-lisp :tangle yes
+  (use-package server
+    :config
+    (unless (server-running-p)
+      (server-start)))
+#+end_src
 ** Lexical Binding
 Configure lexical binding for the rest of this init. A lexically-bound variable
 has lexical scope, meaning that any reference to the variable must be

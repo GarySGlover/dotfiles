@@ -14,8 +14,12 @@ in
       package = pkgs.emacs29-pgtk;
     };
     services.emacs = {
-      enable = true;
+      enable = false;
       defaultEditor = true;
+      client = {
+	enable = true;
+	arguments = ["-c" "-a" "emacs"];
+      };
     };
 
     xdg.configFile."emacs/emacs-config.org".source = ./emacs-config.org;

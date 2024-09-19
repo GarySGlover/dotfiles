@@ -178,7 +178,11 @@ This is the meow modal editing suite.
        "?" 'cloveynit-dired-dispatch
        "C-t" 'cloveynit-dired-image-dired
        "%" 'cloveynit-dired-regexp
-       "*" 'cloveynit-dired-marking)))
+       "*" 'cloveynit-dired-marking))
+    (with-eval-after-load 'vertico
+      (general-define-key
+       :keymap 'vertico-map
+       "C-<return>" #'vertico-exit-input)))
 #+end_src
 ** TODO Transient
 Transient allows the creation and mapping of keybindings through

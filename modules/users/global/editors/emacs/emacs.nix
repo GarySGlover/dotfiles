@@ -13,14 +13,10 @@ in
       enable = true;
       package = pkgs.emacs29-pgtk;
     };
-    services.emacs = {
-      enable = false;
-      defaultEditor = true;
-      client = {
-	enable = true;
-	arguments = ["-c" "-a" "emacs"];
-      };
-    };
+    home.sessionVariables.EDITOR = "${pkgs.writeShellScript "emacs-editor" ''
+      #!/usr/bin/env bash
+      emacsclient -c -a emacs "\$@"
+    ''}";
 
     xdg.configFile."emacs/emacs-config.org".source = ./emacs-config.org;
     xdg.configFile."emacs/early-init.el".source = ./early-init.el;
@@ -30,6 +26,13 @@ in
       nixd
       yamlfmt
       yamllint
+    ];
+    programs.git.ignores = [
+      "*~"
+      ".#*"
+      "*.elc"
+      "*.tmp"
+      "*#"
     ];
   };
 }

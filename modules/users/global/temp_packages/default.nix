@@ -6,7 +6,6 @@ let
     # zip
     # glxinfo
     # wlr-randr
-    nwg-displays
     nixfmt-rfc-style
   ];
 in

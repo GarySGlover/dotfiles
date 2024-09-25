@@ -334,12 +334,13 @@ candidate in a popup.
 Set default font to be used with general text.
 Use a coding font for fixed pitch and overwrite the default font in prog-mode buffers to
 use the same.
+test_config
 #+begin_src emacs-lisp :tangle yes
   (defun cloveynit-after-frame ()
     (set-face-attribute 'default nil :family "FiraCode Nerd Font" :height 98)
     (set-face-attribute 'fixed-pitch nil :family "FiraCode Nerd Font" :height 98)
     (set-face-attribute 'fixed-pitch-serif nil :family "FiraCode Nerd Font" :height 98)
-    (set-face-attribute 'variable-pitch nil :family "Iosevka" :height 98))
+    (set-face-attribute 'variable-pitch nil :family "DaddyTimeMono Nerd Font Propo" :height 98))
 
   (if (daemonp)
       (add-hook 'server-after-make-frame-hook #'cloveynit-after-frame)

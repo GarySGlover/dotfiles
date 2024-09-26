@@ -44,6 +44,30 @@ package manager.
     (package-archives nil "Remove all package download locations"))
 #+end_src
 
+** Window splitting
+#+begin_src emacs-lisp :tangle yes
+  (use-package window
+    :config
+    (defun split-window-max-pixels (&optional window)
+      "Split WINDOW based on which directon has the most pixels."
+    (let ((window (or window (selected-window))))
+      (if (> (window-pixel-height window) (window-pixel-width window))
+  	(or (and (window-splittable-p window)
+  		 (with-selected-window window (split-window-below)))
+  	    (and (window-splittable-p window t)
+  		 (with-selected-window window (split-window-right)))
+  	    (let ((split-height-threshold 0))
+  	      (with-selected-window window (split-window-below))))
+        (or (and (window-splittable-p window t)
+  	       (with-selected-window window (split-window-right)))
+  	  (and (window-splittable-p window)
+  	       (with-selected-window window (split-window-below)))
+  	  (let ((split-width-threshold 0))
+  	    (with-selected-window window (split-window-right)))))))
+
+    (setopt split-window-preferred-function #'split-window-max-pixels))
+#+end_src
+
 * Performance Settings
 
 * Key Bindings

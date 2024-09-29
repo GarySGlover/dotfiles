@@ -22,8 +22,6 @@ in
     xdg.configFile."emacs/early-init.el".source = ./early-init.el;
     xdg.configFile."emacs/init.el".source = ./init.el;
     home.packages = with pkgs; [
-      alejandra
-      nixd
       yamlfmt
       yamllint
     ];

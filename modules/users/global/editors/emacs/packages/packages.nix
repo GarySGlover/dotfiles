@@ -51,12 +51,10 @@ let
     # consult-flyspell
     # consult-yasnippet
     # devdocs
-    # direnv
     # dtrt-indent
     # eat
     # eglot
     # exec-path-from-shell
-    # format-all
     # gcmh
     # git-timemachine
     # json-mode
@@ -75,9 +73,7 @@ let
     # sly
     # terraform-doc
     # terraform-mode
-    # verb
     # visual-fill-column
-    # which-key
     # yaml-pro
     # zig-mode
     ace-window
@@ -87,9 +83,11 @@ let
     corfu
     corfu-candidate-overlay
     denote
+    direnv
     elisp-autofmt
     embark
     embark-consult
+    format-all
     general
     gptel
     helpful
@@ -110,9 +108,11 @@ let
     transient
     treesit-grammars.with-all-grammars
     vertico
+    verb
     yasnippet
     yasnippet-capf
     yasnippet-snippets
+    which-key
   ];
 in
 {

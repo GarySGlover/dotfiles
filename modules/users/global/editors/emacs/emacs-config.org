@@ -3,6 +3,12 @@
 #+property: header-args :results silent
 #+STARTUP: content
 
+To add a new programming language the following items may need
+updating
+- Treesitter
+- Format all
+- Eglot
+
 * General Settings
 ** Emacs Server
 #+begin_src emacs-lisp :tangle yes
@@ -199,10 +205,7 @@ This is the meow modal editing suite.
     (with-eval-after-load 'dired
       (general-define-key
        :keymaps 'dired-mode-map
-       "?" 'cloveynit-dired-dispatch
-       "C-t" 'cloveynit-dired-image-dired
-       "%" 'cloveynit-dired-regexp
-       "*" 'cloveynit-dired-marking))
+       "?" 'which-key-show-major-mode))
     (with-eval-after-load 'vertico
       (general-define-key
        :keymap 'vertico-map
@@ -234,16 +237,10 @@ that applies to certian major/minor modes.
 #+end_src
 *** Place holder transients
 #+begin_src emacs-lisp :tangle yes
-  (transient-define-prefix cloveynit-modes-dispatch ()
-    "Transient for toggling minor modes"
-    [["Modes"
-      ]])
-
   (transient-define-prefix cloveynit-window-dispatch ()
     "Transient for managing windows"
     [["Windows"
       ]])
-
 #+end_src
 *** Global generic transient
 This transient is to provide a place for common commands, that don't
@@ -254,6 +251,48 @@ fit in as part of any other group.
     [["Narrowing"
       ("n" "Narrow" narrow-to-region)
       ("w" "Widen" widen :if (buffer-narrowed-p))]])
+#+end_src
+*** Minor modes transient
+#+begin_src emacs-lisp :tangle yes
+  (defun cloveynit-modes-highlight (mode-symbol text)
+    "Return a colored TEXT based on the status of MODE-SYMBOL."
+    (if (if (fboundp mode-symbol) (symbol-value mode-symbol) nil)
+        (propertize text 'face '(:foreground "green"))
+      (propertize text 'face '(:foreground "red"))))
+
+  (transient-define-prefix cloveynit-modes-dispatch ()
+    "Transient for toggling minor modes."
+    :transient-suffix 'transient--do-stay
+    [["Modes"
+      ("f" (lambda () (cloveynit-modes-highlight 'format-all-mode "Format all"))
+       format-all-mode)
+      ("c" (lambda () (cloveynit-modes-highlight 'flymake-mode "Flymake"))
+       flymake-mode)
+      ("a" (lambda () (cloveynit-modes-highlight 'aggressive-indent-mode "Aggressive Indent"))
+       aggressive-indent-mode)
+      ("n" (lambda () (cloveynit-modes-highlight 'column-number-mode "Column Number"))
+       column-number-mode)
+      ("d" (lambda () (cloveynit-modes-highlight 'display-fill-column-indicator-mode "Fill Column Indicator"))
+       display-fill-column-indicator-mode)
+      ("l" (lambda () (cloveynit-modes-highlight 'display-line-numbers-mode "Line Numbers"))
+       display-line-numbers-mode)
+      ("e" (lambda () (cloveynit-modes-highlight 'electric-indent-mode "Electric Indent"))
+       electric-indent-mode)
+      ("p" (lambda () (cloveynit-modes-highlight 'electric-pair-mode "Electric Pair"))
+       electric-pair-mode)
+      ("s" (lambda () (cloveynit-modes-highlight 'flyspell-mode "Flyspell"))
+       flyspell-mode)
+      ("h" (lambda () (cloveynit-modes-highlight 'hl-line-mode "Highlight Line"))
+       hl-line-mode)
+      ("t" (lambda () (cloveynit-modes-highlight 'prettify-symbols-mode "Prettify Symbols"))
+       prettify-symbols-mode)
+      ("r" (lambda () (cloveynit-modes-highlight 'show-paren-mode "Show Paren"))
+       show-paren-mode)
+      ("w" (lambda () (cloveynit-modes-highlight 'whitespace-mode "Whitespace"))
+       whitespace-mode)
+      ("m" (lambda () (cloveynit-modes-highlight 'word-wrap-whitespace-mode "Word Wrap"))
+       word-wrap-whitespace-mode)
+      ]])
 #+end_src
 * UI Enhancements
 ** Basic display changes
@@ -625,7 +664,7 @@ newlines.
   (use-package aggressive-indent
     :hook (emacs-lisp-mode . aggressive-indent-mode))
 #+end_src
-** TODO [#B] GPTel
+** GPTel
 #+begin_src emacs-lisp :tangle yes
   (use-package gptel
     :commands
@@ -638,7 +677,12 @@ newlines.
      gptel-default-mode 'org-mode))
  #+end_src
 ** TODO [#B] Codeium
-** TODO [#A] Format All
+** Format All
+#+begin_src emacs-lisp :tangle yes
+  (use-package format-all
+    :commands format-all-mode
+    :hook (prog-mode . format-all-mode))
+#+end_src
 ** Treesitter
 #+begin_src emacs-lisp :tangle yes
   (use-package treesit
@@ -776,6 +820,13 @@ Project is the in-built project management package.
      ["Options"
       ("o" "Force Display in Other Window" "other window")]])
 #+end_src
+** Direnv
+#+begin_src emacs-lisp :tangle yes
+  (use-package
+   direnv
+   :config (setopt direnv-always-show-summary nil)
+   :init (direnv-mode))
+#+end_src
 * Utilities
 ** Helpful
 Improved help display.
@@ -802,136 +853,28 @@ Improved help display.
         ("p" "At point" helpful-at-point)]]))
 
 #+end_src
+** Whichkey
+#+begin_src emacs-lisp :tangle yes
+  (use-package which-key
+    :commands which-key-show-major-mode)
+#+end_src
 ** Dired
 #+begin_src emacs-lisp :tangle yes
-  (defface cloveynit-dired-sub-transient-face
-    '((t :foreground "orange" :weight bold))
-    "Face for sub-transient commands.")
-
-  (defun cloveynit-dired-highlight (name)
-    "Helper function to highlight sub-transient commands."
-    (propertize (concat name " >>") 'face 'cloveynit-dired-sub-transient-face))
-
-  (transient-define-prefix cloveynit-dired-dispatch ()
-    "Main transient for Dired commands."
-    ["Dired Commands"
-
-     ["File Opening"
-      ("RET" "Find file" dired-find-file)
-      ("C-o" "Display file" dired-display-file)
-      ("+" "Create directory" dired-create-directory)
-      ("=" "Diff" dired-diff)]
-
-     ["File Management"
-      ("C" "Copy" dired-do-copy)
-      ("D" "Delete" dired-do-delete)
-      ("R" "Rename" dired-do-rename)
-      ("S" "Symlink" dired-do-symlink)
-      ("Z" "Compress" dired-do-compress)
-      ("c" "Compress to" dired-do-compress-to)
-      ("B" "Byte compile" dired-do-byte-compile)]
-
-     ["Advanced File Operations"
-      ("H" "Hardlink" dired-do-hardlink)
-      ("I" "Info" dired-do-info)
-      ("L" "Load" dired-do-load)
-      ("N" "Man" dired-do-man)
-      ("O" "Change owner" dired-do-chown)
-      ("G" "Change group" dired-do-chgrp)
-      ("W" "Browse URL" browse-url-of-dired-file)
-      ("Y" "Relsymlink" dired-do-relsymlink)]
-
-     ["Marking and Flagging"
-      ("m" "Mark" dired-mark)
-      ("u" "Unmark" dired-unmark)
-      ("t" "Toggle marks" dired-toggle-marks)
-      ("d" "Flag file deletion" dired-flag-file-deletion)
-      ("#" "Flag auto-save files" dired-flag-auto-save-files)
-      ("~" "Flag backup files" dired-flag-backup-files)
-      ("x" "Delete flagged" dired-do-flagged-delete)
-      ("U" "Unmark all" dired-unmark-all-marks)
-      ("DEL" "Unmark backward" dired-unmark-backward)
-      ("*" (lambda () (cloveynit-dired-highlight "Marking commands")) cloveynit-dired-marking)]
-
-     ["File Viewing"
-      ("v" "View file" dired-view-file)
-      ("o" "Open in other window" dired-find-file-other-window)
-      ("a" "Find alternate file" dired-find-alternate-file)
-      ("y" "Show file type" dired-show-file-type)]
-
-     ["Directory Navigation"
-      ("^" "Up directory" dired-up-directory)
-      ("<" "Previous dirline" dired-prev-dirline)
-      (">" "Next dirline" dired-next-dirline)
-      ("i" "Insert subdir" dired-maybe-insert-subdir)
-      ("j" "Goto file" dired-goto-file)
-      ("k" "Kill lines" dired-do-kill-lines)
-      ("g" "Revert buffer" revert-buffer)
-      ("s" "Sort toggle" dired-sort-toggle-or-edit)
-      ("." "Clean directory" dired-clean-directory)
-      ("$" "Hide subdir" dired-hide-subdir)
-      ("(" "Hide details" dired-hide-details-mode)]
-
-     ["Special Operations"
-      ("A" "Find regexp" dired-do-find-regexp)
-      ("Q" "Find regexp & replace" dired-do-find-regexp-and-replace)
-      ("X" "Shell command" dired-do-shell-command)
-      ("&" "Async shell command" dired-do-async-shell-command)
-      ("%" (lambda () (cloveynit-dired-highlight "Regexp commands")) cloveynit-dired-regexp)]
-
-     ["Image Dired"
-      ("C-t" (lambda () (cloveynit-dired-highlight "Image Dired commands")) cloveynit-dired-image-dired)]])
-
-  (transient-define-prefix cloveynit-dired-image-dired ()
-    "Transient for Image Dired commands."
-    ["Image Dired Commands"
-     ("C-t" "Toggle marked thumbs" image-dired-dired-toggle-marked-thumbs)
-     ("." "Display thumb" image-dired-display-thumb)
-     ("a" "Append thumbs" image-dired-display-thumbs-append)
-     ("c" "Comment files" image-dired-dired-comment-files)
-     ("d" "Display thumbs" image-dired-display-thumbs)
-     ("e" "Edit comment/tags" image-dired-dired-edit-comment-and-tags)
-     ("f" "Mark tagged files" image-dired-mark-tagged-files)
-     ("i" "Display image" image-dired-dired-display-image)
-     ("j" "Jump to thumb buffer" image-dired-jump-thumbnail-buffer)
-     ("r" "Delete tag" image-dired-delete-tag)
-     ("t" "Tag files" image-dired-tag-files)
-     ("x" "Display external" image-dired-dired-display-external)])
-
-  (transient-define-prefix cloveynit-dired-marking ()
-    "Transient for Dired Marking commands."
-    ["Dired Marking Commands"
-     ("!" "Unmark all marks" dired-unmark-all-marks)
-     ("%" "Mark files regexp" dired-mark-files-regexp)
-     ("*" "Mark executables" dired-mark-executables)
-     ("/" "Mark directories" dired-mark-directories)
-     ("?" "Unmark all files" dired-unmark-all-files)
-     ("@" "Mark symlinks" dired-mark-symlinks)
-     ("N" "Number of marked files" dired-number-of-marked-files)
-     ("c" "Change marks" dired-change-marks)
-     ("m" "Mark files" dired-mark)
-     ("s" "Mark subdir files" dired-mark-subdir-files)
-     ("t" "Toggle marks" dired-toggle-marks)
-     ("u" "Unmark" dired-unmark)
-     ("DEL" "Unmark backward" dired-unmark-backward)])
-
-  (transient-define-prefix cloveynit-dired-regexp ()
-    "Transient for Dired Regexp commands."
-    ["Dired Regexp Commands"
-     ("&" "Flag garbage files" dired-flag-garbage-files)
-     ("C" "Copy regexp" dired-do-copy-regexp)
-     ("H" "Hardlink regexp" dired-do-hardlink-regexp)
-     ("R" "Rename regexp" dired-do-rename-regexp)
-     ("S" "Symlink regexp" dired-do-symlink-regexp)
-     ("Y" "Relsymlink regexp" dired-do-relsymlink-regexp)
-     ("d" "Flag files regexp" dired-flag-files-regexp)
-     ("g" "Mark files with regexp" dired-mark-files-containing-regexp)
-     ("l" "Downcase" dired-downcase)
-     ("m" "Mark files regexp" dired-mark-files-regexp)
-     ("r" "Rename regexp" dired-do-rename-regexp)
-     ("u" "Upcase" dired-upcase)])
 #+end_src
-** TODO [#A] Ediff
+** Ediff
+#+begin_src emacs-lisp :tangle yes
+  (use-package ediff
+    :defer t
+    :config
+    (defun cloveynit-ediff-new-frame ()
+      (select-frame (make-frame)))
+    (setopt
+     ediff-window-setup-function #'ediff-setup-windows-plain
+     ediff-keep-variants nil)
+    :hook
+    ((ediff-before-setup . cloveynit-ediff-new-frame)
+     (ediff-quit . delete-frame)))
+#+end_src
 ** Ace-Window
 #+begin_src emacs-lisp :tangle yes
   (use-package ace-window

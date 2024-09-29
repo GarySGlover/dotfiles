@@ -111,7 +111,7 @@
           users,
         }:
         let
-          inherit (lib) forEach listToAttrs optionals;
+         inherit (lib) forEach listToAttrs optionals;
           userHome = listToAttrs (
             forEach users (user: {
               name = "${user}";
@@ -203,8 +203,14 @@
 
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [
-          alejandra
+	  nixfmt
           nixd
+	  python312
+          python312Packages.black
+          python312Packages.flake8
+          python312Packages.pipx
+          python312Packages.pip
+          pyright
         ];
       };
     };

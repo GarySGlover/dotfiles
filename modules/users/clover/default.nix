@@ -41,7 +41,6 @@ let
       "zig"
     ];
     belisarius = [
-      "go"
       "json"
     ];
     clover-z270pd3 = [
@@ -69,7 +68,7 @@ in
       nim = builtins.elem "nim" host_languages."${opt.host}";
       nix = opt.roles.editing || builtins.elem "nix" host_languages."${opt.host}";
       powershell = builtins.elem "powershell" host_languages."${opt.host}";
-      python = opt.roles.editing || builtins.elem "python" host_languages."${opt.host}";
+      python = builtins.elem "python" host_languages."${opt.host}";
       zig = builtins.elem "zig" host_languages."${opt.host}";
     };
     user.interactive = true;

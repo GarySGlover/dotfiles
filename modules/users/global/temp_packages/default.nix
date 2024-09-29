@@ -6,7 +6,6 @@ let
     # zip
     # glxinfo
     # wlr-randr
-    nixfmt-rfc-style
   ];
 in
 {

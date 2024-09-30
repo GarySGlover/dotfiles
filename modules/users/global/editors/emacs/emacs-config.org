@@ -859,7 +859,10 @@ Improved help display.
     :commands which-key-show-major-mode)
 #+end_src
 ** Dired
+Hide files matching ~dired-omit-files~ regex or the ~dired-omit-extensions~ list.
 #+begin_src emacs-lisp :tangle yes
+  (use-package dired-x
+    :hook (dired-mode . dired-omit-mode))
 #+end_src
 ** Ediff
 #+begin_src emacs-lisp :tangle yes

@@ -365,7 +365,7 @@ editors.
      corfu-cycle t)
     :bind (:map corfu-map
                 ("RET" . nil))
-    :init (setopt global-corfu-mode t))
+    :init (global-corfu-mode t))
 #+end_src
 *** Overlay
 #+begin_src emacs-lisp :tangle no
@@ -390,7 +390,7 @@ candidate in a popup.
 #+begin_src emacs-lisp :tangle yes
   (use-package corfu-popupinfo
     :after corfu
-    :hook (global-corfu-mode . corfu-popupinfo-mode))
+    :init (corfu-popupinfo-mode t))
 #+end_src
 
 ** Fonts
@@ -878,9 +878,18 @@ Improved help display.
 ** Ace-Window
 #+begin_src emacs-lisp :tangle yes
   (use-package ace-window
-    :init (advice-add 'display-buffer-pop-up-window :around #'display-buffer-ace-window)
-    :commands (ace-window aw-select display-buffer-ace-window)
+    :init
+    (setopt display-buffer-base-action
+  	  '((display-buffer--maybe-same-window
+  	     display-buffer-reuse-window
+  	     display-buffer-ace-window)))
+    (advice-add 'corfu-popupinfo--show :around #'safe-corfu-popupinfo--show)
+    :commands (ace-window aw-select display-buffer-ace-window safe-corfu-popupinfo--show)
     :config
+    (defun safe-corfu-popupinfo--show (f candidate)
+      (let ((display-buffer-base-action nil))
+        (funcall f candidate)))
+
     (defun cloveynit-aw-select-force ()
       (let ((window nil))
         (while (not window)
@@ -889,14 +898,14 @@ Improved help display.
   	  (error nil)))
         window))
 
-    (defun display-buffer-ace-window (f buffer alist)
+    (defun display-buffer-ace-window (buffer alist)
       (let ((initial-window-count (length (window-list))))
         (if (eq initial-window-count 1)
-  	  (funcall f buffer alist)
+  	  nil
   	(let* ((aw-dispatch-always t)
   	       (aw-scope 'frame)
   	       (original-window (selected-window))
-                 (window (progn
+  	       (window (progn
   			 (message (format "Switching to: %s" buffer))
   			 (cloveynit-aw-select-force)))
   	       (new-window-p (> (length (window-list)) initial-window-count))

@@ -367,23 +367,7 @@ editors.
                 ("RET" . nil))
     :init (global-corfu-mode t))
 #+end_src
-*** Overlay
-#+begin_src emacs-lisp :tangle no
-  (use-package corfu-candidate-overlay
-    :after corfu
-    :init
-    (setq corfu-candidate-overlay-completion-map
-	  (make-sparse-keymap))
-    :config
-    (corfu-candidate-overlay-mode +1)
-    (defun corfu-candidate-overlay-completion-map--enable
-	(position prefix candidate how-many-candidates)
-      (unless
-	  (= 0
-	     (length candidate))
-	(set-transient-map corfu-candidate-overlay-completion-map)))
-    (advice-add 'corfu-candidate-overlay--update :after #'corfu-candidate-overlay-completion-map--enable))
-#+end_src
+
 *** Popup Info
 Extension for Corfu that displays the information for a completion
 candidate in a popup.
@@ -410,6 +394,7 @@ test_config
     (cloveynit-after-frame))
 
 #+end_src
+
 ** Consult
 #+begin_src emacs-lisp :tangle yes
   (use-package consult

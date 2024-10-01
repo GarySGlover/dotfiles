@@ -733,7 +733,22 @@ newlines.
 #+end_src
 ** TODO [#A] Eglot
 Will need to update Corfu for Eglot
-
+#+begin_src emacs-lisp :tangle yes
+  (use-package eglot
+    :init
+    (defun cloveynit-reorder-eldoc-functions ()
+      "Fix the order of the eldoc functions so that flymake comes first"
+      (setq eldoc-documentation-functions
+  	  (cons #'flymake-eldoc-function
+  		(remove #'flymake-eldoc-function eldoc-documentation-functions))))
+    :commands (eglot-ensure)
+    :hook
+    ((prog-mode . eglot-ensure)
+     (eglot-managed-mode . cloveynit-reorder-eldoc-functions))
+    :config
+    (setopt completion-category-defaults nil)
+    (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster))
+#+end_src
 ** Eldoc
 #+begin_src emacs-lisp :tangle yes
 (use-package eldoc

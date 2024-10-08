@@ -7,7 +7,7 @@ To add a new programming language the following items may need
 updating
 - Treesitter
 - Format all
-- Eglot
+- Flycheck
 
 * General Settings
 ** Emacs Server
@@ -250,7 +250,9 @@ fit in as part of any other group.
     "Global generic transient"
     [["Narrowing"
       ("n" "Narrow" narrow-to-region)
-      ("w" "Widen" widen :if (buffer-narrowed-p))]])
+      ("w" "Widen" widen :if buffer-narrowed-p)]
+     ["Editing"
+      ("f" "Format" format-all-region-or-buffer)]])
 #+end_src
 *** Minor modes transient
 #+begin_src emacs-lisp :tangle yes
@@ -666,8 +668,14 @@ newlines.
 #+begin_src emacs-lisp :tangle yes
   (use-package format-all
     :commands format-all-mode
-    :hook (prog-mode . format-all-mode))
+    :comfig
+    (add-to-list 'format-all-default-formatters '("Nix" nixfmt))
+    :hook
+    ((prog-mode . format-all-mode)
+     (format-all-mode . format-all-ensure-formatter)))
 #+end_src
+*** TODO Nix
+*** TODO Zig
 ** Treesitter
 #+begin_src emacs-lisp :tangle yes
   (use-package treesit
@@ -731,8 +739,7 @@ newlines.
   (use-package flymake
     :hook (prog-mode . flymake-mode))
 #+end_src
-** TODO [#A] Eglot
-Will need to update Corfu for Eglot
+** Eglot
 #+begin_src emacs-lisp :tangle yes
   (use-package eglot
     :init
@@ -769,6 +776,21 @@ Will need to update Corfu for Eglot
     (setopt
      sh-shell "bash"
      sh-shell-file "bash"))
+#+end_src
+
+** Zig
+#+begin_src emacs-lisp :tangle yes
+  (use-package zig-mode
+    :mode ("\\.zig\\'" . zig-mode))
+#+end_src
+
+** COMMENT Language ID
+#+begin_src emacs-lisp :tangle yes
+  (use-package language-id
+    :config
+    (setopt language-id--definitions
+  	  (append
+  	   '(("Nix" nix-ts-mode)) language-id--definitions)))
 #+end_src
 
 * Version Control

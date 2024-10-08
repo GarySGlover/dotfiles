@@ -75,7 +75,6 @@ let
     # terraform-mode
     # visual-fill-column
     # yaml-pro
-    # zig-mode
     ace-window
     aggressive-indent
     cape
@@ -113,6 +112,7 @@ let
     yasnippet-capf
     yasnippet-snippets
     which-key
+    zig-mode
   ];
 in
 {

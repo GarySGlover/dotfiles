@@ -111,7 +111,7 @@
           users,
         }:
         let
-         inherit (lib) forEach listToAttrs optionals;
+          inherit (lib) forEach listToAttrs optionals;
           userHome = listToAttrs (
             forEach users (user: {
               name = "${user}";
@@ -193,7 +193,7 @@
           live = nixosSystem {
             inherit system;
             modules = [
-              (nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix")
+              (nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-graphical-gnome.nix")
               ./modules/hosts/live/live.nix
             ];
           };
@@ -203,9 +203,18 @@
 
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [
-	  nixfmt
+          # Pre-commit
+          pre-commit
+
+          # Shell
+          shfmt
+
+          # Nix
+          nixfmt-rfc-style
           nixd
-	  python312
+
+          # Python
+          python312
           python312Packages.black
           python312Packages.flake8
           python312Packages.pipx

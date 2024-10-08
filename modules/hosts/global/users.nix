@@ -28,7 +28,7 @@ let
           uid = 1000;
           hashedPasswordFile = config.sops.secrets.clover-password.path;
           shell = pkgs.fish;
-          extraGroups = [ "realtime" ];
+          extraGroups = [ "realtime" "libvirtd" ];
         };
         work = {
           isNormalUser = true;

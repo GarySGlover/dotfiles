@@ -13,5 +13,9 @@ in
       type = bool;
       default = false;
     };
+    kvm = mkOption {
+      type = bool;
+      default = false;
+    };
   };
 }

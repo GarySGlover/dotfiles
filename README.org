@@ -1,4 +1,15 @@
+* Build Live ISO
+This can be built from any system with the nix command installed. Nix
+can be installed either using the [[https://nixos.org/download/][official documentation]] or the [[https://determinate.systems/posts/determinate-nix-installer/][3rd
+party nix-installer]].
+#+begin_src bash
+  nix build .#nixosConfigurations.live.config.system.build.isoImage
+#+end_src
+ISO will be in the ./result/iso folder.
+
+
 * Setup
+Boot from the ISO created above.
 ** Disk partitioning
 Create following partitions and names
 | Partion name | fsType | size   | opt |
@@ -6,8 +17,7 @@ Create following partitions and names
 | root         | ext4   |        |     |
 | home         | ext4   |        | x   |
 |--------------+--------+--------+-----|
-
-Wipe dise and create partition table
+Wipe disk and create partition table
 #+begin_src shell
   wipefs -a /dev/nvme0n1
   parted /dev/nvme0n1 -- mklabel gpt

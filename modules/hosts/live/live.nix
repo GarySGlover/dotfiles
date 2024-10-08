@@ -1,4 +1,7 @@
-{ pkgs, ... }:
+{ pkgs, config, lib, ... }:
+
+with lib;
+
 {
   environment.systemPackages = with pkgs; [
     pciutils
@@ -6,7 +9,9 @@
     ags
   ];
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
+
+  services.xserver.videoDrivers = mkOverride 40 [ "virtualbox" "vmware" "cirrus" "vesa" "modesetting" ];
 
   nix.extraOptions = ''
     experimental-features = nix-command flakes

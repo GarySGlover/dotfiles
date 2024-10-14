@@ -668,7 +668,7 @@ newlines.
 #+begin_src emacs-lisp :tangle yes
   (use-package format-all
     :commands format-all-mode
-    :comfig
+    :config
     (add-to-list 'format-all-default-formatters '("Nix" nixfmt))
     :hook
     ((prog-mode . format-all-mode)
@@ -753,6 +753,7 @@ newlines.
     ((prog-mode . eglot-ensure)
      (eglot-managed-mode . cloveynit-reorder-eldoc-functions))
     :config
+    (add-to-list 'eglot-server-programs `(nix-ts-mode . ,(cdr (assoc 'nix-mode eglot-server-programs))))
     (setopt completion-category-defaults nil)
     (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster))
 #+end_src
@@ -784,7 +785,7 @@ newlines.
     :mode ("\\.zig\\'" . zig-mode))
 #+end_src
 
-** COMMENT Language ID
+** Language ID
 #+begin_src emacs-lisp :tangle yes
   (use-package language-id
     :config

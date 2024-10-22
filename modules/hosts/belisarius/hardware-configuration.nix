@@ -24,7 +24,11 @@ in
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ ];
   boot.extraModulePackages = [ ];
-  boot.kernelParams = [ "amdgpu.mcbp=0" ];
+  # https://www.reddit.com/r/archlinux/comments/1fabknf/solved_desktop_environment_artifacts_on_asus_tuf/
+  boot.kernelParams = [
+    "amdgpu.mcbp=0"
+    "amdgpu.dcdebugmask=0x10"
+  ];
 
   fileSystems."/" = {
     device = "/dev/disk/by-label/root";

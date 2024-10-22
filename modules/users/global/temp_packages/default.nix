@@ -1,11 +1,9 @@
 { pkgs, lib, ... }:
 let
   myPackages = with pkgs; [
-    # unzip
-    # jdk21
-    # zip
-    # glxinfo
-    # wlr-randr
+    pwvucontrol
+    pavucontrol
+    helvum
   ];
 in
 {

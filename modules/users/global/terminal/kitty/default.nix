@@ -18,7 +18,7 @@ in
       extraConfig = ''
         background_opacity 0.8
       '';
-      theme = "Dracula";
+      themeFile = "Dracula";
     };
   };
 }

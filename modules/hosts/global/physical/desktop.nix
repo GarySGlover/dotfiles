@@ -1,17 +1,17 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
-let
-  inherit (lib) mkIf;
-in
+with lib;
 {
   config = mkIf config.wolf.system.physical {
     programs.hyprland = {
       enable = true;
       xwayland.enable = true;
     };
+    environment.systemPackages = with pkgs; [ hyprlandPlugins.hy3 ];
 
     programs.sway = {
       enable = true;
@@ -22,6 +22,9 @@ in
       enable = true;
       # Configure keymap in X11
       xkb.layout = "gb";
+      videoDrivers = [
+        "modesetting"
+      ];
     };
 
     services.displayManager = {

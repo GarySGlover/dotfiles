@@ -4,14 +4,13 @@
   lib,
   ...
 }:
-let
-  inherit (lib) mkIf;
-in
+with lib;
 {
   config = mkIf config.wolf.roles.desktop {
     wayland.windowManager.hyprland = {
       enable = true;
       extraConfig = builtins.readFile ./hyprland.conf;
+      plugins = [ pkgs.hyprlandPlugins.hy3 ];
     };
 
     home.file."${config.xdg.configHome}/hypr/imports" = {
@@ -20,11 +19,12 @@ in
     };
 
     home.packages = with pkgs; [
+      (writeShellScriptBin "wm-hyprland-test-config" (builtins.readFile ./wm-hyprland-test-config.sh))
+      brightnessctl
       rofi-wayland # Application launcher
       swww # Animated wallpapers
       udiskie # Disk auto mount
       wlr-randr # Wlroots randr alternative
-      brightnessctl
     ];
   };
 }

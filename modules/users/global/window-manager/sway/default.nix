@@ -4,21 +4,16 @@
   lib,
   ...
 }:
-let
-  inherit (lib) mkIf;
-in
+with lib;
 {
   config = mkIf config.wolf.roles.desktop {
     home.file."${config.xdg.configHome}/sway/config" = {
       source = ./config;
     };
 
-    home.file."${config.xdg.configHome}/sway/bar.sh" = {
-      source = ./bar.sh;
-      executable = true;
-    };
-
     home.packages = with pkgs; [
+      (writeShellScriptBin "wm-bar" (builtins.readFile ./wm-bar.sh))
+      (writeShellScriptBin "wm-workspace-switch" (builtins.readFile ./wm-workspace-switch.sh))
       brightnessctl
       nwg-displays
       udiskie # Disk auto mount

@@ -16,11 +16,9 @@ in
     networking.networkmanager.enable = false;
     networking.wireless = {
       enable = true;
-      environmentFile = config.sops.secrets.wireless-env.path;
+      secretsFile = config.sops.secrets.wireless-env.path;
       networks = {
-        "@home_uid@" = {
-          pskRaw = "@home_psk@";
-        };
+        CLOVER.pskRaw = "ext:clover";
       };
     };
   };

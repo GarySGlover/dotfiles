@@ -1,13 +1,12 @@
 {
-  config,
   lib,
+  config,
   pkgs,
   ...
 }:
+with builtins;
+with lib;
 let
-  inherit (lib) mkIf isDerivation;
-  inherit (builtins) filter attrValues tryEval;
-
   excludedExtensions = [
     "connection-monitor-preview"
     "blockchain"
@@ -20,7 +19,7 @@ let
       name = item.pname or "";
       result = tryEval item;
     in
-    result.success && !(lib.elem name excludedExtensions) && isDerivation item;
+    result.success && !(elem name excludedExtensions) && isDerivation item;
 
   azure-cli = pkgs.azure-cli.withExtensions (
     filter isDesiredExtension (attrValues pkgs.azure-cli-extensions)
@@ -30,7 +29,7 @@ let
   ];
 in
 {
-  config = mkIf config.wolf.roles.devops {
+  config = mkIf (false && config.wolf.roles.devops) {
     home.packages = packages ++ [ azure-cli ];
   };
 }

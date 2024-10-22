@@ -15,7 +15,7 @@ in
     };
     home.sessionVariables.EDITOR = "${pkgs.writeShellScript "emacs-editor" ''
       #!/usr/bin/env bash
-      emacsclient -c -a emacs "\$@"
+      emacsclient -c -a emacs $@
     ''}";
 
     xdg.configFile."emacs/emacs-config.org".source = ./emacs-config.org;

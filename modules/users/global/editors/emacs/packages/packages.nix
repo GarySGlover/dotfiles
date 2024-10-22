@@ -15,11 +15,6 @@ let
     inherit (epkgs) melpaBuild compat;
   };
 
-  indent-bars = pkgs.callPackage ./manual/indent-bars.nix {
-    inherit (pkgs) fetchFromGitHub writeText;
-    inherit (epkgs) melpaBuild compat;
-  };
-
   emacscodeium = pkgs.callPackage ./manual/codeium.nix {
     inherit (pkgs) fetchFromGitHub;
     inherit (epkgs) trivialBuild;
@@ -36,10 +31,9 @@ let
   };
 
   emacsExtraPackagesLocal = [
-    combobulate
-    emacscodeium
-    indent-bars
-    nim-ts-mode
+    # combobulate
+    # emacscodeium
+    # nim-ts-mode
     org-modern-indent
   ];
 
@@ -101,7 +95,6 @@ let
     orderless
     org
     org-modern
-    org-modern-indent
     ox-pandoc
     standard-themes
     transient

@@ -20,6 +20,7 @@ let
       "gaming"
       "internet"
       "programming"
+      "work"
     ];
     clover-z270pd3 = [
       "desktop"

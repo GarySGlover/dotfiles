@@ -714,7 +714,7 @@ newlines.
     			    (java-mode . java-ts-mode)
     			    (javascript-mode . js-ts-mode)
     			    (js-json-mode . json-ts-mode)
-    			    (nim-mode . nim-ts-mode)
+    			    ;; (nim-mode . nim-ts-mode)
     			    (python-mode . python-ts-mode)
     			    (ruby-mode . ruby-ts-mode)
     			    (conf-toml-mode . toml-ts-mode)))
@@ -792,6 +792,12 @@ newlines.
     (setopt language-id--definitions
   	  (append
   	   '(("Nix" nix-ts-mode)) language-id--definitions)))
+#+end_src
+
+** Compile
+#+begin_src emacs-lisp :tangle yes
+  (use-package compilation
+    :hook (compilation-filter . ansi-color-compilation-filter))
 #+end_src
 
 * Version Control
@@ -939,5 +945,13 @@ Hide files matching ~dired-omit-files~ regex or the ~dired-omit-extensions~ list
   	  (progn
   	    (select-window original-window)
   	    (window--display-buffer buffer window window-type alist)))))))
+#+end_src
+** EShell
+#+begin_src emacs-lisp :tangle yes
+  (use-package esh-mode
+    :config
+    (defun cloveynit-eshell-ansi-color ()
+      (setenv "TERM" "xterm-256color"))
+    :hook (eshell-mode . cloveynit-eshell-ansi-color))
 #+end_src
 * Custom Functions

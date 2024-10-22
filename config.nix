@@ -29,10 +29,13 @@ in
       "aspell-dict-en-science"
       "codeium"
       "steam"
-      "steam-original"
-      "steam-run"
+      "steam-unwrapped"
       "terraform"
     ];
 
-  rocmSupport = true; # AMD Cuda support
+  permittedInsecurePackages = [
+    "openssl-1.1.1w" # Temporary for AZ
+  ];
+
+  rocmSupport = true; # AMD Cuda suppor
 }

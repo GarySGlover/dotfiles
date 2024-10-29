@@ -99,7 +99,7 @@ bindsym $S+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do
 # Default programs
 set $term kitty
 set $menu dmenu_path | rofi -dmenu -no-match -p "Select program: " | xargs swaymsg exec --
-set $app_launcher rofi -show drun -show-icons
+set $app_launcher fuzzel
 
 # Global Bindings
 bindsym $S+a exec $app_launcher

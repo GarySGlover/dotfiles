@@ -47,7 +47,6 @@ let
     # devdocs
     # dtrt-indent
     # eat
-    # eglot
     # exec-path-from-shell
     # gcmh
     # git-timemachine
@@ -67,7 +66,6 @@ let
     # sly
     # terraform-doc
     # terraform-mode
-    # visual-fill-column
     # yaml-pro
     ace-window
     aggressive-indent
@@ -77,6 +75,7 @@ let
     corfu-candidate-overlay
     denote
     direnv
+    ef-themes
     elisp-autofmt
     embark
     embark-consult
@@ -96,6 +95,7 @@ let
     org
     org-modern
     ox-pandoc
+    rainbow-mode
     standard-themes
     transient
     treesit-grammars.with-all-grammars
@@ -104,6 +104,7 @@ let
     yasnippet
     yasnippet-capf
     yasnippet-snippets
+    wgrep
     which-key
     zig-mode
   ];

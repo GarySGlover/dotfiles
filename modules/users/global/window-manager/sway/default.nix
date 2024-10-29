@@ -14,9 +14,6 @@ with lib;
     home.packages = with pkgs; [
       (writeShellScriptBin "wm-bar" (builtins.readFile ./wm-bar.sh))
       (writeShellScriptBin "wm-workspace-switch" (builtins.readFile ./wm-workspace-switch.sh))
-      brightnessctl
-      nwg-displays
-      udiskie # Disk auto mount
     ];
   };
 }

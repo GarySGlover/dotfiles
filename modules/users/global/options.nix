@@ -1,13 +1,19 @@
 { lib, ... }:
-let
-  inherit (lib) mkOption types;
-  inherit (types) str path bool;
-in
+with lib;
+with types;
 {
   options.wolf = {
     host = mkOption { type = str; };
     secretsPath = mkOption { type = path; };
     user.interactive = mkOption { type = bool; };
+  };
+
+  options.wolf.theme = {
+    font = mkOption { type = hm.types.fontType; };
+    border = mkOption { type = ints.unsigned; };
+    faces = mkOption { type = types.attrs; };
+    dracula = mkOption { type = types.attrs; };
+    name = mkOption { type = str; };
   };
 
   options.wolf.languages = {

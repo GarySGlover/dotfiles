@@ -204,6 +204,8 @@
         packages = with pkgs; [
           # Pre-commit
           pre-commit
+          yamlfmt
+          yamllint
 
           # Shell
           shfmt

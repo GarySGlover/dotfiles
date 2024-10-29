@@ -294,6 +294,10 @@ fit in as part of any other group.
        whitespace-mode)
       ("m" (lambda () (cloveynit-modes-highlight 'word-wrap-whitespace-mode "Word Wrap"))
        word-wrap-whitespace-mode)
+      ("i" (lambda () (cloveynit-modes-highlight 'indent-tabs-mode "Indent tabs"))
+       indent-tabs-mode)
+      ("b" (lambda () (cloveynit-modes-highlight 'rainbow-mode "Rainbow mode"))
+       rainbow-mode)
       ]])
 #+end_src
 * UI Enhancements
@@ -303,18 +307,6 @@ fit in as part of any other group.
    scroll-bar-mode nil
    tool-bar-mode nil
    menu-bar-mode nil)
-#+end_src
-** Theme
-#+begin_src emacs-lisp :tangle yes
-  (use-package standard-themes
-    :init
-    (standard-themes-load-dark)
-    :custom
-    (standard-themes-bold-constructs t)
-    (standard-themes-italic-constructs t)
-    (standard-themes-mixed-fonts t)
-    (standard-themes-variable-pitch-ui t)
-    (standard-themes-prompts '(extrabold italic)))
 #+end_src
 ** Vertico
 Vertico provides a minimalistic vertical completion interface for
@@ -377,24 +369,6 @@ candidate in a popup.
   (use-package corfu-popupinfo
     :after corfu
     :init (corfu-popupinfo-mode t))
-#+end_src
-
-** Fonts
-Set default font to be used with general text.
-Use a coding font for fixed pitch and overwrite the default font in prog-mode buffers to
-use the same.
-test_config
-#+begin_src emacs-lisp :tangle yes
-  (defun cloveynit-after-frame ()
-    (set-face-attribute 'default nil :family "FiraCode Nerd Font" :height 98)
-    (set-face-attribute 'fixed-pitch nil :family "FiraCode Nerd Font" :height 98)
-    (set-face-attribute 'fixed-pitch-serif nil :family "FiraCode Nerd Font" :height 98)
-    (set-face-attribute 'variable-pitch nil :family "DaddyTimeMono Nerd Font Propo" :height 98))
-
-  (if (daemonp)
-      (add-hook 'server-after-make-frame-hook #'cloveynit-after-frame)
-    (cloveynit-after-frame))
-
 #+end_src
 
 ** Consult
@@ -660,7 +634,7 @@ newlines.
      gptel-menu)
     :config
     (setopt
-     gptel-model "gpt-4o-mini"
+     gptel-model 'gpt-4o-mini
      gptel-default-mode 'org-mode))
  #+end_src
 ** TODO [#B] Codeium

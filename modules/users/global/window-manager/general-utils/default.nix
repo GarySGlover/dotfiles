@@ -10,6 +10,7 @@ with lib;
     home.packages = with pkgs; [
       brightnessctl
       flameshot
+      hyprshot
       nwg-displays
       rofi # Application launcher
       swww # Animated wallpapers

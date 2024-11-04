@@ -13,83 +13,6 @@ set $M Mod1
 set $C control
 set $s shift
 
-mode "command" {
-    bindsym a nop
-    bindsym b nop
-    bindsym c nop
-    bindsym d nop
-    bindsym e nop
-    bindsym f nop
-    bindsym g nop
-    bindsym h nop
-    bindsym i mode insert
-    bindsym j nop
-    bindsym k nop
-    bindsym l exec swaylock
-    bindsym m nop
-    bindsym n nop
-    bindsym o nop
-    bindsym p nop
-    bindsym q nop
-    bindsym r mode resize
-    bindsym s nop
-    bindsym t nop
-    bindsym u nop
-    bindsym v nop
-    bindsym w nop
-    bindsym x nop
-    bindsym y nop
-    bindsym z nop
-
-    # Return to default mode
-    bindsym $S+$s+Escape mode "default"
-}
-
-mode "insert" {
-     bindsym Mod4+Escape mode "command"
-}
-
-# Resizing containers:
-mode "resize" {
-    bindsym a nop
-    bindsym c nop
-    bindsym d nop
-    bindsym e nop
-    bindsym g nop
-    bindsym h nop
-    bindsym i nop
-    bindsym j nop
-    bindsym k nop
-    bindsym l nop
-    bindsym m nop
-    bindsym o nop
-    bindsym r nop
-    bindsym s nop
-    bindsym t nop
-    bindsym u nop
-    bindsym v nop
-    bindsym w nop
-    bindsym x nop
-    bindsym y nop
-    bindsym z nop
-
-    bindsym b resize shrink width 10px
-    bindsym f resize grow width 10px
-    bindsym p resize shrink height 10px
-    bindsym n resize grow height 10px
-
-    bindsym Left resize shrink width 10px
-    bindsym Right resize grow width 10px
-    bindsym Up resize shrink height 10px
-    bindsym Down resize grow height 10px
-
-    # Return to default mode
-    bindsym q mode "command"
-    bindsym Mod4+Escape mode "command"
-
-}
-bindsym $S+r mode "command"
-
 ### Old sway config
 # Reload the configuration file
 bindsym $S+$s+c reload
@@ -107,6 +30,7 @@ bindsym $S+n exec nwg-displays
 bindsym $S+d exec $menu
 bindsym $S+Return exec $term
 bindsym $S+Shift+q kill
+bindsym $S+r exec hyprshot -m region
 
 ## Wallpapers
 output * bg /run/current-system/sw/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill

@@ -7,23 +7,37 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
+        lib = pkgs.lib;
+        excludedExtensions =
+          [ "connection-monitor-preview" "blockchain" "aks-preview" ];
+
+        isDesiredExtension = item:
+          let
+            name = item.pname or "";
+            result = builtins.tryEval item;
+          in result.success && !(builtins.elem name excludedExtensions)
+          && lib.isDerivation item;
+
+        azure-cli = pkgs.azure-cli.withExtensions
+          (builtins.filter isDesiredExtension
+            (lib.attrValues pkgs.azure-cli-extensions));
+
+        packages = with pkgs; [
+          pre-commit
+          # Nix packages
+          nixfmt
+          nixd
+          # Kubernetes
+          argo-rollouts
+          helm-dashboard
+          k9s
+          kubectl
+          kubernetes-helm
+          # Packages for azure packages
+          kubelogin
+        ];
       in {
-        devShells.default = pkgs.mkShell {
-          packages = with pkgs; [
-            pre-commit
-            # Nix packages
-            nixfmt
-            nixd
-	    # Kubernetes
-	    argo-rollouts
-	    helm-dashboard
-	    k9s
-	    kubectl
-	    kubernetes-helm
-	    # Packages for azure packages
-            azure-cli
-            kubelogin
-          ];
-        };
+        devShells.default =
+          pkgs.mkShell { packages = packages ++ [ azure-cli ]; };
       });
 }

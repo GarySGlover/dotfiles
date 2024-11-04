@@ -6,6 +6,7 @@
 let
   theme = config.wolf.theme;
   faces = theme.faces;
+  element = theme.element;
   dracula = theme.dracula;
 in
 {
@@ -62,8 +63,8 @@ in
               };
               crumbs = {
                 fgColor = "#${faces.fgDefault}";
-                bgColor = "#${faces.bgHighlight}";
-                activeColor = "#${faces.bgHighlight}";
+                bgColor = "#${faces.bgTabBarTabInactive}";
+                activeColor = "#${faces.bgTabBarTab}";
               };
               status = {
                 newColor = "#${dracula.cyan}";

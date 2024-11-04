@@ -8,6 +8,7 @@ updating
 - Treesitter
 - Format all
 - Flycheck
+- org-src-lang-modes
 
 * General Settings
 ** Emacs Server
@@ -281,38 +282,40 @@ fit in as part of any other group.
     "Transient for toggling minor modes."
     :transient-suffix 'transient--do-stay
     [["Modes"
-      ("f" (lambda () (cloveynit-modes-highlight 'format-all-mode "Format all"))
-       format-all-mode)
-      ("c" (lambda () (cloveynit-modes-highlight 'flymake-mode "Flymake"))
-       flymake-mode)
       ("a" (lambda () (cloveynit-modes-highlight 'aggressive-indent-mode "Aggressive Indent"))
        aggressive-indent-mode)
-      ("n" (lambda () (cloveynit-modes-highlight 'column-number-mode "Column Number"))
-       column-number-mode)
-      ("d" (lambda () (cloveynit-modes-highlight 'display-fill-column-indicator-mode "Fill Column Indicator"))
-       display-fill-column-indicator-mode)
-      ("l" (lambda () (cloveynit-modes-highlight 'display-line-numbers-mode "Line Numbers"))
-       display-line-numbers-mode)
-      ("e" (lambda () (cloveynit-modes-highlight 'electric-indent-mode "Electric Indent"))
-       electric-indent-mode)
-      ("p" (lambda () (cloveynit-modes-highlight 'electric-pair-mode "Electric Pair"))
-       electric-pair-mode)
-      ("s" (lambda () (cloveynit-modes-highlight 'flyspell-mode "Flyspell"))
-       flyspell-mode)
-      ("h" (lambda () (cloveynit-modes-highlight 'hl-line-mode "Highlight Line"))
-       hl-line-mode)
-      ("t" (lambda () (cloveynit-modes-highlight 'prettify-symbols-mode "Prettify Symbols"))
-       prettify-symbols-mode)
-      ("r" (lambda () (cloveynit-modes-highlight 'show-paren-mode "Show Paren"))
-       show-paren-mode)
-      ("w" (lambda () (cloveynit-modes-highlight 'whitespace-mode "Whitespace"))
-       whitespace-mode)
-      ("m" (lambda () (cloveynit-modes-highlight 'word-wrap-whitespace-mode "Word Wrap"))
-       word-wrap-whitespace-mode)
-      ("i" (lambda () (cloveynit-modes-highlight 'indent-tabs-mode "Indent tabs"))
-       indent-tabs-mode)
       ("b" (lambda () (cloveynit-modes-highlight 'rainbow-mode "Rainbow mode"))
        rainbow-mode)
+      ("c" (lambda () (cloveynit-modes-highlight 'flymake-mode "Flymake"))
+       flymake-mode)
+      ("d" (lambda () (cloveynit-modes-highlight 'display-fill-column-indicator-mode "Fill Column Indicator"))
+       display-fill-column-indicator-mode)
+      ("e" (lambda () (cloveynit-modes-highlight 'electric-indent-mode "Electric Indent"))
+       electric-indent-mode)
+      ("f" (lambda () (cloveynit-modes-highlight 'format-all-mode "Format all"))
+       format-all-mode)
+      ("h" (lambda () (cloveynit-modes-highlight 'hl-line-mode "Highlight Line"))
+       hl-line-mode)
+      ("i" (lambda () (cloveynit-modes-highlight 'indent-tabs-mode "Indent tabs"))
+       indent-tabs-mode)
+      ("l" (lambda () (cloveynit-modes-highlight 'display-line-numbers-mode "Line Numbers"))
+       display-line-numbers-mode)
+      ("m" (lambda () (cloveynit-modes-highlight 'word-wrap-whitespace-mode "Word Wrap"))
+       word-wrap-whitespace-mode)
+      ("n" (lambda () (cloveynit-modes-highlight 'column-number-mode "Column Number"))
+       column-number-mode)
+      ("o" (lambda () (cloveynit-modes-highlight 'auto-revert-mode "Auto Revert Mode"))
+       auto-revert-mode)
+      ("p" (lambda () (cloveynit-modes-highlight 'electric-pair-mode "Electric Pair"))
+       electric-pair-mode)
+      ("r" (lambda () (cloveynit-modes-highlight 'show-paren-mode "Show Paren"))
+       show-paren-mode)
+      ("s" (lambda () (cloveynit-modes-highlight 'flyspell-mode "Flyspell"))
+       flyspell-mode)
+      ("t" (lambda () (cloveynit-modes-highlight 'prettify-symbols-mode "Prettify Symbols"))
+       prettify-symbols-mode)
+      ("w" (lambda () (cloveynit-modes-highlight 'whitespace-mode "Whitespace"))
+       whitespace-mode)
       ]])
 #+end_src
 * UI Enhancements
@@ -516,12 +519,16 @@ Display the keys pressed and the associated command in the header line.
 #+begin_src emacs-lisp :tangle yes
   (use-package org
     :config
+    (require 'dash)
     (setopt
      org-pretty-entities t
      org-startup-indented t
      org-src-window-setup 'other-window
      org-todo-keywords '((sequence "TODO(t)" "ACTIVE(a!)" "SCHEDULED(s@)" "HOLD(h@)" "|" "DONE(d@)" "CANCELED(c@)")))
-    (add-to-list 'org-src-lang-modes '("yaml" . "yaml-ts")))
+    (-each
+        '(("yaml" . "yaml-ts")
+  	("nix" . "nix-ts"))
+      (lambda (x) (add-to-list 'org-src-lang-modes x))))
 #+end_src
 *** Modern
 Styling package for org mode buffers.
@@ -844,6 +851,11 @@ Project is the in-built project management package.
    direnv
    :config (setopt direnv-always-show-summary nil)
    :init (direnv-mode))
+#+end_src
+** EditorConfig
+#+begin_src emacs-lisp :tangle yes
+  (use-package editorconfig
+    :config (editorconfig-mode 1))
 #+end_src
 * Utilities
 ** Helpful

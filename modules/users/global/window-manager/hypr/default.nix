@@ -8,23 +8,25 @@ with lib;
 let
   theme = config.wolf.theme;
   faces = theme.faces;
+  keybinder = (
+    import ./keybinds.nix {
+      inherit lib pkgs;
+      roles = config.wolf.roles;
+    }
+  );
 in
 {
-  imports = [
-    ./keybinds.nix
-  ];
-
   config = mkIf config.wolf.roles.desktop {
     wayland.windowManager.hyprland = {
       enable = true;
       settings = {
-        windowrulev2 = [
-          "workspace 10,class:(steam)"
-        ];
+        workspace = builtins.map (w: "${w.id}, defaultName:${w.name}") keybinder.workSpaces;
+        windowrulev2 = [ ] ++ (if config.wolf.roles.gaming then [ "workspace 10,class:(steam)" ] else [ ]);
 
         exec-once = [
-          "waybar"
+          "${pkgs.hyprland}/bin/hyprctl dispatch submap command" # Start in the modal command mappings
           "kanshi" # Monitor management daemon
+          "udiskie &" # Disk auto mount
         ];
         exec = [
           "kanshictl reload" # Force monitor refresh on reload
@@ -53,7 +55,7 @@ in
 
         decoration = {
           drop_shadow = false;
-          rounding = toString theme.font.size;
+          rounding = toString theme.radius;
         };
 
         misc = {
@@ -74,11 +76,11 @@ in
 
         plugin = {
           hy3 = {
-            tab_first_window = 1;
+            tab_first_window = 0;
             tabs = {
               height = toString (theme.font.size + (theme.border * 2));
               padding = theme.border;
-              rounding = toString theme.font.size;
+              rounding = toString theme.radius;
               text_font = theme.font.name;
               text_height = toString theme.font.size;
               text_padding = theme.border;
@@ -92,7 +94,7 @@ in
           };
         };
       };
-      extraConfig = builtins.readFile ./hyprland.conf;
+      extraConfig = keybinder.binds;
       plugins = [ pkgs.hyprlandPlugins.hy3 ];
     };
   };

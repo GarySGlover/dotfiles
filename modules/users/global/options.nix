@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ config, lib, ... }:
 with lib;
 with types;
 {
@@ -11,6 +11,10 @@ with types;
   options.wolf.theme = {
     font = mkOption { type = hm.types.fontType; };
     border = mkOption { type = ints.unsigned; };
+    radius = mkOption {
+      type = ints.unsigned;
+      default = config.wolf.theme.font.size;
+    };
     faces = mkOption { type = types.attrs; };
     dracula = mkOption { type = types.attrs; };
     name = mkOption { type = str; };

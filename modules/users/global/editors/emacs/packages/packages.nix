@@ -75,6 +75,7 @@ let
     corfu-candidate-overlay
     denote
     direnv
+    editorconfig
     ef-themes
     elisp-autofmt
     embark

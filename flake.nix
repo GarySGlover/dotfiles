@@ -218,6 +218,9 @@
           nixfmt-rfc-style
           nixd
 
+          # Formatter for various languages
+          nodePackages.prettier
+
           # Python
           python312
           python312Packages.black

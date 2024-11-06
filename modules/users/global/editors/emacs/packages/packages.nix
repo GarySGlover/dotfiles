@@ -108,6 +108,7 @@ let
     yasnippet-snippets
     wgrep
     which-key
+    ws-butler
     zig-mode
   ];
 in

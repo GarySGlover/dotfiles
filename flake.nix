@@ -16,6 +16,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     emacs-overlay.url = "github:nix-community/emacs-overlay/master";
+    ags.url = "github:aylur/ags/v2";
   };
 
   outputs =
@@ -24,6 +25,7 @@
       home-manager,
       nixpkgs,
       sops-nix,
+      ags,
       ...
     }:
     let
@@ -76,7 +78,7 @@
       };
 
       extraSpecialArgs = {
-        inherit pkgs;
+        inherit pkgs ags;
       };
 
       mkHomeCfg =

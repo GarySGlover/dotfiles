@@ -21,7 +21,9 @@ in
       enable = true;
       settings = {
         workspace = builtins.map (w: "${w.id}, defaultName:${w.name}") keybinder.workSpaces;
-        windowrulev2 = [ ] ++ (if config.wolf.roles.gaming then [ "workspace 10,class:(steam)" ] else [ ]);
+        windowrulev2 = [
+          "workspace special:room101 silent, title:^(meet.google.com is sharing a window.)$"
+        ] ++ (if config.wolf.roles.gaming then [ "workspace 10,class:(steam)" ] else [ ]);
 
         exec-once = [
           "${pkgs.hyprland}/bin/hyprctl dispatch submap command" # Start in the modal command mappings
@@ -33,7 +35,7 @@ in
         ];
 
         general = {
-          layout = "hy3";
+          layout = "dwindle";
           border_size = theme.border;
           gaps_in = toString theme.font.size;
           gaps_out = toString theme.font.size;
@@ -74,28 +76,11 @@ in
           "col.border_locked_inactive" = "rgb(${faces.fgBorderInactive})";
         };
 
-        plugin = {
-          hy3 = {
-            tab_first_window = 0;
-            tabs = {
-              height = toString (theme.font.size + (theme.border * 2));
-              padding = theme.border;
-              rounding = toString theme.radius;
-              text_font = theme.font.name;
-              text_height = toString theme.font.size;
-              text_padding = theme.border;
-              "col.active" = "rgb(${faces.bgTabBarTab})";
-              "col.text.active" = "rgb(${faces.fgTabBarTab})";
-              "col.urgent" = "rgb(${faces.bgHighlight})";
-              "col.text.urgent" = "rgb(${faces.fgHighlight})";
-              "col.inactive" = "rgb(${faces.bgTabBarTabInactive})";
-              "col.text.inactive" = "rgb(${faces.fgTabBarTabInactive})";
-            };
-          };
+        animations = {
+          enabled = "false";
         };
       };
       extraConfig = keybinder.binds;
-      plugins = [ pkgs.hyprlandPlugins.hy3 ];
     };
   };
 }

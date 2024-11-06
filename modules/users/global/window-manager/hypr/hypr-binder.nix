@@ -28,6 +28,11 @@ let
     downBy = x: "0 ${x}";
   };
 
+  group = {
+    forward = "f";
+    backward = "b";
+  };
+
   createDispatch =
     dispatcher: args:
     "${dispatcher}, ${if builtins.isList args then (lib.concatStringsSep "," args) else args}";
@@ -39,6 +44,7 @@ let
       window = {
         focus = dir: create "movefocus" dir;
         move = dir: create "movewindow" dir;
+        moveWindowOrGroup = dir: create "movewindoworgroup" dir;
         swap = dir: create "swapwindow" dir;
         resize = spec: create "resizeactive" spec;
         toWorkspace =
@@ -58,8 +64,13 @@ let
         kill = "killactive";
         fullscreen = mode: create "fullscreen" mode;
       };
+      group = {
+        toggle = "togglegroup";
+        changeActive = dir: create "changegroupactive" dir;
+      };
       workspace = {
         select = n: "workspace, ${n}";
+        toCurrentMonitor = workspace: create "focusworkspaceoncurrentmonitor" workspace;
       };
       exec = rules: command: create "exec" (if rules == none then command else "[${rules}] ${command}");
       execr = command: create "exec" command;
@@ -89,9 +100,9 @@ in
     createDispatch
     direction
     dispatch
+    group
     mod
     none
     resize
     ;
-
 }

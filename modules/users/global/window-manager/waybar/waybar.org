@@ -21,7 +21,6 @@
       color: #${faces.fgFontLockWarningFace};
   }
 
-
   #clock {
       padding: 0 0.5em;
       margin: 0.25em;
@@ -40,7 +39,7 @@
   #workspaces {
       border-radius: ${toString theme.radius}px;
       background-color: #${faces.bgDefault};
-      padding: 0 0.5em;
+      padding: 0.25em 0.5em;
   }
   #workspaces button {
       border-radius: ${toString theme.radius}px;

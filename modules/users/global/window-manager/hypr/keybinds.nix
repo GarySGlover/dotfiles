@@ -10,12 +10,11 @@ let
     catchall
     direction
     dispatch
+    group
     mod
     none
     resize
     ;
-
-  hy3 = (import ./hy3.nix { inherit lib; });
 
   helpers = {
     combinations =
@@ -39,6 +38,10 @@ let
   noOp = dispatch.execr "${pkgs.hyprland}/bin/hyprctl version";
   workSpaceAndSubmap = workspace: map: [
     (dispatch.workspace.select workspace)
+    (dispatch.submap map)
+  ];
+  workSpaceToCurrentAndSubmap = workspace: map: [
+    (dispatch.workspace.toCurrentMonitor workspace)
     (dispatch.submap map)
   ];
 
@@ -78,7 +81,6 @@ let
       (bind.basic none "a" (dispatch.submap "apps"))
       (bind.basic none "i" (dispatch.submap "insert"))
       (bind.basic none "f" (dispatch.submap "window"))
-      (bind.basic none "g" (dispatch.submap "group"))
       (bind.multi none "l" [
         (dispatch.execr "${pkgs.fuzzel}/bin/fuzzel")
         (dispatch.submap "insert")
@@ -94,6 +96,12 @@ let
       (bind.when (roles.internet && roles.work) none "c" (dispatch.execr "${pkgs.chromium}/bin/chromium"))
       (bind.basic none "e" (dispatch.execr "$EDITOR"))
       (bind.when roles.internet none "f" (dispatch.execr "${pkgs.firefox}/bin/firefox"))
+      (bind.basic none "p" (
+        dispatch.execr "${pkgs.hyprshot}/bin/hyprshot -z -m region -s --clipboard-only"
+      ))
+      (bind.basic mod.shift "p" (
+        dispatch.execr "${pkgs.hyprshot}/bin/hyprshot -z -m window -s --clipboard-only"
+      ))
       (bind.when roles.gaming none "s" (dispatch.execr "${pkgs.steam}/bin/steam"))
       (bind.basic none "t" (dispatch.execr "${pkgs.kitty}/bin/kitty"))
       (bind.basic mod.super "x" (dispatch.exit))
@@ -102,6 +110,9 @@ let
     ];
     workspace =
       lib.lists.map (w: (bind.multi none w.key (workSpaceAndSubmap w.id "command"))) workSpaces
+      ++ lib.lists.map (
+        w: (bind.multi mod.shift w.key (workSpaceToCurrentAndSubmap w.id "command"))
+      ) workSpaces
       ++ [
         defaultBinds
         noOpCatchall
@@ -112,53 +123,21 @@ let
         (bind.basic none "j" (dispatch.window.focus direction.down))
         (bind.basic none "k" (dispatch.window.focus direction.up))
         (bind.basic none "l" (dispatch.window.focus direction.right))
-        (bind.basic mod.shift "h" (hy3.dispatch.window.move direction.left))
-        (bind.basic mod.shift "j" (hy3.dispatch.window.move direction.down))
-        (bind.basic mod.shift "k" (hy3.dispatch.window.move direction.up))
-        (bind.basic mod.shift "l" (hy3.dispatch.window.move direction.right))
+        (bind.basic mod.shift "h" (dispatch.window.moveWindowOrGroup direction.left))
+        (bind.basic mod.shift "j" (dispatch.window.moveWindowOrGroup direction.down))
+        (bind.basic mod.shift "k" (dispatch.window.moveWindowOrGroup direction.up))
+        (bind.basic mod.shift "l" (dispatch.window.moveWindowOrGroup direction.right))
+        (bind.basic none "n" (dispatch.group.changeActive group.forward))
+        (bind.basic none "p" (dispatch.group.changeActive group.backward))
         (bind.basic mod.shift "x" dispatch.window.kill)
         (bind.basic none "r" (dispatch.submap "resize"))
         (bind.basic none "f" (dispatch.window.fullscreen "1"))
         (bind.basic mod.shift "f" (dispatch.window.fullscreen "0"))
+        (bind.basic none "t" (dispatch.group.toggle))
       ]
       ++ lib.lists.map (w: (bind.basic none w.key (dispatch.window.toWorkspace w.id none))) workSpaces
       ++ lib.lists.map (
         w: (bind.basic mod.shift w.key (dispatch.window.toWorkspaceSilent w.id none))
-      ) workSpaces
-      ++ [
-        defaultBinds
-        noOpCatchall
-      ];
-    group =
-      [
-        (bind.basic none "b" (hy3.dispatch.group.make hy3.group.type.horizontal))
-        (bind.basic none "v" (hy3.dispatch.group.make hy3.group.type.vertical))
-        (bind.basic none "t" (hy3.dispatch.group.make hy3.group.type.tab))
-        (bind.basic none "o" (hy3.dispatch.group.make hy3.group.type.opposite))
-        (bind.basic mod.shift "b" (hy3.dispatch.group.change hy3.group.change.horizontal))
-        (bind.basic mod.shift "v" (hy3.dispatch.group.change hy3.group.change.vertical))
-        (bind.basic mod.shift "t" (hy3.dispatch.group.change hy3.group.change.toggletab))
-        (bind.basic mod.shift "u" (hy3.dispatch.group.change hy3.group.change.untab))
-        (bind.basic mod.shift "o" (hy3.dispatch.group.change hy3.group.change.opposite))
-        (bind.basic mod.shift "x" hy3.dispatch.group.kill)
-        (bind.basic none "h" (hy3.dispatch.group.focusTab direction.left))
-        (bind.basic none "j" (hy3.dispatch.group.focusTab direction.down))
-        (bind.basic none "k" (hy3.dispatch.group.focusTab direction.up))
-        (bind.basic none "l" (hy3.dispatch.group.focusTab direction.right))
-        (bind.basic mod.shift "h" (hy3.dispatch.window.move direction.left))
-        (bind.basic mod.shift "j" (hy3.dispatch.window.move direction.down))
-        (bind.basic mod.shift "k" (hy3.dispatch.window.move direction.up))
-        (bind.basic mod.shift "l" (hy3.dispatch.window.move direction.right))
-        (bind.basic none "p" (hy3.dispatch.group.focus hy3.group.focus.top))
-        (bind.basic none "m" (hy3.dispatch.group.focus hy3.group.focus.bottom))
-        (bind.basic none "r" (hy3.dispatch.group.focus hy3.group.focus.raise))
-        (bind.basic none "w" (hy3.dispatch.group.focus hy3.group.focus.lower))
-        (bind.basic none "a" (hy3.dispatch.group.focus hy3.group.focus.tab))
-        (bind.basic none "n" (hy3.dispatch.group.focus hy3.group.focus.tabnode))
-      ]
-      ++ lib.lists.map (w: (bind.basic none w.key (hy3.dispatch.group.toWorkspace w.id))) workSpaces
-      ++ lib.lists.map (
-        w: (bind.basic mod.shift w.key (hy3.dispatch.group.toWorkspaceSilent w.id))
       ) workSpaces
       ++ [
         defaultBinds

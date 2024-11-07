@@ -86,6 +86,7 @@ let
     gptel
     helpful
     hyperbole
+    indent-bars
     keycast
     magit
     marginalia
@@ -95,6 +96,7 @@ let
     ob-async
     orderless
     org
+    org-auto-tangle
     org-modern
     ox-pandoc
     rainbow-mode

@@ -78,7 +78,6 @@ package manager.
 ** Default indent tabs
 #+begin_src emacs-lisp :tangle yes
   (setq-default indent-tabs-mode nil)
-  (setq-default indent-line-function #'insert-tab)
 #+end_src
 
 ** Auto revert mode
@@ -296,22 +295,14 @@ fit in as part of any other group.
     "Transient for toggling minor modes."
     :transient-suffix 'transient--do-stay
     [["Modes"
-      ("a" (lambda () (cloveynit-modes-highlight 'aggressive-indent-mode "Aggressive Indent"))
-       aggressive-indent-mode)
-      ("b" (lambda () (cloveynit-modes-highlight 'rainbow-mode "Rainbow mode"))
-       rainbow-mode)
       ("c" (lambda () (cloveynit-modes-highlight 'flymake-mode "Flymake"))
        flymake-mode)
       ("d" (lambda () (cloveynit-modes-highlight 'display-fill-column-indicator-mode "Fill Column Indicator"))
        display-fill-column-indicator-mode)
-      ("e" (lambda () (cloveynit-modes-highlight 'electric-indent-mode "Electric Indent"))
-       electric-indent-mode)
       ("f" (lambda () (cloveynit-modes-highlight 'format-all-mode "Format all"))
        format-all-mode)
       ("h" (lambda () (cloveynit-modes-highlight 'hl-line-mode "Highlight Line"))
        hl-line-mode)
-      ("i" (lambda () (cloveynit-modes-highlight 'indent-tabs-mode "Indent tabs"))
-       indent-tabs-mode)
       ("l" (lambda () (cloveynit-modes-highlight 'display-line-numbers-mode "Line Numbers"))
        display-line-numbers-mode)
       ("m" (lambda () (cloveynit-modes-highlight 'word-wrap-whitespace-mode "Word Wrap"))
@@ -320,18 +311,34 @@ fit in as part of any other group.
        column-number-mode)
       ("o" (lambda () (cloveynit-modes-highlight 'auto-revert-mode "Auto Revert Mode"))
        auto-revert-mode)
-      ("p" (lambda () (cloveynit-modes-highlight 'electric-pair-mode "Electric Pair"))
-       electric-pair-mode)
-      ("r" (lambda () (cloveynit-modes-highlight 'show-paren-mode "Show Paren"))
-       show-paren-mode)
       ("s" (lambda () (cloveynit-modes-highlight 'flyspell-mode "Flyspell"))
        flyspell-mode)
       ("t" (lambda () (cloveynit-modes-highlight 'prettify-symbols-mode "Prettify Symbols"))
        prettify-symbols-mode)
+      ]
+     ["Indent"
+      ("a" (lambda () (cloveynit-modes-highlight 'aggressive-indent-mode "Aggressive Indent"))
+       aggressive-indent-mode)
+      ("e" (lambda () (cloveynit-modes-highlight 'electric-indent-mode "Electric Indent"))
+       electric-indent-mode)
+      ("i" (lambda () (cloveynit-modes-highlight 'indent-tabs-mode "Indent tabs"))
+       indent-tabs-mode)
+      ("j" (lambda () (cloveynit-modes-highlight 'indent-bars-mode "Indent bars"))
+       indent-bars-mode)
+      ]
+     ["Whitespace"
       ("u" (lambda () (cloveynit-modes-highlight 'ws-butler-mode "WS Butler"))
        ws-butler-mode)
       ("w" (lambda () (cloveynit-modes-highlight 'whitespace-mode "Whitespace"))
        whitespace-mode)
+      ]
+     ["Parens"
+      ("b" (lambda () (cloveynit-modes-highlight 'rainbow-mode "Rainbow mode"))
+       rainbow-mode)
+      ("p" (lambda () (cloveynit-modes-highlight 'electric-pair-mode "Electric Pair"))
+       electric-pair-mode)
+      ("r" (lambda () (cloveynit-modes-highlight 'show-paren-mode "Show Paren"))
+       show-paren-mode)
       ]])
 #+end_src
 * UI Enhancements
@@ -532,6 +539,11 @@ Display the keys pressed and the associated command in the header line.
   (setq-default mode-line-format
                 '("" cloveynit-mode-line-buffer-name))
 #+end_src
+** Indent bars
+#+begin_src emacs-lisp :tangle yes
+  (use-package indent-bars
+    :commands indent-bars-mode)
+#+end_src
 * Information Management
 ** TODO [#A] Hyperbole
 #+begin_src emacs-lisp :tangle yes
@@ -541,6 +553,10 @@ Display the keys pressed and the associated command in the header line.
 ** TODO [#B] Org Mode
 #+begin_src emacs-lisp :tangle yes
   (use-package org
+    :hook
+    (org-mode . (lambda ()
+                  (add-hook 'after-save-hook
+                            (lambda () (when (eq major-mode 'org-mode) (org-babel-tangle))))))
     :config
     (require 'dash)
     (setopt

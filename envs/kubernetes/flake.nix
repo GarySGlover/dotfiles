@@ -6,7 +6,14 @@
   outputs = { nixpkgs, flake-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs { inherit system; };
+        pkgs = import nixpkgs {
+          inherit system;
+          config.permittedInsecurePackages = [
+            "openssl-1.1.1w" # Used by one of the Azure Cli packages
+          ];
+        };
+        local-pkgs = import ../../packages/packages.nix { inherit pkgs; };
+
         lib = pkgs.lib;
         excludedExtensions =
           [ "connection-monitor-preview" "blockchain" "aks-preview" ];
@@ -35,6 +42,8 @@
           kubernetes-helm
           # Packages for azure packages
           kubelogin
+
+          local-pkgs.ak9s
         ];
       in {
         devShells.default =

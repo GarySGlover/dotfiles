@@ -11,6 +11,7 @@ in
   config = mkIf config.wolf.languages.json {
     home.packages = with pkgs; [
       jq
+      jqp
     ];
 
     home.file.".jq".source = ./jqmodules;

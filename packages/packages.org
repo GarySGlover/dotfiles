@@ -1,0 +1,92 @@
+#+title: Packages
+#+author: Gary Glover
+#+startup: content
+
+* Local Nix packages
+#+begin_src nix :tangle packages.nix :comments link
+  { pkgs, ... }:
+  {
+    inherit (import ./ak9s.nix { inherit pkgs; }) ak9s;
+  }
+#+end_src
+
+* Azure / Kubernetes / K9S
+:PROPERTIES:
+:header-args:bash: :tangle ak9s :shebang #!/usr/bin/env bash :comments link
+:END:
+** AK9S Script
+*** Temp file
+Setup temp file and handling to remove after complete
+#+begin_src bash
+  TEMP_FILE=$(mktemp || exit 1)
+  readonly TEMP_FILE
+  trap 'rm -f -- "$TEMP_FILE"' EXIT
+  TEMP_CONTEXT=$(mktemp || exit 1)
+  readonly TEMP_CONTEXT
+  trap 'rm -f -- "$TEMP_CONTEXT"' EXIT
+#+end_src
+
+*** AZ Account List
+Get the account list from Azure and write to temp file. Show spinner
+whilst waiting.
+#+begin_src bash
+  gum spin --spinner moon --title "Getting Azure accounts" -- \
+  	az account list --only-show-errors -o json >"$TEMP_FILE" || exit 1
+#+end_src
+
+*** Select subscription
+Filter for the subscription names
+#+begin_src bash
+  SUBSCRIPTION=$(jq '.[].name' -r <"$TEMP_FILE" | gum filter --sort --height 20 || exit 1)
+  readonly SUBSCRIPTION
+#+end_src
+
+*** Get Kubernetes clusters
+Get all of the AKS clusters in the subscription
+#+begin_src bash
+  gum spin --spinner moon --title "Getting Clusers" -- \
+  	az aks list --only-show-errors --subscription "$SUBSCRIPTION" -o json >"$TEMP_FILE" || exit 1
+#+end_src
+
+*** Select cluster
+Filter for running clusters, then prompt for cluster to connect to.
+#+begin_src bash
+  CLUSTER=$(jq -r '.[] | select(.powerState.code == "Running") | .name' <"$TEMP_FILE" |
+  	gum filter --sort --height 20 || exit 1)
+  readonly CLUSTER
+#+end_src
+
+*** Get resource group
+Pull resource group for named cluster from the az aks list output.
+#+begin_src bash
+  RESOURCE_GROUP=$(jq -r --arg CLUSTER "$CLUSTER" '.[] | select(.name == $CLUSTER) | .resourceGroup' <"$TEMP_FILE" || exit 1)
+  readonly RESOURCE_GROUP
+#+end_src
+
+*** Login to cluster
+#+begin_src bash
+  gum spin --spinner moon --title "Logging into $CLUSTER" -- \
+  	az aks get-credentials --only-show-errors --name "$CLUSTER" --resource-group "$RESOURCE_GROUP" --subscription "$SUBSCRIPTION" --file "$TEMP_CONTEXT" || exit 1
+#+end_src
+
+*** Load K9S
+#+begin_src bash
+  k9s -A --kubeconfig "$TEMP_CONTEXT" --insecure-skip-tls-verify
+#+end_src
+** Derivation
+#+begin_src nix :tangle ak9s.nix :comments link
+  { pkgs, ... }:
+  {
+    ak9s = pkgs.writeShellApplication {
+      name = "ak9s";
+      runtimeInputs = with pkgs; [
+        k9s
+        azure-cli
+        gum
+        jq
+        kubectl
+      ];
+      text = builtins.readFile ./ak9s;
+    };
+  }
+#+end_src

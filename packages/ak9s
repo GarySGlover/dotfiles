@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# [[file:packages.org::*Temp file][Temp file:1]]
+TEMP_FILE=$(mktemp || exit 1)
+readonly TEMP_FILE
+trap 'rm -f -- "$TEMP_FILE"' EXIT
+TEMP_CONTEXT=$(mktemp || exit 1)
+readonly TEMP_CONTEXT
+trap 'rm -f -- "$TEMP_CONTEXT"' EXIT
+# Temp file:1 ends here
+
+# [[file:packages.org::*AZ Account List][AZ Account List:1]]
+gum spin --spinner moon --title "Getting Azure accounts" -- \
+	az account list --only-show-errors -o json >"$TEMP_FILE" || exit 1
+# AZ Account List:1 ends here
+
+# [[file:packages.org::*Select subscription][Select subscription:1]]
+SUBSCRIPTION=$(jq '.[].name' -r <"$TEMP_FILE" | gum filter --sort --height 20 || exit 1)
+readonly SUBSCRIPTION
+# Select subscription:1 ends here
+
+# [[file:packages.org::*Get Kubernetes clusters][Get Kubernetes clusters:1]]
+gum spin --spinner moon --title "Getting Clusers" -- \
+	az aks list --only-show-errors --subscription "$SUBSCRIPTION" -o json >"$TEMP_FILE" || exit 1
+# Get Kubernetes clusters:1 ends here
+
+# [[file:packages.org::*Select cluster][Select cluster:1]]
+CLUSTER=$(jq -r '.[] | select(.powerState.code == "Running") | .name' <"$TEMP_FILE" |
+	gum filter --sort --height 20 || exit 1)
+readonly CLUSTER
+# Select cluster:1 ends here
+
+# [[file:packages.org::*Get resource group][Get resource group:1]]
+RESOURCE_GROUP=$(jq -r --arg CLUSTER "$CLUSTER" '.[] | select(.name == $CLUSTER) | .resourceGroup' <"$TEMP_FILE" || exit 1)
+readonly RESOURCE_GROUP
+# Get resource group:1 ends here
+
+# [[file:packages.org::*Login to cluster][Login to cluster:1]]
+gum spin --spinner moon --title "Logging into $CLUSTER" -- \
+	az aks get-credentials --only-show-errors --name "$CLUSTER" --resource-group "$RESOURCE_GROUP" --subscription "$SUBSCRIPTION" --file "$TEMP_CONTEXT" || exit 1
+# Login to cluster:1 ends here
+
+# [[file:packages.org::*Load K9S][Load K9S:1]]
+k9s -A --kubeconfig "$TEMP_CONTEXT" --insecure-skip-tls-verify
+# Load K9S:1 ends here

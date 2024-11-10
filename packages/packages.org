@@ -2,70 +2,100 @@
 #+author: Gary Glover
 #+startup: content
 
+* Shared functions
+*** Temp files
+Setup temp files functionality so that temp files can be created and
+automatically removed.
+#+name: auto_clean_temp_file
+#+begin_src bash
+  temp_files=()
+  function get_auto_clean_temp_file() {
+  	local var_name="$1"
+  	readonly "$var_name=$(mktemp || exit 1)"
+  	temp_files+=("${!var_name}")
+  }
+  # shellcheck disable=SC2154
+  trap 'for file in "${temp_files[@]}"; do rm -f -- "$file"; done' EXIT SIGINT
+#+end_src
+*** Default spinner
+#+name: spinner
+#+begin_src bash
+  function spinner() {
+  	gum spin --spinner points --title "$@"
+  }
+#+end_src
+
+
 * Local Nix packages
 #+begin_src nix :tangle packages.nix :comments link
   { pkgs, ... }:
   {
     inherit (import ./ak9s.nix { inherit pkgs; }) ak9s;
+    inherit (import ./devops-clone.nix { inherit pkgs; }) devops-clone;
+    inherit (import ./e.nix { inherit pkgs; }) e;
   }
 #+end_src
 
-* Azure / Kubernetes / K9S
+* ak9s
 :PROPERTIES:
 :header-args:bash: :tangle ak9s :shebang #!/usr/bin/env bash :comments link
 :END:
-** AK9S Script
-*** Temp file
-Setup temp file and handling to remove after complete
+** script
+*** Init
+#+begin_src bash :noweb yes
+  <<auto_clean_temp_file>>
+  <<spinner>>
+#+end_src
+*** Banner
 #+begin_src bash
-  TEMP_FILE=$(mktemp || exit 1)
-  readonly TEMP_FILE
-  trap 'rm -f -- "$TEMP_FILE"' EXIT
-  TEMP_CONTEXT=$(mktemp || exit 1)
-  readonly TEMP_CONTEXT
-  trap 'rm -f -- "$TEMP_CONTEXT"' EXIT
+  gum style \
+  	--foreground 212 --border-foreground 212 --border double \
+  	--align center --width 50 --margin "1 2" --padding "2 4" \
+  	'K9S Runner for AKS Clusters'
 #+end_src
 
 *** AZ Account List
 Get the account list from Azure and write to temp file. Show spinner
 whilst waiting.
 #+begin_src bash
-  gum spin --spinner moon --title "Getting Azure accounts" -- \
-  	az account list --only-show-errors -o json >"$TEMP_FILE" || exit 1
+  AZ_ACCOUNT_LIST=$(spinner "Getting Azure accounts" -- \
+  	az account list --only-show-errors -o json) || exit 1
+  readonly AZ_ACCOUNT_LIST
 #+end_src
 
 *** Select subscription
 Filter for the subscription names
 #+begin_src bash
-  SUBSCRIPTION=$(jq '.[].name' -r <"$TEMP_FILE" | gum filter --sort --height 20 || exit 1)
+  SUBSCRIPTION=$(echo "$AZ_ACCOUNT_LIST" | jq -r '.[].name' | gum filter --sort --height 20) || exit 1
   readonly SUBSCRIPTION
 #+end_src
 
 *** Get Kubernetes clusters
 Get all of the AKS clusters in the subscription
 #+begin_src bash
-  gum spin --spinner moon --title "Getting Clusers" -- \
-  	az aks list --only-show-errors --subscription "$SUBSCRIPTION" -o json >"$TEMP_FILE" || exit 1
+  AKS_LIST=$(spinner "Getting Clusers" -- \
+  	az aks list --only-show-errors --subscription "$SUBSCRIPTION" -o json) || exit 1
 #+end_src
 
 *** Select cluster
 Filter for running clusters, then prompt for cluster to connect to.
 #+begin_src bash
-  CLUSTER=$(jq -r '.[] | select(.powerState.code == "Running") | .name' <"$TEMP_FILE" |
-  	gum filter --sort --height 20 || exit 1)
+  CLUSTER=$(echo "$AKS_LIST" | jq -r '.[] | select(.powerState.code == "Running") | .name' |
+  	gum filter --sort --height 20) || exit 1
   readonly CLUSTER
 #+end_src
 
 *** Get resource group
 Pull resource group for named cluster from the az aks list output.
 #+begin_src bash
-  RESOURCE_GROUP=$(jq -r --arg CLUSTER "$CLUSTER" '.[] | select(.name == $CLUSTER) | .resourceGroup' <"$TEMP_FILE" || exit 1)
+  RESOURCE_GROUP=$(echo "$AKS_LIST" | jq -r --arg CLUSTER "$CLUSTER" '.[] | select(.name == $CLUSTER) | .resourceGroup') || exit 1
   readonly RESOURCE_GROUP
 #+end_src
 
 *** Login to cluster
 #+begin_src bash
-  gum spin --spinner moon --title "Logging into $CLUSTER" -- \
+  get_auto_clean_temp_file TEMP_CONTEXT || exit 1
+  spinner "Logging into $CLUSTER" -- \
   	az aks get-credentials --only-show-errors --name "$CLUSTER" --resource-group "$RESOURCE_GROUP" --subscription "$SUBSCRIPTION" --file "$TEMP_CONTEXT" || exit 1
 #+end_src
 
@@ -73,7 +103,8 @@ Pull resource group for named cluster from the az aks list output.
 #+begin_src bash
   k9s -A --kubeconfig "$TEMP_CONTEXT" --insecure-skip-tls-verify
 #+end_src
-** Derivation
+
+** nix derivation
 #+begin_src nix :tangle ak9s.nix :comments link
   { pkgs, ... }:
   {
@@ -87,6 +118,141 @@ Pull resource group for named cluster from the az aks list output.
         kubectl
       ];
       text = builtins.readFile ./ak9s;
+    };
+  }
+#+end_src
+
+* devops-clone
+:PROPERTIES:
+:header-args:bash: :tangle devops-clone :shebang #!/usr/bin/env bash :comments link
+:END:
+
+** script
+*** Init
+#+begin_src bash :noweb yes
+  <<auto_clean_temp_file>>
+  <<spinner>>
+#+end_src
+*** Banner
+#+begin_src bash
+  gum style \
+  	--foreground 212 --border-foreground 212 --border double \
+  	--align center --width 50 --margin "1 2" --padding "2 4" \
+  	'Azure DevOps repo git cloner'
+#+end_src
+
+*** Get Organisation
+#+begin_src bash
+  DEVOPS_CONFIG=$(spinner "Checking DevOps Organisation" -- \
+  	az devops configure --list | grep "^organization\s*=\s*[a-zA-Z]") || {
+  	gum log --time rfc822 --structured --level error No default DevOps organistation set.
+  	exit 1
+  }
+  readonly DEVOPS_CONFIG
+
+  DEVOPS_URL=$(echo "$DEVOPS_CONFIG" | sed -n 's/^organization\s*=\s*\(.*\)\/$/\1/p')
+  readonly DEVOPS_URL
+  DEVOPS_ORG=$(basename "$DEVOPS_URL")
+  readonly DEVOPS_ORG
+#+end_src
+
+*** Get DevOps Token
+#+begin_src bash
+  AZ_TOKEN=$(spinner "Getting Devops Token" -- \
+  	az account get-access-token -o json) || exit 1
+
+  AZURE_DEVOPS_EXT_PAT=$(echo "$AZ_TOKEN" | jq -r '.accessToken')
+  readonly AZURE_DEVOPS_EXT_PAT
+#+end_src
+
+*** Get Projects
+#+begin_src bash
+  DEVOPS_PROJECTS=$(spinner "Getting Projects" -- \
+  	curl -u :"$AZURE_DEVOPS_EXT_PAT" "$DEVOPS_URL/_apis/projects?api-version=7.2-preview.4") || exit 1
+  readonly DEVOPS_PROJECTS
+
+  PROJECT=$(echo "$DEVOPS_PROJECTS" | jq '.value.[] | .name' -r | gum filter --sort --height 20) || exit 1
+  readonly PROJECT
+#+end_src
+
+*** Get Repos
+#+begin_src bash
+  DEVOPS_REPOS=$(spinner "Getting Repositories" -- \
+  	curl -u :"$AZURE_DEVOPS_EXT_PAT" "$DEVOPS_URL/$PROJECT/_apis/git/repositories?api-version=7.2-preview.1") || exit 1
+  readonly DEVOPS_REPOS
+
+  REPOS=()
+  while IFS= read -r repo; do
+  	REPOS+=("$repo")
+  done < <(echo "$DEVOPS_REPOS" | jq '.value[].name' -r | gum filter --sort --height 20 --no-limit) || exit 1
+  readonly REPOS
+#+end_src
+
+*** Download Type
+#+begin_src bash
+  DOWNLOAD_TYPE=$(gum filter --header "Download method: " https ssh | sed 's/^ssh$/sshUrl/; s/^https$/remoteUrl/')
+#+end_src
+
+*** Download
+#+begin_src bash
+  for repo in "${REPOS[@]}"; do
+  	path="$HOME/git-clones/$DEVOPS_ORG/$PROJECT/$repo"
+  	if [ -d "$path" ]; then
+  		function update_repo() {
+  			pushd "$path" || return
+  			git fetch --prune --prune-tags --tags --force
+  			branch="$(git remote show origin | awk '/HEAD branch/{print $NF}')"
+  			git checkout "$branch"
+  			git reset --hard "origin/$branch"
+  			popd || return
+  		}
+  		spinner "Updating $PROJECT/$repo" -- \
+  			update_repo
+  	else
+  		url=$(echo "$DEVOPS_REPOS" | jq --arg repo "$repo" --arg type "$DOWNLOAD_TYPE" -r '.value[] | select(.name==$repo) | .[$type]')
+  		spinner "Downloading $PROJECT/$repo" -- \
+  			git clone "$url" "$path" --origin origin || true
+  	fi
+  done
+#+end_src
+
+** nix derivation
+
+*** Get Repos
+** nix derivation
+#+begin_src nix :tangle devops-clone.nix :comments link
+  { pkgs, ... }:
+  {
+    devops-clone = pkgs.writeShellApplication {
+      name = "devops-clone";
+      runtimeInputs = with pkgs; [
+        # azure-cli
+        gum
+        jq
+        curl
+      ];
+      text = builtins.readFile ./devops-clone;
+    };
+  }
+#+end_src
+* e
+This is the command to change to the correct dev environment
+** script
+#+begin_src bash :tangle e :comments link
+  cd "$HOME/dotfiles/envs/$(for dir in "$HOME/dotfiles/envs/"*/; do basename "$dir"; done | gum filter)"
+  exec $SHELL
+
+#+end_src
+** nix derivation
+#+begin_src nix :tangle e.nix :comments link
+  { pkgs, ... }:
+  {
+    e = pkgs.writeShellApplication {
+      name = "e";
+      runtimeInputs = with pkgs; [
+        gum
+      ];
+      text = builtins.readFile ./e;
     };
   }
 #+end_src

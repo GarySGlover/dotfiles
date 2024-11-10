@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# [[file:packages.org::*Init][Init:1]]
+temp_files=()
+function get_auto_clean_temp_file() {
+	local var_name="$1"
+	readonly "$var_name=$(mktemp || exit 1)"
+	temp_files+=("${!var_name}")
+}
+# shellcheck disable=SC2154
+trap 'for file in "${temp_files[@]}"; do rm -f -- "$file"; done' EXIT SIGINT
+function spinner() {
+	gum spin --spinner points --title "$@"
+}
+# Init:1 ends here
+
+# [[file:packages.org::*Banner][Banner:1]]
+gum style \
+	--foreground 212 --border-foreground 212 --border double \
+	--align center --width 50 --margin "1 2" --padding "2 4" \
+	'Azure DevOps repo git cloner'
+# Banner:1 ends here
+
+# [[file:packages.org::*Get Organisation][Get Organisation:1]]
+DEVOPS_CONFIG=$(spinner "Checking DevOps Organisation" -- \
+	az devops configure --list | grep "^organization\s*=\s*[a-zA-Z]") || {
+	gum log --time rfc822 --structured --level error No default DevOps organistation set.
+	exit 1
+}
+readonly DEVOPS_CONFIG
+
+DEVOPS_URL=$(echo "$DEVOPS_CONFIG" | sed -n 's/^organization\s*=\s*\(.*\)\/$/\1/p')
+readonly DEVOPS_URL
+DEVOPS_ORG=$(basename "$DEVOPS_URL")
+readonly DEVOPS_ORG
+# Get Organisation:1 ends here
+
+# [[file:packages.org::*Get DevOps Token][Get DevOps Token:1]]
+AZ_TOKEN=$(spinner "Getting Devops Token" -- \
+	az account get-access-token -o json) || exit 1
+
+AZURE_DEVOPS_EXT_PAT=$(echo "$AZ_TOKEN" | jq -r '.accessToken')
+readonly AZURE_DEVOPS_EXT_PAT
+# Get DevOps Token:1 ends here
+
+# [[file:packages.org::*Get Projects][Get Projects:1]]
+DEVOPS_PROJECTS=$(spinner "Getting Projects" -- \
+	curl -u :"$AZURE_DEVOPS_EXT_PAT" "$DEVOPS_URL/_apis/projects?api-version=7.2-preview.4") || exit 1
+readonly DEVOPS_PROJECTS
+
+PROJECT=$(echo "$DEVOPS_PROJECTS" | jq '.value.[] | .name' -r | gum filter --sort --height 20) || exit 1
+readonly PROJECT
+# Get Projects:1 ends here
+
+# [[file:packages.org::*Get Repos][Get Repos:1]]
+DEVOPS_REPOS=$(spinner "Getting Repositories" -- \
+	curl -u :"$AZURE_DEVOPS_EXT_PAT" "$DEVOPS_URL/$PROJECT/_apis/git/repositories?api-version=7.2-preview.1") || exit 1
+readonly DEVOPS_REPOS
+
+REPOS=()
+while IFS= read -r repo; do
+	REPOS+=("$repo")
+done < <(echo "$DEVOPS_REPOS" | jq '.value[].name' -r | gum filter --sort --height 20 --no-limit) || exit 1
+readonly REPOS
+# Get Repos:1 ends here
+
+# [[file:packages.org::*Download Type][Download Type:1]]
+DOWNLOAD_TYPE=$(gum filter --header "Download method: " https ssh | sed 's/^ssh$/sshUrl/; s/^https$/remoteUrl/')
+# Download Type:1 ends here
+
+# [[file:packages.org::*Download][Download:1]]
+for repo in "${REPOS[@]}"; do
+	path="$HOME/git-clones/$DEVOPS_ORG/$PROJECT/$repo"
+	if [ -d "$path" ]; then
+		function update_repo() {
+			pushd "$path" || return
+			git fetch --prune --prune-tags --tags --force
+			branch="$(git remote show origin | awk '/HEAD branch/{print $NF}')"
+			git checkout "$branch"
+			git reset --hard "origin/$branch"
+			popd || return
+		}
+		spinner "Updating $PROJECT/$repo" -- \
+			update_repo
+	else
+		url=$(echo "$DEVOPS_REPOS" | jq --arg repo "$repo" --arg type "$DOWNLOAD_TYPE" -r '.value[] | select(.name==$repo) | .[$type]')
+		spinner "Downloading $PROJECT/$repo" -- \
+			git clone "$url" "$path" --origin origin || true
+	fi
+done
+# Download:1 ends here

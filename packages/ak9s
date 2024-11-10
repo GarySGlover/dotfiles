@@ -1,41 +1,55 @@
 #!/usr/bin/env bash
-# [[file:packages.org::*Temp file][Temp file:1]]
-TEMP_FILE=$(mktemp || exit 1)
-readonly TEMP_FILE
-trap 'rm -f -- "$TEMP_FILE"' EXIT
-TEMP_CONTEXT=$(mktemp || exit 1)
-readonly TEMP_CONTEXT
-trap 'rm -f -- "$TEMP_CONTEXT"' EXIT
-# Temp file:1 ends here
+# [[file:packages.org::*Init][Init:1]]
+temp_files=()
+function get_auto_clean_temp_file() {
+	local var_name="$1"
+	readonly "$var_name=$(mktemp || exit 1)"
+	temp_files+=("${!var_name}")
+}
+# shellcheck disable=SC2154
+trap 'for file in "${temp_files[@]}"; do rm -f -- "$file"; done' EXIT SIGINT
+function spinner() {
+	gum spin --spinner points --title "$@"
+}
+# Init:1 ends here
+
+# [[file:packages.org::*Banner][Banner:1]]
+gum style \
+	--foreground 212 --border-foreground 212 --border double \
+	--align center --width 50 --margin "1 2" --padding "2 4" \
+	'K9S Runner for AKS Clusters'
+# Banner:1 ends here
 
 # [[file:packages.org::*AZ Account List][AZ Account List:1]]
-gum spin --spinner moon --title "Getting Azure accounts" -- \
-	az account list --only-show-errors -o json >"$TEMP_FILE" || exit 1
+AZ_ACCOUNT_LIST=$(spinner "Getting Azure accounts" -- \
+	az account list --only-show-errors -o json) || exit 1
+readonly AZ_ACCOUNT_LIST
 # AZ Account List:1 ends here
 
 # [[file:packages.org::*Select subscription][Select subscription:1]]
-SUBSCRIPTION=$(jq '.[].name' -r <"$TEMP_FILE" | gum filter --sort --height 20 || exit 1)
+SUBSCRIPTION=$(echo "$AZ_ACCOUNT_LIST" | jq -r '.[].name' | gum filter --sort --height 20) || exit 1
 readonly SUBSCRIPTION
 # Select subscription:1 ends here
 
 # [[file:packages.org::*Get Kubernetes clusters][Get Kubernetes clusters:1]]
-gum spin --spinner moon --title "Getting Clusers" -- \
-	az aks list --only-show-errors --subscription "$SUBSCRIPTION" -o json >"$TEMP_FILE" || exit 1
+AKS_LIST=$(spinner "Getting Clusers" -- \
+	az aks list --only-show-errors --subscription "$SUBSCRIPTION" -o json) || exit 1
 # Get Kubernetes clusters:1 ends here
 
 # [[file:packages.org::*Select cluster][Select cluster:1]]
-CLUSTER=$(jq -r '.[] | select(.powerState.code == "Running") | .name' <"$TEMP_FILE" |
-	gum filter --sort --height 20 || exit 1)
+CLUSTER=$(echo "$AKS_LIST" | jq -r '.[] | select(.powerState.code == "Running") | .name' |
+	gum filter --sort --height 20) || exit 1
 readonly CLUSTER
 # Select cluster:1 ends here
 
 # [[file:packages.org::*Get resource group][Get resource group:1]]
-RESOURCE_GROUP=$(jq -r --arg CLUSTER "$CLUSTER" '.[] | select(.name == $CLUSTER) | .resourceGroup' <"$TEMP_FILE" || exit 1)
+RESOURCE_GROUP=$(echo "$AKS_LIST" | jq -r --arg CLUSTER "$CLUSTER" '.[] | select(.name == $CLUSTER) | .resourceGroup') || exit 1
 readonly RESOURCE_GROUP
 # Get resource group:1 ends here
 
 # [[file:packages.org::*Login to cluster][Login to cluster:1]]
-gum spin --spinner moon --title "Logging into $CLUSTER" -- \
+get_auto_clean_temp_file TEMP_CONTEXT || exit 1
+spinner "Logging into $CLUSTER" -- \
 	az aks get-credentials --only-show-errors --name "$CLUSTER" --resource-group "$RESOURCE_GROUP" --subscription "$SUBSCRIPTION" --file "$TEMP_CONTEXT" || exit 1
 # Login to cluster:1 ends here
 

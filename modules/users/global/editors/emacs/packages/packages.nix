@@ -46,11 +46,9 @@ let
     # consult-yasnippet
     # devdocs
     # dtrt-indent
-    # eat
     # exec-path-from-shell
     # gcmh
     # git-timemachine
-    # json-mode
     # json-navigator
     # kubel
     # mini-frame
@@ -75,6 +73,7 @@ let
     corfu-candidate-overlay
     denote
     direnv
+    eat
     editorconfig
     ef-themes
     elisp-autofmt

@@ -40,6 +40,9 @@
 
 (save-place-mode 1)
 
+(unbind-key "<f11>" 'global-map)
+(unbind-key "<pinch>" 'global-map)
+
 (use-package exec-path-from-shell
   :demand t
   :config
@@ -361,6 +364,8 @@
   (marginalia-mode))
 
 (use-package indent-bars
+  :config
+  (setopt indent-bars-treesit-support t)
   :commands indent-bars-mode)
 
 (use-package hyperbole
@@ -487,7 +492,8 @@ If not, prompt the user whether to allow running all code blocks silently."
   :defer t
   :init
   (defun cloveynit/report-unused-ts-modes ()
-    "Report TreeSitter modes that are not mapped in major-mode-remap-alist or auto-mode-alist."
+    "Report TreeSitter modes that are not mapped in
+major-mode-remap-alist or auto-mode-alist."
     (let ((ts-modes (apropos-internal "-ts-mode$" 'functionp)))
       (dolist (ts-mode ts-modes)
         (let ((used-in-major-mode-remap-alist
@@ -500,7 +506,7 @@ If not, prompt the user whether to allow running all code blocks silently."
                          auto-mode-alist))
 	      (excluded
 	       (seq-some (lambda (entry) (equal ts-mode entry))
-			 '(sh--redirect-bash-ts-mode))))
+			 '(sh--redirect-bash-ts-mode indent-bars--ts-mode))))
           (unless (or used-in-major-mode-remap-alist used-in-auto-mode-alist excluded)
             (warn "TS Mode not mapped: %s" ts-mode))))))
 
@@ -586,6 +592,10 @@ If not, prompt the user whether to allow running all code blocks silently."
 
 (use-package magit)
 
+(use-package
+  project
+  :config (project-forget-projects-under "~/git-clones" t))
+
 (defun cloveynit-project--dispact-wrap-command (cmd)
   "Wrap command CMD to optionally display buffer in another window."
   (interactive)
@@ -614,7 +624,8 @@ If not, prompt the user whether to allow running all code blocks silently."
     ("x" "Shell Command" project-shell-command)
     ("a" "Async Shell Command" project-async-shell-command)
     ("v" "VC-Dir" project-vc-dir)
-    ("m" "Magit Status" magit-project-status)]
+    ("m" "Magit Status" magit-project-status)
+    ("M" "Magit Projects" cloveynit-magit-status)]
    ["Manage Projects"
     ("S" "Switch Project" project-switch-project)
     ("k" "Kill Buffers" project-kill-buffers)
@@ -713,4 +724,78 @@ If not, prompt the user whether to allow running all code blocks silently."
   :config
   (defun cloveynit-eshell-ansi-color ()
     (setenv "TERM" "xterm-256color"))
-  :hook (eshell-mode . cloveynit-eshell-ansi-color))
+  :hook ((eshell-mode . cloveynit-eshell-ansi-color)
+         (eshell-mode . eat-eshell-visual-command-mode)))
+
+(defun cloveynit-get-ticket-numbers ()
+  (let ((feature-dir (expand-file-name "~/feature/")))
+    (delete-dups
+     (mapcar (lambda (dir)
+               (let* ((name (file-name-nondirectory dir))
+                      (ticket-number (car (split-string name "-"))))
+                 ticket-number))
+             (directory-files feature-dir t "^[0-9]+-.*")))))
+
+(defun cloveynit-read-ticket-number ()
+  (completing-read "Select ticket number: " (cloveynit-get-ticket-numbers)))
+
+(defun cloveynit-get-ticket-name (ticket-number)
+  (let* ((feature-dir (expand-file-name "~/feature/"))
+         (folders (directory-files feature-dir nil (format "^%s-.*" ticket-number)))
+         (existing-names (mapcar (lambda (dir)
+                                   (let* ((name (file-name-nondirectory dir))
+                                          (ticket-name (replace-regexp-in-string "-" " " (replace-regexp-in-string (format "^%s-\\(.*\\)__.*$" ticket-number) "\\1" name))))
+                                     (if ticket-name
+                                         (string-trim ticket-name))))
+                                 folders)))
+    (if existing-names
+        (completing-read "Select ticket name: " (delete-dups existing-names))
+      (read-string "Enter ticket name: "))))
+
+(defun cloveynit-read-repository-name (default)
+  (read-string "Enter repository name: " default))
+
+(defun cloveynit-get-new-branch-and-worktree-names ()
+  (let* ((ticket-number (cloveynit-read-ticket-number))
+         (ticket-name (cloveynit-get-ticket-name ticket-number))
+         (kebab-name (denote-sluggify-title ticket-name))
+         (default-repo (replace-regexp-in-string "\\." "-" (replace-regexp-in-string "\\.git$" "" (file-name-nondirectory (magit-get "remote" "origin" "url")))))
+         (repository-name (replace-regexp-in-string "-" "_" (denote-sluggify-title (cloveynit-read-repository-name default-repo)))))
+    `(,(format "feature/%s-%s" ticket-number kebab-name)
+      ,(format "~/feature/%s-%s__%s" ticket-number kebab-name repository-name))))
+
+
+(defun cloveynit-new-branch-and-worktree ()
+  (interactive)
+  (let* ((worktree (cloveynit-get-new-branch-and-worktree-names))
+         (branch (car worktree))
+         (path (cadr worktree))
+         (starting-point (magit-read-starting-point "Create and checkout branch starting at: ")))
+    (magit-worktree-branch path branch starting-point)))
+
+(eval-after-load 'magit
+  (progn
+    (require 'magit)
+    (require 'transient)
+    (require 'denote)
+    `(transient-append-suffix 'magit-worktree "c" '("f" "Feature worktree" cloveynit-new-branch-and-worktree))))
+
+(require 'f)
+(require 'dash)
+
+(defun cloveynit-magit-status ()
+  "Opens 'magit-status' in the directory selected.
+Selection is by organisation under the git-clones root directory"
+  (interactive)
+  (let* ((root (expand-file-name "~/git-clones"))
+         (org (completing-read "Select organisation: " (-map (lambda (f) (f-filename f)) (f-directories root))))
+         (project-root (format "%s/" (expand-file-name org root))))
+    (magit-status
+     (completing-read
+      "Project: "
+      (mapcan
+       (lambda (d)
+         (directory-files (concat project-root d) t "\\`[^.]"))
+       (-filter
+        (lambda (d) (file-directory-p (concat project-root d)))
+        (directory-files project-root nil "\\`[^.]")))))))

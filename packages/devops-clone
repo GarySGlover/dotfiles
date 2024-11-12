@@ -1,13 +1,5 @@
 #!/usr/bin/env bash
 # [[file:packages.org::*Init][Init:1]]
-temp_files=()
-function get_auto_clean_temp_file() {
-	local var_name="$1"
-	readonly "$var_name=$(mktemp || exit 1)"
-	temp_files+=("${!var_name}")
-}
-# shellcheck disable=SC2154
-trap 'for file in "${temp_files[@]}"; do rm -f -- "$file"; done' EXIT SIGINT
 function spinner() {
 	gum spin --spinner points --title "$@"
 }
@@ -28,23 +20,22 @@ DEVOPS_CONFIG=$(spinner "Checking DevOps Organisation" -- \
 }
 readonly DEVOPS_CONFIG
 
-DEVOPS_URL=$(echo "$DEVOPS_CONFIG" | sed -n 's/^organization\s*=\s*\(.*\)\/$/\1/p')
+DEVOPS_URL=$(echo "$DEVOPS_CONFIG" | sed -n 's/^organization\s*=\s*\(.*\)/\1/p')
 readonly DEVOPS_URL
 DEVOPS_ORG=$(basename "$DEVOPS_URL")
 readonly DEVOPS_ORG
 # Get Organisation:1 ends here
 
-# [[file:packages.org::*Get DevOps Token][Get DevOps Token:1]]
-AZ_TOKEN=$(spinner "Getting Devops Token" -- \
-	az account get-access-token -o json) || exit 1
-
-AZURE_DEVOPS_EXT_PAT=$(echo "$AZ_TOKEN" | jq -r '.accessToken')
-readonly AZURE_DEVOPS_EXT_PAT
-# Get DevOps Token:1 ends here
+# [[file:packages.org::*Get Azure Rest Token][Get Azure Rest Token:1]]
+AZ_TOKEN=$(spinner "Getting Azure Rest Token" -- \
+	az account get-access-token -o json | jq -r '.accessToken') || exit 1
+readonly AZ_TOKEN
+export AZ_TOKEN
+# Get Azure Rest Token:1 ends here
 
 # [[file:packages.org::*Get Projects][Get Projects:1]]
 DEVOPS_PROJECTS=$(spinner "Getting Projects" -- \
-	curl -u :"$AZURE_DEVOPS_EXT_PAT" "$DEVOPS_URL/_apis/projects?api-version=7.2-preview.4") || exit 1
+	azure-get "$DEVOPS_URL/_apis/projects?api-version=7.2-preview.4") || exit 1
 readonly DEVOPS_PROJECTS
 
 PROJECT=$(echo "$DEVOPS_PROJECTS" | jq '.value.[] | .name' -r | gum filter --sort --height 20) || exit 1
@@ -53,7 +44,7 @@ readonly PROJECT
 
 # [[file:packages.org::*Get Repos][Get Repos:1]]
 DEVOPS_REPOS=$(spinner "Getting Repositories" -- \
-	curl -u :"$AZURE_DEVOPS_EXT_PAT" "$DEVOPS_URL/$PROJECT/_apis/git/repositories?api-version=7.2-preview.1") || exit 1
+	azure-get "$DEVOPS_URL/$PROJECT/_apis/git/repositories?api-version=7.2-preview.1") || exit 1
 readonly DEVOPS_REPOS
 
 REPOS=()

@@ -63,6 +63,7 @@ let
           ];
         kill = "killactive";
         fullscreen = mode: create "fullscreen" mode;
+        toggleFloating = "togglefloating";
       };
       group = {
         toggle = "togglegroup";
@@ -90,7 +91,9 @@ let
     when =
       cond: mods: key: dispatcher:
       if cond then bind.basic mods key dispatcher else "";
-
+    mouse =
+      mods: button: dispatcher:
+      "bindm = ${mods}, ${button}, ${dispatcher}";
   };
 in
 {

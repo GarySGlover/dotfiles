@@ -1,11 +1,12 @@
 #+title: Packages
 #+author: Gary Glover
 #+startup: content
+#+PROPERTY: header-args :eval no
 
 * Shared functions
 *** Temp files
-Setup temp files functionality so that temp files can be created and
-automatically removed.
+We sometimes need to use temp files for storing information. After the
+scripts are finished we would like to automatically clean up.
 #+name: auto_clean_temp_file
 #+begin_src bash
   temp_files=()
@@ -18,13 +19,23 @@ automatically removed.
   trap 'for file in "${temp_files[@]}"; do rm -f -- "$file"; done' EXIT SIGINT
 #+end_src
 *** Default spinner
+Long functions can appear unresponsive. Give some visual feedback that
+those we are waiting on their completion.
 #+name: spinner
 #+begin_src bash
   function spinner() {
   	gum spin --spinner points --title "$@"
   }
 #+end_src
-
+*** Azure functions
+**** Azure Rest Token
+#+name: azure_rest_token
+#+begin_src bash
+  AZ_TOKEN=$(spinner "Getting Azure Rest Token" -- \
+  	az account get-access-token -o json | jq -r '.accessToken') || exit 1
+  readonly AZ_TOKEN
+  export AZ_TOKEN
+#+end_src
 
 * Local Nix packages
 #+begin_src nix :tangle packages.nix :comments link
@@ -33,6 +44,69 @@ automatically removed.
     inherit (import ./ak9s.nix { inherit pkgs; }) ak9s;
     inherit (import ./devops-clone.nix { inherit pkgs; }) devops-clone;
     inherit (import ./e.nix { inherit pkgs; }) e;
+    inherit (import ./azure-tools.nix { inherit pkgs; }) azure-tools;
+  }
+#+end_src
+* azure-tools
+** azure get
+:PROPERTIES:
+:header-args:bash: :tangle azure-get :shebang #!/usr/bin/env bash :comments link
+:END:
+*** Argument template
+#+name: az-get-args
+#+begin_src bash :tangle no :eval yes :results output code
+  argbash --strip all - <<EOF | shfmt -
+  # ARG_USE_ENV([AZ_TOKEN], [], [Default azure token])
+  # ARG_OPTIONAL_SINGLE([token], t, [Azure API Auth Token], )
+  # ARG_POSITIONAL_DOUBLEDASH()
+  # ARG_POSITIONAL_SINGLE([url], [api url], )
+  # ARG_HELP(, , , )
+  # ARGBASH_GO
+  EOF
+#+end_src
+
+*** Argument processor
+#+begin_src bash :noweb yes
+  <<az-get-args()>>
+#+end_src
+
+*** Token validation
+#+begin_src bash
+  test -z "$AZ_TOKEN" -a -z "$_arg_token" && {
+  	print_help
+  	echo 'FATAL ERROR: Either $AZ_TOKEN --token must provide a valid token.'
+  	exit 1
+  }
+  token=${_arg_token:-$AZ_TOKEN}
+#+end_src
+
+*** Script
+#+begin_src bash
+  # shellcheck disable=SC2154
+  curl -X GET -u :"$token" "$_arg_url"
+#+end_src
+
+** nix derivation
+#+begin_src nix :tangle azure-tools.nix :comments link
+  { pkgs, ... }:
+  let
+    azure-get = pkgs.writeShellApplication {
+      name = "azure-get";
+      runtimeInputs = with pkgs; [ curl ];
+      text = builtins.readFile ./azure-get;
+    };
+  in
+  {
+    azure-tools = pkgs.stdenv.mkDerivation {
+      name = "azure-tools";
+      buildInputs = [
+        azure-get
+      ];
+      buildCommand = ''
+        mkdir -p $out/bin
+        ln -s ${azure-get}/bin/azure-get $out/bin/
+      '';
+    };
   }
 #+end_src
 
@@ -130,7 +204,6 @@ Pull resource group for named cluster from the az aks list output.
 ** script
 *** Init
 #+begin_src bash :noweb yes
-  <<auto_clean_temp_file>>
   <<spinner>>
 #+end_src
 *** Banner
@@ -150,25 +223,21 @@ Pull resource group for named cluster from the az aks list output.
   }
   readonly DEVOPS_CONFIG
 
-  DEVOPS_URL=$(echo "$DEVOPS_CONFIG" | sed -n 's/^organization\s*=\s*\(.*\)\/$/\1/p')
+  DEVOPS_URL=$(echo "$DEVOPS_CONFIG" | sed -n 's/^organization\s*=\s*\(.*\)/\1/p')
   readonly DEVOPS_URL
   DEVOPS_ORG=$(basename "$DEVOPS_URL")
   readonly DEVOPS_ORG
 #+end_src
 
-*** Get DevOps Token
-#+begin_src bash
-  AZ_TOKEN=$(spinner "Getting Devops Token" -- \
-  	az account get-access-token -o json) || exit 1
-
-  AZURE_DEVOPS_EXT_PAT=$(echo "$AZ_TOKEN" | jq -r '.accessToken')
-  readonly AZURE_DEVOPS_EXT_PAT
+*** Get Azure Rest Token
+#+begin_src bash :noweb yes
+  <<azure_rest_token>>
 #+end_src
 
 *** Get Projects
 #+begin_src bash
   DEVOPS_PROJECTS=$(spinner "Getting Projects" -- \
-  	curl -u :"$AZURE_DEVOPS_EXT_PAT" "$DEVOPS_URL/_apis/projects?api-version=7.2-preview.4") || exit 1
+  	azure-get "$DEVOPS_URL/_apis/projects?api-version=7.2-preview.4") || exit 1
   readonly DEVOPS_PROJECTS
 
   PROJECT=$(echo "$DEVOPS_PROJECTS" | jq '.value.[] | .name' -r | gum filter --sort --height 20) || exit 1
@@ -178,7 +247,7 @@ Pull resource group for named cluster from the az aks list output.
 *** Get Repos
 #+begin_src bash
   DEVOPS_REPOS=$(spinner "Getting Repositories" -- \
-  	curl -u :"$AZURE_DEVOPS_EXT_PAT" "$DEVOPS_URL/$PROJECT/_apis/git/repositories?api-version=7.2-preview.1") || exit 1
+  	azure-get "$DEVOPS_URL/$PROJECT/_apis/git/repositories?api-version=7.2-preview.1") || exit 1
   readonly DEVOPS_REPOS
 
   REPOS=()
@@ -217,11 +286,11 @@ Pull resource group for named cluster from the az aks list output.
 #+end_src
 
 ** nix derivation
-
-*** Get Repos
-** nix derivation
 #+begin_src nix :tangle devops-clone.nix :comments link
   { pkgs, ... }:
+  let
+    local-pkgs = (import ./packages.nix { inherit pkgs; });
+  in
   {
     devops-clone = pkgs.writeShellApplication {
       name = "devops-clone";
@@ -230,11 +299,39 @@ Pull resource group for named cluster from the az aks list output.
         gum
         jq
         curl
+        local-pkgs.azure-tools
       ];
       text = builtins.readFile ./devops-clone;
     };
   }
 #+end_src
+
+* az-pim
+:PROPERTIES:
+:header-args:bash: :tangle az-pim :shebang #!/usr/bin/env bash :comments link
+:END:
+** script
+*** Banner
+#+begin_src bash
+  gum style \
+  	--foreground 212 --border-foreground 212 --border double \
+  	--align center --width 50 --margin "1 2" --padding "2 4" \
+  	'Azure PIM'
+#+end_src
+*** Init
+#+begin_src bash :noweb yes
+  <<spinner>>
+#+end_src
+
+*** Azure Rest Functions
+#+begin_src bash :noweb yes
+  <<azure_rest_tools>>
+#+end_src
+*** Get PIM
+#+begin_src bash
+  azure_get "https://graph.microsoft.com/v1.0/roleManagement/directory/roleEligibilityScheduleRequests/filterByCurrentUser(on='principal')"
+#+end_src
+
 * e
 This is the command to change to the correct dev environment
 ** script

@@ -133,7 +133,10 @@ let
         (bind.basic none "r" (dispatch.submap "resize"))
         (bind.basic none "f" (dispatch.window.fullscreen "1"))
         (bind.basic mod.shift "f" (dispatch.window.fullscreen "0"))
+        (bind.basic none "v" (dispatch.window.toggleFloating))
         (bind.basic none "t" (dispatch.group.toggle))
+        (bind.mouse none "mouse:272" "movewindow")
+        (bind.mouse none "mouse:273" "resizewindow")
       ]
       ++ lib.lists.map (w: (bind.basic none w.key (dispatch.window.toWorkspace w.id none))) workSpaces
       ++ lib.lists.map (

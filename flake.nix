@@ -215,6 +215,7 @@
 
           # Shell
           shfmt
+          argbash
 
           # Nix
           nixfmt-rfc-style

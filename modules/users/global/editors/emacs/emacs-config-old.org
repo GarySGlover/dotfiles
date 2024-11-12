@@ -778,7 +778,7 @@ For completions windows
 #+begin_src emacs-lisp :tangle yes
   (use-package
    project
-   :config (project-forget-projects-under "~/Next-Technology" t)
+   :config (project-forget-projects-under "~/git-clones" t)
    :bind ("C-x p t" . eat-project))
 #+end_src
 *** Version control

@@ -56,17 +56,18 @@ in
       enable = true;
       userName = "${secrets.git_username}";
       extraConfig = {
-        init = {
-          templateDir = "${config.xdg.configHome}/git/templates";
-        };
-        github = mkIf (hasAttr "github_user" secrets) {
-          user = "${secrets.github_user}";
-        };
+        core.askPass = "";
+        credential.helper = "store";
         fetch = {
           prune = true;
           pruneTags = true;
         };
-        credential.helper = "store";
+        github = mkIf (hasAttr "github_user" secrets) {
+          user = "${secrets.github_user}";
+        };
+        init = {
+          templateDir = "${config.xdg.configHome}/git/templates";
+        };
       };
       aliases = {
         fetchp = "fetch --force";

@@ -63,7 +63,6 @@ let
     # rainbow-delimiters
     # sly
     # terraform-doc
-    # terraform-mode
     # yaml-pro
     ace-window
     aggressive-indent
@@ -100,6 +99,7 @@ let
     ox-pandoc
     rainbow-mode
     standard-themes
+    terraform-mode
     transient
     treesit-grammars.with-all-grammars
     verb

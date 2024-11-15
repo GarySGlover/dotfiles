@@ -26,13 +26,6 @@ DEVOPS_ORG=$(basename "$DEVOPS_URL")
 readonly DEVOPS_ORG
 # Get Organisation:1 ends here
 
-# [[file:packages.org::*Get Azure Rest Token][Get Azure Rest Token:1]]
-AZ_TOKEN=$(spinner "Getting Azure Rest Token" -- \
-	az account get-access-token -o json | jq -r '.accessToken') || exit 1
-readonly AZ_TOKEN
-export AZ_TOKEN
-# Get Azure Rest Token:1 ends here
-
 # [[file:packages.org::*Get Projects][Get Projects:1]]
 DEVOPS_PROJECTS=$(spinner "Getting Projects" -- \
 	azure-get "$DEVOPS_URL/_apis/projects?api-version=7.2-preview.4") || exit 1

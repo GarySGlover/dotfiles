@@ -1,6 +1,9 @@
 { pkgs, ... }:
 {
   config = {
-    home.packages = with pkgs; [ gum ];
+    home.packages = with pkgs; [
+      gum
+      skate
+    ];
   };
 }

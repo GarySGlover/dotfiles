@@ -1,6 +1,6 @@
-{ pkgs, ... }:
+{ pkgs, self, ... }:
 let
-  local-pkgs = import ../../../../../packages/packages.nix { inherit pkgs; };
+  local-pkgs = import "${self.outPath}/packages/packages.nix" { inherit pkgs; };
 in
 {
   config = {

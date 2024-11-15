@@ -39,6 +39,7 @@
           curl
           kubelogin
           local-pkgs.devops-clone
+          local-pkgs.azure-tools
         ];
       in {
         devShells.default =

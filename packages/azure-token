@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# [[file:packages.org::*Get token][Get token:1]]
+function spinner() {
+	gum spin --spinner points --title "$@"
+}
+# Get token:1 ends here
+
+# [[file:packages.org::*Get token][Get token:2]]
+cached_expiry=$(skate get token-expiry@azure-tools 2>/dev/null)
+test -z "$cached_expiry" -o "1$cached_expiry" -lt "1$(date +%s)" && {
+	token_json=$(spinner "Getting Azure Rest Token" -- \
+		az account get-access-token -o json) || exit 1
+	token=$(echo "$token_json" | jq -r '.accessToken')
+	expiry=$(echo "$token_json" | jq -r '.expires_on')
+	skate set token@azure-tools "$token"
+	skate set token-expiry@azure-tools "$expiry"
+}
+
+skate get token@azure-tools
+# Get token:2 ends here

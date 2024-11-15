@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# [[file:packages.org::*Init][Init:1]]
+function spinner() {
+	gum spin --spinner points --title "$@"
+}
+# Init:1 ends here
+
+# [[file:packages.org::*Get PIM][Get PIM:1]]
+azure-get "https://management.azure.com/subscriptions/78d011e3-c82d-4800-bbc0-c0bf0ae045ce/providers/Microsoft.Authorization/roleAssignments?api-version=2022-04-01"
+# Get PIM:1 ends here

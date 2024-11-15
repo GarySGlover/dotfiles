@@ -68,7 +68,7 @@
    '("j" . meow-next)
    '("k" . meow-prev)
    '("l" . meow-right)
-   '("r" . cloveynit-global-dispatch)
+   '("r" . cnit/global-dispatch)
    '("<escape>" . ignore))
   (meow-leader-define-key
    ;; Allow SPC h/j/k/l to run the original command that will be bound to H-<h/j/k/l>
@@ -136,7 +136,7 @@
    '("O" . meow-to-block)
    '("p" . meow-replace)
    '("q" . meow-quit)
-   '("r" . cloveynit-global-dispatch)
+   '("r" . cnit/global-dispatch)
    '("R" . meow-swap-grab)
    '("s" . meow-kill)
    '("t" . meow-till)
@@ -184,26 +184,26 @@
 
 (use-package transient
   :init
-  (transient-define-prefix cloveynit-global-dispatch ()
+  (transient-define-prefix cnit/global-dispatch ()
     "Global transient menu"
     [["Default"
-      ("a" "Generic" cloveynit-global-generic-dispatch)
-      ("c" "Consult" cloveynit-consult-dispatch)
+      ("a" "Generic" cnit/global-generic-dispatch)
+      ("c" "Consult" cnit/consult-dispatch)
       ("g" "Magit" magit-dispatch)
-      ("h" "Help" cloveynit-helpful-dispatch)
+      ("h" "Help" cnit/helpful-dispatch)
       ("l" "Gptel" gptel-menu)
-      ("n" "Denote" cloveynit-denote-dispatch)
-      ("p" "Project" cloveynit-project-dispatch)
-      ("m" "Modes" cloveynit-modes-dispatch)
-      ("w" "Window" cloveynit-window-dispatch)
+      ("n" "Denote" cnit/denote-dispatch)
+      ("p" "Project" cnit/project-dispatch)
+      ("m" "Modes" cnit/modes-dispatch)
+      ("w" "Window" cnit/window-dispatch)
       ]]))
 
-(transient-define-prefix cloveynit-window-dispatch ()
+(transient-define-prefix cnit/window-dispatch ()
   "Transient for managing windows"
   [["Windows"
     ]])
 
-(transient-define-prefix cloveynit-global-generic-dispatch ()
+(transient-define-prefix cnit/global-generic-dispatch ()
   "Global generic transient"
   [["Narrowing"
     ("n" "Narrow" narrow-to-region)
@@ -211,59 +211,59 @@
    ["Editing"
     ("f" "Format" format-all-region-or-buffer)]])
 
-(defun cloveynit-modes-highlight (mode-symbol text)
+(defun cnit/modes-highlight (mode-symbol text)
   "Return a colored TEXT based on the status of MODE-SYMBOL."
   (if (if (fboundp mode-symbol) (symbol-value mode-symbol) nil)
       (propertize text 'face '(:foreground "green"))
     (propertize text 'face '(:foreground "red"))))
 
-(transient-define-prefix cloveynit-modes-dispatch ()
+(transient-define-prefix cnit/modes-dispatch ()
   "Transient for toggling minor modes."
   :transient-suffix 'transient--do-stay
   [["Modes"
-    ("c" (lambda () (cloveynit-modes-highlight 'flymake-mode "Flymake"))
+    ("c" (lambda () (cnit/modes-highlight 'flymake-mode "Flymake"))
      flymake-mode)
-    ("d" (lambda () (cloveynit-modes-highlight 'display-fill-column-indicator-mode "Fill Column Indicator"))
+    ("d" (lambda () (cnit/modes-highlight 'display-fill-column-indicator-mode "Fill Column Indicator"))
      display-fill-column-indicator-mode)
-    ("f" (lambda () (cloveynit-modes-highlight 'format-all-mode "Format all"))
+    ("f" (lambda () (cnit/modes-highlight 'format-all-mode "Format all"))
      format-all-mode)
-    ("h" (lambda () (cloveynit-modes-highlight 'hl-line-mode "Highlight Line"))
+    ("h" (lambda () (cnit/modes-highlight 'hl-line-mode "Highlight Line"))
      hl-line-mode)
-    ("l" (lambda () (cloveynit-modes-highlight 'display-line-numbers-mode "Line Numbers"))
+    ("l" (lambda () (cnit/modes-highlight 'display-line-numbers-mode "Line Numbers"))
      display-line-numbers-mode)
-    ("m" (lambda () (cloveynit-modes-highlight 'word-wrap-whitespace-mode "Word Wrap"))
+    ("m" (lambda () (cnit/modes-highlight 'word-wrap-whitespace-mode "Word Wrap"))
      word-wrap-whitespace-mode)
-    ("n" (lambda () (cloveynit-modes-highlight 'column-number-mode "Column Number"))
+    ("n" (lambda () (cnit/modes-highlight 'column-number-mode "Column Number"))
      column-number-mode)
-    ("o" (lambda () (cloveynit-modes-highlight 'auto-revert-mode "Auto Revert Mode"))
+    ("o" (lambda () (cnit/modes-highlight 'auto-revert-mode "Auto Revert Mode"))
      auto-revert-mode)
-    ("s" (lambda () (cloveynit-modes-highlight 'flyspell-mode "Flyspell"))
+    ("s" (lambda () (cnit/modes-highlight 'flyspell-mode "Flyspell"))
      flyspell-mode)
-    ("t" (lambda () (cloveynit-modes-highlight 'prettify-symbols-mode "Prettify Symbols"))
+    ("t" (lambda () (cnit/modes-highlight 'prettify-symbols-mode "Prettify Symbols"))
      prettify-symbols-mode)
     ]
    ["Indent"
-    ("a" (lambda () (cloveynit-modes-highlight 'aggressive-indent-mode "Aggressive Indent"))
+    ("a" (lambda () (cnit/modes-highlight 'aggressive-indent-mode "Aggressive Indent"))
      aggressive-indent-mode)
-    ("e" (lambda () (cloveynit-modes-highlight 'electric-indent-mode "Electric Indent"))
+    ("e" (lambda () (cnit/modes-highlight 'electric-indent-mode "Electric Indent"))
      electric-indent-mode)
-    ("i" (lambda () (cloveynit-modes-highlight 'indent-tabs-mode "Indent tabs"))
+    ("i" (lambda () (cnit/modes-highlight 'indent-tabs-mode "Indent tabs"))
      indent-tabs-mode)
-    ("j" (lambda () (cloveynit-modes-highlight 'indent-bars-mode "Indent bars"))
+    ("j" (lambda () (cnit/modes-highlight 'indent-bars-mode "Indent bars"))
      indent-bars-mode)
     ]
    ["Whitespace"
-    ("u" (lambda () (cloveynit-modes-highlight 'ws-butler-mode "WS Butler"))
+    ("u" (lambda () (cnit/modes-highlight 'ws-butler-mode "WS Butler"))
      ws-butler-mode)
-    ("w" (lambda () (cloveynit-modes-highlight 'whitespace-mode "Whitespace"))
+    ("w" (lambda () (cnit/modes-highlight 'whitespace-mode "Whitespace"))
      whitespace-mode)
     ]
    ["Parens"
-    ("b" (lambda () (cloveynit-modes-highlight 'rainbow-mode "Rainbow mode"))
+    ("b" (lambda () (cnit/modes-highlight 'rainbow-mode "Rainbow mode"))
      rainbow-mode)
-    ("p" (lambda () (cloveynit-modes-highlight 'electric-pair-mode "Electric Pair"))
+    ("p" (lambda () (cnit/modes-highlight 'electric-pair-mode "Electric Pair"))
      electric-pair-mode)
-    ("r" (lambda () (cloveynit-modes-highlight 'show-paren-mode "Show Paren"))
+    ("r" (lambda () (cnit/modes-highlight 'show-paren-mode "Show Paren"))
      show-paren-mode)
     ]])
 
@@ -322,7 +322,7 @@
    xref-show-xrefs-function #'consult-xref
    xref-show-definitions-function #'consult-xref))
 
-(transient-define-prefix cloveynit-consult-dispatch ()
+(transient-define-prefix cnit/consult-dispatch ()
   "Transient for Consult commands"
   [["Buffers"
     ("b" "Switch" consult-buffer)
@@ -406,7 +406,7 @@
    '((emacs-lisp . t)
      (shell . t)))
 
-  (defun cloveynit-org-confirm-babel-evaluate (lang body)
+  (defun cnit/org-confirm-babel-evaluate (lang body)
     "Custom confirmation function for evaluating code blocks.
 Check if `org-confirm-babel-evaluate` is set for the buffer.
 If not, prompt the user whether to allow running all code blocks silently."
@@ -416,7 +416,7 @@ If not, prompt the user whether to allow running all code blocks silently."
 	(setq-local org-confirm-babel-evaluate t)))
     org-confirm-babel-evaluate)
 
-  (setopt org-confirm-babel-evaluate 'cloveynit-org-confirm-babel-evaluate))
+  (setopt org-confirm-babel-evaluate 'cnit/org-confirm-babel-evaluate))
 
 (use-package ob-async)
 
@@ -430,7 +430,7 @@ If not, prompt the user whether to allow running all code blocks silently."
    denote-date-prompt-use-org-read-date t)
   :hook (dired-mode . denote-dired-mode))
 
-(transient-define-prefix cloveynit-denote-dispatch ()
+(transient-define-prefix cnit/denote-dispatch ()
   "Transient for Denote commands"
   [["Notes"
     ("n" "New" denote)
@@ -449,10 +449,10 @@ If not, prompt the user whether to allow running all code blocks silently."
     ("r" "Rename" denote-rename-file)
     ("R" "Rename from front matter" denote-rename-file-using-front-matter)]
    ["Folder"
-    ("s" "Search" cloveynit-find-file-in-notes)
+    ("s" "Search" cnit/find-file-in-notes)
     ("p" "Dired" (lambda () (interactive) (dired denote-directory)))]])
 
-(defun cloveynit-find-file-in-notes ()
+(defun cnit/find-file-in-notes ()
   (interactive)
   "Open file from the denote notes directory"
   (let* ((vc-dirs-ignores (mapcar
@@ -551,7 +551,7 @@ major-mode-remap-alist or auto-mode-alist."
 
 (use-package eglot
   :init
-  (defun cloveynit-reorder-eldoc-functions ()
+  (defun cnit/reorder-eldoc-functions ()
     "Fix the order of the eldoc functions so that flymake comes first"
     (setq eldoc-documentation-functions
 	  (cons #'flymake-eldoc-function
@@ -559,7 +559,7 @@ major-mode-remap-alist or auto-mode-alist."
   :commands (eglot-ensure)
   :hook
   ((prog-mode . eglot-ensure)
-   (eglot-managed-mode . cloveynit-reorder-eldoc-functions))
+   (eglot-managed-mode . cnit/reorder-eldoc-functions))
   :config
   (add-to-list 'eglot-server-programs `(nix-ts-mode . ,(cdr (assoc 'nix-mode eglot-server-programs))))
   (setopt completion-category-defaults nil)
@@ -596,7 +596,7 @@ major-mode-remap-alist or auto-mode-alist."
   project
   :config (project-forget-projects-under "~/git-clones" t))
 
-(defun cloveynit-project--dispact-wrap-command (cmd)
+(defun cnit/project--dispact-wrap-command (cmd)
   "Wrap command CMD to optionally display buffer in another window."
   (interactive)
   (let ((display-buffer-overriding-action
@@ -605,27 +605,27 @@ major-mode-remap-alist or auto-mode-alist."
            display-buffer-overriding-action)))
     (call-interactively cmd)))
 
-(transient-define-prefix cloveynit-project-dispatch ()
+(transient-define-prefix cnit/project-dispatch ()
   "Transient for project.el commands."
   [["Buffers and Files"
-    ("B" "List Buffers" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-list-buffers)))
-    ("b" "Consult Buffer" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'consult-project-buffer)))
-    ("s" "Switch to Buffer" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-switch-to-buffer)))
-    ("f" "Find File" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-find-file)))
-    ("d" "Dired" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-dired)))
-    ("F" "Find Directory" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-find-dir)))]
+    ("B" "List Buffers" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-list-buffers)))
+    ("b" "Consult Buffer" (lambda () (interactive) (cnit/project--dispact-wrap-command 'consult-project-buffer)))
+    ("s" "Switch to Buffer" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-switch-to-buffer)))
+    ("f" "Find File" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-find-file)))
+    ("d" "Dired" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-dired)))
+    ("F" "Find Directory" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-find-dir)))]
    ["Search and Replace"
-    ("r" "Find Regexp" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-find-regexp)))
-    ("q" "Query Replace" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-query-replace-regexp)))]
+    ("r" "Find Regexp" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-find-regexp)))
+    ("q" "Query Replace" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-query-replace-regexp)))]
    ["Project Actions"
     ("c" "Compile" project-compile)
-    ("e" "Eshell" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-eshell)))
-    ("t" "Shell" (lambda () (interactive) (cloveynit-project--dispact-wrap-command 'project-shell)))
+    ("e" "Eshell" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-eshell)))
+    ("t" "Shell" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-shell)))
     ("x" "Shell Command" project-shell-command)
     ("a" "Async Shell Command" project-async-shell-command)
     ("v" "VC-Dir" project-vc-dir)
     ("m" "Magit Status" magit-project-status)
-    ("M" "Magit Projects" cloveynit-magit-status)]
+    ("M" "Magit Projects" cnit/magit-status)]
    ["Manage Projects"
     ("S" "Switch Project" project-switch-project)
     ("k" "Kill Buffers" project-kill-buffers)
@@ -654,7 +654,7 @@ major-mode-remap-alist or auto-mode-alist."
    helpful-variable
    helpful-at-point)
   :init
-  (transient-define-prefix cloveynit-helpful-dispatch ()
+  (transient-define-prefix cnit/helpful-dispatch ()
     "Transient for Help commands"
     ["Helpful"
      [("c" "Callable" helpful-callable)
@@ -674,13 +674,13 @@ major-mode-remap-alist or auto-mode-alist."
 (use-package ediff
   :defer t
   :config
-  (defun cloveynit-ediff-new-frame ()
+  (defun cnit/ediff-new-frame ()
     (select-frame (make-frame)))
   (setopt
    ediff-window-setup-function #'ediff-setup-windows-plain
    ediff-keep-variants nil)
   :hook
-  ((ediff-before-setup . cloveynit-ediff-new-frame)
+  ((ediff-before-setup . cnit/ediff-new-frame)
    (ediff-quit . delete-frame)))
 
 (use-package ace-window
@@ -696,7 +696,7 @@ major-mode-remap-alist or auto-mode-alist."
     (let ((display-buffer-base-action nil))
       (funcall f candidate)))
 
-  (defun cloveynit-aw-select-force ()
+  (defun cnit/aw-select-force ()
     (let ((window nil))
       (while (not window)
 	(condition-case nil
@@ -713,7 +713,7 @@ major-mode-remap-alist or auto-mode-alist."
 	       (original-window (selected-window))
 	       (window (progn
 			 (message (format "Switching to: %s" buffer))
-			 (cloveynit-aw-select-force)))
+			 (cnit/aw-select-force)))
 	       (new-window-p (> (length (window-list)) initial-window-count))
 	       (window-type (if new-window-p 'window 'reuse)))
 	  (progn
@@ -722,12 +722,12 @@ major-mode-remap-alist or auto-mode-alist."
 
 (use-package esh-mode
   :config
-  (defun cloveynit-eshell-ansi-color ()
+  (defun cnit/eshell-ansi-color ()
     (setenv "TERM" "xterm-256color"))
-  :hook ((eshell-mode . cloveynit-eshell-ansi-color)
+  :hook ((eshell-mode . cnit/eshell-ansi-color)
          (eshell-mode . eat-eshell-visual-command-mode)))
 
-(defun cloveynit-get-ticket-numbers ()
+(defun cnit/get-ticket-numbers ()
   (let ((feature-dir (expand-file-name "~/feature/")))
     (delete-dups
      (mapcar (lambda (dir)
@@ -736,10 +736,10 @@ major-mode-remap-alist or auto-mode-alist."
                  ticket-number))
              (directory-files feature-dir t "^[0-9]+-.*")))))
 
-(defun cloveynit-read-ticket-number ()
-  (completing-read "Select ticket number: " (cloveynit-get-ticket-numbers)))
+(defun cnit/read-ticket-number ()
+  (completing-read "Select ticket number: " (cnit/get-ticket-numbers)))
 
-(defun cloveynit-get-ticket-name (ticket-number)
+(defun cnit/get-ticket-name (ticket-number)
   (let* ((feature-dir (expand-file-name "~/feature/"))
          (folders (directory-files feature-dir nil (format "^%s-.*" ticket-number)))
          (existing-names (mapcar (lambda (dir)
@@ -752,38 +752,68 @@ major-mode-remap-alist or auto-mode-alist."
         (completing-read "Select ticket name: " (delete-dups existing-names))
       (read-string "Enter ticket name: "))))
 
-(defun cloveynit-read-repository-name (default)
-  (read-string "Enter repository name: " default))
+(defun cnit/magit-repo-name ()
+  (replace-regexp-in-string
+   "\\." "-"
+   (replace-regexp-in-string
+    "\\.git$"
+    ""
+    (file-name-nondirectory
+     (magit-get "remote" "origin" "url")))))
 
-(defun cloveynit-get-new-branch-and-worktree-names ()
-  (let* ((ticket-number (cloveynit-read-ticket-number))
-         (ticket-name (cloveynit-get-ticket-name ticket-number))
-         (kebab-name (denote-sluggify-title ticket-name))
-         (default-repo (replace-regexp-in-string "\\." "-" (replace-regexp-in-string "\\.git$" "" (file-name-nondirectory (magit-get "remote" "origin" "url")))))
-         (repository-name (replace-regexp-in-string "-" "_" (denote-sluggify-title (cloveynit-read-repository-name default-repo)))))
-    `(,(format "feature/%s-%s" ticket-number kebab-name)
-      ,(format "~/feature/%s-%s__%s" ticket-number kebab-name repository-name))))
+(defun cnit/magit-worktree-extract-ticket-number (name)
+  (when (string-match "^[0-9]+" name)
+    (match-string 0 name)))
 
+(defun cnit/magit-worktree-ticket-number (&optional name)
+  (if (and name (cnit/magit-worktree-extract-ticket-number name))
+      name
+    (cnit/read-ticket-number)))
 
-(defun cloveynit-new-branch-and-worktree ()
+(defun cnit/magit-repo-name-formatted ()
+  (replace-regexp-in-string
+   "-" "_"
+   (denote-sluggify-title
+    (read-string "Enter repository name: " (cnit/magit-repo-name)))))
+
+(defun cnit/magit-worktree-names-format (name repo)
+  (let ((kebab-name (denote-sluggify-title name)))
+    `(,(format "feature/%s" name)
+      ,(format "~/feature/%s__%s" name repo))))
+
+(defun cnit/magit-worktree-names ()
+  (let* ((ticket (cnit/read-ticket-number))
+         (kebab-name (denote-sluggify-title (cnit/get-ticket-name ticket))))
+    (cnit/magit-worktree-names-format (format "%s-%s" ticket kebab-name) (cnit/magit-repo-name-formatted))))
+
+(defun cnit/magit-worktree-new ()
   (interactive)
-  (let* ((worktree (cloveynit-get-new-branch-and-worktree-names))
+  (let* ((worktree (cnit/magit-worktree-names))
          (branch (car worktree))
          (path (cadr worktree))
          (starting-point (magit-read-starting-point "Create and checkout branch starting at: ")))
     (magit-worktree-branch path branch starting-point)))
+
+(defun cnit/magit-worktree-checkout ()
+  (interactive)
+  (let* ((branch (magit-read-branch-or-commit "Checkout"))
+         (branch-short (file-name-nondirectory branch))
+         (repo-name (cnit/magit-repo-name-formatted))
+         (path (cadr (cnit/magit-worktree-names-format branch-short repo-name))))
+    (magit-worktree-checkout path branch)))
 
 (eval-after-load 'magit
   (progn
     (require 'magit)
     (require 'transient)
     (require 'denote)
-    `(transient-append-suffix 'magit-worktree "c" '("f" "Feature worktree" cloveynit-new-branch-and-worktree))))
+    `(transient-append-suffix 'magit-worktree "c" '("f" "Feature worktree" cnit/magit-worktree-new))
+    `(transient-append-suffix 'magit-worktree "c" '("w" "Feature checkout" cnit/magit-worktree-checkout))))
 
 (require 'f)
 (require 'dash)
 
-(defun cloveynit-magit-status ()
+(defun cnit/magit-status ()
   "Opens 'magit-status' in the directory selected.
 Selection is by organisation under the git-clones root directory"
   (interactive)

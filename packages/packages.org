@@ -27,15 +27,6 @@ those we are waiting on their completion.
   	gum spin --spinner points --title "$@"
   }
 #+end_src
-*** Azure functions
-**** Azure Rest Token
-#+name: azure_rest_token
-#+begin_src bash
-  AZ_TOKEN=$(spinner "Getting Azure Rest Token" -- \
-  	az account get-access-token -o json | jq -r '.accessToken') || exit 1
-  readonly AZ_TOKEN
-  export AZ_TOKEN
-#+end_src
 
 * Local Nix packages
 #+begin_src nix :tangle packages.nix :comments link
@@ -48,15 +39,50 @@ those we are waiting on their completion.
   }
 #+end_src
 * azure-tools
+** azure token
+:PROPERTIES:
+:header-args:bash: :tangle azure-token :shebang #!/usr/bin/env bash :comments link
+:END:
+*** Argument template
+#+name: azure-token-args
+#+begin_src bash :tangle no :eval yes :results output code
+  argbash --strip all - <<EOF | shfmt -
+  # ARG_HELP(, , , )
+  # ARGBASH_GO
+  EOF
+#+end_src
+
+*** Argument processor
+#+begin_src bash :noweb yes :tangle no
+  <<azure-token-args()>>
+#+end_src
+*** Get token
+#+begin_src bash :noweb yes
+  <<spinner>>
+#+end_src
+
+#+begin_src bash
+  cached_expiry=$(skate get token-expiry@azure-tools 2>/dev/null)
+  test -z "$cached_expiry" -o "1$cached_expiry" -lt "1$(date +%s)" && {
+  	token_json=$(spinner "Getting Azure Rest Token" -- \
+  		az account get-access-token -o json) || exit 1
+  	token=$(echo "$token_json" | jq -r '.accessToken')
+  	expiry=$(echo "$token_json" | jq -r '.expires_on')
+  	skate set token@azure-tools "$token"
+  	skate set token-expiry@azure-tools "$expiry"
+  }
+
+  skate get token@azure-tools
+#+end_src
+
 ** azure get
 :PROPERTIES:
 :header-args:bash: :tangle azure-get :shebang #!/usr/bin/env bash :comments link
 :END:
 *** Argument template
-#+name: az-get-args
+#+name: azure-get-args
 #+begin_src bash :tangle no :eval yes :results output code
   argbash --strip all - <<EOF | shfmt -
-  # ARG_USE_ENV([AZ_TOKEN], [], [Default azure token])
   # ARG_OPTIONAL_SINGLE([token], t, [Azure API Auth Token], )
   # ARG_POSITIONAL_DOUBLEDASH()
   # ARG_POSITIONAL_SINGLE([url], [api url], )
@@ -67,29 +93,31 @@ those we are waiting on their completion.
 
 *** Argument processor
 #+begin_src bash :noweb yes
-  <<az-get-args()>>
+  <<azure-get-args()>>
 #+end_src
 
 *** Token validation
 #+begin_src bash
-  test -z "$AZ_TOKEN" -a -z "$_arg_token" && {
-  	print_help
-  	echo 'FATAL ERROR: Either $AZ_TOKEN --token must provide a valid token.'
-  	exit 1
+  token="$_arg_token"
+  test -z "$token" && {
+  	token=$(azure-token) || exit 1
   }
-  token=${_arg_token:-$AZ_TOKEN}
 #+end_src
 
 *** Script
 #+begin_src bash
   # shellcheck disable=SC2154
-  curl -X GET -u :"$token" "$_arg_url"
+  curl -s -X GET -H "Authorization: Bearer $token" "$_arg_url"
 #+end_src
-
 ** nix derivation
 #+begin_src nix :tangle azure-tools.nix :comments link
   { pkgs, ... }:
   let
+    azure-token = pkgs.writeShellApplication {
+      name = "azure-token";
+      runtimeInputs = with pkgs; [ skate ];
+      text = builtins.readFile ./azure-token;
+    };
     azure-get = pkgs.writeShellApplication {
       name = "azure-get";
       runtimeInputs = with pkgs; [ curl ];
@@ -104,6 +132,7 @@ those we are waiting on their completion.
       ];
       buildCommand = ''
         mkdir -p $out/bin
+        ln -s ${azure-token}/bin/azure-token $out/bin/
         ln -s ${azure-get}/bin/azure-get $out/bin/
       '';
     };
@@ -229,11 +258,6 @@ Pull resource group for named cluster from the az aks list output.
   readonly DEVOPS_ORG
 #+end_src
 
-*** Get Azure Rest Token
-#+begin_src bash :noweb yes
-  <<azure_rest_token>>
-#+end_src
-
 *** Get Projects
 #+begin_src bash
   DEVOPS_PROJECTS=$(spinner "Getting Projects" -- \
@@ -306,13 +330,13 @@ Pull resource group for named cluster from the az aks list output.
   }
 #+end_src
 
-* az-pim
+* azure-pim
 :PROPERTIES:
-:header-args:bash: :tangle az-pim :shebang #!/usr/bin/env bash :comments link
+:header-args:bash: :tangle azure-pim :shebang #!/usr/bin/env bash :comments link
 :END:
 ** script
 *** Banner
-#+begin_src bash
+#+begin_src bash :tangle no
   gum style \
   	--foreground 212 --border-foreground 212 --border double \
   	--align center --width 50 --margin "1 2" --padding "2 4" \
@@ -323,31 +347,31 @@ Pull resource group for named cluster from the az aks list output.
   <<spinner>>
 #+end_src
 
-*** Azure Rest Functions
-#+begin_src bash :noweb yes
-  <<azure_rest_tools>>
-#+end_src
+*** Get Current User Principal ID
 *** Get PIM
+Use filter for current principal
 #+begin_src bash
-  azure_get "https://graph.microsoft.com/v1.0/roleManagement/directory/roleEligibilityScheduleRequests/filterByCurrentUser(on='principal')"
+  azure-get "https://management.azure.com/subscriptions/78d011e3-c82d-4800-bbc0-c0bf0ae045ce/providers/Microsoft.Authorization/roleAssignments?api-version=2022-04-01"
 #+end_src
 
 * e
 This is the command to change to the correct dev environment
 ** script
 #+begin_src bash :tangle e :comments link
-  cd "$HOME/dotfiles/envs/$(for dir in "$HOME/dotfiles/envs/"*/; do basename "$dir"; done | gum filter)"
-  exec $SHELL
-
+  echo "$HOME/dotfiles/envs/$(for dir in "$HOME/dotfiles/envs/"*/; do basename "$dir"; done | gum filter)"
 #+end_src
 ** nix derivation
 #+begin_src nix :tangle e.nix :comments link
   { pkgs, ... }:
+  let
+    local-pkgs = (import ./packages.nix { inherit pkgs; });
+  in
   {
     e = pkgs.writeShellApplication {
       name = "e";
       runtimeInputs = with pkgs; [
         gum
+        local-pkgs.azure-tools
       ];
       text = builtins.readFile ./e;
     };

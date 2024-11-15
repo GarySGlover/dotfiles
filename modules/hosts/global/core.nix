@@ -1,6 +1,7 @@
 {
   pkgs,
   host,
+  self,
   ...
 }:
 {
@@ -17,7 +18,7 @@
   services.fstrim.enable = true;
 
   # Default sops config
-  sops.defaultSopsFile = ../../../secrets/global.yaml;
+  sops.defaultSopsFile = "${self.outPath}/secrets/global.yaml";
 
   # Nix flakes
   nix.extraOptions = ''

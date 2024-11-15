@@ -1,4 +1,3 @@
 # [[file:packages.org::*script][script:1]]
-cd "$HOME/dotfiles/envs/$(for dir in "$HOME/dotfiles/envs/"*/; do basename "$dir"; done | gum filter)"
-exec $SHELL
+echo "$HOME/dotfiles/envs/$(for dir in "$HOME/dotfiles/envs/"*/; do basename "$dir"; done | gum filter)"
 # script:1 ends here

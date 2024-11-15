@@ -26,6 +26,7 @@
       nixpkgs,
       sops-nix,
       ags,
+      self,
       ...
     }:
     let
@@ -78,7 +79,7 @@
       };
 
       extraSpecialArgs = {
-        inherit pkgs ags;
+        inherit pkgs ags self;
       };
 
       mkHomeCfg =
@@ -126,7 +127,7 @@
           );
           hostLegacyModule = optionals (pathExists ./hosts/${host}) [ ./hosts/${host} ];
           specialArgs = {
-            inherit host users;
+            inherit host users self;
           };
         in
         nixosSystem {

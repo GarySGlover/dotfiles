@@ -5,8 +5,6 @@
 # Argbash is a bash code generator used to get arguments parsing right.
 # Argbash is FREE SOFTWARE, see https://argbash.io for more info
 
-# Setting environmental variables
-
 die() {
 	local _ret="${2:-1}"
 	test "${_PRINT_HELP:-no}" = yes && print_help >&2
@@ -30,9 +28,6 @@ print_help() {
 	printf '\t%s\n' "<url>: api url"
 	printf '\t%s\n' "-t, --token: Azure API Auth Token (no default)"
 	printf '\t%s\n' "--help: Prints help"
-	printf '\nEnvironment variables that are supported:\n'
-	printf '\t%s\n' "AZ_TOKEN: Default azure token."
-
 }
 
 parse_commandline() {
@@ -102,15 +97,13 @@ assign_positional_args 1 "${_positionals[@]}"
 # Argument processor:1 ends here
 
 # [[file:packages.org::*Token validation][Token validation:1]]
-test -z "$AZ_TOKEN" -a -z "$_arg_token" && {
-	print_help
-	echo 'FATAL ERROR: Either $AZ_TOKEN --token must provide a valid token.'
-	exit 1
+token="$_arg_token"
+test -z "$token" && {
+	token=$(azure-token) || exit 1
 }
-token=${_arg_token:-$AZ_TOKEN}
 # Token validation:1 ends here
 
 # [[file:packages.org::*Script][Script:1]]
 # shellcheck disable=SC2154
-curl -X GET -u :"$token" "$_arg_url"
+curl -s -X GET -H "Authorization: Bearer $token" "$_arg_url"
 # Script:1 ends here

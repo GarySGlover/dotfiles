@@ -214,6 +214,10 @@
 (transient-define-prefix cnit/window-dispatch ()
   "Transient for managing windows"
   [["Windows"
+    ("o" "Delete others" ace-delete-other-windows)
+    ("d" "Delete" ace-delete-window)
+    ("w" "Other" ace-select-window)
+    ("s" "Swap" ace-swap-window)
     ]])
 
 (transient-define-prefix cnit/global-generic-dispatch ()

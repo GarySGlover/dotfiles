@@ -289,6 +289,10 @@ that applies to certian major/minor modes.
   (transient-define-prefix cnit/window-dispatch ()
     "Transient for managing windows"
     [["Windows"
+      ("o" "Delete others" ace-delete-other-windows)
+      ("d" "Delete" ace-delete-window)
+      ("w" "Other" ace-select-window)
+      ("s" "Swap" ace-swap-window)
       ]])
 #+end_src
 *** Global generic transient

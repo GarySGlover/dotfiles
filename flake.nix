@@ -17,6 +17,7 @@
     };
     emacs-overlay.url = "github:nix-community/emacs-overlay/master";
     ags.url = "github:aylur/ags/v2";
+    nur.url = "github:nix-community/NUR";
   };
 
   outputs =
@@ -26,6 +27,7 @@
       nixpkgs,
       sops-nix,
       ags,
+      nur,
       self,
       ...
     }:
@@ -75,11 +77,16 @@
           emacs-overlay.overlay
           (import ./modules/overlays/tree-sitter-grammars.nix)
           (import ./modules/overlays/codeium.nix)
+          nur.overlay
         ];
       };
 
       extraSpecialArgs = {
-        inherit pkgs ags self;
+        inherit
+          pkgs
+          ags
+          self
+          ;
       };
 
       mkHomeCfg =
@@ -127,7 +134,11 @@
           );
           hostLegacyModule = optionals (pathExists ./hosts/${host}) [ ./hosts/${host} ];
           specialArgs = {
-            inherit host users self;
+            inherit
+              host
+              users
+              self
+              ;
           };
         in
         nixosSystem {

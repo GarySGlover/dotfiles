@@ -47,7 +47,7 @@ in
       };
       style = ''
         * {
-            font-family: ${theme.font.name};
+            font-family: "${theme.font.name}";
             font-size: ${toString theme.font.size}px;
             color: #${faces.fgFontLockVariableNameFace};
         }

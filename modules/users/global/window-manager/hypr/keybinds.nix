@@ -1,7 +1,6 @@
 {
   roles,
   lib,
-  pkgs,
   ...
 }:
 let
@@ -35,7 +34,7 @@ let
   };
 
   # Custom dispatchers
-  noOp = dispatch.execr "${pkgs.hyprland}/bin/hyprctl version";
+  noOp = dispatch.execr "hyprctl version";
   workSpaceAndSubmap = workspace: map: [
     (dispatch.workspace.select workspace)
     (dispatch.submap map)
@@ -82,7 +81,7 @@ let
       (bind.basic none "i" (dispatch.submap "insert"))
       (bind.basic none "f" (dispatch.submap "window"))
       (bind.multi none "l" [
-        (dispatch.execr "${pkgs.fuzzel}/bin/fuzzel")
+        (dispatch.execr "fuzzel")
         (dispatch.submap "insert")
       ])
       (bind.basic none "m" (dispatch.submap "media"))
@@ -92,18 +91,15 @@ let
 
     insert = [ (bind.basic mod.super "q" (dispatch.submap "command")) ];
     apps = [
-      (bind.when roles.internet none "b" (dispatch.execr "${pkgs.brave}/bin/brave"))
-      (bind.when (roles.internet && roles.work) none "c" (dispatch.execr "${pkgs.chromium}/bin/chromium"))
+      (bind.when roles.internet none "b" (dispatch.execr "brave"))
+      (bind.when (roles.internet && roles.work) none "c" (dispatch.execr "chromium"))
       (bind.basic none "e" (dispatch.execr "$EDITOR"))
-      (bind.when roles.internet none "f" (dispatch.execr "${pkgs.firefox}/bin/firefox"))
-      (bind.basic none "p" (
-        dispatch.execr "${pkgs.hyprshot}/bin/hyprshot -z -m region -s --clipboard-only"
-      ))
-      (bind.basic mod.shift "p" (
-        dispatch.execr "${pkgs.hyprshot}/bin/hyprshot -z -m window -s --clipboard-only"
-      ))
-      (bind.when roles.gaming none "s" (dispatch.execr "${pkgs.steam}/bin/steam"))
-      (bind.basic none "t" (dispatch.execr "${pkgs.kitty}/bin/kitty"))
+      (bind.when roles.internet none "f" (dispatch.execr "firefox"))
+      (bind.basic none "p" (dispatch.execr "hyprshot -z -m region -s --clipboard-only"))
+      (bind.basic mod.shift "p" (dispatch.execr "hyprshot -z -m window -s --clipboard-only"))
+      (bind.when roles.gaming none "s" (dispatch.execr "steam"))
+      (bind.basic none "t" (dispatch.execr "kitty"))
+      (bind.basic none "w" (dispatch.execr "floorp"))
       (bind.basic mod.super "x" (dispatch.exit))
       defaultBinds
       noOpCatchall
@@ -163,17 +159,11 @@ let
       ];
     media =
       [
-        (bind.repeat none "m" (
-          dispatch.execr "${pkgs.wireplumber}/bin/wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
-        ))
-        (bind.repeat none "h" (
-          dispatch.execr "${pkgs.wireplumber}/bin/wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%-"
-        ))
-        (bind.repeat none "l" (
-          dispatch.execr "${pkgs.wireplumber}/bin/wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"
-        ))
-        (bind.repeat none "j" (dispatch.execr "${pkgs.brightnessctl}/bin/brightnessctl set 10%-"))
-        (bind.repeat none "k" (dispatch.execr "${pkgs.brightnessctl}/bin/brightnessctl set 10%+"))
+        (bind.repeat none "m" (dispatch.execr "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"))
+        (bind.repeat none "h" (dispatch.execr "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%-"))
+        (bind.repeat none "l" (dispatch.execr "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"))
+        (bind.repeat none "j" (dispatch.execr "brightnessctl set 10%-"))
+        (bind.repeat none "k" (dispatch.execr "brightnessctl set 10%+"))
       ]
       ++ [
         defaultBinds

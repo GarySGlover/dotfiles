@@ -31,6 +31,7 @@ in
       "steam"
       "steam-unwrapped"
       "terraform"
+      "enhancer-for-youtube"
     ];
 
   permittedInsecurePackages = [

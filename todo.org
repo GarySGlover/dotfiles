@@ -1,6 +1,5 @@
 Things that have anoyed me in the config that could do with fixing.
-* screen sharing popup multiple times
-* floating window sharae notification
 * notification prior to battery going flat
 * qt theming
 * gtk theming
+* waybar workspace spacing

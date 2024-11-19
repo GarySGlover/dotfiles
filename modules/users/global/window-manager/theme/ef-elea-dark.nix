@@ -15,7 +15,7 @@ in
 {
   config.wolf.theme = mkIf (config.wolf.theme.name == "ef-elea-dark") {
     font = {
-      name = "FiraCode Nerd Font";
+      name = "0xProto Nerd Font";
       size = 10;
     };
 

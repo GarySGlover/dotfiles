@@ -214,6 +214,19 @@ This is the meow modal editing suite.
      '("Y" . meow-sync-grab)
      '("z" . meow-pop-selection)
      '("'" . repeat)
+     '(":(" . cloveynit/surround-region)
+     '(":[" . cloveynit/surround-region)
+     '(":{" . cloveynit/surround-region)
+     '(":<" . cloveynit/surround-region)
+     '(":\"" . cloveynit/surround-region)
+     '(":'" . cloveynit/surround-region)
+     '(":`" . cloveynit/surround-region)
+     '(":=" . cloveynit/surround-region)
+     '(":~" . cloveynit/surround-region)
+     '(":_" . cloveynit/surround-region)
+     '(":+" . cloveynit/surround-region)
+     '(":*" . cloveynit/surround-region)
+     '(":/" . cloveynit/surround-region)
      '("<escape>" . ignore)))
 #+end_src
 ** General
@@ -782,6 +795,17 @@ newlines.
   (use-package ws-butler
     :hook (prog-mode . ws-butler-mode))
 #+end_src
+** Surround region
+#+begin_src emacs-lisp :tangle yes
+  ;; Need to update insert-pair-alist
+  (global-set-key (kbd "M-[") 'insert-pair)
+  (global-set-key (kbd "M-{") 'insert-pair)
+  (global-set-key (kbd "M-\"") 'insert-pair)
+  (global-set-key (kbd "M-'") 'insert-pair)
+  (global-set-key (kbd "M-`") 'insert-pair)
+  (global-set-key (kbd "M-~") 'insert-pair)
+  (global-set-key (kbd "M-=") 'insert-pair)
+#+end_src
 * Programming
 ** Flymake
 #+begin_src emacs-lisp :tangle yes
@@ -1103,7 +1127,7 @@ Hide files matching ~dired-omit-files~ regex or the ~dired-omit-extensions~ list
       (require 'magit)
       (require 'transient)
       (require 'denote)
-      `(transient-append-suffix 'magit-worktree "c" '("f" "Feature worktree" cnit/magit-worktree-new))
+      (transient-append-suffix 'magit-worktree "c" '("f" "Feature worktree" cnit/magit-worktree-new))
       `(transient-append-suffix 'magit-worktree "c" '("w" "Feature checkout" cnit/magit-worktree-checkout))))
 
 #+end_src
@@ -1128,5 +1152,32 @@ Hide files matching ~dired-omit-files~ regex or the ~dired-omit-extensions~ list
          (-filter
           (lambda (d) (file-directory-p (concat project-root d)))
           (directory-files project-root nil "\\`[^.]")))))))
+
+#+end_src
+** Surround region
+#+begin_src emacs-lisp :tangle yes
+  (defvar cloveynit-pairs-alist
+    '((?\( ?\))
+      (?\[ ?\])
+      (?\{ ?\})
+      (?\< ?\>)
+      (?\" ?\")
+      (?\' ?\')
+      (?\` ?\`)
+      (?\= ?\=)
+      (?\~ ?\~)
+      (?\_ ?\_)
+      (?\+ ?\+)
+      (?\* ?\*)
+      (?\/ ?\/)))
+
+  (defun cloveynit/surround-region ()
+    "Surround active region with paired characters."
+    (interactive)
+    (when (region-active-p)
+      (let ((pair (or (assq last-command-event cloveynit-pairs-alist)
+                      (assq (event-basic-type last-command-event) cloveynit-pairs-alist))))
+        (when pair
+          (insert-pair nil (car pair) (cadr pair))))))
 
 #+end_src

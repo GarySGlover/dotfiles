@@ -151,6 +151,19 @@
    '("Y" . meow-sync-grab)
    '("z" . meow-pop-selection)
    '("'" . repeat)
+   '(":(" . cloveynit/surround-region)
+   '(":[" . cloveynit/surround-region)
+   '(":{" . cloveynit/surround-region)
+   '(":<" . cloveynit/surround-region)
+   '(":\"" . cloveynit/surround-region)
+   '(":'" . cloveynit/surround-region)
+   '(":`" . cloveynit/surround-region)
+   '(":=" . cloveynit/surround-region)
+   '(":~" . cloveynit/surround-region)
+   '(":_" . cloveynit/surround-region)
+   '(":+" . cloveynit/surround-region)
+   '(":*" . cloveynit/surround-region)
+   '(":/" . cloveynit/surround-region)
    '("<escape>" . ignore)))
 
 (use-package general
@@ -546,6 +559,15 @@ major-mode-remap-alist or auto-mode-alist."
 (use-package ws-butler
   :hook (prog-mode . ws-butler-mode))
 
+;; Need to update insert-pair-alist
+(global-set-key (kbd "M-[") 'insert-pair)
+(global-set-key (kbd "M-{") 'insert-pair)
+(global-set-key (kbd "M-\"") 'insert-pair)
+(global-set-key (kbd "M-'") 'insert-pair)
+(global-set-key (kbd "M-`") 'insert-pair)
+(global-set-key (kbd "M-~") 'insert-pair)
+(global-set-key (kbd "M-=") 'insert-pair)
+
 (use-package flymake
   :hook (prog-mode . flymake-mode))
 
@@ -807,7 +829,7 @@ major-mode-remap-alist or auto-mode-alist."
     (require 'magit)
     (require 'transient)
     (require 'denote)
-    `(transient-append-suffix 'magit-worktree "c" '("f" "Feature worktree" cnit/magit-worktree-new))
+    (transient-append-suffix 'magit-worktree "c" '("f" "Feature worktree" cnit/magit-worktree-new))
     `(transient-append-suffix 'magit-worktree "c" '("w" "Feature checkout" cnit/magit-worktree-checkout))))
 
 (require 'f)
@@ -829,3 +851,27 @@ Selection is by organisation under the git-clones root directory"
        (-filter
         (lambda (d) (file-directory-p (concat project-root d)))
         (directory-files project-root nil "\\`[^.]")))))))
+
+(defvar cloveynit-pairs-alist
+  '((?\( ?\))
+    (?\[ ?\])
+    (?\{ ?\})
+    (?\< ?\>)
+    (?\" ?\")
+    (?\' ?\')
+    (?\` ?\`)
+    (?\= ?\=)
+    (?\~ ?\~)
+    (?\_ ?\_)
+    (?\+ ?\+)
+    (?\* ?\*)
+    (?\/ ?\/)))
+
+(defun cloveynit/surround-region ()
+  "Surround active region with paired characters."
+  (interactive)
+  (when (region-active-p)
+    (let ((pair (or (assq last-command-event cloveynit-pairs-alist)
+                    (assq (event-basic-type last-command-event) cloveynit-pairs-alist))))
+      (when pair
+        (insert-pair nil (car pair) (cadr pair))))))

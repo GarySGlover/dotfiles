@@ -23,6 +23,8 @@ in
         workspace = builtins.map (w: "${w.id}, defaultName:${w.name}") keybinder.workSpaces;
         windowrulev2 = [
           "workspace special:room101 silent, title:^(meet.google.com is sharing a window.)$"
+          "float, initialTitle:(MainPicker)"
+          "bordercolor rgb(FF0000) rgb(880808), fullscreen:1"
         ] ++ (if config.wolf.roles.gaming then [ "workspace 10,class:(steam)" ] else [ ]);
 
         exec-once = [
@@ -32,10 +34,15 @@ in
         ];
         exec = [
           "kanshictl reload" # Force monitor refresh on reload
+          "${pkgs.glib}/bin/gsettings set org.gnome.desktop.interface gtk-theme \"Dracula\""
+          "${pkgs.glib}/bin/gsettings set org.gnome.desktop.interface color-scheme \"prefer-dark\""
+        ];
+        env = [
+          "QT_QPA_PLATFORMTHEME,qt6ct"
         ];
 
         general = {
-          layout = "dwindle";
+          layout = "master";
           border_size = theme.border;
           gaps_in = toString theme.font.size;
           gaps_out = toString theme.font.size;

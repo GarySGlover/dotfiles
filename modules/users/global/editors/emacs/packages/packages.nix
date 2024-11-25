@@ -30,16 +30,21 @@ let
     inherit (epkgs) melpaBuild compat;
   };
 
+  devil = pkgs.callPackage ./manual/devil.nix {
+    inherit (pkgs) fetchFromGitHub writeText;
+    inherit (epkgs) melpaBuild compat;
+  };
+
   emacsExtraPackagesLocal = [
     # combobulate
     # emacscodeium
     # nim-ts-mode
     org-modern-indent
+    devil
   ];
 
   emacsExtraPackages = with epkgs; [
     # auto-yasnippet
-    # avy
     # beframe
     # breadcrumb
     # consult-flyspell
@@ -64,6 +69,7 @@ let
     # sly
     # terraform-doc
     # yaml-pro
+    avy
     ace-window
     aggressive-indent
     cape
@@ -126,9 +132,6 @@ in
           en-science
         ]
       ))
-
-      # Codeium language server binary
-      # codeium
 
       pandoc
     ];

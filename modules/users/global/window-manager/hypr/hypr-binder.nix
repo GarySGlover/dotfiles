@@ -64,6 +64,16 @@ let
         kill = "killactive";
         fullscreen = mode: create "fullscreen" mode;
         toggleFloating = "togglefloating";
+        pass = window: create "pass" window;
+        sendShortcut =
+          mod: key: window:
+          create "sendshortcut" (
+            [
+              mod
+              key
+            ]
+            ++ [ window ]
+          );
       };
       group = {
         toggle = "togglegroup";
@@ -82,6 +92,9 @@ let
     basic =
       mods: key: dispatcher:
       "bind = ${mods}, ${key}, ${dispatcher}";
+    noConsume =
+      mods: key: dispatcher:
+      "bindn = ${mods}, ${key}, ${dispatcher}";
     multi =
       mods: key: dispatchers:
       (lib.strings.concatMapStringsSep "\n" (d: (bind.basic mods key d)) dispatchers);

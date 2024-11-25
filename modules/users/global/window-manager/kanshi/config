@@ -43,3 +43,10 @@ profile {
                 scale 1.5
         }
 }
+
+profile {
+        output "BOE NE160WUM-NX2 Unknown" disable
+        output "Sony SONY TV  *00 0x01010101" {
+               mode 1920x1080@60
+        }
+}

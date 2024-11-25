@@ -5,6 +5,8 @@
   (delete-file emacs-init-file)
   (org-babel-load-file emacs-org-file))
 
+(declare-function ef-themes-select "ef-thems")
+
 (use-package ef-themes
   :init
   (mapc #'disable-theme custom-enabled-themes)

@@ -54,117 +54,28 @@
 (use-package emacs
   :config (setopt select-active-regions nil))
 
-(use-package
-  meow
-  :init (meow-global-mode 1)
+(use-package devil
+  :init
+  (global-devil-mode)
   :config
-  (add-to-list 'meow-selection-command-fallback '(meow-replace . meow-yank))
-  (setopt
-   meow-cheatsheet-layout meow-cheatsheet-layout-qwerty
-   meow-use-clipboard t)
-  ;; Set keys for MOTION state. This is the state used in read-only style buffers like dired/help/magit
-  (meow-motion-overwrite-define-key
-   '("h" . meow-left)
-   '("j" . meow-next)
-   '("k" . meow-prev)
-   '("l" . meow-right)
-   '("r" . cnit/global-dispatch)
-   '("<escape>" . ignore))
-  (meow-leader-define-key
-   ;; Allow SPC h/j/k/l to run the original command that will be bound to H-<h/j/k/l>
-   '("h" . "H-h")
-   '("j" . "H-j")
-   '("k" . "H-k")
-   '("l" . "H-l")
-   '("r" . "H-r")
-   ;; Use SPC (0-9) for digit arguments.
-   '("1" . meow-digit-argument)
-   '("2" . meow-digit-argument)
-   '("3" . meow-digit-argument)
-   '("4" . meow-digit-argument)
-   '("5" . meow-digit-argument)
-   '("6" . meow-digit-argument)
-   '("7" . meow-digit-argument)
-   '("8" . meow-digit-argument)
-   '("9" . meow-digit-argument)
-   '("0" . meow-digit-argument)
-   ;; Use SPC //? for accessing meow help
-   '("/" . meow-keypad-describe-key)
-   '("?" . meow-cheatsheet))
-  (meow-normal-define-key
-   '("0" . meow-expand-0)
-   '("9" . meow-expand-9)
-   '("8" . meow-expand-8)
-   '("7" . meow-expand-7)
-   '("6" . meow-expand-6)
-   '("5" . meow-expand-5)
-   '("4" . meow-expand-4)
-   '("3" . meow-expand-3)
-   '("2" . meow-expand-2)
-   '("1" . meow-expand-1)
-   '("-" . negative-argument)
-   '(";" . meow-reverse)
-   '("," . meow-inner-of-thing)
-   '("." . meow-bounds-of-thing)
-   '("[" . meow-beginning-of-thing)
-   '("]" . meow-end-of-thing)
-   '("a" . meow-append)
-   '("A" . meow-open-below)
-   '("b" . meow-back-word)
-   '("B" . meow-back-symbol)
-   '("c" . meow-change)
-   '("d" . meow-delete)
-   '("D" . meow-backward-delete)
-   '("e" . meow-next-word)
-   '("E" . meow-next-symbol)
-   '("f" . meow-find)
-   '("g" . meow-cancel-selection)
-   '("G" . meow-grab)
-   '("h" . meow-left)
-   '("H" . meow-left-expand)
-   '("i" . meow-insert)
-   '("I" . meow-open-above)
-   '("j" . meow-next)
-   '("J" . meow-next-expand)
-   '("k" . meow-prev)
-   '("K" . meow-prev-expand)
-   '("l" . meow-right)
-   '("L" . meow-right-expand)
-   '("m" . meow-join)
-   '("n" . meow-search)
-   '("o" . meow-block)
-   '("O" . meow-to-block)
-   '("p" . meow-replace)
-   '("q" . meow-quit)
-   '("r" . cnit/global-dispatch)
-   '("R" . meow-swap-grab)
-   '("s" . meow-kill)
-   '("t" . meow-till)
-   '("u" . meow-undo)
-   '("U" . meow-undo-in-selection)
-   '("v" . meow-visit)
-   '("w" . meow-mark-word)
-   '("W" . meow-mark-symbol)
-   '("x" . meow-line)
-   '("X" . meow-goto-line)
-   '("y" . meow-save)
-   '("Y" . meow-sync-grab)
-   '("z" . meow-pop-selection)
-   '("'" . repeat)
-   '(":(" . cloveynit/surround-region)
-   '(":[" . cloveynit/surround-region)
-   '(":{" . cloveynit/surround-region)
-   '(":<" . cloveynit/surround-region)
-   '(":\"" . cloveynit/surround-region)
-   '(":'" . cloveynit/surround-region)
-   '(":`" . cloveynit/surround-region)
-   '(":=" . cloveynit/surround-region)
-   '(":~" . cloveynit/surround-region)
-   '(":_" . cloveynit/surround-region)
-   '(":+" . cloveynit/surround-region)
-   '(":*" . cloveynit/surround-region)
-   '(":/" . cloveynit/surround-region)
-   '("<escape>" . ignore)))
+  (add-to-list 'devil-special-keys `(", ," . ,(devil-key-executor ",")))
+  (setopt devil-key ".")
+  (setopt devil-lighter " \U0001F608")
+  (setopt devil-prompt "\U0001F608 %t")
+  (setopt devil-all-keys-repeatable t)
+  (setopt devil-translations
+          '((". m m" . "C-M-")
+            (". m ." . "M-,")
+            (". m z" . "M-")
+            (". m" . "M-")
+            (". ." . ".")
+            (". z" . "C-")
+            ("." . "C-")
+            (", ," . ",")
+            ("," . "C-c")))
+  :bind (("C-," . global-devil-mode)
+         :map devil-mode-map
+         ("," . devil)))
 
 (use-package general
   :init
@@ -172,7 +83,16 @@
    :keymaps 'global-map
    "<f5>" #'standard-themes-toggle
    "M-S" #'vertico-suspend
-   "C-." #'embark-act)
+   "C-c ." #'embark-act
+   "C-c a" #'cnit/global-generic-dispatch
+   "C-c c" #'cnit/consult-dispatch
+   "C-c g" #'magit-dispatch
+   "C-c G" #'cnit/magit-status
+   "C-c l" #'gptel-menu
+   "C-c n" #'cnit/denote-dispatch
+   "C-c p" #'cnit/project-dispatch
+   "C-c m" #'cnit/modes-dispatch
+   "C-c w" #'cnit/window-dispatch)
   (with-eval-after-load 'org
     (general-define-key
      :keymaps 'org-mode-map
@@ -196,20 +116,7 @@
      "C-<return>" #'vertico-exit-input)))
 
 (use-package transient
-  :init
-  (transient-define-prefix cnit/global-dispatch ()
-    "Global transient menu"
-    [["Default"
-      ("a" "Generic" cnit/global-generic-dispatch)
-      ("c" "Consult" cnit/consult-dispatch)
-      ("g" "Magit" magit-dispatch)
-      ("h" "Help" cnit/helpful-dispatch)
-      ("l" "Gptel" gptel-menu)
-      ("n" "Denote" cnit/denote-dispatch)
-      ("p" "Project" cnit/project-dispatch)
-      ("m" "Modes" cnit/modes-dispatch)
-      ("w" "Window" cnit/window-dispatch)
-      ]]))
+  :demand t)
 
 (transient-define-prefix cnit/window-dispatch ()
   "Transient for managing windows"
@@ -373,8 +280,11 @@
   :init (keycast-header-line-mode))
 
 (use-package embark
+  :bind ("C-." . embark-act)
   :config
-  (setopt embark-verbose-indicator-display-action '(display-buffer-in-side-window (side . left))))
+  (setopt
+   embark-cycle-key "."
+   embark-verbose-indicator-display-action '(display-buffer-in-side-window (side . left))))
 
 (use-package marginalia
   :init
@@ -572,6 +482,8 @@ major-mode-remap-alist or auto-mode-alist."
 (global-set-key (kbd "M-~") 'insert-pair)
 (global-set-key (kbd "M-=") 'insert-pair)
 
+(setopt next-line-add-newlines t)
+
 (use-package flymake
   :hook (prog-mode . flymake-mode))
 
@@ -679,20 +591,18 @@ major-mode-remap-alist or auto-mode-alist."
    helpful-key
    helpful-variable
    helpful-at-point)
-  :init
-  (transient-define-prefix cnit/helpful-dispatch ()
-    "Transient for Help commands"
-    ["Helpful"
-     [("c" "Callable" helpful-callable)
-      ("f" "Function" helpful-function)
-      ("x" "Command" helpful-command)
-      ("m" "Macro" helpful-macro)
-      ("k" "Key" helpful-key)
-      ("v" "Variable" helpful-variable)
-      ("p" "At point" helpful-at-point)]]))
+  :bind (("C-h f" . helpful-callable)
+         ("C-h v" . helpful-variable)
+         ("C-h k" . helpful-key)
+         ("C-h x" . helpful-command)))
 
 (use-package which-key
-  :commands which-key-show-major-mode)
+  :demand t
+  :init
+  (declare-function which-key-mode "which-key")
+  :config
+  (setopt which-key-idle-delay 1.0)
+  (which-key-mode 1))
 
 (use-package dired-x
   :hook (dired-mode . dired-omit-mode))

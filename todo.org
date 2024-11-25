@@ -1,4 +1,8 @@
 Things that have anoyed me in the config that could do with fixing.
+* emacs: second devil key "." > "M-"
+* emacs: meow beacon in devil
+* emacs: repeat mode operations
+* emcas: maybe port bindings to use-package instead of general
 * notification prior to battery going flat
 * qt theming
 * gtk theming

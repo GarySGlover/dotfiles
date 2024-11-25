@@ -9,14 +9,24 @@ let
   theme = config.wolf.theme;
   faces = theme.faces;
   keybinder = (
-    import ./keybinds.nix {
-      inherit lib pkgs;
+    import ./devil.nix {
+      inherit lib;
+      inherit config;
       roles = config.wolf.roles;
     }
   );
 in
 {
   config = mkIf config.wolf.roles.desktop {
+    home.file."${config.xdg.configHome}/hypr/devil.conf".text =
+      (import ./devil.nix {
+        inherit lib;
+        inherit config;
+        roles = config.wolf.roles;
+      }).binds;
+    home.file."${config.xdg.configHome}/hypr/hypr-insert.sh".source = ./hypr-insert.sh;
+    home.packages = with pkgs; [ libnotify ];
+
     wayland.windowManager.hyprland = {
       enable = true;
       settings = {
@@ -28,7 +38,7 @@ in
         ] ++ (if config.wolf.roles.gaming then [ "workspace 10,class:(steam)" ] else [ ]);
 
         exec-once = [
-          "${pkgs.hyprland}/bin/hyprctl dispatch submap command" # Start in the modal command mappings
+          "${pkgs.hyprland}/bin/hyprctl dispatch submap insert" # Start in the modal command mappings
           "kanshi" # Monitor management daemon
           "udiskie &" # Disk auto mount
         ];
@@ -50,6 +60,10 @@ in
           "col.active_border" = "rgb(${faces.fgBorder})";
           "col.nogroup_border" = "rgb(${faces.fgBorderInactive})";
           "col.nogroup_border_active" = "rgb(${faces.fgBorder})";
+        };
+        master = {
+          mfact = 0.5;
+          orientation = "center";
         };
         input = {
           kb_layout = "gb";

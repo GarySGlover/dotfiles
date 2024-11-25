@@ -59,8 +59,8 @@ in
       languagePacks = [ "en-GB" ];
       profiles.default = {
         settings = sharedSettings // {
-          # Downloads
-          "browser.download.dir" = "/home/clover/tmp/personal";
+          "browser.download.dir" = "/home/clover/tmp/personal"; # Download folder
+          "browser.sessionstore.max_resumed_crashes" = 0; # No resume previous session
         };
         search = {
           force = true;
@@ -80,8 +80,8 @@ in
       languagePacks = [ "en-GB" ];
       profiles.default = {
         settings = sharedSettings // {
-          # Downloads
-          "browser.download.dir" = "/home/clover/tmp/work";
+          "browser.download.dir" = "/home/clover/tmp/work"; # Download folder
+          "browser.sessionstore.max_resumed_crashes" = 0; # No resume previous session
         };
         search = {
           force = true;

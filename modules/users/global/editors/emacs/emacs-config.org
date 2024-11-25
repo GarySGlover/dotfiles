@@ -113,7 +113,32 @@ package manager.
 #+end_src
 
 * Key Bindings
-** Meow
+** Devil
+#+begin_src emacs-lisp :tangle yes
+  (use-package devil
+    :init
+    (global-devil-mode)
+    :config
+    (add-to-list 'devil-special-keys `(", ," . ,(devil-key-executor ",")))
+    (setopt devil-key ".")
+    (setopt devil-lighter " \U0001F608")
+    (setopt devil-prompt "\U0001F608 %t")
+    (setopt devil-all-keys-repeatable t)
+    (setopt devil-translations
+            '((". m m" . "C-M-")
+              (". m ." . "M-,")
+              (". m z" . "M-")
+              (". m" . "M-")
+              (". ." . ".")
+              (". z" . "C-")
+              ("." . "C-")
+              (", ," . ",")
+              ("," . "C-c")))
+    :bind (("C-," . global-devil-mode)
+           :map devil-mode-map
+           ("," . devil)))
+#+end_src
+** COMMENT Meow
 This is the meow modal editing suite.
 
 #+begin_src emacs-lisp :tangle yes
@@ -131,7 +156,6 @@ This is the meow modal editing suite.
      '("j" . meow-next)
      '("k" . meow-prev)
      '("l" . meow-right)
-     '("r" . cnit/global-dispatch)
      '("<escape>" . ignore))
     (meow-leader-define-key
      ;; Allow SPC h/j/k/l to run the original command that will be bound to H-<h/j/k/l>
@@ -199,7 +223,6 @@ This is the meow modal editing suite.
      '("O" . meow-to-block)
      '("p" . meow-replace)
      '("q" . meow-quit)
-     '("r" . cnit/global-dispatch)
      '("R" . meow-swap-grab)
      '("s" . meow-kill)
      '("t" . meow-till)
@@ -237,7 +260,16 @@ This is the meow modal editing suite.
      :keymaps 'global-map
      "<f5>" #'standard-themes-toggle
      "M-S" #'vertico-suspend
-     "C-." #'embark-act)
+     "C-c ." #'embark-act
+     "C-c a" #'cnit/global-generic-dispatch
+     "C-c c" #'cnit/consult-dispatch
+     "C-c g" #'magit-dispatch
+     "C-c G" #'cnit/magit-status
+     "C-c l" #'gptel-menu
+     "C-c n" #'cnit/denote-dispatch
+     "C-c p" #'cnit/project-dispatch
+     "C-c m" #'cnit/modes-dispatch
+     "C-c w" #'cnit/window-dispatch)
     (with-eval-after-load 'org
       (general-define-key
        :keymaps 'org-mode-map
@@ -260,29 +292,13 @@ This is the meow modal editing suite.
        :keymap 'vertico-map
        "C-<return>" #'vertico-exit-input)))
 #+end_src
-** TODO Transient
+** Transient
 Transient allows the creation and mapping of keybindings through
-menus. Initial configuration is to tie into meow, having a
-global-dispatch map available in all buffers that links to custom
-package maps. In the future I shall try to create a local mode map
-that applies to certian major/minor modes.
+menus.
 
 #+begin_src emacs-lisp :tangle yes
   (use-package transient
-    :init
-    (transient-define-prefix cnit/global-dispatch ()
-      "Global transient menu"
-      [["Default"
-        ("a" "Generic" cnit/global-generic-dispatch)
-        ("c" "Consult" cnit/consult-dispatch)
-        ("g" "Magit" magit-dispatch)
-        ("h" "Help" cnit/helpful-dispatch)
-        ("l" "Gptel" gptel-menu)
-        ("n" "Denote" cnit/denote-dispatch)
-        ("p" "Project" cnit/project-dispatch)
-        ("m" "Modes" cnit/modes-dispatch)
-        ("w" "Window" cnit/window-dispatch)
-        ]]))
+    :demand t)
 #+end_src
 *** Place holder transients
 #+begin_src emacs-lisp :tangle yes
@@ -491,8 +507,11 @@ Display the keys pressed and the associated command in the header line.
 ** TODO [#B] Embark
 #+begin_src emacs-lisp :tangle yes
   (use-package embark
+    :bind ("C-." . embark-act)
     :config
-    (setopt embark-verbose-indicator-display-action '(display-buffer-in-side-window (side . left))))
+    (setopt
+     embark-cycle-key "."
+     embark-verbose-indicator-display-action '(display-buffer-in-side-window (side . left))))
 #+end_src
 ** Marginalia
 
@@ -734,7 +753,6 @@ newlines.
     ((prog-mode . format-all-mode)
      (format-all-mode . format-all-ensure-formatter)))
 #+end_src
-*** TODO Nix
 *** TODO Zig
 ** Treesitter
 #+begin_src emacs-lisp :tangle yes
@@ -809,6 +827,10 @@ newlines.
   (global-set-key (kbd "M-`") 'insert-pair)
   (global-set-key (kbd "M-~") 'insert-pair)
   (global-set-key (kbd "M-=") 'insert-pair)
+#+end_src
+** Movement
+#+begin_src emacs-lisp :tangle yes
+  (setopt next-line-add-newlines t)
 #+end_src
 * Programming
 ** Flymake
@@ -962,23 +984,20 @@ Improved help display.
      helpful-key
      helpful-variable
      helpful-at-point)
-    :init
-    (transient-define-prefix cnit/helpful-dispatch ()
-      "Transient for Help commands"
-      ["Helpful"
-       [("c" "Callable" helpful-callable)
-        ("f" "Function" helpful-function)
-        ("x" "Command" helpful-command)
-        ("m" "Macro" helpful-macro)
-        ("k" "Key" helpful-key)
-        ("v" "Variable" helpful-variable)
-        ("p" "At point" helpful-at-point)]]))
-
+    :bind (("C-h f" . helpful-callable)
+           ("C-h v" . helpful-variable)
+           ("C-h k" . helpful-key)
+           ("C-h x" . helpful-command)))
 #+end_src
 ** Whichkey
 #+begin_src emacs-lisp :tangle yes
   (use-package which-key
-    :commands which-key-show-major-mode)
+    :demand t
+    :init
+    (declare-function which-key-mode "which-key")
+    :config
+    (setopt which-key-idle-delay 1.0)
+    (which-key-mode 1))
 #+end_src
 ** Dired
 Hide files matching ~dired-omit-files~ regex or the ~dired-omit-extensions~ list.

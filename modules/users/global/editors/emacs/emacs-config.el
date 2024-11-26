@@ -57,6 +57,8 @@
 (use-package devil
   :init
   (global-devil-mode)
+  :functions devil-key-executor
+  :defines devil-special-keys devil-mode-map
   :config
   (add-to-list 'devil-special-keys `(", ," . ,(devil-key-executor ",")))
   (setopt devil-key ".")
@@ -72,7 +74,8 @@
             (". z" . "C-")
             ("." . "C-")
             (", ," . ",")
-            ("," . "C-c")))
+            ("," . "C-c z")
+            (", ." . "C-c z C-")))
   :bind (("C-," . global-devil-mode)
          :map devil-mode-map
          ("," . devil)))
@@ -299,12 +302,24 @@
   :init (hyperbole-mode 1))
 
 (use-package org
+  :after (elec-pair dash)
+  :init
+  (defun cnit/org-save-babel-tangle ()
+    (add-hook 'after-save-hook
+              (lambda () (when (eq major-mode 'org-mode) (org-babel-tangle)))))
+  (defun cnit/org-electric-pairs ()
+    (setq-local electric-pair-pairs
+                (append `((?\* . ?\*)
+                          (?\/ . ?\/)
+                          (?\_ . ?\_)
+                          (?\= . ?\=)
+                          (?\+ . ?\+))
+                        electric-pair-pairs)))
   :hook
-  (org-mode . (lambda ()
-                (add-hook 'after-save-hook
-                          (lambda () (when (eq major-mode 'org-mode) (org-babel-tangle))))))
+  ((org-mode . cnit/org-save-babel-tangle)
+   (org-mode . cnit/org-electric-pairs))
   :config
-  (require 'dash)
+  (declare-function -each "dash")
   (setopt
    org-pretty-entities t
    org-startup-indented t
@@ -473,6 +488,11 @@ major-mode-remap-alist or auto-mode-alist."
 (use-package ws-butler
   :hook (prog-mode . ws-butler-mode))
 
+(use-package elec-pair
+  :init (electric-pair-mode 1)
+  :config
+  (setopt electric-pair-open-newline-between-pairs t))
+
 ;; Need to update insert-pair-alist
 (global-set-key (kbd "M-[") 'insert-pair)
 (global-set-key (kbd "M-{") 'insert-pair)
@@ -483,6 +503,60 @@ major-mode-remap-alist or auto-mode-alist."
 (global-set-key (kbd "M-=") 'insert-pair)
 
 (setopt next-line-add-newlines t)
+
+(use-package avy
+  :bind (("C-c z a" . avy-goto-char)
+         ("C-c z A" . avy-goto-line)
+         ("C-c z C-a" . avy-goto-char-timer)))
+
+(use-package re-builder
+  :commands (reb-update-regexp reb-target-value reb-quit)
+  :init
+  (defvar cnit/re-builder-positions nil
+    "Store point and region bounds before calling `re-builder'.")
+  (advice-add 're-builder
+              :before
+              (defun cnit/re-builder-save-state (&rest _)
+                "Save into `cnit/re-builder-positions' the point and region
+positions before calling `re-builder'."
+                (setq cnit/re-builder-positions
+                      (cons (point)
+                            (when (region-active-p)
+                              (list (region-beginning)
+                                    (region-end)))))))
+
+  (defun reb-replace-regexp (&optional delimited)
+    "Run `query-replace-regexp' with the contents of `re-builder'.
+With non-nil optinoal argument DELIMITED, only replace matches
+surrounded by word boundaries."
+    (interactive "P")
+    (reb-update-regexp)
+    (let* ((re (reb-target-value 'reb-regexp))
+           (replacement (query-replace-read-to
+                         re
+                         (concat "Query replace"
+                                 (if current-prefix-arg
+                                     (if (eq current-prefix-arg '-) " backward" " word")
+                                   "")
+                                 " regexp"
+                                 (if (with-selected-window reb-target-window
+                                       (region-active-p)) " in region" ""))
+                         t))
+           (pnt (car cnit/re-builder-positions))
+           (beg (cadr cnit/re-builder-positions))
+           (end (caddr cnit/re-builder-positions)))
+      (with-selected-window reb-target-window
+        (goto-char pnt)
+        (setq cnit/re-builder-positions nil)
+        (reb-quit)
+        (query-replace-regexp re replacement delimited beg end))))
+  :config
+  (setopt reb-re-syntax 'string)
+  :bind (("C-c z s" . re-builder)
+         :map reb-mode-map
+         ("RET" . reb-replace-regexp)
+         :map reb-lisp-mode-map
+         ("RET" . reb-replace-regexp)))
 
 (use-package flymake
   :hook (prog-mode . flymake-mode))
@@ -765,27 +839,3 @@ Selection is by organisation under the git-clones root directory"
        (-filter
         (lambda (d) (file-directory-p (concat project-root d)))
         (directory-files project-root nil "\\`[^.]")))))))
-
-(defvar cloveynit-pairs-alist
-  '((?\( ?\))
-    (?\[ ?\])
-    (?\{ ?\})
-    (?\< ?\>)
-    (?\" ?\")
-    (?\' ?\')
-    (?\` ?\`)
-    (?\= ?\=)
-    (?\~ ?\~)
-    (?\_ ?\_)
-    (?\+ ?\+)
-    (?\* ?\*)
-    (?\/ ?\/)))
-
-(defun cloveynit/surround-region ()
-  "Surround active region with paired characters."
-  (interactive)
-  (when (region-active-p)
-    (let ((pair (or (assq last-command-event cloveynit-pairs-alist)
-                    (assq (event-basic-type last-command-event) cloveynit-pairs-alist))))
-      (when pair
-        (insert-pair nil (car pair) (cadr pair))))))

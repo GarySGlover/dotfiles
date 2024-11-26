@@ -63,7 +63,7 @@ in
         };
         master = {
           mfact = 0.5;
-          orientation = "center";
+          orientation = "left";
         };
         input = {
           kb_layout = "gb";

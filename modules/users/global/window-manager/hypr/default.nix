@@ -27,8 +27,32 @@ in
     home.file."${config.xdg.configHome}/hypr/hypr-insert.sh".source = ./hypr-insert.sh;
     home.packages = with pkgs; [
       libnotify
-      hyprlock
     ];
+
+    programs.hyprlock = {
+      enable = true;
+      settings = {
+        general = {
+          disable_loading_bar = true;
+          hide_cursor = true;
+        };
+        background = [
+          {
+            color = "rgb(${faces.bgDefault})";
+          }
+        ];
+        input-field = [
+          {
+            outer_color = "rgb(${faces.fgBorder})";
+            inner_color = "rgb(${faces.bgDefault})";
+            font_color = "rgb(${faces.fgDefault})";
+            font_family = theme.font.name;
+            fade_on_empty = false;
+            placeholder_text = "<i>Password...</i>";
+          }
+        ];
+      };
+    };
 
     wayland.windowManager.hyprland = {
       enable = true;

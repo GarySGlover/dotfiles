@@ -13,11 +13,6 @@ with lib;
     };
     environment.systemPackages = with pkgs; [ hyprlandPlugins.hy3 ];
 
-    programs.sway = {
-      enable = true;
-      wrapperFeatures.gtk = true;
-    };
-
     services.xserver = {
       enable = true;
       # Configure keymap in X11
@@ -31,7 +26,7 @@ with lib;
       sddm = {
         enable = true;
       };
-      defaultSession = "sway";
+      defaultSession = "hyprland";
     };
 
     # Enable sound.

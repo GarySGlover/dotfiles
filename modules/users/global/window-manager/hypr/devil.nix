@@ -119,7 +119,7 @@ let
       (bindWithReset none "f" (dispatch.execr "firefox"))
       (bindWithReset none "r" (dispatch.execr "hyprshot -z -m region -s --clipboard-only"))
       (bindWithReset none "p" (dispatch.execr "hyprshot -z -m window -s --clipboard-only"))
-      (bindWithReset none "l" (dispatch.execr "swaylock"))
+      (bindWithReset none "l" (dispatch.execr "hyprlock"))
       (bindWithReset none "s" (dispatch.execr "steam"))
       (bindWithReset none "t" (dispatch.execr "kitty"))
       (bindWithReset none "w" (dispatch.execr "floorp"))

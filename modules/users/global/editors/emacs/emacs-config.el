@@ -1,4 +1,5 @@
 (use-package server
+  :commands (server-running-p)
   :config
   (unless (server-running-p)
     (server-start)))
@@ -14,23 +15,24 @@
   (package-archives nil "Remove all package download locations"))
 
 (use-package window
+  :functions split-window-max-pixels
   :config
   (defun split-window-max-pixels (&optional window)
     "Split WINDOW based on which directon has the most pixels."
-  (let ((window (or window (selected-window))))
-    (if (> (window-pixel-height window) (window-pixel-width window))
-	(or (and (window-splittable-p window)
-		 (with-selected-window window (split-window-below)))
-	    (and (window-splittable-p window t)
-		 (with-selected-window window (split-window-right)))
-	    (let ((split-height-threshold 0))
-	      (with-selected-window window (split-window-below))))
-      (or (and (window-splittable-p window t)
-	       (with-selected-window window (split-window-right)))
-	  (and (window-splittable-p window)
-	       (with-selected-window window (split-window-below)))
-	  (let ((split-width-threshold 0))
-	    (with-selected-window window (split-window-right)))))))
+    (let ((window (or window (selected-window))))
+      (if (> (window-pixel-height window) (window-pixel-width window))
+	  (or (and (window-splittable-p window)
+		   (with-selected-window window (split-window-below)))
+	      (and (window-splittable-p window t)
+		   (with-selected-window window (split-window-right)))
+	      (let ((split-height-threshold 0))
+	        (with-selected-window window (split-window-below))))
+        (or (and (window-splittable-p window t)
+	         (with-selected-window window (split-window-right)))
+	    (and (window-splittable-p window)
+	         (with-selected-window window (split-window-below)))
+	    (let ((split-width-threshold 0))
+	      (with-selected-window window (split-window-right)))))))
 
   (setopt split-window-preferred-function #'split-window-max-pixels))
 
@@ -43,20 +45,11 @@
 (unbind-key "<f11>" 'global-map)
 (unbind-key "<pinch>" 'global-map)
 
-(use-package exec-path-from-shell
-  :demand t
-  :config
-  (exec-path-from-shell-copy-env "SSH_AGENT_PID")
-  (exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
-  (exec-path-from-shell-copy-env "https_proxy")
-  (exec-path-from-shell-copy-env "http_proxy"))
-
 (use-package emacs
   :config (setopt select-active-regions nil))
 
 (use-package devil
-  :init
-  (global-devil-mode)
+  :hook (after-init . global-devil-mode)
   :functions devil-key-executor
   :defines devil-special-keys devil-mode-map
   :config
@@ -216,7 +209,7 @@
 (use-package vertico-multiform
   :after vertico
   :commands (vertico-multiform-mode)
-  :init (vertico-multiform-mode)
+  :hook (after-init . vertico-multiform-mode)
   :config
   (setopt vertico-multiform-commands
           '((consult-line buffer)))
@@ -231,26 +224,28 @@
    completion-category-overrides '((file (styles basic partial-completion)))))
 
 (use-package corfu
+  :defines corfu-map
   :config
   (setopt
    corfu-auto t
    corfu-cycle t)
   :bind (:map corfu-map
               ("RET" . nil))
-  :init (global-corfu-mode t))
+  :hook (after-init . global-corfu-mode))
 
 (use-package corfu-popupinfo
   :after corfu
-  :init (corfu-popupinfo-mode t))
+  :hook (after-init . corfu-popupinfo-mode))
 
 (use-package consult
+  :functions consult-xref
   :init
   (setopt
    xref-show-xrefs-function #'consult-xref
    xref-show-definitions-function #'consult-xref))
 
 (transient-define-prefix cnit/consult-dispatch ()
-  "Transient for Consult commands"
+  "Transient for Consult commands."
   [["Buffers"
     ("b" "Switch" consult-buffer)
     ("o" "Other window" consult-buffer-other-window)
@@ -279,19 +274,60 @@
    ])
 
 (use-package keycast
-  :commands  (keycast-header-line-mode)
-  :init (keycast-header-line-mode))
+  :hook (after-init . keycast-header-line-mode))
 
 (use-package embark
-  :bind ("C-." . embark-act)
+  :commands
+  (embark--truncate-target
+   embark-completing-read-prompter
+   embark-which-key-indicator
+   embark-hide-which-key-indicator)
+  :bind ("C-c z e" . embark-act)
   :config
+  (defvar embark-indicators)
+  (declare-function which-key--hide-popup-ignore-command "which-key")
+  (declare-function which-key--show-keymap "which-key")
+  (defun embark-which-key-indicator ()
+    "An embark indicator that displays keymaps using which-key.
+The which-key help message will show the type and value of the
+current target followed by an ellipsis if there are further
+targets."
+    (lambda (&optional keymap targets prefix)
+      (if (null keymap)
+          (which-key--hide-popup-ignore-command)
+        (which-key--show-keymap
+         (if (eq (plist-get (car targets) :type) 'embark-become)
+             "Become"
+           (format "Act on %s '%s'%s"
+                   (plist-get (car targets) :type)
+                   (embark--truncate-target (plist-get (car targets) :target))
+                   (if (cdr targets) "…" "")))
+         (if prefix
+             (pcase (lookup-key keymap prefix 'accept-default)
+               ((and (pred keymapp) km) km)
+               (_ (key-binding prefix 'accept-default)))
+           keymap)
+         nil nil t (lambda (binding)
+                     (not (string-suffix-p "-argument" (cdr binding))))))))
+  (defun embark-hide-which-key-indicator (fn &rest args)
+    "Hide the which-key indicator immediately when using the
+completing-read prompter."
+    (which-key--hide-popup-ignore-command)
+    (let ((embark-indicators
+           (remq #'embark-which-key-indicator embark-indicators)))
+      (apply fn args)))
+
+  (advice-add #'embark-completing-read-prompter
+              :around #'embark-hide-which-key-indicator)
   (setopt
    embark-cycle-key "."
-   embark-verbose-indicator-display-action '(display-buffer-in-side-window (side . left))))
+   embark-verbose-indicator-display-action '(display-buffer-in-side-window (side . bottom))
+   embark-indicators '(embark-which-key-indicator
+                       embark-highlight-indicator
+                       embark-isearch-highlight-indicator)))
 
 (use-package marginalia
-  :init
-  (marginalia-mode))
+  :hook (after-init . marginalia-mode))
 
 (use-package indent-bars
   :config
@@ -299,7 +335,7 @@
   :commands indent-bars-mode)
 
 (use-package hyperbole
-  :init (hyperbole-mode 1))
+  :hook (after-init . hyperbole-mode))
 
 (use-package org
   :after (elec-pair dash)
@@ -364,6 +400,7 @@ If not, prompt the user whether to allow running all code blocks silently."
 
 (use-package denote
   :demand t
+  :functions denote-rename-buffer-mode
   :config
   (denote-rename-buffer-mode t)
   (setopt
@@ -373,7 +410,7 @@ If not, prompt the user whether to allow running all code blocks silently."
   :hook (dired-mode . denote-dired-mode))
 
 (transient-define-prefix cnit/denote-dispatch ()
-  "Transient for Denote commands"
+  "Transient for Denote commands."
   [["Notes"
     ("n" "New" denote)
     ("c" "Region" denote-region)
@@ -394,18 +431,22 @@ If not, prompt the user whether to allow running all code blocks silently."
     ("s" "Search" cnit/find-file-in-notes)
     ("p" "Dired" (lambda () (interactive) (dired denote-directory)))]])
 
-(defun cnit/find-file-in-notes ()
-  (interactive)
-  "Open file from the denote notes directory"
-  (let* ((vc-dirs-ignores (mapcar
-                           (lambda (dir)
-                             (concat dir "/"))
-                           vc-directory-exclusion-list))
-         (file (completing-read "Note:" (project--files-in-directory denote-directory vc-dirs-ignores))))
-    (when file (find-file file))))
+(use-package emacs
+  :functions (project--files-in-directory)
+  :defines (denote-directory)
+  :init
+  (defun cnit/find-file-in-notes ()
+    "Open file from the denote notes directory."
+    (interactive)
+    (let* ((vc-dirs-ignores (mapcar
+                             (lambda (dir)
+                               (concat dir "/"))
+                             vc-directory-exclusion-list))
+           (file (completing-read "Note:" (project--files-in-directory denote-directory vc-dirs-ignores))))
+      (when file (find-file file)))))
 
 (use-package yasnippet
-  :init (yas-global-mode 1))
+  :hook (after-init . yas-global-mode))
 
 (use-package yasnippet-capf)
 
@@ -423,7 +464,7 @@ If not, prompt the user whether to allow running all code blocks silently."
    gptel-default-mode 'org-mode))
 
 (use-package format-all
-  :commands format-all-mode
+  :defines format-all-default-formatters
   :config
   (add-to-list 'format-all-default-formatters '("Nix" nixfmt))
   :hook
@@ -432,6 +473,7 @@ If not, prompt the user whether to allow running all code blocks silently."
 
 (use-package treesit
   :defer t
+  :functions cloveynit/report-unused-ts-modes
   :init
   (defun cloveynit/report-unused-ts-modes ()
     "Report TreeSitter modes that are not mapped in
@@ -489,25 +531,140 @@ major-mode-remap-alist or auto-mode-alist."
   :hook (prog-mode . ws-butler-mode))
 
 (use-package elec-pair
-  :init (electric-pair-mode 1)
+  :hook (after-init . electric-pair-mode)
   :config
   (setopt electric-pair-open-newline-between-pairs t))
-
-;; Need to update insert-pair-alist
-(global-set-key (kbd "M-[") 'insert-pair)
-(global-set-key (kbd "M-{") 'insert-pair)
-(global-set-key (kbd "M-\"") 'insert-pair)
-(global-set-key (kbd "M-'") 'insert-pair)
-(global-set-key (kbd "M-`") 'insert-pair)
-(global-set-key (kbd "M-~") 'insert-pair)
-(global-set-key (kbd "M-=") 'insert-pair)
 
 (setopt next-line-add-newlines t)
 
 (use-package avy
+  :functions (ring-ref
+              cnit/avy-keys-builder
+              helpful-at-point
+              embark-act)
+  :defines (avy-ring avy-goto-char avy-dispatch-alist)
+  :commands (avy-action-copy-region
+             avy-action-copy-whole-line
+             avy-action-kill-whole-line
+             avy-action-yank-region
+             avy-action-kill-region
+             avy-goto-char
+             avy-process
+             avy--regex-candidates
+             avy-action-with-region
+             avy-with)
+  :config
+  (defun avy-action-kill-whole-line (pt)
+    (save-excursion
+      (goto-char pt)
+      (kill-new "")
+      (kill-whole-line))
+    (select-window (cdr (ring-ref avy-ring 0)))
+    t)
+
+  (defun avy-action-copy-whole-line (pt)
+    (save-excursion
+      (goto-char pt)
+      (let ((start (move-beginning-of-line 1))
+            (end (progn (move-end-of-line 1) (point))))
+        (kill-new (buffer-substring-no-properties start (+ end 1)))))
+    (select-window (cdr (ring-ref avy-ring 0)))
+    t)
+
+  (defun avy-action-yank-whole-line (pt)
+    (avy-action-copy-whole-line pt)
+    (yank)
+    t)
+
+  (defun avy-action-transport-whole-line (pt)
+    (avy-action-kill-whole-line pt)
+    (yank)
+    t)
+
+  (defun avy-action-with-region (pt action)
+    (save-excursion
+      (avy-with avy-goto-char
+        (let ((avy-all-windows nil))
+          (when-let*
+              ((char2 (read-char "char: "))
+               (pt2 (cdr (avy-process
+                          (avy--regex-candidates
+                           (regexp-quote (string char2))
+                           pt)))))
+            (funcall action pt pt2)))))
+    (select-window (cdr (ring-ref avy-ring 1)))
+    t)
+
+  (defun avy-action-copy-region (pt)
+    (avy-action-with-region pt 'copy-region-as-kill)
+    t)
+
+  (defun avy-action-yank-region (pt)
+    (avy-action-copy-region pt)
+    (yank)
+    t)
+
+  (defun avy-action-kill-region (pt)
+    (avy-action-with-region pt 'kill-region))
+
+  (defun avy-action-transport-region (pt)
+    (avy-action-kill-region pt)
+    (yank)
+    t)
+
+  (defun embark-act-region (start end)
+    (goto-char end)
+    (set-mark start)
+    (activate-mark)
+    (embark-act))
+
+  (defun avy-action-embark-act-region (pt)
+    (avy-action-with-region pt 'embark-act-region)
+    t)
+
+  (defun avy-action-embark-act (pt)
+    (save-excursion
+      (goto-char pt)
+      (embark-act))
+    (select-window
+     (cdr (ring-ref avy-ring 0)))
+    t)
+
+  (defun avy-action-helpful (pt)
+    (save-excursion
+      (goto-char pt)
+      (helpful-at-point))
+    (select-window
+     (cdr (ring-ref avy-ring 0)))
+    t)
+
+  (setq-default avy-dispatch-alist
+                '((?e . avy-action-embark-act)
+                  (?E . avy-action-embark-act-region)
+                  (?H . avy-action-helpful)
+                  (?k . avy-action-kill-whole-line)
+                  (?K . avy-action-kill-region)
+                  (?t . avy-action-transport-whole-line)
+                  (?T . avy-action-transport-region)
+                  (?w . avy-action-copy-whole-line)
+                  (?W . avy-action-copy-region)
+                  (?y . avy-action-yank-whole-line)
+                  (?Y . avy-action-yank-region)))
+
+  (defun cnit/avy-keys-builder ()
+    "Generate the `avy-keys' list.
+Keys will be all from a-z excluding those used in `avy-dispatch-alist'"
+    (let ((dispatch-keys (mapcar 'car avy-dispatch-alist))
+          (keys))
+      (dolist (char (number-sequence ?a ?z))
+        (unless (member char dispatch-keys)
+          (push char keys)))
+      (setopt avy-keys keys)))
+  (cnit/avy-keys-builder)
+
   :bind (("C-c z a" . avy-goto-char)
-         ("C-c z A" . avy-goto-line)
-         ("C-c z C-a" . avy-goto-char-timer)))
+         ("C-c z A" . avy-goto-char-timer)
+         ("C-c z C-a" . avy-goto-line)))
 
 (use-package re-builder
   :commands (reb-update-regexp reb-target-value reb-quit)
@@ -562,6 +719,7 @@ surrounded by word boundaries."
   :hook (prog-mode . flymake-mode))
 
 (use-package eglot
+  :functions (flymake-eldoc-function cape-wrap-buster)
   :init
   (defun cnit/reorder-eldoc-functions ()
     "Fix the order of the eldoc functions so that flymake comes first"
@@ -604,8 +762,8 @@ surrounded by word boundaries."
 
 (use-package magit)
 
-(use-package
-  project
+(use-package  project
+  :commands (project-forget-projects-under)
   :config (project-forget-projects-under "~/git-clones" t))
 
 (defun cnit/project--dispact-wrap-command (cmd)
@@ -649,12 +807,12 @@ surrounded by word boundaries."
     ("o" "Force Display in Other Window" "other window")]])
 
 (use-package
- direnv
- :config (setopt direnv-always-show-summary nil)
- :init (direnv-mode))
+  direnv
+  :config (setopt direnv-always-show-summary nil)
+  :hook (after-init . direnv-mode))
 
 (use-package editorconfig
-  :config (editorconfig-mode 1))
+  :hook (after-init . editorconfig-mode))
 
 (use-package helpful
   :commands
@@ -828,7 +986,7 @@ surrounded by word boundaries."
 Selection is by organisation under the git-clones root directory"
   (interactive)
   (let* ((root (expand-file-name "~/git-clones"))
-         (org (completing-read "Select organisation: " (-map (lambda (f) (f-filename f)) (f-directories root))))
+         (org (completing-read "Select organisation: " (-map (lambda (f) (f-filename kf)) (f-directories root))))
          (project-root (format "%s/" (expand-file-name org root))))
     (magit-status
      (completing-read
@@ -839,3 +997,13 @@ Selection is by organisation under the git-clones root directory"
        (-filter
         (lambda (d) (file-directory-p (concat project-root d)))
         (directory-files project-root nil "\\`[^.]")))))))
+
+(defun clovnit/run-file ()
+  "Run the current buffer.
+Runs inside comint if the file is executable."
+  (interactive)
+  (let* ((buffer-file (buffer-file-name))
+         (executable-p (and buffer-file (file-executable-p buffer-file))))
+    (when executable-p (switch-to-buffer (make-comint (format "run-%s" (file-name-base buffer-file)) buffer-file)))))
+
+(bind-key "C-c z x" #'clovnit/run-file)

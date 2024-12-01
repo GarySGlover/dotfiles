@@ -25,7 +25,10 @@ in
         roles = config.wolf.roles;
       }).binds;
     home.file."${config.xdg.configHome}/hypr/hypr-insert.sh".source = ./hypr-insert.sh;
-    home.packages = with pkgs; [ libnotify ];
+    home.packages = with pkgs; [
+      libnotify
+      hyprlock
+    ];
 
     wayland.windowManager.hyprland = {
       enable = true;
@@ -77,7 +80,9 @@ in
         };
 
         decoration = {
-          drop_shadow = false;
+          shadow = {
+            enabled = false;
+          };
           rounding = toString theme.radius;
         };
 

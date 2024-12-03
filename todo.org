@@ -1,8 +1,9 @@
 Things that have anoyed me in the config that could do with
-* emacs: comint run buffer
+* emacs: multiple cursors / kmacro
 * emacs: meow beacon in devil
 * emcas: maybe port bindings to use-package instead of general
 * notification prior to battery going flat
 * qt theming
 * gtk theming
+* ags implementation
 * waybar workspace spacing

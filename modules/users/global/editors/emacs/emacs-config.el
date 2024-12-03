@@ -638,6 +638,11 @@ major-mode-remap-alist or auto-mode-alist."
      (cdr (ring-ref avy-ring 0)))
     t)
 
+  (defun avy-action-hyprbole (pt)
+    (save-excursion
+      (goto-char pt)
+      (hkey-either)))
+
   (setq-default avy-dispatch-alist
                 '((?e . avy-action-embark-act)
                   (?E . avy-action-embark-act-region)
@@ -649,7 +654,8 @@ major-mode-remap-alist or auto-mode-alist."
                   (?w . avy-action-copy-whole-line)
                   (?W . avy-action-copy-region)
                   (?y . avy-action-yank-whole-line)
-                  (?Y . avy-action-yank-region)))
+                  (?Y . avy-action-yank-region)
+                  (?\r . avy-action-hyprbole)))
 
   (defun cnit/avy-keys-builder ()
     "Generate the `avy-keys' list.
@@ -986,7 +992,7 @@ surrounded by word boundaries."
 Selection is by organisation under the git-clones root directory"
   (interactive)
   (let* ((root (expand-file-name "~/git-clones"))
-         (org (completing-read "Select organisation: " (-map (lambda (f) (f-filename kf)) (f-directories root))))
+         (org (completing-read "Select organisation: " (-map (lambda (f) (f-filename f)) (f-directories root))))
          (project-root (format "%s/" (expand-file-name org root))))
     (magit-status
      (completing-read
@@ -998,12 +1004,34 @@ Selection is by organisation under the git-clones root directory"
         (lambda (d) (file-directory-p (concat project-root d)))
         (directory-files project-root nil "\\`[^.]")))))))
 
-(defun clovnit/run-file ()
-  "Run the current buffer.
-Runs inside comint if the file is executable."
-  (interactive)
-  (let* ((buffer-file (buffer-file-name))
-         (executable-p (and buffer-file (file-executable-p buffer-file))))
-    (when executable-p (switch-to-buffer (make-comint (format "run-%s" (file-name-base buffer-file)) buffer-file)))))
+(declare-function -filter "dash")
+(declare-function project-files "project")
 
-(bind-key "C-c z x" #'clovnit/run-file)
+(defun clovnit/run-file (buffer)
+  "Run current BUFFER.
+Runs inside comint if the file is executable."
+  (interactive
+   (list (if (project-current)
+             (completing-read "Run file: " (-filter #'file-executable-p (project-files (project-current))))
+           (read-file-name "Run file: "))))
+  (let* ((executable-p (and buffer (file-executable-p buffer))))
+    (when executable-p (switch-to-buffer (make-comint (format "run-%s" (file-name-base buffer)) buffer)))))
+
+(defun clovnit/run-current-file ()
+  (interactive)
+  (when (buffer-file-name)
+    (clovnit/run-file (buffer-file-name))))
+
+(bind-key "C-c z x" #'clovnit/run-current-file)
+(bind-key "C-c z X" #'clovnit/run-file)
+
+(defun cnit/browse-url-quesiton (url &optional new-window)
+  (interactive (browse-url-interactive-arg "URL: "))
+  (let* ((browser (read-char-choice "Browser: 'p' personal 'w' work: " '(?p ?w)))
+         (browse-url-firefox-program
+          (cond
+           ((eq browser ?p) "firefox")
+           ((eq browser ?w) "floorp"))))
+    (browse-url-firefox url new-window)))
+
+(setopt browse-url-browser-function #'cnit/browse-url-quesiton)

@@ -66,7 +66,6 @@ in
 
         exec-once = [
           "${pkgs.hyprland}/bin/hyprctl dispatch submap insert" # Start in the modal command mappings
-          "kanshi" # Monitor management daemon
           "udiskie &" # Disk auto mount
         ];
         exec = [

@@ -1,0 +1,117 @@
+;; ignore complaints here.
+
+#| config todo
+Repeats:
+|#
+
+#| config completed:
+- Timeouts for all
+- . . > .
+- . z {_} > C-{_}
+- . {_} > C-{_}
+- . m z {_} > M-{_}
+- . m {_} > M-{_}
+- . m m {_} > C-M-{_}
+|#
+
+(defcfg process-unmapped-keys yes
+        linux-dev /dev/input/event0:/dev/input/by-id/usb-Clover_Clover_Split-event-kbd)
+
+(defsrc)
+
+(defvar
+  devil-timeout 1000
+  repeat-timeout 5000)
+
+(deftemplate activate (layer)
+             (concat activate-devil- $layer) (multi
+                                              (on-idle $devil-timeout tap-vkey (concat release-devil- $layer))
+                                              (on-press press-virtualkey (concat devil- $layer))))
+(deftemplate activate-repeat (layer)
+             (concat activate-devil- $layer) (multi
+                                              (on-idle $repeat-timeout tap-vkey (concat release-devil- $layer))
+                                              (on-press press-virtualkey (concat devil- $layer))))
+(defalias
+  (t! activate control)
+  (t! activate control-quote)
+  (t! activate meta)
+  (t! activate meta-quote)
+  (t! activate control-meta)
+  (t! activate-repeat repeat-navigation))
+
+(deflayermap base
+             , (switch
+                ((not
+                  (or
+                   (input real lctl)
+                   (input real rctl)
+                   (input real lsft)
+                   (input real rsft)
+                   (input real lmet)
+                   (input real rmet)
+                   (input real lalt)
+                   (input real ralt)))) @activate-devil-control break
+                () , break))
+
+(deftemplate devil-sequence (old new)
+             (multi (on-press release-vkey (concat devil- $old)) (concat @activate-devil- $new)))
+
+(deftemplate devil-start-repeat (mods key old-map map)
+             $key (multi (on-press release-vkey (concat devil- $old-map)) $mods $key (concat @activate-devil-repeat- $map)))
+(deflayermap devil-control
+             , (multi (on-press release-vkey devil-control) ,)
+             spc (multi (on-press release-vkey devil-control) (macro , spc))
+             ret (multi (on-press release-vkey devil-control) (macro , ret))
+             z (t! devil-sequence control control-quote)
+             m (t! devil-sequence control meta)
+             g (multi (macro C-g) (on-press release-vkey devil-control))
+             (t! devil-start-repeat lctl n control navigation)
+             (t! devil-start-repeat lctl p control navigation)
+             (t! devil-start-repeat lctl f control navigation)
+             (t! devil-start-repeat lctl b control navigation)
+             (t! devil-start-repeat lctl a control navigation)
+             (t! devil-start-repeat lctl e control navigation)
+             ___ (multi (on-press release-vkey devil-control) lctl _))
+
+(deflayermap devil-control-quote
+             , (multi (on-press release-vkey devil-control-quote) lctl ,)
+             ___ (multi (on-press release-vkey devil-control-quote) lctl _))
+
+(deflayermap devil-meta
+             , (multi (on-press release-vkey devil-meta) lalt ,)
+             z (t! devil-sequence meta meta-quote)
+             m (t! devil-sequence meta control-meta)
+             ___ (multi (on-press release-vkey devil-meta) lalt _))
+
+(deflayermap devil-meta-quote
+             , (multi (on-press release-vkey devil-meta-quote) lalt ,)
+             ___ (multi (on-press release-vkey devil-meta-quote) lalt _))
+
+(deflayermap devil-control-meta
+             , (multi (on-press release-vkey devil-control-meta) lctl lalt ,)
+             ___ (multi (on-press release-vkey devil-control-meta) lctl lalt _))
+
+(deftemplate devil-key (layer)
+             (concat devil- $layer) (layer-while-held (concat devil- $layer))
+             (concat release-devil- $layer) (on-press release-vkey (concat devil- $layer)))
+(defvirtualkeys
+ (t! devil-key control)
+ (t! devil-key control-quote)
+ (t! devil-key meta)
+ (t! devil-key meta-quote)
+ (t! devil-key control-meta)
+ (t! devil-key repeat-navigation))
+
+(deftemplate devil-repeat-default ()
+             ___ (multi (on-press release-vkey devil-repeat-navigation) _))
+(deftemplate devil-repeat-bind (mods key map)
+             $key (multi (on-press release-vkey (concat devil-repeat- $map)) $mods $key (concat @activate-devil-repeat- $map)))
+(deflayermap devil-repeat-navigation
+             , (multi (on-press release-vkey devil-repeat-navigation) @activate-devil-control)
+             (t! devil-repeat-bind lctl n navigation)
+             (t! devil-repeat-bind lctl p navigation)
+             (t! devil-repeat-bind lctl f navigation)
+             (t! devil-repeat-bind lctl b navigation)
+             (t! devil-repeat-bind lctl e navigation)
+             (t! devil-repeat-bind lctl a navigation)
+             (t! devil-repeat-default))

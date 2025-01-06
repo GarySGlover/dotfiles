@@ -11,6 +11,7 @@ with types;
   options.wolf.theme = {
     font = mkOption { type = hm.types.fontType; };
     border = mkOption { type = ints.unsigned; };
+    gaps = mkOption { type = ints.unsigned; };
     radius = mkOption {
       type = ints.unsigned;
       default = config.wolf.theme.font.size;

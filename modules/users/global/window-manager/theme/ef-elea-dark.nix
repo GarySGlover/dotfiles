@@ -20,6 +20,7 @@ in
     };
 
     border = 2;
+    gaps = 2;
 
     faces =
       with config.wolf.theme;

@@ -31,6 +31,7 @@ let
           extraGroups = [
             "realtime"
             "libvirtd"
+            "input"
           ];
         };
         work = {

@@ -10,20 +10,12 @@ let
   faces = theme.faces;
   keybinder = (
     import ./devil.nix {
-      inherit lib;
-      inherit config;
-      roles = config.wolf.roles;
+      inherit pkgs lib;
     }
   );
 in
 {
   config = mkIf config.wolf.roles.desktop {
-    home.file."${config.xdg.configHome}/hypr/devil.conf".text =
-      (import ./devil.nix {
-        inherit lib;
-        inherit config;
-        roles = config.wolf.roles;
-      }).binds;
     home.file."${config.xdg.configHome}/hypr/hypr-insert.sh".source = ./hypr-insert.sh;
     home.packages = with pkgs; [
       libnotify
@@ -67,6 +59,9 @@ in
         exec-once = [
           "${pkgs.hyprland}/bin/hyprctl dispatch submap insert" # Start in the modal command mappings
           "udiskie &" # Disk auto mount
+          "kanata &"
+          "waybar &"
+          "systemctl --user start kanshi"
         ];
         exec = [
           "kanshictl reload" # Force monitor refresh on reload
@@ -80,8 +75,8 @@ in
         general = {
           layout = "master";
           border_size = theme.border;
-          gaps_in = toString theme.font.size;
-          gaps_out = toString theme.font.size;
+          gaps_in = theme.gaps;
+          gaps_out = theme.gaps;
           "col.inactive_border" = "rgb(${faces.fgBorderInactive})";
           "col.active_border" = "rgb(${faces.fgBorder})";
           "col.nogroup_border" = "rgb(${faces.fgBorderInactive})";

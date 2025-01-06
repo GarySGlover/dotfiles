@@ -48,69 +48,6 @@
 (use-package emacs
   :config (setopt select-active-regions nil))
 
-(use-package devil
-  :hook (after-init . global-devil-mode)
-  :functions devil-key-executor
-  :defines devil-special-keys devil-mode-map
-  :config
-  (add-to-list 'devil-special-keys `(", ," . ,(devil-key-executor ",")))
-  (setopt devil-key ".")
-  (setopt devil-lighter " \U0001F608")
-  (setopt devil-prompt "\U0001F608 %t")
-  (setopt devil-all-keys-repeatable t)
-  (setopt devil-translations
-          '((". m m" . "C-M-")
-            (". m ." . "M-,")
-            (". m z" . "M-")
-            (". m" . "M-")
-            (". ." . ".")
-            (". z" . "C-")
-            ("." . "C-")
-            (", ," . ",")
-            ("," . "C-c z")
-            (", ." . "C-c z C-")))
-  :bind (("C-," . global-devil-mode)
-         :map devil-mode-map
-         ("," . devil)))
-
-(use-package general
-  :init
-  (general-define-key
-   :keymaps 'global-map
-   "<f5>" #'standard-themes-toggle
-   "M-S" #'vertico-suspend
-   "C-c ." #'embark-act
-   "C-c a" #'cnit/global-generic-dispatch
-   "C-c c" #'cnit/consult-dispatch
-   "C-c g" #'magit-dispatch
-   "C-c G" #'cnit/magit-status
-   "C-c l" #'gptel-menu
-   "C-c n" #'cnit/denote-dispatch
-   "C-c p" #'cnit/project-dispatch
-   "C-c m" #'cnit/modes-dispatch
-   "C-c w" #'cnit/window-dispatch)
-  (with-eval-after-load 'org
-    (general-define-key
-     :keymaps 'org-mode-map
-     "C-M-<return>" #'org-meta-return))
-  (with-eval-after-load 'corfu-candidate-overlay
-    (general-define-key
-     :keymaps 'corfu-candidate-overlay-completion-map
-     "C-n" #'completion-at-point
-     "<tab>" #'corfu-candidate-overlay-complete-at-point))
-  (with-eval-after-load 'transient
-    (general-define-key
-     :keymaps 'transient-base-map
-     "<escape>" 'transient-quit-all))
-  (with-eval-after-load 'dired
-    (general-define-key
-     :keymaps 'dired-mode-map
-     "?" 'which-key-show-major-mode))
-  (with-eval-after-load 'vertico
-    (general-define-key
-     :keymap 'vertico-map
-     "C-<return>" #'vertico-exit-input)))
-
 (use-package transient
   :demand t)
 
@@ -187,6 +124,8 @@
      show-paren-mode)
     ]])
 
+(bind-key "C-c m" #'cnit/modes-dispatch)
+
 (setopt
  scroll-bar-mode nil
  tool-bar-mode nil
@@ -228,9 +167,11 @@
   :config
   (setopt
    corfu-auto t
-   corfu-cycle t)
+   corfu-cycle t
+   corfu-on-exact-match 'show)
   :bind (:map corfu-map
-              ("RET" . nil))
+              ("RET" . nil)
+              ("C-<tab>" . corfu-complete))
   :hook (after-init . global-corfu-mode))
 
 (use-package corfu-popupinfo
@@ -239,6 +180,7 @@
 
 (use-package consult
   :functions consult-xref
+  :bind ("C-c c" . consult-line)
   :init
   (setopt
    xref-show-xrefs-function #'consult-xref
@@ -282,7 +224,7 @@
    embark-completing-read-prompter
    embark-which-key-indicator
    embark-hide-which-key-indicator)
-  :bind ("C-c z e" . embark-act)
+  :bind ("C-c e" . embark-act)
   :config
   (defvar embark-indicators)
   (declare-function which-key--hide-popup-ignore-command "which-key")
@@ -329,6 +271,82 @@ completing-read prompter."
 (use-package marginalia
   :hook (after-init . marginalia-mode))
 
+`(:propertize "/m/u/g/emacs/emacs-config.org"
+              help-echo name)
+
+(use-package telephone-line
+  :init
+  (telephone-line-defsegment* cnit/telephone-line-magit-segment ()
+    (require 'magit)
+    (require 's)
+    (telephone-line-raw
+     (when (fboundp #'magit-get-current-branch)
+       (when-let* ((max-length 30)
+                   (branch (s-left max-length (magit-get-current-branch))))
+         `(:propertize ,(format " %s" branch)
+                       mouse-face mode-line-highlight
+                       help-echo "Click to open Magit status"
+                       local-map ,(let ((map (make-sparse-keymap)))
+                                    (define-key map [mode-line mouse-1]
+                                                #'magit-status)
+                                    map)
+                       face ,face)))))
+  (telephone-line-defsegment* cnit/telephone-line-buffer-name ()
+    (telephone-line-raw
+     (if-let* ((name (buffer-file-name))
+               (shortname (shorten-file-path name)))
+         `(:propertize ,shortname
+                       help-echo ,name
+                       face ,face)
+       (buffer-name))))
+  (telephone-line-mode nil)
+  (setq telephone-line-lhs
+        '((accent . (cnit/telephone-line-magit-segment
+                     telephone-line-process-segment))
+          (nil . (telephone-line-flymake-segment))
+          (accent . (telephone-line-project-segment))
+          (nil . (cnit/telephone-line-buffer-name)))
+        telephone-line-rhs
+        '((accent    . (telephone-line-misc-info-segment))
+          (accent . (telephone-line-major-mode-segment))
+          (evil   . (telephone-line-airline-position-segment))))
+  (telephone-line-mode t))
+
+(defun shorten-file-path (file-path &optional max-length)
+  "Shorten FILE-PATH according to the following rules:
+1. If within a `project.el` project, remove the project root from the start.
+2. If within the user's home directory, replace the home directory with `~`.
+3. If the path length exceeds MAX-LENGTH (default 30), shorten directories from the beginning."
+  (let* ((max-length (or max-length 30))
+         (home-dir (expand-file-name "~"))
+         (project-root (when (fboundp 'project-root)
+                         (ignore-errors
+                           (let ((project (project-current)))
+                             (when project
+                               (expand-file-name (project-root project)))))))
+         ;; Step 1: Shorten to project-relative path
+         (relative-path (if (and project-root (string-prefix-p project-root file-path))
+                            (substring file-path (length project-root))
+                          file-path)))
+    ;; Step 2: Shorten to home-relative path
+    (setq relative-path
+          (if (string-prefix-p home-dir relative-path)
+              (concat "~" (substring relative-path (length home-dir)))
+            relative-path))
+    ;; Step 3: Shorten further if the path exceeds max-length
+    (if (<= (length relative-path) max-length)
+        relative-path
+      (let* ((components (split-string relative-path "/" t))
+             (lastdir (if (> (length components) 1) (nth (- (length components) 2) components) ""))
+             (filename (or (car (last components)) ""))
+             (dirs (butlast components 2))
+             (shortened-dirs (mapcar (lambda (dir) (substring dir 0 1)) dirs)))
+        (concat (string-join shortened-dirs "/")
+                (if shortened-dirs "/")
+                lastdir
+                "/"
+                filename)))))
+
 (use-package indent-bars
   :config
   (setopt indent-bars-treesit-support t)
@@ -343,17 +361,15 @@ completing-read prompter."
   (defun cnit/org-save-babel-tangle ()
     (add-hook 'after-save-hook
               (lambda () (when (eq major-mode 'org-mode) (org-babel-tangle)))))
-  (defun cnit/org-electric-pairs ()
+  (defun cnit/org-electric-config ()
     (setq-local electric-pair-pairs
-                (append `((?\* . ?\*)
-                          (?\/ . ?\/)
-                          (?\_ . ?\_)
+                (append `((?\/ . ?\/)
                           (?\= . ?\=)
                           (?\+ . ?\+))
                         electric-pair-pairs)))
   :hook
   ((org-mode . cnit/org-save-babel-tangle)
-   (org-mode . cnit/org-electric-pairs))
+   (org-mode . cnit/org-electric-config))
   :config
   (declare-function -each "dash")
   (setopt
@@ -361,6 +377,8 @@ completing-read prompter."
    org-startup-indented t
    org-src-window-setup 'other-window
    org-todo-keywords '((sequence "TODO(t)" "ACTIVE(a!)" "SCHEDULED(s@)" "HOLD(h@)" "|" "DONE(d@)" "CANCELED(c@)")))
+  (modify-syntax-entry ?* "\"" org-mode-syntax-table)
+  (modify-syntax-entry ?_ "\"" org-mode-syntax-table)
   (-each
       '(("yaml" . "yaml-ts")
 	("nix" . "nix-ts"))
@@ -446,6 +464,10 @@ If not, prompt the user whether to allow running all code blocks silently."
       (when file (find-file file)))))
 
 (use-package yasnippet
+  :config
+  (setq-default yas-keymap-disable-hook (lambda ()
+                                          (and (frame-live-p corfu--frame)
+                                               (frame-visible-p corfu--frame))))
   :hook (after-init . yas-global-mode))
 
 (use-package yasnippet-capf)
@@ -453,15 +475,24 @@ If not, prompt the user whether to allow running all code blocks silently."
 (use-package aggressive-indent
   :hook (emacs-lisp-mode . aggressive-indent-mode))
 
-(use-package gptel
-  :commands
-  (gptel
-   gptel-send
-   gptel-menu)
+(use-package chatgpt-shell
+  :functions auth-source-pick-first-password chatgpt-shell-openai-make-model
+  :bind ("C-c l" . cnit/chatgpt-shell-region)
+  :init
+  (defun cnit/chatgpt-shell-region (prefix)
+    (interactive "P")
+    (if (region-active-p)
+        (chatgpt-shell-prompt-compose prefix)
+      (chatgpt-shell)))
   :config
   (setopt
-   gptel-model 'gpt-4o-mini
-   gptel-default-mode 'org-mode))
+   chatgpt-shell-openai-key (auth-source-pick-first-password :host "api.openai.com")
+   chatgpt-shell-model-version "gpt-4o-mini")
+  (add-to-list 'chatgpt-shell-models
+               (chatgpt-shell-openai-make-model
+                :version "gpt-4o-mini"
+                :token-width 3
+                :context-window 128000)))
 
 (use-package format-all
   :defines format-all-default-formatters
@@ -541,7 +572,8 @@ major-mode-remap-alist or auto-mode-alist."
   :functions (ring-ref
               cnit/avy-keys-builder
               helpful-at-point
-              embark-act)
+              embark-act
+              hkey-either)
   :defines (avy-ring avy-goto-char avy-dispatch-alist)
   :commands (avy-action-copy-region
              avy-action-copy-whole-line
@@ -596,6 +628,7 @@ major-mode-remap-alist or auto-mode-alist."
     t)
 
   (defun avy-action-copy-region (pt)
+    (kill-new "")
     (avy-action-with-region pt 'copy-region-as-kill)
     t)
 
@@ -605,6 +638,7 @@ major-mode-remap-alist or auto-mode-alist."
     t)
 
   (defun avy-action-kill-region (pt)
+    (kill-new "")
     (avy-action-with-region pt 'kill-region))
 
   (defun avy-action-transport-region (pt)
@@ -633,9 +667,9 @@ major-mode-remap-alist or auto-mode-alist."
   (defun avy-action-helpful (pt)
     (save-excursion
       (goto-char pt)
-      (helpful-at-point))
-    (select-window
-     (cdr (ring-ref avy-ring 0)))
+      (if (eglot-current-server)
+          (eglot-find-declaration)
+        (helpful-at-point)))
     t)
 
   (defun avy-action-hyprbole (pt)
@@ -644,18 +678,21 @@ major-mode-remap-alist or auto-mode-alist."
       (hkey-either)))
 
   (setq-default avy-dispatch-alist
-                '((?e . avy-action-embark-act)
-                  (?E . avy-action-embark-act-region)
-                  (?H . avy-action-helpful)
-                  (?k . avy-action-kill-whole-line)
-                  (?K . avy-action-kill-region)
-                  (?t . avy-action-transport-whole-line)
-                  (?T . avy-action-transport-region)
-                  (?w . avy-action-copy-whole-line)
-                  (?W . avy-action-copy-region)
-                  (?y . avy-action-yank-whole-line)
-                  (?Y . avy-action-yank-region)
+                '((?E . avy-action-embark-act)
+                  (?e . avy-action-embark-act-region)
+                  (?h . avy-action-helpful)
+                  (?K . avy-action-kill-whole-line)
+                  (?k . avy-action-kill-region)
+                  (?T . avy-action-transport-whole-line)
+                  (?t . avy-action-transport-region)
+                  (?W . avy-action-copy-whole-line)
+                  (?w . avy-action-copy-region)
+                  (?Y . avy-action-yank-whole-line)
+                  (?y . avy-action-yank-region)
+                  (?z . avy-action-zap-to-char)
                   (?\r . avy-action-hyprbole)))
+
+  (setopt avy-single-candidate-jump nil)
 
   (defun cnit/avy-keys-builder ()
     "Generate the `avy-keys' list.
@@ -668,9 +705,9 @@ Keys will be all from a-z excluding those used in `avy-dispatch-alist'"
       (setopt avy-keys keys)))
   (cnit/avy-keys-builder)
 
-  :bind (("C-c z a" . avy-goto-char)
-         ("C-c z A" . avy-goto-char-timer)
-         ("C-c z C-a" . avy-goto-line)))
+  :bind (("C-c A" . avy-goto-char)
+         ("C-c a" . avy-goto-char-timer)
+         ("C-c C-a" . avy-goto-line)))
 
 (use-package re-builder
   :commands (reb-update-regexp reb-target-value reb-quit)
@@ -715,7 +752,7 @@ surrounded by word boundaries."
         (query-replace-regexp re replacement delimited beg end))))
   :config
   (setopt reb-re-syntax 'string)
-  :bind (("C-c z s" . re-builder)
+  :bind (("C-c s" . re-builder)
          :map reb-mode-map
          ("RET" . reb-replace-regexp)
          :map reb-lisp-mode-map
@@ -741,6 +778,12 @@ surrounded by word boundaries."
   (setopt completion-category-defaults nil)
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster))
 
+(use-package eglot-booster
+  :functions eglot-booster-mode
+  :after eglot
+  :config
+  (eglot-booster-mode))
+
 (use-package eldoc
   :config
   (setopt eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly))
@@ -757,6 +800,44 @@ surrounded by word boundaries."
 (use-package zig-mode
   :mode ("\\.zig\\'" . zig-mode))
 
+(use-package yaml-ts-mode
+  :config
+  (defcustom yaml-indent-offset 2
+    "Amount of offset per level of indentation."
+    :type 'integer
+    :local t)
+  (defun cnit/last-line-indentation-offset (&optional offset)
+    "Find the nearest OFFSET rounded "
+    (interactive "*")
+    (if-let* ((indent (save-excursion
+                        (beginning-of-line)
+                        (if (re-search-backward "^[^\n]" nil t)
+                            (current-indentation))))
+              (offset (or offset 1)))
+        (* (truncate (/ indent offset)) offset)
+      0))
+  (defun cnit/yaml-ts-tab ()
+    (interactive "*")
+    (unless (memq this-command '(newline))
+      (let* ((offset (or yaml-indent-offset 2))
+             (previous-line-offset (cnit/last-line-indentation-offset 2))
+             (max (+ previous-line-offset offset))
+             (min (max 0 (- previous-line-offset offset)))
+             (current (current-indentation)))
+        (if (memq this-command '(newline-and-indent))
+            (indent-line-to previous-line-offset)
+          (if (>= current max)
+              (indent-line-to min)
+            (indent-line-to (+ offset (* (truncate (/ current offset)) offset))))))))
+  (defun cnit/yaml-ts-mode-config ()
+    (unless dtrt-indent-mode
+      (setq-local standard-indent yaml-indent-offset))
+    (setq-local indent-line-function #'cnit/yaml-ts-tab)
+    (setq-local tab-width standard-indent))
+  :bind (:map yaml-ts-mode-map
+              ("RET" . newline-and-indent))
+  :hook (yaml-ts-mode . cnit/yaml-ts-mode-config))
+
 (use-package language-id
   :config
   (setopt language-id--definitions
@@ -766,11 +847,16 @@ surrounded by word boundaries."
 (use-package compilation
   :hook (compilation-filter . ansi-color-compilation-filter))
 
-(use-package magit)
+(use-package magit
+  :demand t
+  :commands (magit-get-current-branch)
+  :bind (("C-c g" . magit-dispatch)
+         ("C-c G" . cnit/magit-status)))
 
 (use-package  project
   :commands (project-forget-projects-under)
-  :config (project-forget-projects-under "~/git-clones" t))
+  :config (project-forget-projects-under "~/git-clones" t)
+  :bind ("C-c p" . cnit/project-dispatch))
 
 (defun cnit/project--dispact-wrap-command (cmd)
   "Wrap command CMD to optionally display buffer in another window."
@@ -1022,8 +1108,8 @@ Runs inside comint if the file is executable."
   (when (buffer-file-name)
     (clovnit/run-file (buffer-file-name))))
 
-(bind-key "C-c z x" #'clovnit/run-current-file)
-(bind-key "C-c z X" #'clovnit/run-file)
+(bind-key "C-c x" #'clovnit/run-current-file)
+(bind-key "C-c X" #'clovnit/run-file)
 
 (defun cnit/browse-url-quesiton (url &optional new-window)
   (interactive (browse-url-interactive-arg "URL: "))
@@ -1035,3 +1121,39 @@ Runs inside comint if the file is executable."
     (browse-url-firefox url new-window)))
 
 (setopt browse-url-browser-function #'cnit/browse-url-quesiton)
+
+(defvar-keymap cnit/navigation-repeat-map
+  :repeat t
+  "n" #'next-line
+  "p" #'previous-line
+  "f" #'forward-char
+  "b" #'backward-char
+  "a" #'move-beginning-of-line
+  "e" #'move-end-of-line
+  "v" #'scroll-up-command)
+
+(defvar-keymap cnit/alt-navigation-repeat-map
+  :repeat t
+  "f" #'forward-word
+  "b" #'backward-word
+  "v" #'scroll-down-command)
+
+(defvar-keymap cnit/undo-repeat-map
+  :repeat t
+  "/" #'undo)
+
+(defvar-keymap cnit/kill-repeat-map
+  :repeat t
+  "k" #'kill-line)
+
+(defvar-keymap cnit/org-kill-repeat-map
+  :repeat t
+  "k" #'org-kill-line)
+
+(defvar-keymap cnit/delete-char-repeat-map
+  :repeat t
+  "d" #'delete-char)
+
+(defvar-keymap cnit/recenter-top-bottom
+  :repeat t
+  "l" #'recenter-top-bottom)

@@ -11,11 +11,13 @@ let
   officePhilips = "Philips Consumer Electronics Company PHL BDM3275 0x00000673";
   bedroomSony = "Sony SONY TV  *00 0x01010101";
   projector = "Optoma Corporation OPTOMA 1080P Q7EH9350054";
+  portable = "KEB display 0x01010101";
 in
 {
   config = mkIf config.wolf.roles.desktop {
     services.kanshi = {
       enable = true;
+      systemdTarget = "hyprland-session.target";
       settings = [
         {
           output = {
@@ -51,6 +53,13 @@ in
         {
           output = {
             criteria = projector;
+            scale = 1.0;
+            mode = "1920x1080@60";
+          };
+        }
+        {
+          output = {
+            criteria = portable;
             scale = 1.0;
             mode = "1920x1080@60";
           };
@@ -108,6 +117,21 @@ in
               }
               {
                 criteria = projector;
+              }
+            ];
+          };
+        }
+        {
+          profile = {
+            name = "portable_left";
+            outputs = [
+              {
+                criteria = portable;
+                position = "0,0";
+              }
+              {
+                criteria = laptopMonitor;
+                position = "1920,0";
               }
             ];
           };

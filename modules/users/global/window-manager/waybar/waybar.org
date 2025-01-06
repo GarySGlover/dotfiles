@@ -7,7 +7,7 @@
 #+name: waybar-style
 #+begin_src css :tangle no
   ,* {
-      font-family: ${theme.font.name};
+      font-family: "${theme.font.name}";
       font-size: ${toString theme.font.size}px;
       color: #${faces.fgFontLockVariableNameFace};
   }
@@ -74,12 +74,12 @@
     config = lib.mkIf config.wolf.roles.desktop {
       programs.waybar = {
         enable = true;
-        systemd.enable = true;
+        systemd.enable = false;
         settings = {
           mainbar = {
             layer = "top";
             position = "top";
-            margin = "${toString theme.font.size}";
+            margin = "${toString theme.gaps}";
             exclusive = "true";
             modules-left = [
               "hyprland/workspaces"

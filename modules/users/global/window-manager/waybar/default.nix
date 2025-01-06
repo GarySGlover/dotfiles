@@ -12,12 +12,12 @@ in
   config = lib.mkIf config.wolf.roles.desktop {
     programs.waybar = {
       enable = true;
-      systemd.enable = true;
+      systemd.enable = false;
       settings = {
         mainbar = {
           layer = "top";
           position = "top";
-          margin = "${toString theme.font.size}";
+          margin = "${toString theme.gaps}";
           exclusive = "true";
           modules-left = [
             "hyprland/workspaces"
@@ -61,7 +61,6 @@ in
             color: #${faces.fgFontLockWarningFace};
         }
 
-
         #clock {
             padding: 0 0.5em;
             margin: 0.25em;
@@ -80,7 +79,7 @@ in
         #workspaces {
             border-radius: ${toString theme.radius}px;
             background-color: #${faces.bgDefault};
-            padding: 0 0.5em;
+            padding: 0.25em 0.5em;
         }
         #workspaces button {
             border-radius: ${toString theme.radius}px;

@@ -17,16 +17,8 @@ with lib;
       enable = true;
       # Configure keymap in X11
       xkb.layout = "gb";
-      videoDrivers = [
-        "modesetting"
-      ];
-    };
-
-    services.displayManager = {
-      sddm = {
-        enable = true;
-      };
-      defaultSession = "hyprland";
+      videoDrivers = [ "modesetting" ];
+      displayManager.startx.enable = true;
     };
 
     # Enable sound.

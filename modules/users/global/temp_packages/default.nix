@@ -1,9 +1,6 @@
 { pkgs, lib, ... }:
 let
   myPackages = with pkgs; [
-    pwvucontrol
-    pavucontrol
-    helvum
   ];
 in
 {

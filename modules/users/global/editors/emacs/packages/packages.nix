@@ -30,17 +30,23 @@ let
     inherit (epkgs) melpaBuild compat;
   };
 
-  devil = pkgs.callPackage ./manual/devil.nix {
+  kbd-mode = pkgs.callPackage ./manual/kbd-mode.nix {
     inherit (pkgs) fetchFromGitHub writeText;
     inherit (epkgs) melpaBuild compat;
+  };
+
+  eglot-booster = pkgs.callPackage ./manual/eglot-booster.nix {
+    inherit (pkgs) fetchFromGitHub writeText;
+    inherit (epkgs) melpaBuild;
   };
 
   emacsExtraPackagesLocal = [
     # combobulate
     # emacscodeium
     # nim-ts-mode
+    eglot-booster
+    kbd-mode
     org-modern-indent
-    devil
   ];
 
   emacsExtraPackages = with epkgs; [
@@ -73,11 +79,13 @@ let
     ace-window
     aggressive-indent
     cape
+    chatgpt-shell
     consult
     corfu
     corfu-candidate-overlay
     denote
     direnv
+    dtrt-indent
     eat
     editorconfig
     ef-themes
@@ -87,7 +95,6 @@ let
     exec-path-from-shell
     format-all
     general
-    gptel
     helpful
     hyperbole
     indent-bars
@@ -105,17 +112,18 @@ let
     ox-pandoc
     rainbow-mode
     standard-themes
+    telephone-line
     terraform-mode
     transient
     treesit-grammars.with-all-grammars
     verb
     vertico
-    yasnippet
-    yasnippet-capf
-    yasnippet-snippets
     wgrep
     which-key
     ws-butler
+    yasnippet
+    yasnippet-capf
+    yasnippet-snippets
     zig-mode
   ];
 in
@@ -134,6 +142,8 @@ in
       ))
 
       pandoc
+
+      emacs-lsp-booster
     ];
 
     # Populate authinfo for gptel to use chatgpt api
@@ -149,7 +159,8 @@ in
     };
 
     home.file = {
-      ".config/emacs/var/tree-sitter".source = "${pkgs.emacsPackages.treesit-grammars.with-all-grammars}/lib";
+      ".config/emacs/var/tree-sitter".source =
+        "${pkgs.emacsPackages.treesit-grammars.with-all-grammars}/lib";
       ".config/emacs/codeium/codeium_language_server" = {
         source = config.lib.file.mkOutOfStoreSymlink "${pkgs.codeium}/bin/codeium_language_server";
         executable = true;

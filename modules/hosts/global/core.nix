@@ -46,7 +46,7 @@
   users.mutableUsers = false;
 
   # Kernel
-  boot.kernelPackages = pkgs.linuxPackages_testing;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # Clean tmp directory
   boot.tmp.cleanOnBoot = true;

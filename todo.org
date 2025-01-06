@@ -1,4 +1,10 @@
 Things that have anoyed me in the config that could do with
+* indent-control and maybe dtrt-indent
+also tie this into ident-bars so that if either have set the indent it uses their value rather than whatever it detects.
+* https://github.com/xenodium/chatgpt-shell
+* emacs: fix avy actions for yank to ensure new history
+* change emacs custom packages
+https://github.com/jthulhu/machines/blob/d9905d83e04abd9552bb4dde164156ae4783a5f2/home/emacs/default.nix#L19
 * emacs: multiple cursors / kmacro
 * emacs: meow beacon in devil
 * emcas: maybe port bindings to use-package instead of general

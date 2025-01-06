@@ -1,7 +1,6 @@
 {
-  roles,
   lib,
-  config,
+  pkgs,
   ...
 }:
 let
@@ -93,6 +92,13 @@ let
       (bindWithResetTimer 2 none leader (dispatch.submap "leader"))
       (bind.mouse mod.shift "mouse:272" "movewindow")
       (bind.mouse mod.shift "mouse:273" "resizewindow")
+      (bind.repeat none "XF86AudioMute" (dispatch.execr "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"))
+      (bind.repeat none "XF86AudioLowerVolume" (
+        dispatch.execr "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%-"
+      ))
+      (bind.repeat none "XF86AudioRaiseVolume" (
+        dispatch.execr "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"
+      ))
     ];
     leader =
       lib.lists.map (w: (bindWithReset none w.key (dispatch.workspace.select w.id))) workSpaces
@@ -176,6 +182,7 @@ let
       (bindWithResetTimer 2 none "n" (dispatch.execr "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"))
       (bindWithResetTimer 2 none "b" (dispatch.execr "brightnessctl set 10%-"))
       (bindWithResetTimer 2 none "f" (dispatch.execr "brightnessctl set 10%+"))
+      (bindWithReset none "t" (dispatch.execr "kitty ${pkgs.bluetuith}/bin/bluetuith"))
       resetCatchall
     ];
   };

@@ -32,6 +32,8 @@ in
       "steam-unwrapped"
       "terraform"
       "enhancer-for-youtube"
+      "nvidia-x11"
+      "nvidia-settings"
     ];
 
   permittedInsecurePackages = [

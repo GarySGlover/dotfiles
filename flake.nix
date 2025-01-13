@@ -100,17 +100,20 @@
           value = home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
             inherit extraSpecialArgs;
-            modules = [
-              (
-                { ... }:
-                {
-                  home.username = user;
-                  home.homeDirectory = mkForce "/home/${user}";
-                  wolf.host = host;
-                  wolf.secretsPath = ./secrets;
-                }
-              )
-            ] ++ listNixFilesRecursive ./modules/users/global ++ listNixFilesRecursive ./modules/users/${user};
+            modules =
+              [
+                (
+                  { ... }:
+                  {
+                    home.username = user;
+                    home.homeDirectory = mkForce "/home/${user}";
+                    wolf.host = host;
+                    wolf.secretsPath = ./secrets;
+                  }
+                )
+              ]
+              ++ listNixFilesRecursive ./modules/users/global
+              ++ listNixFilesRecursive ./modules/users/${user};
           };
         };
 
@@ -209,6 +212,7 @@
         // {
           live = nixosSystem {
             inherit system;
+            inherit pkgs;
             modules = [
               (nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-graphical-gnome.nix")
               ./modules/hosts/live/live.nix

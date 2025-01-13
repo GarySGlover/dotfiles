@@ -627,6 +627,9 @@ Display the keys pressed and the associated command in the header line.
 ** TODO [#A] Hyperbole
 #+begin_src emacs-lisp :tangle yes
   (use-package hyperbole
+    :bind (("C-M-RET" . hkey-either)
+           ("C-M-<return>" . hkey-either)
+           ("ESC <return>". hkey-either))
     :hook (after-init . hyperbole-mode))
 #+end_src
 ** TODO [#B] Org Mode
@@ -1176,7 +1179,7 @@ Enhance re-builder to allow for running query replace regex when hitting return 
   (use-package zig-mode
     :mode ("\\.zig\\'" . zig-mode))
 #+end_src
-** Yaml
+** TODO Yaml
 #+begin_src emacs-lisp :tangle yes
   (use-package yaml-ts-mode
     :config
@@ -1215,6 +1218,19 @@ Enhance re-builder to allow for running query replace regex when hitting return 
     :bind (:map yaml-ts-mode-map
                 ("RET" . newline-and-indent))
     :hook (yaml-ts-mode . cnit/yaml-ts-mode-config))
+#+end_src
+*** COMMENT Eglot config
+#+begin_src emacs-lisp :tangle yes
+  (setq-default eglot-workspace-configuration
+                '(:yaml ( :format (:enable t)
+                          :validate t
+                          :hover t
+                          :completion t
+                          :schemas (https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/refs/heads/main/service-schema.json ["*.yaml"]
+                                                                                                                                           https://json.schemastore.org/yamllint.json ["/*.yml"])
+                          :schemaStore (:enable t))
+                        ;; here other language server configurations
+                        ))
 #+end_src
 ** Language ID
 #+begin_src emacs-lisp :tangle yes

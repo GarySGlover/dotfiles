@@ -59,7 +59,6 @@ in
         exec-once = [
           "${pkgs.hyprland}/bin/hyprctl dispatch submap insert" # Start in the modal command mappings
           "udiskie &" # Disk auto mount
-          "kanata &"
           "waybar &"
           "systemctl --user start kanshi"
         ];

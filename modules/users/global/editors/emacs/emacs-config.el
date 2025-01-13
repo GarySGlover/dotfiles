@@ -353,6 +353,9 @@ completing-read prompter."
   :commands indent-bars-mode)
 
 (use-package hyperbole
+  :bind (("C-M-RET" . hkey-either)
+         ("C-M-<return>" . hkey-either)
+         ("ESC <return>". hkey-either))
   :hook (after-init . hyperbole-mode))
 
 (use-package org

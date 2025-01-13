@@ -1,29 +1,44 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  lib,
+  ...
+}:
 
 with lib;
 
 {
-  environment.systemPackages = with pkgs; [
-    pciutils
-    sops
-    ags
-  ];
+  config = {
+    # allowUnfree = true;
 
-  boot.kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
+    environment.systemPackages = with pkgs; [
+      pciutils
+      sops
+      ags
+    ];
 
-  services.xserver.videoDrivers = mkOverride 40 [ "virtualbox" "vmware" "cirrus" "vesa" "modesetting" ];
+    # boot.kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
 
-  nix.extraOptions = ''
-    experimental-features = nix-command flakes
-  '';
+    services.xserver.videoDrivers = mkOverride 40 [
+      "virtualbox"
+      "vmware"
+      "cirrus"
+      "vesa"
+      "modesetting"
+      "nvidia"
+    ];
 
-  # Set your time zone.
-  time.timeZone = "Europe/London";
+    nix.extraOptions = ''
+      experimental-features = nix-command flakes
+    '';
 
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_GB.UTF-8";
-  console = {
-    font = "Lat2-Terminus16";
-    keyMap = "uk";
+    # Set your time zone.
+    time.timeZone = "Europe/London";
+
+    # Select internationalisation properties.
+    i18n.defaultLocale = "en_GB.UTF-8";
+    console = {
+      font = "Lat2-Terminus16";
+      keyMap = "uk";
+    };
   };
 }

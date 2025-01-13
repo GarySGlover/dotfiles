@@ -47,9 +47,6 @@ let
 
       # Extensions
       "extensions.autoDisableScopes" = 0;
-
-      # Notifications
-      "permissions.default.desktop-notification" = 1;
     };
 in
 {
@@ -61,6 +58,7 @@ in
         settings = sharedSettings // {
           "browser.download.dir" = "/home/clover/tmp/personal"; # Download folder
           "browser.sessionstore.max_resumed_crashes" = 0; # No resume previous session
+          "permissions.default.desktop-notification" = 2;
         };
         search = {
           force = true;
@@ -82,6 +80,7 @@ in
         settings = sharedSettings // {
           "browser.download.dir" = "/home/clover/tmp/work"; # Download folder
           "browser.sessionstore.max_resumed_crashes" = 0; # No resume previous session
+          "permissions.default.desktop-notification" = 0;
         };
         search = {
           force = true;

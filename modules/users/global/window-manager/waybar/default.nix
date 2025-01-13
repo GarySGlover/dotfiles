@@ -1,4 +1,4 @@
-# [[file:waybar.org::*Waybar][Waybar:2]]
+# [[file:modules/users/global/window-manager/waybar/waybar.org::*Waybar][Waybar:2]]
 {
   config,
   lib,
@@ -51,7 +51,6 @@ in
             font-size: ${toString theme.font.size}px;
             color: #${faces.fgFontLockVariableNameFace};
         }
-
         window#waybar {
             background-color: #${faces.bgDefault};
             border: ${toString theme.border}px solid #${faces.fgBorderInactive};
@@ -60,35 +59,27 @@ in
         window#waybar.fullscreen {
             color: #${faces.fgFontLockWarningFace};
         }
-
         #clock {
             padding: 0 0.5em;
             margin: 0.25em;
         }
-
         #battery {
             padding: 0 0.5em;
             margin: 0.25em;
         }
-
         #pulseaudio {
             padding: 0 0.5em;
             margin: 0.25em;
         }
-
         #workspaces {
             border-radius: ${toString theme.radius}px;
             background-color: #${faces.bgDefault};
-            padding: 0.25em 0.5em;
-        }
-        #workspaces button {
-            border-radius: ${toString theme.radius}px;
-            background-color: #${faces.bgTabBarTabInactive};
+            margin: 0.5em;
         }
         #workspaces button.active {
-            background-color: #${faces.bgTabBarTab};
+            border: ${toString theme.border}px solid #${faces.fgBorderInactive};
+            border-radius: ${toString theme.radius}px;
         }
-
         #submap {
             color: #${faces.fgFontLockVariableNameFace};
         }

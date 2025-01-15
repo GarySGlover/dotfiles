@@ -4,6 +4,7 @@ keys:
   - &hosts
     - &auberon age1va0nsla36lc2twze2sejw5mepdc8arvfn56xmnrktxu7vyuaqyasllyama
     - &belisarius age1nm00s293arsxef7jufh6mv908mtz5873c62nqxvg3mz83vc95v8q7t69n6
+    - &cornaith age1zgh6m69ss654td29hvrxa64ygul0f2cwtu7fm5f0dmcmqykuu5lqzzgf8s
 creation_rules:
   - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
     key_groups:
@@ -11,3 +12,4 @@ creation_rules:
           - *clover
           - *auberon
           - *belisarius
+          - *cornaith

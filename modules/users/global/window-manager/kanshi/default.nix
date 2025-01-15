@@ -123,6 +123,16 @@ in
         }
         {
           profile = {
+            name = "projector-only";
+            outputs = [
+              {
+                criteria = projector;
+              }
+            ];
+          };
+        }
+        {
+          profile = {
             name = "portable_left";
             outputs = [
               {

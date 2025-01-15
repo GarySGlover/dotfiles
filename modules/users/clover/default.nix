@@ -22,6 +22,12 @@ let
       "programming"
       "work"
     ];
+    cornaith = [
+      "desktop"
+      "editing"
+      "gaming"
+      "internet"
+    ];
     clover-z270pd3 = [
       "desktop"
       "devops"
@@ -42,6 +48,9 @@ let
       "zig"
     ];
     belisarius = [
+      "json"
+    ];
+    cornaith = [
       "json"
     ];
     clover-z270pd3 = [

@@ -186,6 +186,10 @@
           nixos = true;
           users = [ "clover" ];
         };
+	cornaith = {
+	  nixos = true;
+	  users = [ "clover" ];
+	};
         clover-z270pd3 = {
           nixos = false;
           users = [ "clover" ];

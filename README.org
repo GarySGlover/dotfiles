@@ -17,7 +17,7 @@ Create following partitions and names
 | root         | ext4   |        |     |
 | home         | ext4   |        | x   |
 |--------------+--------+--------+-----|
-Wipe disk and create partition table
+Wipe disk and create partition table. Example using /dev/nvme0n1 as single disk, can be seperated over disks.
 #+begin_src shell
   wipefs -a /dev/nvme0n1
   parted /dev/nvme0n1 -- mklabel gpt
@@ -31,25 +31,74 @@ Format partitions
   mkfs.fat -F 32 -n BOOT /dev/nvme0n1p1
   mkfs.ext4 -L root /dev/nvme0n1p2
 #+end_src
+
+For a home folder on a seperate drive, /dev/nvme1n1 in this example.
+#+begin_src shell
+  wipefs -a /dev/nvme1n1
+  parted /dev/nvme1n1 -- mklabel gpt
+  parted /dev/nvme1n1 -- mkpart home ext4 1MB 100%
+  mkfs.ext4 -L home /dev/nvme1n1p1
+#+end_src
+
+
 ** Mount partitions and Create the following directories
 #+begin_src shell
   mount /dev/disk/by-label/root /mnt
   mkdir -p /mnt/boot
   mount /dev/disk/by-label/BOOT /mnt/boot
 #+end_src
-** System ssh cert
-# Make directory for cert
-# Generate cert
 
-** User ssh cert
-Not sure if this is needed
+#+begin_src shell
+  mkdir -p /mnt/home
+  mount /dev/disj/by-lavel/home /mnt/home
+#+end_src
+** Download config
+#+begin_src shell
+  mkdir -p /mnt/home/temp
+  cd /mnt/home/temp
+  git clone https://github.com/GarySGlover/dotfiles
+#+end_src
+
+** Fix git-crypt
+Download the git-crypt key
+git-crypt unlock <path-to-key>
+
+** SOPS
+Download age key and save to /root/.config/sops/age/keys.txt
+
+Generate cert. For ssh-keygen don't supply a passphrase as this is the system cert.
+
+#+begin_src shell
+  mkdir -p /mnt/etc/ssh/
+  ssh-keygen -t ed25519 -f /mnt/etc/ssh/ssh_<hostname>_ed25519
+#+end_src
+
+Get the age key =ssh-to-age -i /mnt/etc/ssh/ssh_<host>_ed25519.pub=
+Update the .sops.yaml with the host and age key
+
+
 ** Generate hardware-config
 nixos-generate-config --root /mnt
 ** Prep git repo
 Add system
 - flake.nix
-- secrets?
+  add host to hostCfgs
+  * Age secrets
+
 - host module
+  create modules/hosts/<host>
+  should contain options.nix and extra.nix
+-
+- Add opts to user default.nix
+  host_role
+  host_languages
 *** Move hardware config
-Source is /mnt/etc/nixos/configuration.nix
+cp /mnt/etc/nixos/hardware-configuration.nix /mnt/home/temp/dotfiles/modules/hosts/<host>/
 ** Install
+=cd /mnt/etc/nixos/temp/dotfiles=
+=nixos-install --flake #.<host> --no-root-passwd=
+Test config =nixos-enter --root /mnt=
+
+* User config
+- ssh
+- ags

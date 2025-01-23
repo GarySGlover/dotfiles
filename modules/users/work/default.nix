@@ -36,5 +36,7 @@ in
       zig = builtins.elem "zig" host_languages."${opt.host}";
     };
     user.interactive = true;
+
+    theme.name = "ef-elea-dark";
   };
 }

@@ -7,6 +7,7 @@
 with lib;
 let
   theme = config.wolf.theme;
+  secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
 in
 {
   config = mkIf config.wolf.roles.editing {
@@ -25,28 +26,37 @@ in
 
       (setopt gc-cons-threshold (* 50 1000 1000))
     '';
-    xdg.configFile."emacs/init.el".text = ''
-      ;; -*- lexical-binding: t -*-
+    xdg.configFile."emacs/init.el".text =
+      ''
+        ;; -*- lexical-binding: t -*-
 
-      (let ((emacs-init-file (expand-file-name "emacs-config.el" "~/.config/emacs")))
-        (load-file emacs-init-file))
+        (let ((emacs-init-file (expand-file-name "emacs-config.el" "~/.config/emacs")))
+          (load-file emacs-init-file))
 
-      (use-package ef-themes
-        :init
-        (mapc #'disable-theme custom-enabled-themes)
-        (ef-themes-select '${theme.name}))
+        (use-package ef-themes
+          :init
+          (mapc #'disable-theme custom-enabled-themes)
+          (ef-themes-select '${theme.name}))
 
-      ;; Set font and font size
-      (defun cloveynit-after-frame ()
-        (set-face-attribute 'default nil :family "${theme.font.name}" :height ${toString theme.font.size}0)
-        (set-face-attribute 'fixed-pitch nil :family "${theme.font.name}" :height ${toString theme.font.size}0)
-        (set-face-attribute 'fixed-pitch-serif nil :family "${theme.font.name}" :height ${toString theme.font.size}0)
-        (set-face-attribute 'variable-pitch nil :family "${theme.font.name}" :height ${toString theme.font.size}0))
+        ;; Set font and font size
+        (defun cloveynit-after-frame ()
+          (set-face-attribute 'default nil :family "${theme.font.name}" :height ${toString theme.font.size}0)
+          (set-face-attribute 'fixed-pitch nil :family "${theme.font.name}" :height ${toString theme.font.size}0)
+          (set-face-attribute 'fixed-pitch-serif nil :family "${theme.font.name}" :height ${toString theme.font.size}0)
+          (set-face-attribute 'variable-pitch nil :family "${theme.font.name}" :height ${toString theme.font.size}0))
 
-      (if (daemonp)
-          (add-hook 'server-after-make-frame-hook #'cloveynit-after-frame)
-        (cloveynit-after-frame))
-    '';
+        (if (daemonp)
+            (add-hook 'server-after-make-frame-hook #'cloveynit-after-frame)
+          (cloveynit-after-frame))
+      ''
+      + (
+        if (hasAttr "copilot_enabled_organisations" secrets) then
+          ''
+            (defvar cnit/copilot-enabled-organisations '(${lib.strings.concatStringsSep " " secrets.copilot_enabled_organisations}))
+          ''
+        else
+          ""
+      );
     programs.git.ignores = [
       "*~"
       ".#*"

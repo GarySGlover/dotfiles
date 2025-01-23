@@ -791,51 +791,6 @@ newlines.
 #+end_src
 *** Dtrt Indent
 
-** COMMENT GPTel
-#+begin_src emacs-lisp :tangle yes
-  (use-package gptel
-    :commands
-    (gptel
-     gptel-send
-     gptel-menu)
-    :config
-    (setopt
-     gptel-model 'gpt-4o-mini
-     gptel-default-mode 'org-mode))
- #+end_src
-** COMMENT Gpt
-#+begin_src emacs-lisp :tangle yes
-  (use-package gpt
-    :functions auth-source-search
-    :bind ("C-c l" . gpt-dwim)
-    :config
-    (setopt
-     gpt-openai-key (funcall (plist-get (car (auth-source-search :host "api.openai.com")) :secret))
-     gpt-model "gpt-4o-mini"
-     gpt-max-tokens "2000"
-     gpt-temperature "0"))
-#+end_src
-** Chatgpt Shell
-#+begin_src emacs-lisp :tangle yes
-  (use-package chatgpt-shell
-    :functions auth-source-pick-first-password chatgpt-shell-openai-make-model
-    :bind ("C-c l" . cnit/chatgpt-shell-region)
-    :init
-    (defun cnit/chatgpt-shell-region (prefix)
-      (interactive "P")
-      (if (region-active-p)
-          (chatgpt-shell-prompt-compose prefix)
-        (chatgpt-shell)))
-    :config
-    (setopt
-     chatgpt-shell-openai-key (auth-source-pick-first-password :host "api.openai.com")
-     chatgpt-shell-model-version "gpt-4o-mini")
-    (add-to-list 'chatgpt-shell-models
-                 (chatgpt-shell-openai-make-model
-                  :version "gpt-4o-mini"
-                  :token-width 3
-                  :context-window 128000)))
-#+end_src
 ** Format All
 #+begin_src emacs-lisp :tangle yes
   (use-package format-all
@@ -1118,6 +1073,80 @@ Enhance re-builder to allow for running query replace regex when hitting return 
            ("RET" . reb-replace-regexp)
            :map reb-lisp-mode-map
            ("RET" . reb-replace-regexp)))
+#+end_src
+* LLM / AI
+** COMMENT GPTel
+#+begin_src emacs-lisp :tangle yes
+  (use-package gptel
+    :commands
+    (gptel
+     gptel-send
+     gptel-menu)
+    :config
+    (setopt
+     gptel-model 'gpt-4o-mini
+     gptel-default-mode 'org-mode))
+ #+end_src
+** COMMENT Gpt
+#+begin_src emacs-lisp :tangle yes
+  (use-package gpt
+    :functions auth-source-search
+    :bind ("C-c l" . gpt-dwim)
+    :config
+    (setopt
+     gpt-openai-key (funcall (plist-get (car (auth-source-search :host "api.openai.com")) :secret))
+     gpt-model "gpt-4o-mini"
+     gpt-max-tokens "2000"
+     gpt-temperature "0"))
+#+end_src
+** Chatgpt Shell
+#+begin_src emacs-lisp :tangle yes
+  (use-package chatgpt-shell
+    :functions auth-source-pick-first-password chatgpt-shell-openai-make-model
+    :bind ("C-c l" . cnit/chatgpt-shell-region)
+    :init
+    (defun cnit/chatgpt-shell-region (prefix)
+      (interactive "P")
+      (if (region-active-p)
+          (chatgpt-shell-prompt-compose prefix)
+        (chatgpt-shell)))
+    :config
+    (setopt
+     chatgpt-shell-openai-key (auth-source-pick-first-password :host "api.openai.com")
+     chatgpt-shell-model-version "gpt-4o-mini")
+    (add-to-list 'chatgpt-shell-models
+                 (chatgpt-shell-openai-make-model
+                  :version "gpt-4o-mini"
+                  :token-width 3
+                  :context-window 128000)))
+#+end_src
+** Copilot
+#+begin_src emacs-lisp :tangle yes
+  (use-package copilot
+    :init
+    (defun cnit/copilot-enable ()
+      (when (and (cnit/repo-org)
+                 (member (intern (cnit/repo-org)) cnit/copilot-enabled-organisations))
+        (progn
+          (copilot-mode 1))))
+    :hook ((prog-mode yaml-ts-mode) . cnit/copilot-enable)
+    :config
+    (defvar-keymap cnit/copilot-completion-repeat-map
+      :repeat t
+      "w" #'copilot-accept-completion-by-word
+      "l" #'copilot-accept-completion-by-line
+      "p" #'copilot-accept-completion-by-paragraph
+      "f" #'copilot-next-completion
+      "b" #'copilot-previous-completion)
+    :bind (:map copilot-completion-map
+                ("M-<tab>" . copilot-accept-completion)
+                ("M-w" . copilot-accept-completion-by-word)
+                ("M-l" . copilot-accept-completion-by-line)
+                ("M-p" . copilot-accept-completion-by-paragraph)
+                ("M-f" . copilot-next-completion)
+                ("M-b" . copilot-previous-completion)))
+
+
 #+end_src
 * Programming
 ** Flymake
@@ -1609,6 +1638,22 @@ Hide files matching ~dired-omit-files~ regex or the ~dired-omit-extensions~ list
 
 #+end_src
 
+** Repo Org
+#+begin_src emacs-lisp :tangle yes
+  (require 'magit)
+  (require 'project)
+
+  (defun cnit/repo-org (&optional path)
+    "Return the organisaton of the repo or nil if no org.
+  Use current directory if PATH not provided."
+    (interactive)
+    (when-let* ((path (or path (and (project-current) (project-root (project-current)))))
+                (default-directory (if (file-directory-p path) path (file-name-directory path)))
+                (origin (magit-get "remote.origin.url")))
+      (cond ((string-match "dev.azure.com[^/]+/\\([^/]+\\)" origin) (match-string 1 origin))
+            ((string-match "github.com:\\([^/]+\\)" origin) (match-string 1 origin)))))
+
+#+end_src
 
 ** COMMENT Dev
 #+begin_src emacs-lisp :tangle yes

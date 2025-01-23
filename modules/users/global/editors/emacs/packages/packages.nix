@@ -83,6 +83,7 @@ let
     consult
     corfu
     corfu-candidate-overlay
+    copilot
     denote
     direnv
     dtrt-indent

@@ -23,6 +23,8 @@ in
     };
   };
 
+  allowUnfree = true;
+
   allowUnfreePredicate =
     pkg:
     elem (getName pkg) [

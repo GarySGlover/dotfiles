@@ -478,25 +478,6 @@ If not, prompt the user whether to allow running all code blocks silently."
 (use-package aggressive-indent
   :hook (emacs-lisp-mode . aggressive-indent-mode))
 
-(use-package chatgpt-shell
-  :functions auth-source-pick-first-password chatgpt-shell-openai-make-model
-  :bind ("C-c l" . cnit/chatgpt-shell-region)
-  :init
-  (defun cnit/chatgpt-shell-region (prefix)
-    (interactive "P")
-    (if (region-active-p)
-        (chatgpt-shell-prompt-compose prefix)
-      (chatgpt-shell)))
-  :config
-  (setopt
-   chatgpt-shell-openai-key (auth-source-pick-first-password :host "api.openai.com")
-   chatgpt-shell-model-version "gpt-4o-mini")
-  (add-to-list 'chatgpt-shell-models
-               (chatgpt-shell-openai-make-model
-                :version "gpt-4o-mini"
-                :token-width 3
-                :context-window 128000)))
-
 (use-package format-all
   :defines format-all-default-formatters
   :config
@@ -760,6 +741,49 @@ surrounded by word boundaries."
          ("RET" . reb-replace-regexp)
          :map reb-lisp-mode-map
          ("RET" . reb-replace-regexp)))
+
+(use-package chatgpt-shell
+  :functions auth-source-pick-first-password chatgpt-shell-openai-make-model
+  :bind ("C-c l" . cnit/chatgpt-shell-region)
+  :init
+  (defun cnit/chatgpt-shell-region (prefix)
+    (interactive "P")
+    (if (region-active-p)
+        (chatgpt-shell-prompt-compose prefix)
+      (chatgpt-shell)))
+  :config
+  (setopt
+   chatgpt-shell-openai-key (auth-source-pick-first-password :host "api.openai.com")
+   chatgpt-shell-model-version "gpt-4o-mini")
+  (add-to-list 'chatgpt-shell-models
+               (chatgpt-shell-openai-make-model
+                :version "gpt-4o-mini"
+                :token-width 3
+                :context-window 128000)))
+
+(use-package copilot
+  :init
+  (defun cnit/copilot-enable ()
+    (when (and (cnit/repo-org)
+               (member (intern (cnit/repo-org)) cnit/copilot-enabled-organisations))
+      (progn
+        (copilot-mode 1))))
+  :hook ((prog-mode yaml-ts-mode) . cnit/copilot-enable)
+  :config
+  (defvar-keymap cnit/copilot-completion-repeat-map
+    :repeat t
+    "w" #'copilot-accept-completion-by-word
+    "l" #'copilot-accept-completion-by-line
+    "p" #'copilot-accept-completion-by-paragraph
+    "f" #'copilot-next-completion
+    "b" #'copilot-previous-completion)
+  :bind (:map copilot-completion-map
+              ("M-<tab>" . copilot-accept-completion)
+              ("M-w" . copilot-accept-completion-by-word)
+              ("M-l" . copilot-accept-completion-by-line)
+              ("M-p" . copilot-accept-completion-by-paragraph)
+              ("M-f" . copilot-next-completion)
+              ("M-b" . copilot-previous-completion)))
 
 (use-package flymake
   :hook (prog-mode . flymake-mode))
@@ -1160,3 +1184,16 @@ Runs inside comint if the file is executable."
 (defvar-keymap cnit/recenter-top-bottom
   :repeat t
   "l" #'recenter-top-bottom)
+
+(require 'magit)
+(require 'project)
+
+(defun cnit/repo-org (&optional path)
+  "Return the organisaton of the repo or nil if no org.
+Use current directory if PATH not provided."
+  (interactive)
+  (when-let* ((path (or path (and (project-current) (project-root (project-current)))))
+              (default-directory (if (file-directory-p path) path (file-name-directory path)))
+              (origin (magit-get "remote.origin.url")))
+    (cond ((string-match "dev.azure.com[^/]+/\\([^/]+\\)" origin) (match-string 1 origin))
+          ((string-match "github.com:\\([^/]+\\)" origin) (match-string 1 origin)))))

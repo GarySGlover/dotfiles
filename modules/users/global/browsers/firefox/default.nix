@@ -13,7 +13,6 @@ let
     // import ./peskyfox.nix
     // {
       "browser.startup.homepage" = "about:blank";
-      "dom.event.contextmenu.enabled" = false; # Prevent sites disabling right-click
       "layout.css.prefers-color-scheme.content-override" = 0; # Dark mode
 
       # Security / Privacy
@@ -70,6 +69,7 @@ in
           bitwarden
           enhancer-for-youtube
           ublock-origin
+          absolute-enable-right-click
         ];
       };
     };
@@ -91,6 +91,7 @@ in
         extensions = with pkgs.nur.repos.rycee.firefox-addons; [
           bitwarden
           ublock-origin
+          absolute-enable-right-click
         ];
       };
     };

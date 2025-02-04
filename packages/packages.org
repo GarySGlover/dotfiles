@@ -24,6 +24,9 @@ those we are waiting on their completion.
 #+name: spinner
 #+begin_src bash
   function spinner() {
+  	if [[ ${SPINNER_DEBUG-FALSE} == TRUE ]]; then
+  		echo "Debug: " "$1" >&2
+  	fi
   	gum spin --spinner points --title "$@"
   }
 #+end_src
@@ -292,15 +295,26 @@ Pull resource group for named cluster from the az aks list output.
   	path="$HOME/git-clones/$DEVOPS_ORG/$PROJECT/$repo"
   	if [ -d "$path" ]; then
   		function update_repo() {
-  			pushd "$path" || return
-  			git fetch --prune --prune-tags --tags --force
+  			pushd "$path">/dev/null || return 0
+  			spinner "Updating $PROJECT/$repo" -- \
+  				- git fetch --prune --prune-tags --tags --force || {
+  				popd>/dev/null || return 0
+  				return 0
+  			}
   			branch="$(git remote show origin | awk '/HEAD branch/{print $NF}')"
-  			git checkout "$branch"
-  			git reset --hard "origin/$branch"
-  			popd || return
+  			spinner "Updating $PROJECT/$repo" -- \
+  				git checkout "$branch" || {
+  				popd>/dev/null || return 0
+  				return 0
+  			}
+  			spinner "Updating $PROJECT/$repo" -- \
+  				git reset --hard "origin/$branch" || {
+  				popd>/dev/null || return 0
+  				return 0
+  			}
+  			popd>/dev/null || return 0
   		}
-  		spinner "Updating $PROJECT/$repo" -- \
-  			update_repo
+  		update_repo
   	else
   		url=$(echo "$DEVOPS_REPOS" | jq --arg repo "$repo" --arg type "$DOWNLOAD_TYPE" -r '.value[] | select(.name==$repo) | .[$type]')
   		spinner "Downloading $PROJECT/$repo" -- \

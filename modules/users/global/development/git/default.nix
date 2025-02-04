@@ -46,6 +46,9 @@ in
         '';
         executable = true;
       };
+      "git/.git-credentials" = {
+        text = builtins.concatStringsSep "\n" secrets.git_creds;
+      };
     };
 
     home.packages = with pkgs; [
@@ -57,7 +60,10 @@ in
       userName = "${secrets.git_username}";
       extraConfig = {
         core.askPass = "";
-        credential.helper = "store";
+        credential.helper = [
+          "store --file ~/.git-credentials"
+          "store --file ${config.xdg.configHome}/git/.git-credentials"
+        ];
         fetch = {
           prune = true;
           pruneTags = true;

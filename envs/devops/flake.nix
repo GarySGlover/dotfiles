@@ -3,8 +3,10 @@
   inputs.nixpkgs.url = "nixpkgs/nixpkgs-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
-  outputs = { nixpkgs, flake-utils, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    { nixpkgs, flake-utils, ... }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = import nixpkgs {
           inherit system;
@@ -15,19 +17,23 @@
         local-pkgs = import ../../packages/packages.nix { inherit pkgs; };
 
         lib = pkgs.lib;
-        excludedExtensions =
-          [ "connection-monitor-preview" "blockchain" "aks-preview" ];
+        excludedExtensions = [
+          "connection-monitor-preview"
+          "blockchain"
+          "aks-preview"
+        ];
 
-        isDesiredExtension = item:
+        isDesiredExtension =
+          item:
           let
             name = item.pname or "";
             result = builtins.tryEval item;
-          in result.success && !(builtins.elem name excludedExtensions)
-          && lib.isDerivation item;
+          in
+          result.success && !(builtins.elem name excludedExtensions) && lib.isDerivation item;
 
-        azure-cli = pkgs.azure-cli.withExtensions
-          (builtins.filter isDesiredExtension
-            (lib.attrValues pkgs.azure-cli-extensions));
+        azure-cli = pkgs.azure-cli.withExtensions (
+          builtins.filter isDesiredExtension (lib.attrValues pkgs.azure-cli-extensions)
+        );
 
         packages = with pkgs; [
           pre-commit
@@ -41,8 +47,9 @@
           local-pkgs.devops-clone
           local-pkgs.azure-tools
         ];
-      in {
-        devShells.default =
-          pkgs.mkShell { packages = packages ++ [ azure-cli ]; };
-      });
+      in
+      {
+        devShells.default = pkgs.mkShell { packages = packages ++ [ azure-cli ]; };
+      }
+    );
 }

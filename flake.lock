@@ -41,6 +41,38 @@
         "type": "github"
       }
     },
+    "copilot-chat": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1738138281,
+        "narHash": "sha256-cvLr8ov7SOaRyv3D1NuVvqYcfI0IJMIOeQZcgiqHdBg=",
+        "owner": "chep",
+        "repo": "copilot-chat.el",
+        "rev": "b7648e2f117403f2e12e00e0232a0953799cea24",
+        "type": "github"
+      },
+      "original": {
+        "owner": "chep",
+        "repo": "copilot-chat.el",
+        "type": "github"
+      }
+    },
+    "eglot-booster": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1730187731,
+        "narHash": "sha256-PLfaXELkdX5NZcSmR1s/kgmU16ODF8bn56nfTh9g6bs=",
+        "owner": "jdtsmith",
+        "repo": "eglot-booster",
+        "rev": "e6daa6bcaf4aceee29c8a5a949b43eb1b89900ed",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jdtsmith",
+        "repo": "eglot-booster",
+        "type": "github"
+      }
+    },
     "emacs-overlay": {
       "inputs": {
         "nixpkgs": "nixpkgs_2",
@@ -116,6 +148,22 @@
         "owner": "nix-community",
         "ref": "master",
         "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "kbd-mode": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1730804001,
+        "narHash": "sha256-QZiX6do8rV5keNFx8ToZkENuGbYHR/W3p3jb8MLJ1lI=",
+        "owner": "kmonad",
+        "repo": "kbd-mode",
+        "rev": "b07f3e16043fbb268b3e47fb49abc419e8b7e2d7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "kmonad",
+        "repo": "kbd-mode",
         "type": "github"
       }
     },
@@ -239,15 +287,36 @@
         "type": "github"
       }
     },
+    "org-modern-indent": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1734400276,
+        "narHash": "sha256-9aaaPGCvt51FknRKB5zT8AdHjhH/sQMc1IyQS3KnJsU=",
+        "owner": "jdtsmith",
+        "repo": "org-modern-indent",
+        "rev": "52b46c6ecd63e627ab5bfb83c580b51f68a23774",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jdtsmith",
+        "repo": "org-modern-indent",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "ags": "ags",
+        "copilot-chat": "copilot-chat",
+        "eglot-booster": "eglot-booster",
         "emacs-overlay": "emacs-overlay",
         "home-manager": "home-manager",
+        "kbd-mode": "kbd-mode",
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs_3",
         "nur": "nur",
-        "sops-nix": "sops-nix"
+        "org-modern-indent": "org-modern-indent",
+        "sops-nix": "sops-nix",
+        "transient-compile": "transient-compile"
       }
     },
     "sops-nix": {
@@ -267,6 +336,22 @@
       "original": {
         "owner": "Mic92",
         "repo": "sops-nix",
+        "type": "github"
+      }
+    },
+    "transient-compile": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1737962897,
+        "narHash": "sha256-6djFsds+UhWr26jiNJd2fqp4GNLulRPR1QtZg5FxFfY=",
+        "owner": "gavv",
+        "repo": "transient-compile",
+        "rev": "46b59759912afec78d4bd0fecf8f0815483d3474",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gavv",
+        "repo": "transient-compile",
         "type": "github"
       }
     },

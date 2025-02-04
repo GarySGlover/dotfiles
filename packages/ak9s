@@ -9,6 +9,9 @@ function get_auto_clean_temp_file() {
 # shellcheck disable=SC2154
 trap 'for file in "${temp_files[@]}"; do rm -f -- "$file"; done' EXIT SIGINT
 function spinner() {
+	if [[ ${SPINNER_DEBUG-FALSE} == TRUE ]]; then
+		echo "Debug: " "$1" >&2
+	fi
 	gum spin --spinner points --title "$@"
 }
 # Init:1 ends here

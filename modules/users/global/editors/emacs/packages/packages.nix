@@ -5,61 +5,110 @@
   ...
 }:
 let
-  inherit (lib) mkIf hasAttr;
   secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
 
-  epkgs = pkgs.emacsPackages;
-
-  combobulate = pkgs.callPackage ./manual/combobulate.nix {
-    inherit (pkgs) fetchFromGitHub writeText;
-    inherit (epkgs) melpaBuild compat;
+  epkgsl = with pkgs.emacsPackages; {
+    kbd-mode = (
+      melpaBuild {
+        pname = "kbd-mode";
+        version = "1";
+        commit = "1";
+        src = pkgs.kbd-mode;
+        packageRequires = [ ];
+        recipe = pkgs.writeText "recipe" ''
+          (kbd-mode
+            :repo "kmonad/kbd-mode"
+            :fetcher github
+            :files ("*.el"))
+        '';
+      }
+    );
+    transient-compile = (
+      melpaBuild {
+        pname = "transient-compile";
+        version = "1";
+        commit = "1";
+        src = pkgs.transient-compile;
+        packageRequires = [ f ];
+        recipe = pkgs.writeText "recipe" ''
+          (transient-compile
+            :repo "gavv/transient-compile"
+            :fetcher github
+            :files ("*.el"))
+        '';
+      }
+    );
+    org-modern-indent = (
+      melpaBuild {
+        pname = "org-modern-indent";
+        version = "1";
+        commit = "1";
+        src = pkgs.org-modern-indent;
+        packageRequires = [ compat ];
+        recipe = pkgs.writeText "recipe" ''
+          (org-modern-indent
+            :repo "jdtsmith/org-modern-indent"
+            :fetcher github
+            :files ("*.el"))
+        '';
+      }
+    );
+    eglot-booster = (
+      melpaBuild {
+        pname = "eglot-booster";
+        version = "1";
+        commit = "1";
+        src = pkgs.eglot-booster;
+        packageRequires = [ ];
+        recipe = pkgs.writeText "recipe" ''
+          (eglot-booster
+            :repo "jdtsmith/eglot-booster"
+            :fetcher github
+            :files ("*.el"))
+        '';
+      }
+    );
+    copilot-chat = (
+      melpaBuild {
+        pname = "copilot-chat";
+        version = "1";
+        commit = "1";
+        src = pkgs.copilot-chat;
+        packageRequires = [
+          request
+          markdown-mode
+          shell-maker
+        ];
+        turnOnCompilationWarningToError = false;
+        ignoreCompilationError = true;
+        recipe = pkgs.writeText "recipe" ''
+          (copilot-chat
+            :repo "chep/copilot-chat.el"
+            :fetcher github
+            :files ("*.el"))
+        '';
+      }
+    );
   };
 
-  emacscodeium = pkgs.callPackage ./manual/codeium.nix {
-    inherit (pkgs) fetchFromGitHub;
-    inherit (epkgs) trivialBuild;
-  };
-
-  nim-ts-mode = pkgs.callPackage ./manual/nim-ts-mode.nix {
-    inherit (pkgs) fetchFromGitHub writeText;
-    inherit (epkgs) melpaBuild nim-mode;
-  };
-
-  org-modern-indent = pkgs.callPackage ./manual/org-modern-indent.nix {
-    inherit (pkgs) fetchFromGitHub writeText;
-    inherit (epkgs) melpaBuild compat;
-  };
-
-  kbd-mode = pkgs.callPackage ./manual/kbd-mode.nix {
-    inherit (pkgs) fetchFromGitHub writeText;
-    inherit (epkgs) melpaBuild compat;
-  };
-
-  eglot-booster = pkgs.callPackage ./manual/eglot-booster.nix {
-    inherit (pkgs) fetchFromGitHub writeText;
-    inherit (epkgs) melpaBuild;
-  };
-
-  emacsExtraPackagesLocal = [
-    # combobulate
-    # emacscodeium
-    # nim-ts-mode
-    eglot-booster
+  emacsExtraPackagesLocal = with epkgsl; [
     kbd-mode
+    transient-compile
     org-modern-indent
+    eglot-booster
+    copilot-chat
   ];
 
-  emacsExtraPackages = with epkgs; [
+  emacsExtraPackages = with pkgs.emacsPackages; [
+    yaml
     # auto-yasnippet
-    # beframe
-    # breadcrumb
+    breadcrumb
     # consult-flyspell
-    # consult-yasnippet
+    consult-yasnippet
     # devdocs
-    # dtrt-indent
     # exec-path-from-shell
     # gcmh
-    # git-timemachine
+    git-timemachine
     # json-navigator
     # kubel
     # mini-frame
@@ -72,9 +121,6 @@ let
     # powershell
     # quickrun
     # rainbow-delimiters
-    # sly
-    # terraform-doc
-    # yaml-pro
     avy
     ace-window
     aggressive-indent
@@ -129,7 +175,7 @@ let
   ];
 in
 {
-  config = mkIf config.wolf.roles.editing {
+  config = lib.mkIf config.wolf.roles.editing {
     programs.emacs.extraPackages = epkgs: emacsExtraPackages ++ emacsExtraPackagesLocal;
 
     home.packages = with pkgs; [
@@ -147,25 +193,21 @@ in
       emacs-lsp-booster
     ];
 
-    # Populate authinfo for gptel to use chatgpt api
-    home.file.authinfo = {
-      target = ".authinfo";
-      text =
-        if (hasAttr "openai_token" secrets) then
-          ''
-            machine api.openai.com login apikey password ${secrets.openai_token}
-          ''
-        else
-          "";
-    };
-
     home.file = {
+      # Populate authinfo for gptel to use chatgpt api
+      authinfo = {
+        target = ".authinfo";
+        text =
+          if (lib.hasAttr "openai_token" secrets) then
+            ''
+              machine api.openai.com login apikey password ${secrets.openai_token}
+            ''
+          else
+            "";
+      };
+
       ".config/emacs/var/tree-sitter".source =
         "${pkgs.emacsPackages.treesit-grammars.with-all-grammars}/lib";
-      ".config/emacs/codeium/codeium_language_server" = {
-        source = config.lib.file.mkOutOfStoreSymlink "${pkgs.codeium}/bin/codeium_language_server";
-        executable = true;
-      };
     };
   };
 }

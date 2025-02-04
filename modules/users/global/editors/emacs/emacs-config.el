@@ -44,6 +44,7 @@
 
 (unbind-key "<f11>" 'global-map)
 (unbind-key "<pinch>" 'global-map)
+(unbind-key "C-x m" 'global-map)
 
 (use-package emacs
   :config (setopt select-active-regions nil))
@@ -78,49 +79,51 @@
   "Transient for toggling minor modes."
   :transient-suffix 'transient--do-stay
   [["Modes"
-    ("c" (lambda () (cnit/modes-highlight 'flymake-mode "Flymake"))
+    ("fm" (lambda () (cnit/modes-highlight 'flymake-mode "Flymake"))
      flymake-mode)
-    ("d" (lambda () (cnit/modes-highlight 'display-fill-column-indicator-mode "Fill Column Indicator"))
+    ("fc" (lambda () (cnit/modes-highlight 'display-fill-column-indicator-mode "Fill Column Indicator"))
      display-fill-column-indicator-mode)
-    ("f" (lambda () (cnit/modes-highlight 'format-all-mode "Format all"))
+    ("fa" (lambda () (cnit/modes-highlight 'format-all-mode "Format all"))
      format-all-mode)
-    ("h" (lambda () (cnit/modes-highlight 'hl-line-mode "Highlight Line"))
+    ("hl" (lambda () (cnit/modes-highlight 'hl-line-mode "Highlight Line"))
      hl-line-mode)
-    ("l" (lambda () (cnit/modes-highlight 'display-line-numbers-mode "Line Numbers"))
+    ("ln" (lambda () (cnit/modes-highlight 'display-line-numbers-mode "Line Numbers"))
      display-line-numbers-mode)
-    ("m" (lambda () (cnit/modes-highlight 'word-wrap-whitespace-mode "Word Wrap"))
+    ("ww" (lambda () (cnit/modes-highlight 'word-wrap-whitespace-mode "Word Wrap"))
      word-wrap-whitespace-mode)
-    ("n" (lambda () (cnit/modes-highlight 'column-number-mode "Column Number"))
+    ("cn" (lambda () (cnit/modes-highlight 'column-number-mode "Column Number"))
      column-number-mode)
-    ("o" (lambda () (cnit/modes-highlight 'auto-revert-mode "Auto Revert Mode"))
+    ("ar" (lambda () (cnit/modes-highlight 'auto-revert-mode "Auto Revert"))
      auto-revert-mode)
-    ("s" (lambda () (cnit/modes-highlight 'flyspell-mode "Flyspell"))
+    ("fs" (lambda () (cnit/modes-highlight 'flyspell-mode "Flyspell"))
      flyspell-mode)
-    ("t" (lambda () (cnit/modes-highlight 'prettify-symbols-mode "Prettify Symbols"))
+    ("ps" (lambda () (cnit/modes-highlight 'prettify-symbols-mode "Prettify Symbols"))
      prettify-symbols-mode)
+    ("cp" (lambda () (cnit/modes-highlight 'copilot-mode "Copilot"))
+     copilot-mode)
     ]
    ["Indent"
-    ("a" (lambda () (cnit/modes-highlight 'aggressive-indent-mode "Aggressive Indent"))
+    ("ai" (lambda () (cnit/modes-highlight 'aggressive-indent-mode "Aggressive Indent"))
      aggressive-indent-mode)
-    ("e" (lambda () (cnit/modes-highlight 'electric-indent-mode "Electric Indent"))
+    ("ei" (lambda () (cnit/modes-highlight 'electric-indent-mode "Electric Indent"))
      electric-indent-mode)
-    ("i" (lambda () (cnit/modes-highlight 'indent-tabs-mode "Indent tabs"))
+    ("it" (lambda () (cnit/modes-highlight 'indent-tabs-mode "Indent tabs"))
      indent-tabs-mode)
-    ("j" (lambda () (cnit/modes-highlight 'indent-bars-mode "Indent bars"))
+    ("ib" (lambda () (cnit/modes-highlight 'indent-bars-mode "Indent bars"))
      indent-bars-mode)
     ]
    ["Whitespace"
-    ("u" (lambda () (cnit/modes-highlight 'ws-butler-mode "WS Butler"))
+    ("wb" (lambda () (cnit/modes-highlight 'ws-butler-mode "WS Butler"))
      ws-butler-mode)
-    ("w" (lambda () (cnit/modes-highlight 'whitespace-mode "Whitespace"))
+    ("ws" (lambda () (cnit/modes-highlight 'whitespace-mode "Whitespace"))
      whitespace-mode)
     ]
    ["Parens"
-    ("b" (lambda () (cnit/modes-highlight 'rainbow-mode "Rainbow mode"))
+    ("rb" (lambda () (cnit/modes-highlight 'rainbow-mode "Rainbow"))
      rainbow-mode)
-    ("p" (lambda () (cnit/modes-highlight 'electric-pair-mode "Electric Pair"))
+    ("ep" (lambda () (cnit/modes-highlight 'electric-pair-mode "Electric Pair"))
      electric-pair-mode)
-    ("r" (lambda () (cnit/modes-highlight 'show-paren-mode "Show Paren"))
+    ("sp" (lambda () (cnit/modes-highlight 'show-paren-mode "Show Paren"))
      show-paren-mode)
     ]])
 
@@ -281,11 +284,11 @@ completing-read prompter."
     (require 's)
     (telephone-line-raw
      (when (fboundp #'magit-get-current-branch)
-       (when-let* ((max-length 30)
+       (when-let* ((max-length 20)
                    (branch (s-left max-length (magit-get-current-branch))))
          `(:propertize ,(format " %s" branch)
                        mouse-face mode-line-highlight
-                       help-echo "Click to open Magit status"
+                       help-echo (magit-get-current-branch)
                        local-map ,(let ((map (make-sparse-keymap)))
                                     (define-key map [mode-line mouse-1]
                                                 #'magit-status)
@@ -299,17 +302,34 @@ completing-read prompter."
                        help-echo ,name
                        face ,face)
        (buffer-name))))
+  (telephone-line-defsegment cnit/telephone-line-project-segment ()
+    "Displays the project name, according to magit or project.el"
+    (if (project-current)
+        (propertize (cond ((stringp telephone-line-project-custom-name) telephone-line-project-custom-name)
+                          ((cnit/magit-repo-name) (cnit/magit-repo-name))
+                          (file-name-nondirectory (directory-file-name (project-root (project-current)))))
+                    'face 'telephone-line-projectile
+                    'display '(raise 0.0)
+                    'help-echo (file-name-nondirectory (directory-file-name (project-root (project-current))))
+                    'mouse-face '(:box 1)
+                    'local-map (make-mode-line-mouse-map
+                                'mouse-1 #'project-switch-project))))
+  (telephone-line-defsegment cnit/telephone-line-mode-segment ()
+    "Displays tree icon if major-mode is a treesitter mode."
+    (if (string-match-p "-ts-" (format "%s" major-mode))
+        " %[%m%]"
+      "%[%m%]"))
   (telephone-line-mode nil)
   (setq telephone-line-lhs
-        '((accent . (cnit/telephone-line-magit-segment
+        '((accent . (cnit/telephone-line-mode-segment))
+          (evil . (cnit/telephone-line-project-segment))
+          (accent . (cnit/telephone-line-magit-segment
                      telephone-line-process-segment))
-          (nil . (telephone-line-flymake-segment))
-          (accent . (telephone-line-project-segment))
-          (nil . (cnit/telephone-line-buffer-name)))
+          (evil . ((cnit/telephone-line-buffer-name 20))))
         telephone-line-rhs
-        '((accent    . (telephone-line-misc-info-segment))
-          (accent . (telephone-line-major-mode-segment))
-          (evil   . (telephone-line-airline-position-segment))))
+        '((accent . (telephone-line-flymake-segment))
+          (evil . (telephone-line-airline-position-segment))
+          (accent . (telephone-line-misc-info-segment))))
   (telephone-line-mode t))
 
 (defun shorten-file-path (file-path &optional max-length)
@@ -317,7 +337,7 @@ completing-read prompter."
 1. If within a `project.el` project, remove the project root from the start.
 2. If within the user's home directory, replace the home directory with `~`.
 3. If the path length exceeds MAX-LENGTH (default 30), shorten directories from the beginning."
-  (let* ((max-length (or max-length 30))
+  (let* ((max-length (or max-length 10))
          (home-dir (expand-file-name "~"))
          (project-root (when (fboundp 'project-root)
                          (ignore-errors
@@ -364,15 +384,12 @@ completing-read prompter."
   (defun cnit/org-save-babel-tangle ()
     (add-hook 'after-save-hook
               (lambda () (when (eq major-mode 'org-mode) (org-babel-tangle)))))
-  (defun cnit/org-electric-config ()
-    (setq-local electric-pair-pairs
-                (append `((?\/ . ?\/)
-                          (?\= . ?\=)
-                          (?\+ . ?\+))
-                        electric-pair-pairs)))
+  (defun cnit/exclude-electric-pair ()
+    "Disable electric pair mode."
+    (when electric-pair-mode (electric-pair-mode -1)))
   :hook
   ((org-mode . cnit/org-save-babel-tangle)
-   (org-mode . cnit/org-electric-config))
+   (org-mode . cnit/exclude-electric-pair))
   :config
   (declare-function -each "dash")
   (setopt
@@ -615,7 +632,6 @@ major-mode-remap-alist or auto-mode-alist."
     (kill-new "")
     (avy-action-with-region pt 'copy-region-as-kill)
     t)
-
   (defun avy-action-yank-region (pt)
     (avy-action-copy-region pt)
     (yank)
@@ -762,6 +778,7 @@ surrounded by word boundaries."
                 :context-window 128000)))
 
 (use-package copilot
+  :demand t
   :init
   (defun cnit/copilot-enable ()
     (when (and (cnit/repo-org)
@@ -779,11 +796,16 @@ surrounded by word boundaries."
     "b" #'copilot-previous-completion)
   :bind (:map copilot-completion-map
               ("M-<tab>" . copilot-accept-completion)
+              ("M-c" . copilot-accept-completion)
               ("M-w" . copilot-accept-completion-by-word)
               ("M-l" . copilot-accept-completion-by-line)
               ("M-p" . copilot-accept-completion-by-paragraph)
               ("M-f" . copilot-next-completion)
               ("M-b" . copilot-previous-completion)))
+
+(use-package copilot-chat
+  :commands (copilot-chat-transient)
+  :bind ("C-c L" . copilot-chat-transient))
 
 (use-package flymake
   :hook (prog-mode . flymake-mode))
@@ -874,6 +896,187 @@ surrounded by word boundaries."
 (use-package compilation
   :hook (compilation-filter . ansi-color-compilation-filter))
 
+(require 'yaml)
+(require 'json)
+(require 'dash)
+(require 'transient-compile)
+
+(defun cnit/transient-compile--tool-property (tool property)
+  "Get PROPERTY for TOOL, suppressing errors.
+This function retrieves the specified PROPERTY for the given TOOL
+using `transient-compile--tool-property'.  If an error occurs during
+the retrieval, it is suppressed and nil is returned instead.
+
+Arguments:
+TOOL -- The tool for which the property is being retrieved.
+PROPERTY -- The property to retrieve for the specified tool.
+
+This function temporarily overrides `user-error' to prevent it from
+raising an error, ensuring that any issues encountered during the
+property retrieval process do not interrupt the program flow.
+
+Example usage:
+\(let ((property (`cnit/transient-compile--tool-property'
+                  \\='some-tool :some-property)))
+  (if property
+      (message \"Property found: %s\" property)
+    (message \"Property not found or error occurred\")))
+
+In this example, the function attempts to retrieve `:some-property'
+for `some-tool'. If the property is not found or an error occurs,
+nil is returned, allowing the program to handle this case gracefully."
+  (cl-letf (((symbol-function 'user-error) (lambda (&rest _) nil)))
+    (transient-compile--tool-property tool property)))
+
+(defun cnit/compile--pre-commit-targets (directory)
+  "Get list of targets from a .pre-commit-config.yaml file in DIRECTORY.
+Targets are the id values under all hooks.
+If the file does not exist, return an empty list."
+  (let ((file-path (expand-file-name ".pre-commit-config.yaml" directory)))
+    (if (not (file-exists-p file-path))
+        '() ;; Return empty list as gaurd clause for file not existing.
+      (let* ((yaml-string (with-temp-buffer
+                            (insert-file-contents file-path)
+                            (buffer-string)))
+             (pre-commit-config (yaml-parse-string yaml-string))
+             (ids '()))
+        (cl-loop for repo across (gethash 'repos pre-commit-config) do
+                 (cl-loop for hook across (gethash 'hooks repo) do
+                          (push (gethash 'id hook) ids)))
+        ids))))
+
+(defun cnit/compile--pre-commit-command (directory target)
+  "Format build command for pre-commit.
+DIRECTORY not used as pre-commit always runs in project root.
+TARGET is the pre-commit id to run."
+  (when-let* ((executable (cnit/transient-compile--tool-property 'pre-commit :exe)))
+    (transient-compile--shell-join
+     executable
+     "run" target "--all-files")))
+
+(defun cnit/compile--nix-command (args)
+  "Run nix with ARGS in DIRECTORY."
+  (when-let* ((executable (or (cnit/transient-compile--tool-property 'nix :exe) "nix"))
+              (nix-bin (executable-find executable))
+              (shell-result (shell-command (string-join `(,nix-bin ,args) " ") "*nix-command*" "*nix-error*")))
+    (if (eq shell-result 0)
+        (with-current-buffer "*nix-command*" (buffer-string))
+      nil)))
+
+(defun cnit/compile--nix-flake-targets (directory)
+  "Get list of Nix Flake targets in DIRECTORY."
+  (when-let* ((json-raw (cnit/compile--nix-command (string-join `("flake show" ,directory "--json") " ")))
+              (json-data (json-parse-string json-raw))
+              (nixos-configs (gethash "nixosConfigurations" json-data)))
+    (-map (lambda (config-name) (string-join `("os "  ,config-name))) (hash-table-keys nixos-configs))))
+
+(cnit/compile--nix-flake-targets "~/dotfiles/")
+
+(defun cnit/compile--nix-flake-command (directory target)
+  "Format build command for Nix Flake check.
+DIRECTORY containes flake.nix
+TARGET is the derivation to check"
+  (when (string-match "\\(\\S-+\\) \\(.*\\)" target)
+    (let ((type (match-string 1 target))
+          (target (match-string 2 target)))
+      (cond
+       ((string= type "os")
+        (string-join `("nix eval .#nixosConfigurations." ,target ".config.system.build.toplevel")))
+       (t "")))))
+
+(defun cnit/compile--combine-tools-matchers (&rest tools)
+  "Combine matchers for multiple TOOLS.
+This function retrieves the match properties for each tool given in
+TOOLS.  It returns a flat list of unique match strings/functions
+combining all the provided tools.
+Each TOOL can be a symbol representing a tool."
+  (let ((combined-matches '()))
+    (dolist (tool tools)
+      (let ((match (transient-compile--tool-property tool :match)))
+        (cond
+         ((null match)
+          nil)
+         ((listp match)
+          (setq combined-matches (append combined-matches match)))
+         (t
+          (setq combined-matches (append combined-matches (list match)))))))
+    (delete-dups combined-matches)))
+
+(defmacro cnit/compile--combine-targets (&rest tools)
+  "Create a function that combines targets for the given TOOLS."
+  (let ((function-name (intern (format "cnit/compile--%s-targets" (mapconcat 'symbol-name tools "-")))))
+    `(defun ,function-name (directory)
+       (cl-letf (((symbol-function 'user-error) (lambda (&rest _) nil)))
+         (append
+          ,@(mapcar (lambda (tool)
+                      `(when-let* ((transient-compile-tool ',tool)
+                                   (tool-and-dir (funcall transient-compile-detect-function))
+                                   (detected-dir (cdr tool-and-dir)))
+                         (if (string= detected-dir directory)
+                             (-map (lambda (target) (format "[%s] %s" ',tool target))
+                                   (transient-compile--tool-targets transient-compile-tool directory)))))
+                    tools))))))
+
+(defun cnit/compile--combine-tools (&rest tools)
+  "Combine TOOLS for `transient-compile'.
+Allows for the simultaneous discovery and dispatch of multiple tools
+into one transient menu."
+  (eval `(cnit/compile--combine-targets ,@tools))
+  (let ((combined-name (intern (mapconcat 'symbol-name tools " & ")))
+        (target (intern (apply #'cnit/compile--combine-function-name tools))))
+    `(,combined-name :match ,(apply #'cnit/compile--combine-tools-matchers tools)
+                     :chdir t
+                     :targets ,target
+                     :command cnit/compile--combine-command)))
+
+(defun cnit/compile--combine-function-name (&rest tools)
+  "Create the target function name from the TOOLS."
+  (format "cnit/compile--%s-targets"
+          (mapconcat (lambda (tool) (format "%s" tool)) tools "-")))
+
+(defun cnit/compile--combine-command (directory target)
+  "Combine and execute a compile command based on the TARGET string.
+
+DIRECTORY is the directory in which the compile command should be executed.
+TARGET is a string that includes the tool and the actual target, formatted as
+\"[tool] target\".  The function extracts the tool and target from this string,
+retrieves the corresponding compile command, and executes it with DIRECTORY
+and TARGET as arguments.
+
+For example, if TARGET is \"[gcc] main.c\", the function will:
+1. Extract \\='gcc\\=' as the tool and \\='main.c\\=' as the target.
+2. Retrieve the compile command associated with \\='gcc\\='.
+3. Execute the compile command with DIRECTORY and \\='main.c\\='.
+
+The compile command is retrieved using the `transient-compile--tool-property`
+function, which should return a function that accepts DIRECTORY and TARGET as
+arguments."
+  (when (string-match "\\[\\([^]]*\\)\\] \\(.*\\)" target)
+    (let* ((tool (intern (match-string 1 target)))
+           (target (match-string 2 target))
+           (compile-command (transient-compile--tool-property tool :command)))
+      (funcall compile-command directory target))))
+
+;; Known issues:
+;; Combining tools with functions as matchers fails. I think it's due to the way closures appear as a list rather than single item.
+
+(use-package transient-compile
+  :bind (("C-c b" . transient-compile))
+  :config
+  (add-to-list 'transient-compile-tool-alist
+               '(nix :match ("flake.nix")
+                     :exe "nix"
+                     :chdir t
+                     :targets cnit/compile--nix-flake-targets
+                     :command cnit/compile--nix-flake-command))
+  (add-to-list 'transient-compile-tool-alist
+               '(pre-commit :match (".pre-commit-config.yaml")
+                            :exe "pre-commit"
+                            :chdir t
+                            :targets cnit/compile--pre-commit-targets
+                            :command cnit/compile--pre-commit-command))
+  (add-to-list 'transient-compile-tool-alist (cnit/compile--combine-tools 'nix 'pre-commit 'make)))
+
 (use-package magit
   :demand t
   :commands (magit-get-current-branch)
@@ -954,6 +1157,10 @@ surrounded by word boundaries."
   :config
   (setopt which-key-idle-delay 1.0)
   (which-key-mode 1))
+
+(use-package dired
+  :config
+  (setopt dired-dwim-target t))
 
 (use-package dired-x
   :hook (dired-mode . dired-omit-mode))
@@ -1040,13 +1247,9 @@ surrounded by word boundaries."
       (read-string "Enter ticket name: "))))
 
 (defun cnit/magit-repo-name ()
-  (replace-regexp-in-string
-   "\\." "-"
-   (replace-regexp-in-string
-    "\\.git$"
-    ""
-    (file-name-nondirectory
-     (magit-get "remote" "origin" "url")))))
+  (when-let* ((repo-name (magit-get "remote" "origin" "url"))
+              (git-removed (replace-regexp-in-string "\\.git$" "" (file-name-nondirectory repo-name))))
+    (replace-regexp-in-string "\\." "-" git-removed)))
 
 (defun cnit/magit-worktree-extract-ticket-number (name)
   (when (string-match "^[0-9]+" name)

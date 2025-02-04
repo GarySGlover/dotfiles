@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # [[file:packages.org::*Init][Init:1]]
 function spinner() {
+	if [[ ${SPINNER_DEBUG-FALSE} == TRUE ]]; then
+		echo "Debug: " "$1" >&2
+	fi
 	gum spin --spinner points --title "$@"
 }
 # Init:1 ends here

@@ -18,6 +18,28 @@
     emacs-overlay.url = "github:nix-community/emacs-overlay/master";
     ags.url = "github:aylur/ags/main";
     nur.url = "github:nix-community/NUR";
+
+    # Emacs Packages
+    transient-compile = {
+      url = "github:gavv/transient-compile";
+      flake = false;
+    };
+    kbd-mode = {
+      url = "github:kmonad/kbd-mode";
+      flake = false;
+    };
+    org-modern-indent = {
+      url = "github:jdtsmith/org-modern-indent";
+      flake = false;
+    };
+    eglot-booster = {
+      url = "github:jdtsmith/eglot-booster";
+      flake = false;
+    };
+    copilot-chat = {
+      url = "github:chep/copilot-chat.el";
+      flake = false;
+    };
   };
 
   outputs =
@@ -28,6 +50,11 @@
       sops-nix,
       ags,
       nur,
+      transient-compile,
+      kbd-mode,
+      org-modern-indent,
+      eglot-booster,
+      copilot-chat,
       self,
       ...
     }:
@@ -75,6 +102,15 @@
         config = import ./config.nix { inherit lib; };
         overlays = [
           emacs-overlay.overlay
+          (final: prev: {
+            inherit
+              transient-compile
+              kbd-mode
+              org-modern-indent
+              eglot-booster
+              copilot-chat
+              ;
+          })
           (import ./modules/overlays/tree-sitter-grammars.nix)
           (import ./modules/overlays/codeium.nix)
           nur.overlay
@@ -186,10 +222,10 @@
           nixos = true;
           users = [ "clover" ];
         };
-	cornaith = {
-	  nixos = true;
-	  users = [ "clover" ];
-	};
+        cornaith = {
+          nixos = true;
+          users = [ "clover" ];
+        };
         clover-z270pd3 = {
           nixos = false;
           users = [ "clover" ];
@@ -225,7 +261,6 @@
         };
 
       homeConfigurations = listToAttrs (forEach homeCfgs (name: mkHomeCfg name));
-
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [
           # Pre-commit

@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # [[file:packages.org::*Get token][Get token:1]]
 function spinner() {
+	if [[ ${SPINNER_DEBUG-FALSE} == TRUE ]]; then
+		echo "Debug: " "$1" >&2
+	fi
 	gum spin --spinner points --title "$@"
 }
 # Get token:1 ends here

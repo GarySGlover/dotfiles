@@ -4,6 +4,8 @@
 	(unless (server-running-p)
 		(server-start)))
 
+(setopt confirm-kill-emacs #'yes-or-no-p)
+
 ;; -*- lexical-binding: t -*-
 
 (use-package comp

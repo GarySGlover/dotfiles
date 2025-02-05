@@ -19,6 +19,10 @@ updating
   	(unless (server-running-p)
   		(server-start)))
 #+end_src
+** Ask before exit
+#+begin_src emacs-lisp :tangle yes
+  (setopt confirm-kill-emacs #'yes-or-no-p)
+#+end_src
 ** Lexical Binding
 Configure lexical binding for the rest of this init. A lexically-bound variable
 has lexical scope, meaning that any reference to the variable must be

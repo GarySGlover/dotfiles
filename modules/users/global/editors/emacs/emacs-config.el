@@ -49,6 +49,50 @@
 (use-package emacs
 	:config (setopt select-active-regions nil))
 
+;; Remapping modes to new treesitter modes.
+(setopt major-mode-remap-alist
+	'((sh-mode . bash-ts-mode)
+  		 (c++-mode . c++-ts-mode)
+  		 (c-or-c++-mode . c-or-c++-ts-mode)
+  		 (c-mode . c-ts-mode)
+  		 (cmake-mode . cmake-ts-mode)
+  		 (csharp-mode . csharp-ts-mode)
+  		 (css-mode . css-ts-mode)
+  		 (indent-bars-mode . indent-bars-ts-mode)
+  		 (java-mode . java-ts-mode)
+  		 (javascript-mode . js-ts-mode)
+  		 (js-json-mode . json-ts-mode)
+  		 (python-mode . python-ts-mode)
+  		 (ruby-mode . ruby-ts-mode)
+  		 (conf-toml-mode . toml-ts-mode)))
+
+;; Associating filename regex lookups to major modes.
+(dolist (mode-assoc
+  			'(("\\(?:Dockerfile\\(?:\\..*\\)?\\|\\.[Dd]ockerfile\\)\\'"
+  				  . dockerfile-ts-mode)
+  				 ("/go\\.mod\\'" . go-mod-ts-mode)
+  				 ("\\.go\\'" . go-ts-mode)
+				 ("\\.nix\\'" . nix-ts-mode)
+				 ("\\.rs\\'" . rust-ts-mode)
+				 ("\\.ts\\'" . typescript-ts-mode)
+				 ("\\.tsx\\'" . tsx-ts-mode)
+				 ("\\.ya?ml\\'" . yaml-ts-mode)))
+	(add-to-list 'auto-mode-alist mode-assoc))
+
+;; Language names default formatters.
+(defvar cnit/languages--default-formatters-alist
+	'(("Nix" nixfmt)))
+
+;; Org language mode
+(defvar cnit/languages--org-src-lang-modes
+	'(("yaml" . "yaml-ts")
+		 ("nix" . "nix-ts")))
+
+;; Major mode default extension
+(defvar cnit/major-mode--default-file-extenson
+	'((emacs-lisp-mode . ".el")
+		 (bash-ts-mode . ".sh")))
+
 (use-package transient
 	:demand t)
 
@@ -396,10 +440,7 @@ completing-read prompter."
 		org-todo-keywords '((sequence "TODO(t)" "ACTIVE(a!)" "SCHEDULED(s@)" "HOLD(h@)" "|" "DONE(d@)" "CANCELED(c@)")))
 	(modify-syntax-entry ?* "\"" org-mode-syntax-table)
 	(modify-syntax-entry ?_ "\"" org-mode-syntax-table)
-	(-each
-		'(("yaml" . "yaml-ts")
-			 ("nix" . "nix-ts"))
-		(lambda (x) (add-to-list 'org-src-lang-modes x))))
+	(-each  cnit/languages--org-src-lang-modes (lambda (x) (add-to-list 'org-src-lang-modes x))))
 
 (use-package org-modern
 	:hook (org-mode . org-modern-mode))
@@ -495,7 +536,8 @@ If not, prompt the user whether to allow running all code blocks silently."
 (use-package format-all
 	:defines format-all-default-formatters
 	:config
-	(add-to-list 'format-all-default-formatters '("Nix" nixfmt))
+	(dolist (formatter-assoc cnit/languages--default-formatters-alist)
+		(add-to-list 'format-all-default-formatters formatter-assoc))
 	:hook
 	((prog-mode . format-all-mode)
 		(format-all-mode . format-all-ensure-formatter)))
@@ -526,34 +568,7 @@ major-mode-remap-alist or auto-mode-alist."
 	:config
 	(setopt
 		treesit-font-lock-level 4
-		treesit-extra-load-path `(,(expand-file-name "~/.config/emacs/var/tree-sitter"))
-		major-mode-remap-alist '((sh-mode . bash-ts-mode)
-  									(c++-mode . c++-ts-mode)
-  									(c-or-c++-mode . c-or-c++-ts-mode)
-  									(c-mode . c-ts-mode)
-  									(cmake-mode . cmake-ts-mode)
-  									(csharp-mode . csharp-ts-mode)
-  									(css-mode . css-ts-mode)
-  									(indent-bars-mode . indent-bars-ts-mode)
-  									(java-mode . java-ts-mode)
-  									(javascript-mode . js-ts-mode)
-  									(js-json-mode . json-ts-mode)
-  									;; (nim-mode . nim-ts-mode)
-  									(python-mode . python-ts-mode)
-  									(ruby-mode . ruby-ts-mode)
-  									(conf-toml-mode . toml-ts-mode)))
-	(dolist (mode-assoc
-  				'(("\\(?:Dockerfile\\(?:\\..*\\)?\\|\\.[Dd]ockerfile\\)\\'"
-  					  . dockerfile-ts-mode)
-  					 ("/go\\.mod\\'" . go-mod-ts-mode)
-  					 ("\\.go\\'" . go-ts-mode)
-					 ("\\.nix\\'" . nix-ts-mode)
-					 ("\\.rs\\'" . rust-ts-mode)
-					 ("\\.ts\\'" . typescript-ts-mode)
-					 ("\\.tsx\\'" . tsx-ts-mode)
-					 ("\\.ya?ml\\'" . yaml-ts-mode)))
-		(add-to-list 'auto-mode-alist mode-assoc))
-
+		treesit-extra-load-path `(,(expand-file-name "~/.config/emacs/var/tree-sitter")))
 	(cloveynit/report-unused-ts-modes))
 
 (use-package ws-butler
@@ -1131,9 +1146,6 @@ arguments."
 
 (use-package editorconfig
 	:init
-	(defvar cnit/major-mode--default-file-extenson
-		'((emacs-lisp-mode . ".el")
-			 (bash-ts-mode . ".sh")))
 	(defun cnit/org-src-editorconfig ()
 		(when-let* ((ext (alist-get major-mode cnit/major-mode--default-file-extenson))
 					   (buffer-file-name (concat default-directory (make-temp-name "") (or ext ""))))

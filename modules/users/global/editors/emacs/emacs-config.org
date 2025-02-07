@@ -275,6 +275,7 @@ fit in as part of any other group.
 
   (bind-key "C-c m" #'cnit/modes-dispatch)
 #+end_src
+
 * UI Enhancements
 ** Basic display changes
 #+begin_src emacs-lisp :tangle yes

@@ -16,6 +16,10 @@ in
     programs.bash = {
       enable = true;
       inherit shellAliases;
+      bashrcExtra = ''
+        if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi
+        export LOCALE_ARCHIVE=/usr/lib/locale/locale-archive
+      '';
     };
     programs.fish = {
       enable = true;

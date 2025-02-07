@@ -226,7 +226,7 @@
         };
         MW-RSY-GPRG8C3 = {
           nixos = false;
-          users = [ "gary" ];
+          users = [ "gary" "clover" ];
         };
       };
 

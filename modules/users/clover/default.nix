@@ -35,6 +35,13 @@ let
       "programming"
       "work"
     ];
+    MW-RSY-GPRG8C3 = [
+      "desktop"
+      "editing"
+      "internet"
+      "programming"
+      "work"
+    ];
   };
   host_languages = {
     auberon = [
@@ -56,6 +63,7 @@ let
     clover-z270pd3 = [
       "json"
     ];
+    MW-RSY-GPRG8C3 = [ ];
   };
 in
 {

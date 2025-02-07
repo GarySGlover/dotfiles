@@ -9,7 +9,7 @@ function spinner() {
 # Get token:1 ends here
 
 # [[file:packages.org::*Get token][Get token:2]]
-cached_expiry=$(skate get token-expiry@azure-tools 2>/dev/null)
+cached_expiry=$(skate get token-expiry@azure-tools 2>/dev/null || echo "")
 test -z "$cached_expiry" -o "1$cached_expiry" -lt "1$(date +%s)" && {
 	token_json=$(spinner "Getting Azure Rest Token" -- \
 		az account get-access-token -o json) || exit 1

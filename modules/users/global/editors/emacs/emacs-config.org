@@ -12,6 +12,10 @@
   	(unless (server-running-p)
   		(server-start)))
 #+end_src
+** Visual bell
+#+begin_src emacs-lisp :tangle yes
+  (setopt visible-bell t)
+#+end_src
 ** Ask before exit
 #+begin_src emacs-lisp :tangle yes
   (setopt confirm-kill-emacs #'yes-or-no-p)

@@ -24,7 +24,7 @@ those we are waiting on their completion.
 #+name: spinner
 #+begin_src bash
   function spinner() {
-  	if [[ ${SPINNER_DEBUG-FALSE} == TRUE ]]; then
+  	if [[ ${SPINNER_DEBUG-FALSE} == "TRUE" ]]; then
   		echo "Debug: " "$1" >&2
   	fi
   	gum spin --spinner points --title "$@"

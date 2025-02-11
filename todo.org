@@ -1,20 +1,12 @@
 Things that have anoyed me in the config that could do with
-* editorconfig
-- org src
-  - set =buffer-file-name= to extension based on mode
-  - rerun ~editorconfig-mode-apply~
 * modeline
 - display tab/space and indent offset
-- display treesitter active
 * transient-compile
 allow combining tools into single transient
 tools
 - zig
 - terraform
 - nix (test & build)
-* indent-control and maybe dtrt-indent
-also tie this into ident-bars so that if either have set the indent it uses their value rather than whatever it detects.
-* https://github.com/xenodium/chatgpt-shell
 * emacs: multiple cursors / kmacro
 * emacs: meow beacon in devil
 * notification prior to battery going flat

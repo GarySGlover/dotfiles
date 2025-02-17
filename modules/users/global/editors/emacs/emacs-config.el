@@ -953,17 +953,18 @@ If the file does not exist, return an empty list."
 									(insert-file-contents file-path)
 									(buffer-string)))
 					  (pre-commit-config (yaml-parse-string yaml-string))
-					  (ids '()))
+					  (ids '("all")))
 				(cl-loop for repo across (gethash 'repos pre-commit-config) do
 					(cl-loop for hook across (gethash 'hooks repo) do
-                        (push (gethash 'id hook) ids)))
+						(push (gethash 'id hook) ids)))
 				ids))))
 
 (defun cnit/compile--pre-commit-command (directory target)
 	"Format build command for pre-commit.
 DIRECTORY not used as pre-commit always runs in project root.
 TARGET is the pre-commit id to run."
-	(when-let* ((executable (cnit/transient-compile--tool-property 'pre-commit :exe)))
+	(when-let* ((executable (cnit/transient-compile--tool-property 'pre-commit :exe))
+				   (target (if (string= "all" target) "" target)))
 		(transient-compile--shell-join
 			executable
 			"run" target "--all-files")))
@@ -1039,9 +1040,9 @@ into one transient menu."
 	(let ((combined-name (intern (mapconcat 'symbol-name tools " & ")))
 			 (target (intern (apply #'cnit/compile--combine-function-name tools))))
 		`(,combined-name :match ,(apply #'cnit/compile--combine-tools-matchers tools)
-             :chdir t
-             :targets ,target
-             :command cnit/compile--combine-command)))
+			 :chdir t
+			 :targets ,target
+			 :command cnit/compile--combine-command)))
 
 (defun cnit/compile--combine-function-name (&rest tools)
 	"Create the target function name from the TOOLS."
@@ -1078,17 +1079,17 @@ arguments."
 	:bind (("C-c b" . transient-compile))
 	:config
 	(add-to-list 'transient-compile-tool-alist
-        '(nix :match ("flake.nix")
-             :exe "nix"
-             :chdir t
-             :targets cnit/compile--nix-flake-targets
-             :command cnit/compile--nix-flake-command))
+		'(nix :match ("flake.nix")
+			 :exe "nix"
+			 :chdir t
+			 :targets cnit/compile--nix-flake-targets
+			 :command cnit/compile--nix-flake-command))
 	(add-to-list 'transient-compile-tool-alist
-        '(pre-commit :match (".pre-commit-config.yaml")
-             :exe "pre-commit"
-             :chdir t
-             :targets cnit/compile--pre-commit-targets
-             :command cnit/compile--pre-commit-command))
+		'(pre-commit :match (".pre-commit-config.yaml")
+			 :exe "pre-commit"
+			 :chdir t
+			 :targets cnit/compile--pre-commit-targets
+			 :command cnit/compile--pre-commit-command))
 	(add-to-list 'transient-compile-tool-alist (cnit/compile--combine-tools 'nix 'pre-commit 'make)))
 
 (use-package magit

@@ -1,4 +1,5 @@
 Things that have anoyed me in the config that could do with
+* Combobulate for TS modes
 * modeline
 - display tab/space and indent offset
 * transient-compile
@@ -13,4 +14,3 @@ tools
 * qt theming
 * gtk theming
 * ags implementation
-* waybar workspace spacing

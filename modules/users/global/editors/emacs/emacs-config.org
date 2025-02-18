@@ -1598,6 +1598,7 @@ Hide files matching ~dired-omit-files~ regex or the ~dired-omit-extensions~ list
 #+begin_src emacs-lisp :tangle yes
   (declare-function -filter "dash")
   (declare-function project-files "project")
+  (declare-function project-name "project")
 
   (defun clovnit/run-file (buffer)
   	"Run current BUFFER.
@@ -1606,8 +1607,11 @@ Hide files matching ~dired-omit-files~ regex or the ~dired-omit-extensions~ list
   		(list (if (project-current)
   				  (completing-read "Run file: " (-filter #'file-executable-p (project-files (project-current))))
   				  (read-file-name "Run file: "))))
-  	(let* ((executable-p (and buffer (file-executable-p buffer))))
-  		(when executable-p (switch-to-buffer (make-comint (format "run-%s" (file-name-base buffer)) buffer)))))
+  	(let* ((executable-p (and buffer (file-executable-p buffer)))
+  			  (run-buffer-name (if (project-current)
+  								   (format "run-%s-[%s]" (file-name-base buffer) (project-name (project-current)))
+  								   (format "run-%s" (file-name-base buffer)))))
+  		(when executable-p (switch-to-buffer (make-comint run-buffer-name buffer)))))
 
   (defun clovnit/run-current-file ()
   	(interactive)

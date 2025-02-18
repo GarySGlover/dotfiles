@@ -1342,6 +1342,7 @@ Selection is by organisation under the git-clones root directory"
 
 (declare-function -filter "dash")
 (declare-function project-files "project")
+(declare-function project-name "project")
 
 (defun clovnit/run-file (buffer)
 	"Run current BUFFER.
@@ -1350,8 +1351,11 @@ Runs inside comint if the file is executable."
 		(list (if (project-current)
 				  (completing-read "Run file: " (-filter #'file-executable-p (project-files (project-current))))
 				  (read-file-name "Run file: "))))
-	(let* ((executable-p (and buffer (file-executable-p buffer))))
-		(when executable-p (switch-to-buffer (make-comint (format "run-%s" (file-name-base buffer)) buffer)))))
+	(let* ((executable-p (and buffer (file-executable-p buffer)))
+			  (run-buffer-name (if (project-current)
+								   (format "run-%s-[%s]" (file-name-base buffer) (project-name (project-current)))
+								   (format "run-%s" (file-name-base buffer)))))
+		(when executable-p (switch-to-buffer (make-comint run-buffer-name buffer)))))
 
 (defun clovnit/run-current-file ()
 	(interactive)

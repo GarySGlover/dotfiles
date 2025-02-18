@@ -68,27 +68,6 @@ let
         '';
       }
     );
-    copilot-chat = (
-      melpaBuild {
-        pname = "copilot-chat";
-        version = "1";
-        commit = "1";
-        src = pkgs.copilot-chat;
-        packageRequires = [
-          request
-          markdown-mode
-          shell-maker
-        ];
-        turnOnCompilationWarningToError = false;
-        ignoreCompilationError = true;
-        recipe = pkgs.writeText "recipe" ''
-          (copilot-chat
-            :repo "chep/copilot-chat.el"
-            :fetcher github
-            :files ("*.el"))
-        '';
-      }
-    );
   };
 
   emacsExtraPackagesLocal = with epkgsl; [
@@ -96,7 +75,6 @@ let
     transient-compile
     org-modern-indent
     eglot-booster
-    copilot-chat
   ];
 
   emacsExtraPackages = with pkgs.emacsPackages; [
@@ -130,6 +108,7 @@ let
     corfu
     corfu-candidate-overlay
     copilot
+    copilot-chat
     denote
     direnv
     dtrt-indent

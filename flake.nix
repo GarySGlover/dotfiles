@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixpkgs-unstable";
     home-manager = {
-      url = "github:nix-community/home-manager/master";
+      url = "github:booxter/home-manager/revert-6421-native-messenger";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     sops-nix = {
@@ -36,10 +36,6 @@
       url = "github:jdtsmith/eglot-booster";
       flake = false;
     };
-    copilot-chat = {
-      url = "github:chep/copilot-chat.el";
-      flake = false;
-    };
   };
 
   outputs =
@@ -54,7 +50,6 @@
       kbd-mode,
       org-modern-indent,
       eglot-booster,
-      copilot-chat,
       self,
       ...
     }:
@@ -108,7 +103,6 @@
               kbd-mode
               org-modern-indent
               eglot-booster
-              copilot-chat
               ;
           })
           (import ./modules/overlays/tree-sitter-grammars.nix)

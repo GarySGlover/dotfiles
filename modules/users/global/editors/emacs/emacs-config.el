@@ -588,7 +588,9 @@ major-mode-remap-alist or auto-mode-alist."
 				   cnit/avy-keys-builder
 				   helpful-at-point
 				   embark-act
-				   hkey-either)
+				   hkey-either
+				   eglot-current-server
+				   eglot-find-declaration)
 	:defines (avy-ring avy-goto-char avy-dispatch-alist)
 	:commands (avy-action-copy-region
 				  avy-action-copy-whole-line
@@ -642,10 +644,17 @@ major-mode-remap-alist or auto-mode-alist."
 		(select-window (cdr (ring-ref avy-ring 1)))
 		t)
 
+	(defun avy-action-mark-region (pt)
+		(push-mark pt t t)
+		(let ((avy-all-windows nil))
+			(call-interactively 'avy-goto-char)
+			(forward-char)))
+
 	(defun avy-action-copy-region (pt)
 		(kill-new "")
 		(avy-action-with-region pt 'copy-region-as-kill)
 		t)
+
 	(defun avy-action-yank-region (pt)
 		(avy-action-copy-region pt)
 		(yank)
@@ -692,19 +701,20 @@ major-mode-remap-alist or auto-mode-alist."
 			(hkey-either)))
 
 	(setq-default avy-dispatch-alist
-        '((?E . avy-action-embark-act)
-             (?e . avy-action-embark-act-region)
-             (?h . avy-action-helpful)
-             (?K . avy-action-kill-whole-line)
-             (?k . avy-action-kill-region)
-             (?T . avy-action-transport-whole-line)
-             (?t . avy-action-transport-region)
-             (?W . avy-action-copy-whole-line)
-             (?w . avy-action-copy-region)
-             (?Y . avy-action-yank-whole-line)
-             (?y . avy-action-yank-region)
-             (?z . avy-action-zap-to-char)
-             (?\r . avy-action-hyprbole)))
+		'((?E . avy-action-embark-act)
+			 (?e . avy-action-embark-act-region)
+			 (?h . avy-action-helpful)
+			 (?K . avy-action-kill-whole-line)
+			 (?k . avy-action-kill-region)
+			 (?T . avy-action-transport-whole-line)
+			 (?t . avy-action-transport-region)
+			 (?W . avy-action-copy-whole-line)
+			 (?w . avy-action-copy-region)
+			 (?Y . avy-action-yank-whole-line)
+			 (?y . avy-action-yank-region)
+			 (?z . avy-action-zap-to-char)
+			 (?m . avy-action-mark-region)
+			 (?\r . avy-action-hyprbole)))
 
 	(setopt avy-single-candidate-jump nil)
 
@@ -1344,18 +1354,24 @@ Selection is by organisation under the git-clones root directory"
 (declare-function project-files "project")
 (declare-function project-name "project")
 
-(defun clovnit/run-file (buffer)
+(defun clovnit/run-file (buffer &optional prefix)
 	"Run current BUFFER.
-Runs inside comint if the file is executable."
+Runs inside comint if the file is executable.
+If PREFIX provided then clear old result from buffer first"
 	(interactive
 		(list (if (project-current)
 				  (completing-read "Run file: " (-filter #'file-executable-p (project-files (project-current))))
-				  (read-file-name "Run file: "))))
+				  (read-file-name "Run file: "))
+			current-prefix-arg))
 	(let* ((executable-p (and buffer (file-executable-p buffer)))
 			  (run-buffer-name (if (project-current)
 								   (format "run-%s-[%s]" (file-name-base buffer) (project-name (project-current)))
-								   (format "run-%s" (file-name-base buffer)))))
-		(when executable-p (switch-to-buffer (make-comint run-buffer-name buffer)))))
+								   (format "run-%s" (file-name-base buffer))))
+			  (run-buffer-full-name (format "*%s*" run-buffer-name)))
+		(when executable-p
+			(when (and prefix (get-buffer run-buffer-full-name))
+				(kill-buffer run-buffer-full-name))
+			(switch-to-buffer (make-comint run-buffer-name buffer)))))
 
 (defun clovnit/run-current-file ()
 	(interactive)

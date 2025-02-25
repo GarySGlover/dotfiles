@@ -123,19 +123,29 @@ the required language details here that get consumed by the initialisation of th
     		 (js-json-mode . json-ts-mode)
     		 (python-mode . python-ts-mode)
     		 (ruby-mode . ruby-ts-mode)
-    		 (conf-toml-mode . toml-ts-mode)))
+    		 (conf-toml-mode . toml-ts-mode)
+  		 (html-mode . html-ts-mode)))
 
   ;; Associating filename regex lookups to major modes.
   (dolist (mode-assoc
-    			'(("\\(?:Dockerfile\\(?:\\..*\\)?\\|\\.[Dd]ockerfile\\)\\'"
-    				  . dockerfile-ts-mode)
-    				 ("/go\\.mod\\'" . go-mod-ts-mode)
-    				 ("\\.go\\'" . go-ts-mode)
+  			'(("\\(?:Dockerfile\\(?:\\..*\\)?\\|\\.[Dd]ockerfile\\)\\'"
+  				  . dockerfile-ts-mode)
+  				 ("/go\\.mod\\'" . go-mod-ts-mode)
+  				 ("\\.go\\'" . go-ts-mode)
   				 ("\\.nix\\'" . nix-ts-mode)
   				 ("\\.rs\\'" . rust-ts-mode)
   				 ("\\.ts\\'" . typescript-ts-mode)
   				 ("\\.tsx\\'" . tsx-ts-mode)
-  				 ("\\.ya?ml\\'" . yaml-ts-mode)))
+  				 ("\\.ya?ml\\'" . yaml-ts-mode)
+  				 ("\\.[hl]?eex\\'" . heex-ts-mode)
+  				 ("mix\\.lock" . elixir-ts-mode)
+  				 ("\\.exs\\'" . elixir-ts-mode)
+  				 ("\\.ex\\'" . elixir-ts-mode)
+  				 ("\\.elixir\\'" . elixir-ts-mode)
+  				 ("/\\.php_cs\\(?:\\.dist\\)?\\'" . php-ts-mode)
+  				 ("\\.\\(?:php\\|inc\\|stub\\)\\'" . php-ts-mode)
+  				 ("\\.\\(?:php[s345]?\\|phtml\\)\\'" . php-ts-mode)
+  				 ("\\.lua\\'" . lua-ts-mode)))
   	(add-to-list 'auto-mode-alist mode-assoc))
 
   ;; Language names default formatters.

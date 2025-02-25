@@ -145,7 +145,6 @@ let
     verb
     vertico
     wgrep
-    which-key
     ws-butler
     yasnippet
     yasnippet-capf

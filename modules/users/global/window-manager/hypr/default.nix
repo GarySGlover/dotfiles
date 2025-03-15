@@ -107,6 +107,7 @@ in
           disable_hyprland_logo = true;
           font_family = theme.font.name;
           background_color = "rgb(${faces.bgDefault})";
+          focus_on_activate = true;
         };
 
         group = {

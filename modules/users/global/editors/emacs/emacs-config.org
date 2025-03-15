@@ -378,11 +378,11 @@ candidate in a popup.
   		])
 #+end_src
 ** TODO [#C] Rainbow delimiters
-** Keycast
+** COMMENT Keycast
 Display the keys pressed and the associated command in the header line.
 #+begin_src emacs-lisp :tangle yes
   (use-package keycast
-  	:hook (after-init . keycast-header-line-mode))
+  	:hook (after-init . keycast-log-mode))
 #+end_src
 ** Embark
 #+begin_src emacs-lisp :tangle yes
@@ -540,6 +540,12 @@ Display the keys pressed and the associated command in the header line.
   	:config
   	(setopt indent-bars-treesit-support t)
   	:commands indent-bars-mode)
+#+end_src
+** Window management
+#+begin_src emacs-lisp :tangle yes
+  (use-package winner
+  	:init
+  	(winner-mode 1))
 #+end_src
 * Information Management
 ** TODO [#A] Hyperbole
@@ -899,7 +905,9 @@ newlines.
   			 (?m . avy-action-mark-region)
   			 (?\r . avy-action-hyprbole)))
 
-  	(setopt avy-single-candidate-jump nil)
+  	(setopt
+  		avy-single-candidate-jump nil
+  		avy-all-windows 'all-frames)
 
   	(defun cnit/avy-keys-builder ()
   		"Generate the `avy-keys' list.
@@ -1004,6 +1012,7 @@ Enhance re-builder to allow for running query replace regex when hitting return 
   				(copilot-mode 1))))
   	:hook ((prog-mode yaml-ts-mode) . cnit/copilot-enable)
   	:config
+  	(setopt copilot-indent-offset-warning-disable t)
   	(defvar-keymap cnit/copilot-completion-repeat-map
   		:repeat t
   		"w" #'copilot-accept-completion-by-word
@@ -1343,12 +1352,20 @@ worktrees for branches in my ~/features directory.
 #+begin_src emacs-lisp :tangle yes
   (use-package  project
   	:commands (project-forget-projects-under)
-  	:config (project-forget-projects-under "~/git-clones" t)
-  	:bind ("C-c p" . cnit/project-dispatch))
+  	:config
+  	(project-forget-projects-under "~/git-clones" t)
+  	(project-forget-zombie-projects))
+
+  (use-package disproject
+  	:config
+  	(setopt
+  		disproject-shell-command #'project-shell)
+  	:bind (:map ctl-x-map
+  			  ("p" . disproject-dispatch)))
 #+end_src
 
 Projects transient map
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
   (defun cnit/project--dispact-wrap-command (cmd)
   	"Wrap command CMD to optionally display buffer in another window."
   	(interactive)
@@ -1471,6 +1488,7 @@ Hide files matching ~dired-omit-files~ regex or the ~dired-omit-extensions~ list
   	(advice-add 'corfu-popupinfo--show :around #'safe-corfu-popupinfo--show)
   	:commands (ace-window aw-select display-buffer-ace-window safe-corfu-popupinfo--show)
   	:config
+  	(setopt aw-keys '(?i ?s ?r ?t ?g ?p ?n ?e ?a ?o))
   	(defun safe-corfu-popupinfo--show (f candidate)
   		(let ((display-buffer-base-action nil))
   			(funcall f candidate)))

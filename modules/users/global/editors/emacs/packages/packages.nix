@@ -111,6 +111,7 @@ let
     copilot-chat
     denote
     direnv
+    disproject
     dtrt-indent
     eat
     editorconfig

@@ -21,8 +21,10 @@ with lib;
       displayManager.startx.enable = true;
     };
 
+    environment.etc."X11/xinit/xinitrc".text = "";
+
     # Enable sound.
-    hardware.pulseaudio.enable = false;
+    services.pulseaudio.enable = false;
     services.pipewire = {
       enable = true;
       alsa.enable = true;

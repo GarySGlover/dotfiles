@@ -274,9 +274,6 @@
 			("f" "Find" consult-fd)]
 		])
 
-(use-package keycast
-	:hook (after-init . keycast-header-line-mode))
-
 (use-package embark
 	:commands
 	(embark--truncate-target
@@ -424,6 +421,10 @@ completing-read prompter."
 	:config
 	(setopt indent-bars-treesit-support t)
 	:commands indent-bars-mode)
+
+(use-package winner
+	:init
+	(winner-mode 1))
 
 (use-package hyperbole
 	:bind (("C-M-RET" . hkey-either)
@@ -726,7 +727,9 @@ major-mode-remap-alist or auto-mode-alist."
 			 (?m . avy-action-mark-region)
 			 (?\r . avy-action-hyprbole)))
 
-	(setopt avy-single-candidate-jump nil)
+	(setopt
+		avy-single-candidate-jump nil
+		avy-all-windows 'all-frames)
 
 	(defun cnit/avy-keys-builder ()
 		"Generate the `avy-keys' list.
@@ -821,6 +824,7 @@ surrounded by word boundaries."
 				(copilot-mode 1))))
 	:hook ((prog-mode yaml-ts-mode) . cnit/copilot-enable)
 	:config
+	(setopt copilot-indent-offset-warning-disable t)
 	(defvar-keymap cnit/copilot-completion-repeat-map
 		:repeat t
 		"w" #'copilot-accept-completion-by-word
@@ -1120,48 +1124,16 @@ arguments."
 
 (use-package  project
 	:commands (project-forget-projects-under)
-	:config (project-forget-projects-under "~/git-clones" t)
-	:bind ("C-c p" . cnit/project-dispatch))
+	:config
+	(project-forget-projects-under "~/git-clones" t)
+	(project-forget-zombie-projects))
 
-(defun cnit/project--dispact-wrap-command (cmd)
-	"Wrap command CMD to optionally display buffer in another window."
-	(interactive)
-	(let ((display-buffer-overriding-action
-			  (if (transient-arg-value "other window" (transient-args transient-current-command))
-				  '(display-buffer-reuse-window (inhibit-same-window . t))
-				  display-buffer-overriding-action)))
-		(call-interactively cmd)))
-
-(transient-define-prefix cnit/project-dispatch ()
-	"Transient for project.el commands."
-	[["Buffers and Files"
-		 ("B" "List Buffers" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-list-buffers)))
-		 ("b" "Consult Buffer" (lambda () (interactive) (cnit/project--dispact-wrap-command 'consult-project-buffer)))
-		 ("s" "Switch to Buffer" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-switch-to-buffer)))
-		 ("f" "Find File" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-find-file)))
-		 ("d" "Dired" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-dired)))
-		 ("F" "Find Directory" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-find-dir)))]
-		["Search and Replace"
-			("r" "Find Regexp" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-find-regexp)))
-			("q" "Query Replace" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-query-replace-regexp)))]
-		["Project Actions"
-			("c" "Compile" project-compile)
-			("e" "Eshell" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-eshell)))
-			("t" "Shell" (lambda () (interactive) (cnit/project--dispact-wrap-command 'project-shell)))
-			("x" "Shell Command" project-shell-command)
-			("a" "Async Shell Command" project-async-shell-command)
-			("v" "VC-Dir" project-vc-dir)
-			("m" "Magit Status" magit-project-status)
-			("M" "Magit Projects" cnit/magit-status)]
-		["Manage Projects"
-			("S" "Switch Project" project-switch-project)
-			("k" "Kill Buffers" project-kill-buffers)
-			("p" "Forget Project" project-forget-project)
-			("P" "Forget Projects Under" project-forget-projects-under)
-			("z" "Forget Zombie Projects" project-forget-zombie-projects)
-			("R" "Remember Projects Under" project-remember-projects-under)]
-		["Options"
-			("o" "Force Display in Other Window" "other window")]])
+(use-package disproject
+	:config
+	(setopt
+		disproject-shell-command #'project-shell)
+	:bind (:map ctl-x-map
+			  ("p" . disproject-dispatch)))
 
 (use-package direnv
 	:config (setopt direnv-always-show-summary nil)
@@ -1226,6 +1198,7 @@ arguments."
 	(advice-add 'corfu-popupinfo--show :around #'safe-corfu-popupinfo--show)
 	:commands (ace-window aw-select display-buffer-ace-window safe-corfu-popupinfo--show)
 	:config
+	(setopt aw-keys '(?i ?s ?r ?t ?g ?p ?n ?e ?a ?o))
 	(defun safe-corfu-popupinfo--show (f candidate)
 		(let ((display-buffer-base-action nil))
 			(funcall f candidate)))

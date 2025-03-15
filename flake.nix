@@ -107,7 +107,7 @@
           })
           (import ./modules/overlays/tree-sitter-grammars.nix)
           (import ./modules/overlays/codeium.nix)
-          nur.overlay
+          nur.overlays.default
         ];
       };
 

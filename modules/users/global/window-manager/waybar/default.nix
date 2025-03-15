@@ -1,4 +1,4 @@
-# [[file:modules/users/global/window-manager/waybar/waybar.org::*Waybar][Waybar:2]]
+# [[file:waybar.org::*Waybar][Waybar:2]]
 {
   config,
   lib,
@@ -76,8 +76,14 @@ in
             background-color: #${faces.bgDefault};
             margin: 0.5em;
         }
-        #workspaces button.active {
+        #workspaces button.visible {
+            color: #${faces.fgFontLockWarningFace};
             border: ${toString theme.border}px solid #${faces.fgBorderInactive};
+            border-radius: ${toString theme.radius}px;
+        }
+        #workspaces button.active {
+            color: #${faces.fgFontLockWarningFace};
+            border: ${toString theme.border}px solid #${faces.fgFontLockWarningFace};
             border-radius: ${toString theme.radius}px;
         }
         #submap {

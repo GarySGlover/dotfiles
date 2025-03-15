@@ -121,7 +121,9 @@ let
     apps = [
       (bindWithReset none "b" (dispatch.execr "brave"))
       (bindWithReset none "c" (dispatch.execr "chromium"))
-      (bindWithReset none "e" (dispatch.execr "$EDITOR"))
+      (bindWithReset none "e" (
+        dispatch.execr "\"emacsclient --create-frame -no-wait --alternate-editor \'\'\""
+      ))
       (bindWithReset none "f" (dispatch.execr "firefox"))
       (bindWithReset none "r" (dispatch.execr "\"hyprshot -z -m region -s --clipboard-only\""))
       (bindWithReset none "p" (dispatch.execr "\"hyprshot -z -m window -s --clipboard-only\""))

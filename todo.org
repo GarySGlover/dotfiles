@@ -1,4 +1,10 @@
 Things that have anoyed me in the config that could do with
+* Avy all frames
+Can be partly fixed with ~(setopt avy-all-windows 'all-frames)~
+Needs a second fix for hyprland
+* New packages
+[[https://elpa.nongnu.org/nongnu/treesit-fold.html][treesit-fold]]
+[[http://melpa.org/#/sideline-eglot][sideline-eglot]]
 * Combobulate for TS modes
 * modeline
 - display tab/space and indent offset

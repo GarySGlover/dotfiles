@@ -98,12 +98,19 @@
 ;; Org language mode
 (defvar cnit/languages--org-src-lang-modes
 	'(("yaml" . "yaml-ts")
-		 ("nix" . "nix-ts")))
+		 ("nix" . "nix-ts")
+		 ("go" . "go-ts")))
 
 ;; Major mode default extension
 (defvar cnit/major-mode--default-file-extenson
 	'((emacs-lisp-mode . ".el")
 		 (bash-ts-mode . ".sh")))
+
+;; Excluded modes from ts warning
+(defvar cnit/languages--excluded-ts-warning-modes
+	'(sh--redirect-bash-ts-mode
+		 indent-bars--ts-mode
+		 yaml-pro-ts-mode))
 
 (use-package transient
 	:demand t)
@@ -574,7 +581,7 @@ major-mode-remap-alist or auto-mode-alist."
 								 auto-mode-alist))
 						 (excluded
 							 (seq-some (lambda (entry) (equal ts-mode entry))
-								 '(sh--redirect-bash-ts-mode indent-bars--ts-mode))))
+								 cnit/languages--excluded-ts-warning-modes)))
 					(unless (or used-in-major-mode-remap-alist used-in-auto-mode-alist excluded)
 						(warn "TS Mode not mapped: %s" ts-mode))))))
 
@@ -795,24 +802,34 @@ surrounded by word boundaries."
 			  :map reb-lisp-mode-map
 			  ("RET" . reb-replace-regexp)))
 
-(use-package chatgpt-shell
-	:functions auth-source-pick-first-password chatgpt-shell-openai-make-model
-	:bind ("C-c l" . cnit/chatgpt-shell-region)
-	:init
-	(defun cnit/chatgpt-shell-region (prefix)
-		(interactive "P")
-		(if (region-active-p)
-			(chatgpt-shell-prompt-compose prefix)
-			(chatgpt-shell)))
+(use-package gptel
+	:commands
+	(gptel
+		gptel-send
+		gptel-menu)
+	:hook (gptel-post-stream . gptel-auto-scroll)
 	:config
+	(require 'gptel-org)
+	(defun cnit/retrieve-anthropic-api-key ()
+		"Retrieve the API key for the machine `api.anthropic.com` with login `apikey` using `auth-source-search`.
+Throw a `user-error` if the key is not found."
+		(let ((secret (plist-get (car (auth-source-search :max 1
+										  :host "api.anthropic.com"
+										  :user "apikey"
+										  :require '(:secret)))
+                          :secret)))
+			(cond
+				((null secret)
+					(user-error "API key for api.anthropic.com with login apikey not found"))
+				((functionp secret)
+					(funcall secret))
+				(t secret))))
 	(setopt
-		chatgpt-shell-openai-key (auth-source-pick-first-password :host "api.openai.com")
-		chatgpt-shell-model-version "gpt-4o-mini")
-	(add-to-list 'chatgpt-shell-models
-        (chatgpt-shell-openai-make-model
-            :version "gpt-4o-mini"
-            :token-width 3
-            :context-window 128000)))
+		gptel-model 'claude-3-7-sonnet-20250219
+		gptel-default-mode 'org-mode
+		gptel-backend (gptel-make-anthropic "Claude"
+						  :stream t
+						  :key #'cnit/retrieve-anthropic-api-key)))
 
 (use-package copilot
 	:demand t
@@ -842,8 +859,26 @@ surrounded by word boundaries."
               ("M-b" . copilot-previous-completion)))
 
 (use-package copilot-chat
-	:commands (copilot-chat-transient)
-	:bind ("C-c L" . copilot-chat-transient))
+	:commands (copilot-chat-transient))
+
+(use-package emacs
+	:init
+	(defun cnit/llm-chat (&optional prefix)
+		"Decide which LLM chat interface to use based on copilot-mode and prefix argument.
+
+If `copilot-mode` is enabled, use `copilot-chat-transient` for interactive chatting with the Copilot LLM.
+Otherwise, use `gptel-menu` for alternative LLMs.
+
+With a prefix argument (C-u), override the decision:
+- If `copilot-mode` is enabled, use `gptel-menu`.
+- Otherwise, use `copilot-chat-transient`.
+
+PREFIX: Optional argument to override the default behavior."
+		(interactive "P")
+		(if copilot-mode
+			(if prefix (gptel-menu) (copilot-chat-transient))
+			(if prefix (copilot-chat-transient) (gptel-menu))))
+	:bind ("C-c l" . cnit/llm-chat))
 
 (use-package flymake
 	:hook (prog-mode . flymake-mode))
@@ -923,7 +958,9 @@ surrounded by word boundaries."
 		(setq-local tab-width standard-indent))
 	:bind (:map yaml-ts-mode-map
               ("RET" . newline-and-indent))
-	:hook (yaml-ts-mode . cnit/yaml-ts-mode-config))
+	:hook
+	(yaml-ts-mode . cnit/yaml-ts-mode-config)
+	(yaml-ts-mode . yaml-pro-ts-mode))
 
 (use-package language-id
 	:config

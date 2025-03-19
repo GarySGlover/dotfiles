@@ -79,6 +79,7 @@ let
 
   emacsExtraPackages = with pkgs.emacsPackages; [
     yaml
+    yaml-pro
     # auto-yasnippet
     breadcrumb
     # consult-flyspell
@@ -99,16 +100,15 @@ let
     # powershell
     # quickrun
     # rainbow-delimiters
-    avy
     ace-window
     aggressive-indent
+    avy
     cape
-    chatgpt-shell
     consult
-    corfu
-    corfu-candidate-overlay
     copilot
     copilot-chat
+    corfu
+    corfu-candidate-overlay
     denote
     direnv
     disproject
@@ -122,6 +122,7 @@ let
     exec-path-from-shell
     format-all
     general
+    gptel
     helpful
     hyperbole
     indent-bars
@@ -173,14 +174,16 @@ in
     ];
 
     home.file = {
-      # Populate authinfo for gptel to use chatgpt api
+      # Populate authinfo file.
       authinfo = {
         target = ".authinfo";
         text =
-          if (lib.hasAttr "openai_token" secrets) then
-            ''
-              machine api.openai.com login apikey password ${secrets.openai_token}
-            ''
+          if (lib.hasAttr "auth_tokens" secrets) then
+            lib.concatStringsSep "\n" (
+              map (token: ''
+                machine ${token.machine} login ${token.login} password ${token.password}
+              '') secrets.auth_tokens
+            )
           else
             "";
       };

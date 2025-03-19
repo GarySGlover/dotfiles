@@ -60,7 +60,7 @@ in
           "${pkgs.hyprland}/bin/hyprctl dispatch submap insert" # Start in the modal command mappings
           "udiskie &" # Disk auto mount
           "waybar &"
-          "systemctl --user start kanshi"
+          "kanshi &"
         ];
         exec = [
           "kanshictl reload" # Force monitor refresh on reload
@@ -108,6 +108,8 @@ in
           font_family = theme.font.name;
           background_color = "rgb(${faces.bgDefault})";
           focus_on_activate = true;
+          new_window_takes_over_fullscreen = 1;
+          exit_window_retains_fullscreen = true;
         };
 
         group = {

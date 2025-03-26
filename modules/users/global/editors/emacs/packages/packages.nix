@@ -109,6 +109,7 @@ let
     copilot-chat
     corfu
     corfu-candidate-overlay
+    coterm
     denote
     direnv
     disproject

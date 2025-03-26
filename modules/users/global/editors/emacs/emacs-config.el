@@ -1268,8 +1268,13 @@ arguments."
 	:config
 	(defun cnit/eshell-ansi-color ()
 		(setenv "TERM" "xterm-256color"))
-	:hook ((eshell-mode . cnit/eshell-ansi-color)
-			  (eshell-mode . eat-eshell-visual-command-mode)))
+	:hook ((eshell-mode . cnit/eshell-ansi-color)))
+
+(use-package coterm
+	:init
+	(coterm-mode)
+	(with-eval-after-load 'comint
+		(define-key comint-mode-map (kbd "C-;") #'coterm-char-mode-cycle)))
 
 (defun cnit/get-ticket-numbers ()
 	(let ((feature-dir (expand-file-name "~/feature/")))

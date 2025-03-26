@@ -56,6 +56,16 @@ in
           "bordercolor rgb(FF0000) rgb(880808), fullscreen:1"
         ] ++ (if config.wolf.roles.gaming then [ "workspace 10,class:(steam)" ] else [ ]);
 
+        binds = {
+          window_direction_monitor_fallback = false;
+        };
+
+        cursor = {
+          inactive_timeout = 2;
+          persistent_warps = true;
+          hide_on_key_press = true;
+        };
+
         exec-once = [
           "${pkgs.hyprland}/bin/hyprctl dispatch submap insert" # Start in the modal command mappings
           "udiskie &" # Disk auto mount
@@ -72,7 +82,7 @@ in
         ];
 
         general = {
-          layout = "master";
+          layout = "scroller";
           border_size = theme.border;
           gaps_in = theme.gaps;
           gaps_out = theme.gaps;
@@ -123,10 +133,21 @@ in
         };
 
         animations = {
-          enabled = "false";
+          enabled = "true";
+        };
+
+        plugin = {
+          scroller = {
+            column_default_width = "onehalf";
+            center_row_if_space_available = true;
+            column_widths = "onefourth onethird onehalf twothirds threefourts one";
+            cyclesize_wrap = false;
+            jump_labels_keys = "isrtneao";
+          };
         };
       };
       extraConfig = keybinder.binds;
+      plugins = [ pkgs.hyprlandPlugins.hyprscroller ];
     };
   };
 }

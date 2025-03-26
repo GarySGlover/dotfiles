@@ -33,6 +33,21 @@ let
     backward = "b";
   };
 
+  widths = {
+    fiveEighths = "fiveeighths";
+    fiveSixths = "fivesixths";
+    one = "one";
+    oneEighth = "oneeighth";
+    oneFourth = "onefourth";
+    oneHalf = "onehalf";
+    oneSixth = "onesixth";
+    oneThird = "onethird";
+    sevenEighths = "seveneighths";
+    threeEighths = "threeeighths";
+    threeQuarters = "threequarters";
+    twoThirds = "twothirds";
+  };
+
   createDispatch =
     dispatcher: args:
     "${dispatcher}, ${if builtins.isList args then (lib.concatStringsSep "," args) else args}";
@@ -41,6 +56,18 @@ let
       create = createDispatch;
     in
     {
+      scroller = {
+        focus = dir: create "scroller:movefocus" dir;
+        move = dir: create "scroller:movewindow" dir;
+        overview = "scroller:toggleoverview";
+        pin = "scroller:pin";
+        jump = "scroller:jump";
+        cycleWidth = "scroller:cyclewidth";
+        increaseSize = create "scroller:cyclesize" "next";
+        decreaseSize = create "scroller:cyclesize" "prev";
+        setWidth = width: create "scroller:setwidth" width;
+        align = loc: create "scroller:alignwindow" loc;
+      };
       window = {
         focus = dir: create "movefocus" dir;
         move = dir: create "movewindow" dir;
@@ -120,5 +147,6 @@ in
     mod
     none
     resize
+    widths
     ;
 }

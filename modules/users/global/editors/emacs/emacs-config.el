@@ -834,11 +834,23 @@ Throw a `user-error` if the key is not found."
 (use-package copilot
 	:demand t
 	:init
+	(defvar cnit/copilot-enabled-projects nil)
+	(defvar cnit/copilot-disabled-projects nil)
+	(defun cnit/copilot--enable-for-org (org)
+		(when (member (intern org) cnit/copilot-enabled-organisations)
+			(copilot-mode t)))
+	(defun cnit/copilot--enable-for-project-dir (dir)
+		(unless (member dir cnit/copilot-disabled-projects)
+			(if (or (member dir cnit/copilot-enabled-projects)
+					(y-or-n-p (format "Enable copilot-mode for project %s? " dir)))
+				(progn
+					(add-to-list 'cnit/copilot-enabled-projects dir)
+					(copilot-mode t))
+				(add-to-list 'cnit/copilot-disabled-projects dir))))
 	(defun cnit/copilot-enable ()
-		(when (and (cnit/repo-org)
-				  (member (intern (cnit/repo-org)) cnit/copilot-enabled-organisations))
-			(progn
-				(copilot-mode 1))))
+		(unless (when-let ((org (cnit/repo-org))) (cnit/copilot--enable-for-org (cnit/repo-org)))
+			(when-let ((project-dir (caddr (project-current))))
+				(cnit/copilot--enable-for-project-dir project-dir))))
 	:hook ((prog-mode yaml-ts-mode) . cnit/copilot-enable)
 	:config
 	(setopt copilot-indent-offset-warning-disable t)
@@ -850,13 +862,13 @@ Throw a `user-error` if the key is not found."
 		"f" #'copilot-next-completion
 		"b" #'copilot-previous-completion)
 	:bind (:map copilot-completion-map
-              ("M-<tab>" . copilot-accept-completion)
-              ("M-c" . copilot-accept-completion)
-              ("M-w" . copilot-accept-completion-by-word)
-              ("M-l" . copilot-accept-completion-by-line)
-              ("M-p" . copilot-accept-completion-by-paragraph)
-              ("M-f" . copilot-next-completion)
-              ("M-b" . copilot-previous-completion)))
+			  ("M-<tab>" . copilot-accept-completion)
+			  ("M-c" . copilot-accept-completion)
+			  ("M-w" . copilot-accept-completion-by-word)
+			  ("M-l" . copilot-accept-completion-by-line)
+			  ("M-p" . copilot-accept-completion-by-paragraph)
+			  ("M-f" . copilot-next-completion)
+			  ("M-b" . copilot-previous-completion)))
 
 (use-package copilot-chat
 	:commands (copilot-chat-transient))

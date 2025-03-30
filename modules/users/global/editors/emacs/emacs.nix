@@ -15,6 +15,7 @@ in
       enable = true;
       package = pkgs.emacs30;
     };
+    services.emacs.enable = true;
     home.sessionVariables.EDITOR = "${pkgs.writeShellScript "emacs-editor" ''
       #!/usr/bin/env bash
       if infocmp xterm | grep -q 'xterm' &> /dev/null; then

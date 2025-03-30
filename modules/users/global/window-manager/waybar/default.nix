@@ -22,6 +22,7 @@ in
           modules-left = [
             "hyprland/workspaces"
             "hyprland/submap"
+            "custom/kanata-layer"
           ];
           modules-center = [
             "hyprland/window"
@@ -42,6 +43,12 @@ in
           pulseaudio = {
             format = "{desc} {volume}% {icon}";
             format-muted = "";
+          };
+          "custom/kanata-layer" = {
+            exec = "${config.xdg.configHome}/waybar/kanata-layer";
+            restart-interval = 1;
+            format = "{}";
+            return-type = "json";
           };
         };
       };
@@ -97,6 +104,7 @@ in
         }
       '';
     };
+    xdg.configFile."waybar/kanata-layer".source = ./kanata-layer;
   };
 }
 # Waybar:2 ends here

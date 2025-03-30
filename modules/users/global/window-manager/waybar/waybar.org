@@ -81,6 +81,7 @@
             modules-left = [
               "hyprland/workspaces"
               "hyprland/submap"
+              "custom/kanata-layer"
             ];
             modules-center = [
               "hyprland/window"
@@ -102,12 +103,33 @@
               format = "{desc} {volume}% {icon}";
               format-muted = "";
             };
+            "custom/kanata-layer" = {
+              exec = "${config.xdg.configHome}/waybar/kanata-layer";
+              restart-interval = 1;
+              format = "{}";
+              return-type = "json";
+            };
           };
         };
         style = ''
           <<waybar-style>>
         '';
       };
+      xdg.configFile."waybar/kanata-layer".source = ./kanata-layer;
     };
   }
+#+end_src
+
+* Kanata Script
+#+begin_src bash :tangle kanata-layer :shebang #!/usr/bin/env bash :comments link
+  #!/usr/bin/env bash
+
+  # Connect to the server on localhost port 42001 and process JSON messages
+  nc localhost 42001 | while read -r line; do
+  	layer_name=$(echo "$line" | jq -r '.LayerChange.new')
+
+  	if [ "$layer_name" != "null" ]; then
+  		echo "{\"text\":\"$layer_name\"}"
+  	fi
+  done
 #+end_src

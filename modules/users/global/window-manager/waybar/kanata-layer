@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# [[file:waybar.org::*Kanata Script][Kanata Script:1]]
+#!/usr/bin/env bash
+
+# Connect to the server on localhost port 42001 and process JSON messages
+nc localhost 42001 | while read -r line; do
+	layer_name=$(echo "$line" | jq -r '.LayerChange.new')
+
+	if [ "$layer_name" != "null" ]; then
+		echo "{\"text\":\"$layer_name\"}"
+	fi
+done
+# Kanata Script:1 ends here

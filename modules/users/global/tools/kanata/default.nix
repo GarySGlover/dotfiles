@@ -14,7 +14,7 @@
 
     Service = {
       Type = "simple";
-      ExecStart = "${pkgs.kanata}/bin/kanata --cfg ${config.xdg.configHome}/kanata/kanata.kbd -q";
+      ExecStart = "${pkgs.kanata}/bin/kanata --cfg ${config.xdg.configHome}/kanata/kanata.kbd -q -n -p 42001";
       Restart = "always";
     };
 

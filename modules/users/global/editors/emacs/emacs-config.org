@@ -589,17 +589,6 @@ Display the keys pressed and the associated command in the header line.
   	(modify-syntax-entry ?_ "\"" org-mode-syntax-table)
   	(-each  cnit/languages--org-src-lang-modes (lambda (x) (add-to-list 'org-src-lang-modes x))))
 #+end_src
-*** Modern
-Styling package for org mode buffers.
-#+begin_src emacs-lisp :tangle yes
-  (use-package org-modern
-  	:hook (org-mode . org-modern-mode))
-#+end_src
-*** Modern Indent
-#+begin_src emacs-lisp :tangle yes
-  (use-package org-modern-indent
-  	:hook (org-mode . org-modern-indent-mode))
-#+end_src
 *** Agenda
 #+begin_src emacs-lisp :tangle yes
   (use-package org-agenda
@@ -1088,6 +1077,8 @@ Enhance re-builder to allow for running query replace regex when hitting return 
 ** Flymake
 #+begin_src emacs-lisp :tangle yes
   (use-package flymake
+  	:config
+  	(setopt flymake-indicator-type 'fringes)
   	:hook (prog-mode . flymake-mode))
 #+end_src
 ** Eglot
@@ -1179,7 +1170,8 @@ Enhance re-builder to allow for running query replace regex when hitting return 
   		(unless dtrt-indent-mode
   			(setq-local standard-indent yaml-indent-offset))
   		(setq-local indent-line-function #'cnit/yaml-ts-tab)
-  		(setq-local tab-width standard-indent))
+  		(setq-local tab-width standard-indent)
+  		(run-hooks 'prog-mode-hook))
   	:bind (:map yaml-ts-mode-map
                 ("RET" . newline-and-indent))
   	:hook

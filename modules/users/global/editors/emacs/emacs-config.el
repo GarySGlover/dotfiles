@@ -462,12 +462,6 @@ completing-read prompter."
 	(modify-syntax-entry ?_ "\"" org-mode-syntax-table)
 	(-each  cnit/languages--org-src-lang-modes (lambda (x) (add-to-list 'org-src-lang-modes x))))
 
-(use-package org-modern
-	:hook (org-mode . org-modern-mode))
-
-(use-package org-modern-indent
-	:hook (org-mode . org-modern-indent-mode))
-
 (use-package org-agenda
 	:after org
 	:config
@@ -893,6 +887,8 @@ PREFIX: Optional argument to override the default behavior."
 	:bind ("C-c l" . cnit/llm-chat))
 
 (use-package flymake
+	:config
+	(setopt flymake-indicator-type 'fringes)
 	:hook (prog-mode . flymake-mode))
 
 (use-package eglot
@@ -967,7 +963,8 @@ PREFIX: Optional argument to override the default behavior."
 		(unless dtrt-indent-mode
 			(setq-local standard-indent yaml-indent-offset))
 		(setq-local indent-line-function #'cnit/yaml-ts-tab)
-		(setq-local tab-width standard-indent))
+		(setq-local tab-width standard-indent)
+		(run-hooks 'prog-mode-hook))
 	:bind (:map yaml-ts-mode-map
               ("RET" . newline-and-indent))
 	:hook

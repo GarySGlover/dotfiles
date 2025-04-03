@@ -38,21 +38,6 @@ let
         '';
       }
     );
-    org-modern-indent = (
-      melpaBuild {
-        pname = "org-modern-indent";
-        version = "1";
-        commit = "1";
-        src = pkgs.org-modern-indent;
-        packageRequires = [ compat ];
-        recipe = pkgs.writeText "recipe" ''
-          (org-modern-indent
-            :repo "jdtsmith/org-modern-indent"
-            :fetcher github
-            :files ("*.el"))
-        '';
-      }
-    );
     eglot-booster = (
       melpaBuild {
         pname = "eglot-booster";
@@ -73,7 +58,6 @@ let
   emacsExtraPackagesLocal = with epkgsl; [
     kbd-mode
     transient-compile
-    org-modern-indent
     eglot-booster
   ];
 
@@ -137,7 +121,6 @@ let
     orderless
     org
     org-auto-tangle
-    org-modern
     ox-pandoc
     rainbow-mode
     standard-themes

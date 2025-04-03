@@ -28,10 +28,6 @@
       url = "github:kmonad/kbd-mode";
       flake = false;
     };
-    org-modern-indent = {
-      url = "github:jdtsmith/org-modern-indent";
-      flake = false;
-    };
     eglot-booster = {
       url = "github:jdtsmith/eglot-booster";
       flake = false;
@@ -48,7 +44,6 @@
       nur,
       transient-compile,
       kbd-mode,
-      org-modern-indent,
       eglot-booster,
       self,
       ...
@@ -101,7 +96,6 @@
             inherit
               transient-compile
               kbd-mode
-              org-modern-indent
               eglot-booster
               ;
           })

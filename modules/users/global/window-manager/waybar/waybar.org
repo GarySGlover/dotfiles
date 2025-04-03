@@ -48,12 +48,17 @@
   }
   #submap {
       color: #${faces.fgFontLockVariableNameFace};
+      padding-right: 0.5em;
   }
   #submap.command {
       color: #${faces.fgFontLockStringFace};
   }
   #submap.insert {
       color: #${faces.fgFontLockWarningFace};
+  }
+  #custom-kanata-layer {
+      padding-left: 0.5em;
+      padding-right: 0.5em;
   }
 #+end_src
 

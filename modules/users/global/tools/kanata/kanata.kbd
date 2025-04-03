@@ -22,7 +22,7 @@ Modifier locks
 (defsrc)
 
 (defvar
-  devil-timeout 1000)
+  devil-timeout 5000)
 
 (deftemplate activate (layer)
              (concat activate-devil- $layer) (multi

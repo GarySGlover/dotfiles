@@ -1,7 +1,8 @@
 Things that have anoyed me in the config that could do with
-* Avy all frames
-Can be partly fixed with ~(setopt avy-all-windows 'all-frames)~
-Needs a second fix for hyprland
+* Edit indirect
+https://github.com/Fanael/edit-indirect
+* Avy multiple cursors
+https://github.com/aatmunbaxi/lasgun.el
 * New packages
 [[https://elpa.nongnu.org/nongnu/treesit-fold.html][treesit-fold]]
 [[http://melpa.org/#/sideline-eglot][sideline-eglot]]

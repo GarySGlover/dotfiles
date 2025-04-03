@@ -12,7 +12,7 @@ in
 {
   config = {
     xdg.configFile = {
-      "git/templates/hooks/pre-commit" = {
+      "git/hooks/pre-commit" = {
         text = ''
           #!/usr/bin/env bash
           # start templated
@@ -27,7 +27,7 @@ in
         '';
         executable = true;
       };
-      "git/templates/hooks/post-clone" = {
+      "git/hooks/post-clone" = {
         text = ''
           #!/bin/bash
 
@@ -59,7 +59,10 @@ in
       enable = true;
       userName = "${secrets.git_username}";
       extraConfig = {
-        core.askPass = "";
+        core = {
+          askPass = "";
+          hooksPath = "${config.xdg.configHome}/git/hooks";
+        };
         credential.helper = [
           "store --file ~/.git-credentials"
           "store --file ${config.xdg.configHome}/git/.git-credentials"

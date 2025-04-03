@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 with lib;
@@ -11,7 +10,6 @@ with lib;
       enable = true;
       xwayland.enable = true;
     };
-    environment.systemPackages = with pkgs; [ hyprlandPlugins.hy3 ];
 
     services.xserver = {
       enable = true;

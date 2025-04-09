@@ -128,6 +128,7 @@ let
     terraform-mode
     transient
     treesit-grammars.with-all-grammars
+    treesit-fold
     verb
     vertico
     wgrep

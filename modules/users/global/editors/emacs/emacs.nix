@@ -13,7 +13,7 @@ in
   config = mkIf config.wolf.roles.editing {
     programs.emacs = {
       enable = true;
-      package = pkgs.emacs30;
+      package = pkgs.emacs;
     };
     services.emacs.enable = true;
     home.sessionVariables.EDITOR = "${pkgs.writeShellScript "emacs-editor" ''

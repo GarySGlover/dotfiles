@@ -176,7 +176,19 @@ menus.
 
 #+begin_src emacs-lisp :tangle yes
   (use-package transient
-  	:demand t)
+  	:demand t
+  	:init
+  	(defun cnit/modes-highlight (mode-symbol text)
+  		"Return a colored TEXT based on the status of MODE-SYMBOL."
+  		(if (if (fboundp mode-symbol) (symbol-value mode-symbol) nil)
+  			(propertize text 'face '(:foreground "green"))
+  			(propertize text 'face '(:foreground "red"))))
+  	(defmacro cnit/transient-define-suffix-mode (title mode)
+  		`(transient-define-suffix ,(intern (format "cnit/%s-suffix" mode)) ()
+  			 ,(format "Toggle %s mode." mode)
+  			 :description (lambda () (cnit/modes-highlight ',(intern (format "%s-mode" mode)) ,title))
+  			 (interactive)
+  			 (,(intern (format "%s-mode" mode)) (if (bound-and-true-p ,(intern (format "%s-mode" mode))) 0 1)))))
 #+end_src
 *** Place holder transients
 #+begin_src emacs-lisp :tangle yes
@@ -204,12 +216,6 @@ fit in as part of any other group.
 #+end_src
 *** Minor modes transient
 #+begin_src emacs-lisp :tangle yes
-  (defun cnit/modes-highlight (mode-symbol text)
-  	"Return a colored TEXT based on the status of MODE-SYMBOL."
-  	(if (if (fboundp mode-symbol) (symbol-value mode-symbol) nil)
-  		(propertize text 'face '(:foreground "green"))
-  		(propertize text 'face '(:foreground "red"))))
-
   (transient-define-prefix cnit/modes-dispatch ()
   	"Transient for toggling minor modes."
   	:transient-suffix 'transient--do-stay
@@ -349,7 +355,8 @@ candidate in a popup.
 #+begin_src emacs-lisp :tangle yes
   (use-package consult
   	:functions consult-xref
-  	:bind ("C-c c" . consult-line)
+  	:bind (("C-c c" . consult-line)
+  			  ("C-c C" . cnit/consult-dispatch))
   	:init
   	(setopt
   		xref-show-xrefs-function #'consult-xref
@@ -749,6 +756,36 @@ newlines.
   		treesit-extra-load-path `(,(expand-file-name "~/.config/emacs/var/tree-sitter")))
   	(cloveynit/report-unused-ts-modes))
 #+end_src
+
+** Treesit fold
+#+begin_src emacs-lisp :tangle yes
+  (use-package treesit-fold
+      :init
+      (global-treesit-fold-mode 1)
+      (global-treesit-fold-indicators-mode 1)
+
+  	(cnit/transient-define-suffix-mode "Fold" treesit-fold)
+  	(cnit/transient-define-suffix-mode "Indicators" treesit-fold-indicators)
+
+  	(transient-define-prefix cnit/treesit-fold ()
+  		[["Actions"
+  			 ("c" "Close" treesit-fold-close :inapt-if-nil treesit-fold-mode)
+  			 ("o" "Open" treesit-fold-open :inapt-if-nil treesit-fold-mode)
+  			 ("C" "Close All" treesit-fold-close-all :inapt-if-nil treesit-fold-mode)
+  			 ("O" "Open All" treesit-fold-open-all :inapt-if-nil treesit-fold-mode)
+  			 ("r"  "Open Recursively" treesit-fold-open-recursively :inapt-if-nil treesit-fold-mode)
+  			 ("t" "Toggle Fold" treesit-fold-toggle :inapt-if-nil treesit-fold-mode)]
+  			["Settings"
+  				("l"  "Line Count" (lambda () (interactive) (setopt treesit-fold-line-count-show (if treesit-fold-line-count-show nil t)) :inapt-if-nil treesit-fold-mode))]
+  			["Modes"
+  				("m" cnit/treesit-fold-suffix)
+  				("i"  cnit/treesit-fold-indicators-suffix)]])
+      :config
+      (setopt treesit-fold-line-count-show t)
+      :bind
+      ("C-c f" . cnit/treesit-fold))
+#+end_src
+
 ** TODO [#B] Spelling
 ** Whitespace cleanup
 #+begin_src emacs-lisp :tangle yes
@@ -1135,48 +1172,20 @@ Enhance re-builder to allow for running query replace regex when hitting return 
   (use-package zig-mode
   	:mode ("\\.zig\\'" . zig-mode))
 #+end_src
-** TODO Yaml
+** Yaml
 #+begin_src emacs-lisp :tangle yes
   (use-package yaml-ts-mode
   	:config
-  	(defcustom yaml-indent-offset 2
-  		"Amount of offset per level of indentation."
-  		:type 'integer
-  		:local t)
-  	(defun cnit/last-line-indentation-offset (&optional offset)
-  		"Find the nearest OFFSET rounded "
-  		(interactive "*")
-  		(if-let* ((indent (save-excursion
-  							  (beginning-of-line)
-  							  (if (re-search-backward "^[^\n]" nil t)
-  								  (current-indentation))))
-  					 (offset (or offset 1)))
-  			(* (truncate (/ indent offset)) offset)
-  			0))
-  	(defun cnit/yaml-ts-tab ()
-  		(interactive "*")
-  		(unless (memq this-command '(newline))
-  			(let* ((offset (or yaml-indent-offset 2))
-  					  (previous-line-offset (cnit/last-line-indentation-offset 2))
-  					  (max (+ previous-line-offset offset))
-  					  (min (max 0 (- previous-line-offset offset)))
-  					  (current (current-indentation)))
-  				(if (memq this-command '(newline-and-indent))
-  					(indent-line-to previous-line-offset)
-  					(if (>= current max)
-  						(indent-line-to min)
-  						(indent-line-to (+ offset (* (truncate (/ current offset)) offset))))))))
-  	(defun cnit/yaml-ts-mode-config ()
-  		(unless dtrt-indent-mode
-  			(setq-local standard-indent yaml-indent-offset))
-  		(setq-local indent-line-function #'cnit/yaml-ts-tab)
-  		(setq-local tab-width standard-indent)
-  		(run-hooks 'prog-mode-hook))
-  	:bind (:map yaml-ts-mode-map
-                ("RET" . newline-and-indent))
-  	:hook
-  	(yaml-ts-mode . cnit/yaml-ts-mode-config)
-  	(yaml-ts-mode . yaml-pro-ts-mode))
+  	(defun cnit/yaml-ts-mode-hook ()
+  		(setq-local indent-tabs-mode nil)
+  		(setq-local tab-width 2)
+  		(setq-local yaml-indent-offset 2)
+  		(dolist (fn prog-mode-hook)
+  			(unless (eq fn 'eglot-ensure)
+  				(funcall fn))))
+  	:mode "\\.ya?ml\\'"
+  	:hook ((yaml-ts-mode . cnit/yaml-ts-mode-hook)
+  			  (yaml-ts-mode . yaml-pro-ts-mode)))
 #+end_src
 
 ** Language ID
@@ -1677,12 +1686,14 @@ Hide files matching ~dired-omit-files~ regex or the ~dired-omit-extensions~ list
 #+begin_src emacs-lisp :tangle yes
   (defun cnit/browse-url-quesiton (url &optional new-window)
   	(interactive (browse-url-interactive-arg "URL: "))
-  	(let* ((browser (read-char-choice "Browser: 'p' personal 'w' work: " '(?p ?w)))
+  	(let* ((browser (read-char-choice "Browser: 'p' personal 'w' work 'e' eww:" '(?p ?w ?e)))
   			  (browse-url-firefox-program
   				  (cond
   					  ((eq browser ?p) "firefox")
   					  ((eq browser ?w) "floorp"))))
-  		(browse-url-firefox url new-window)))
+  		(cond
+  			((eq browser ?e) (eww-browse-url url))
+  			(t (browse-url-firefox url new-window)))))
 
   (setopt browse-url-browser-function #'cnit/browse-url-quesiton)
 #+end_src

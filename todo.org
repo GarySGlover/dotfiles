@@ -1,10 +1,10 @@
 Things that have anoyed me in the config that could do with
-* Edit indirect
+* Edit indirect / fence-edit.el
 https://github.com/Fanael/edit-indirect
+https://github.com/aaronbieber/fence-edit.el
 * Avy multiple cursors
 https://github.com/aatmunbaxi/lasgun.el
 * New packages
-[[https://elpa.nongnu.org/nongnu/treesit-fold.html][treesit-fold]]
 [[http://melpa.org/#/sideline-eglot][sideline-eglot]]
 * Combobulate for TS modes
 * modeline

@@ -78,12 +78,12 @@ Modifier locks
              , (multi (on-press release-vkey devil-meta) lalt ,)
              z (t! devil-sequence meta meta-quote)
              m (t! devil-sequence meta control-meta)
-             r (t! devil-sequence meta control-meta-lock)
+             r (t! devil-sequence meta meta-lock)
              ___ (multi (on-press release-vkey devil-meta) lalt _))
 
 (deflayermap devil-meta-lock
              , (on-press release-vkey devil-meta-lock)
-             ___ (multi lctl _))
+             ___ (multi lalt _))
 
 (deflayermap devil-meta-quote
              , (multi (on-press release-vkey devil-meta-quote) lalt ,)
@@ -91,12 +91,12 @@ Modifier locks
 
 (deflayermap devil-control-meta
              , (multi (on-press release-vkey devil-control-meta) lctl lalt ,)
-             r (t! devil-sequence meta meta-lock)
+             r (t! devil-sequence meta control-meta-lock)
              ___ (multi (on-press release-vkey devil-control-meta) lctl lalt _))
 
 (deflayermap devil-control-meta-lock
              , (on-press release-vkey devil-control-meta-lock)
-             ___ (multi lctl _))
+             ___ (multi lctl lalt _))
 
 
 

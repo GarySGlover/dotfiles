@@ -95,9 +95,27 @@
 				 ("\\.lua\\'" . lua-ts-mode)))
 	(add-to-list 'auto-mode-alist mode-assoc))
 
+;; Custom formatters
+(with-eval-after-load 'format-all
+	(define-format-all-formatter
+		yamlfmt
+		(:executable "yamlfmt")
+		(:install)
+		(:languages "YAML")
+		(:features)
+		(:format
+			(if (project-current)
+				(format-all--buffer-easy
+					executable "-conf"
+					(expand-file-name
+						(s-concat (project-root (project-current)) ".yamlfmt"))
+					"-")
+				(format-all--buffer-easy executable "-")))))
+
 ;; Language names default formatters.
 (defvar cnit/languages--default-formatters-alist
-	'(("Nix" nixfmt)))
+	'(("Nix" nixfmt)
+		 ("YAML" yamlfmt)))
 
 ;; Org language mode
 (defvar cnit/languages--org-src-lang-modes

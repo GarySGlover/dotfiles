@@ -32,6 +32,7 @@ let
             "realtime"
             "libvirtd"
             "input"
+            "dialout"
           ];
         };
         work = {

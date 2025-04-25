@@ -13,7 +13,7 @@ let
     // import ./peskyfox.nix
     // {
       "browser.startup.homepage" = "about:blank";
-      "layout.css.prefers-color-scheme.content-override" = 0; # Dark mode
+      "layout.css.prefers-color-scheme.content-override" = if theme.type == "light" then 1 else 0;
 
       # Security / Privacy
       "privacy.donottrackheader.enabled" = true;

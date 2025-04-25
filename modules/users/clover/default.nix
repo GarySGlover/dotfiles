@@ -83,6 +83,6 @@ in
     };
     user.interactive = true;
 
-    theme.name = "ef-elea-dark";
+    theme.name = "ef-melissa-light";
   };
 }

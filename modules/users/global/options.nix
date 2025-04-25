@@ -19,6 +19,13 @@ with types;
     faces = mkOption { type = types.attrs; };
     dracula = mkOption { type = types.attrs; };
     name = mkOption { type = str; };
+    type = mkOption {
+      type = enum [
+        "dark"
+        "light"
+      ];
+      default = "dark";
+    };
   };
 
   options.wolf.languages = {

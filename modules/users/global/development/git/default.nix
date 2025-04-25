@@ -1,15 +1,10 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ config, lib, pkgs, ... }:
 let
   inherit (builtins) hasAttr;
   inherit (lib) mkIf forEach;
-  secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
-in
-{
+  secrets =
+    import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
+in {
   config = {
     xdg.configFile = {
       "git/hooks/pre-commit" = {
@@ -51,9 +46,7 @@ in
       };
     };
 
-    home.packages = with pkgs; [
-      pre-commit
-    ];
+    home.packages = with pkgs; [ pre-commit ];
 
     programs.git = {
       enable = true;
@@ -74,30 +67,15 @@ in
         github = mkIf (hasAttr "github_user" secrets) {
           user = "${secrets.github_user}";
         };
-        init = {
-          templateDir = "${config.xdg.configHome}/git/templates";
-        };
       };
-      aliases = {
-        fetchp = "fetch --force";
-      };
-      includes =
-        forEach secrets.git_remotes_emails (x: {
-          condition = "hasconfig:remote.*.url:${x.condition}";
-          contents = {
-            user = {
-              email = "${x.email}";
-            };
-          };
-        })
-        ++ forEach secrets.git_folders_emails (x: {
-          condition = "gitdir:${x.condition}";
-          contents = {
-            user = {
-              email = "${x.email}";
-            };
-          };
-        });
+      aliases = { fetchp = "fetch --force"; };
+      includes = forEach secrets.git_remotes_emails (x: {
+        condition = "hasconfig:remote.*.url:${x.condition}";
+        contents = { user = { email = "${x.email}"; }; };
+      }) ++ forEach secrets.git_folders_emails (x: {
+        condition = "gitdir:${x.condition}";
+        contents = { user = { email = "${x.email}"; }; };
+      });
     };
   };
 }

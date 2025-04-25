@@ -99,7 +99,8 @@
 (defvar cnit/languages--org-src-lang-modes
 	'(("yaml" . "yaml-ts")
 		 ("nix" . "nix-ts")
-		 ("go" . "go-ts")))
+		 ("go" . "go-ts")
+		 ("json" . "json-ts")))
 
 ;; Major mode default extension
 (defvar cnit/major-mode--default-file-extenson
@@ -459,6 +460,7 @@ completing-read prompter."
 	((org-mode . cnit/org-save-babel-tangle)
 		(org-mode . cnit/exclude-electric-pair))
 	:config
+	(define-key org-mode-map (kbd "C-c C-r") verb-command-map)
 	(declare-function -each "dash")
 	(setopt
 		org-pretty-entities t
@@ -479,7 +481,8 @@ completing-read prompter."
 	(org-babel-do-load-languages
 		'org-babel-load-languages
 		'((emacs-lisp . t)
-			 (shell . t)))
+			 (shell . t)
+			 (verb . t)))
 
 	(defun cnit/org-confirm-babel-evaluate (lang body)
 		"Custom confirmation function for evaluating code blocks.
@@ -1182,7 +1185,7 @@ arguments."
 (use-package disproject
 	:config
 	(setopt
-		disproject-shell-command #'project-shell)
+		disproject-shell-command #'project-eshell)
 	:bind (:map ctl-x-map
 			  ("p" . disproject-dispatch)))
 
@@ -1468,6 +1471,15 @@ If PREFIX provided then clear old result from buffer first"
 (defvar-keymap cnit/recenter-top-bottom
 	:repeat t
 	"l" #'recenter-top-bottom)
+
+(defvar-keymap cnit/org-navigation-repeat-map
+	:repeat t
+	"n" #'org-next-visible-heading
+	"p" #'org-previous-visible-heading
+	"f" #'org-forward-heading-same-level
+	"b" #'org-backward-heading-same-level
+	"a" #'org-beginning-of-line
+	"e" #'org-end-of-line)
 
 (require 'magit)
 (require 'project)

@@ -62,6 +62,7 @@ let
   ];
 
   emacsExtraPackages = with pkgs.emacsPackages; [
+    terraform-doc
     yaml
     yaml-pro
     # auto-yasnippet

@@ -456,9 +456,12 @@ completing-read prompter."
 	(defun cnit/exclude-electric-pair ()
 		"Disable electric pair mode."
 		(when electric-pair-mode (electric-pair-mode -1)))
+	(defun cnit/org-src-lexical-binding ()
+		(setq-local lexical-binding t))
 	:hook
 	((org-mode . cnit/org-save-babel-tangle)
-		(org-mode . cnit/exclude-electric-pair))
+		(org-mode . cnit/exclude-electric-pair)
+		(org-src-mode . cnit/org-src-lexical-binding))
 	:config
 	(define-key org-mode-map (kbd "C-c C-r") verb-command-map)
 	(declare-function -each "dash")
@@ -628,8 +631,6 @@ major-mode-remap-alist or auto-mode-alist."
 	:hook (after-init . electric-pair-mode)
 	:config
 	(setopt electric-pair-open-newline-between-pairs t))
-
-(setopt next-line-add-newlines t)
 
 (use-package avy
 	:functions (ring-ref
@@ -917,7 +918,7 @@ With a prefix argument (C-u), override the decision:
 
 PREFIX: Optional argument to override the default behavior."
 		(interactive "P")
-		(if copilot-mode
+		(if t
 			(if prefix (gptel-menu) (copilot-chat-transient))
 			(if prefix (copilot-chat-transient) (gptel-menu))))
 	:bind ("C-c l" . cnit/llm-chat))

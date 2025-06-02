@@ -1421,7 +1421,9 @@ worktrees for branches in my ~/features directory.
 ** Direnv
 #+begin_src emacs-lisp :tangle yes
   (use-package direnv
-  	:config (setopt direnv-always-show-summary nil)
+  	:config
+  	(setopt direnv-always-show-summary nil)
+  	(add-to-list 'warning-suppress-types '(direnv))
   	:hook (after-init . direnv-mode))
 #+end_src
 ** EditorConfig

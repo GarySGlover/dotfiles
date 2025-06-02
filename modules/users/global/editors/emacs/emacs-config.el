@@ -1191,7 +1191,9 @@ arguments."
 			  ("p" . disproject-dispatch)))
 
 (use-package direnv
-	:config (setopt direnv-always-show-summary nil)
+	:config
+	(setopt direnv-always-show-summary nil)
+	(add-to-list 'warning-suppress-types '(direnv))
 	:hook (after-init . direnv-mode))
 
 (use-package editorconfig

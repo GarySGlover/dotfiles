@@ -6,10 +6,7 @@
 with lib;
 {
   config = mkIf config.wolf.system.physical {
-    programs.hyprland = {
-      enable = true;
-      xwayland.enable = true;
-    };
+    programs.niri.enable = true;
 
     services.xserver = {
       enable = true;

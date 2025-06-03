@@ -342,96 +342,6 @@ completing-read prompter."
 (use-package marginalia
 	:hook (after-init . marginalia-mode))
 
-(use-package telephone-line
-	:init
-	(telephone-line-defsegment* cnit/telephone-line-magit-segment ()
-		(require 'magit)
-		(require 's)
-		(telephone-line-raw
-			(when (fboundp #'magit-get-current-branch)
-				(when-let* ((max-length 20)
-							   (branch (s-left max-length (magit-get-current-branch))))
-					`(:propertize ,(format " %s" branch)
-						 mouse-face mode-line-highlight
-						 help-echo (magit-get-current-branch)
-						 local-map ,(let ((map (make-sparse-keymap)))
-										(define-key map [mode-line mouse-1]
-                                            #'magit-status)
-										map)
-						 face ,face)))))
-	(telephone-line-defsegment* cnit/telephone-line-buffer-name ()
-		(telephone-line-raw
-			(if-let* ((name (buffer-file-name))
-						 (shortname (shorten-file-path name)))
-				`(:propertize ,shortname
-                     help-echo ,name
-                     face ,face)
-				(buffer-name))))
-	(telephone-line-defsegment cnit/telephone-line-project-segment ()
-		"Displays the project name, according to magit or project.el"
-		(if (project-current)
-			(propertize (cond ((stringp telephone-line-project-custom-name) telephone-line-project-custom-name)
-							((cnit/magit-repo-name) (cnit/magit-repo-name))
-							(file-name-nondirectory (directory-file-name (project-root (project-current)))))
-                'face 'telephone-line-projectile
-                'display '(raise 0.0)
-                'help-echo (file-name-nondirectory (directory-file-name (project-root (project-current))))
-                'mouse-face '(:box 1)
-                'local-map (make-mode-line-mouse-map
-                               'mouse-1 #'project-switch-project))))
-	(telephone-line-defsegment cnit/telephone-line-mode-segment ()
-		"Displays tree icon if major-mode is a treesitter mode."
-		(if (string-match-p "-ts-" (format "%s" major-mode))
-			" %[%m%]"
-			"%[%m%]"))
-	(telephone-line-mode nil)
-	(setq telephone-line-lhs
-        '((accent . (cnit/telephone-line-mode-segment))
-			 (evil . (cnit/telephone-line-project-segment))
-			 (accent . (cnit/telephone-line-magit-segment
-						   telephone-line-process-segment))
-			 (evil . ((cnit/telephone-line-buffer-name 20))))
-        telephone-line-rhs
-        '((accent . (telephone-line-flymake-segment))
-			 (evil . (telephone-line-airline-position-segment))
-			 (accent . (telephone-line-misc-info-segment))))
-	(telephone-line-mode t))
-
-(defun shorten-file-path (file-path &optional max-length)
-	"Shorten FILE-PATH according to the following rules:
-1. If within a `project.el` project, remove the project root from the start.
-2. If within the user's home directory, replace the home directory with `~`.
-3. If the path length exceeds MAX-LENGTH (default 30), shorten directories from the beginning."
-	(let* ((max-length (or max-length 10))
-			  (home-dir (expand-file-name "~"))
-			  (project-root (when (fboundp 'project-root)
-								(ignore-errors
-									(let ((project (project-current)))
-										(when project
-											(expand-file-name (project-root project)))))))
-			  ;; Step 1: Shorten to project-relative path
-			  (relative-path (if (and project-root (string-prefix-p project-root file-path))
-								 (substring file-path (length project-root))
-								 file-path)))
-		;; Step 2: Shorten to home-relative path
-		(setq relative-path
-			(if (string-prefix-p home-dir relative-path)
-				(concat "~" (substring relative-path (length home-dir)))
-				relative-path))
-		;; Step 3: Shorten further if the path exceeds max-length
-		(if (<= (length relative-path) max-length)
-			relative-path
-			(let* ((components (split-string relative-path "/" t))
-					  (lastdir (if (> (length components) 1) (nth (- (length components) 2) components) ""))
-					  (filename (or (car (last components)) ""))
-					  (dirs (butlast components 2))
-					  (shortened-dirs (mapcar (lambda (dir) (substring dir 0 1)) dirs)))
-				(concat (string-join shortened-dirs "/")
-					(if shortened-dirs "/")
-					lastdir
-					"/"
-					filename)))))
-
 (use-package indent-bars
 	:config
 	(setopt indent-bars-treesit-support t)
@@ -936,9 +846,13 @@ PREFIX: Optional argument to override the default behavior."
 		(setq eldoc-documentation-functions
 			(cons #'flymake-eldoc-function
 				(remove #'flymake-eldoc-function eldoc-documentation-functions))))
+	(defun cnit/conditionally-enable-eglot ()
+		"Enable Eglot only if a language server is available."
+		(unless (derived-mode-p 'emacs-lisp-mode)
+			(eglot-ensure)))
 	:commands (eglot-ensure)
 	:hook
-	((prog-mode . eglot-ensure)
+	((prog-mode . cnit/conditionally-enable-eglot)
 		(eglot-managed-mode . cnit/reorder-eldoc-functions))
 	:config
 	(add-to-list 'eglot-server-programs `(nix-ts-mode . ,(cdr (assoc 'nix-mode eglot-server-programs))))
@@ -1269,20 +1183,16 @@ arguments."
 			window))
 
 	(defun display-buffer-ace-window (buffer alist)
-		(let ((initial-window-count (length (window-list))))
-			(if (eq initial-window-count 1)
-				nil
-				(let* ((aw-dispatch-always t)
-						  (aw-scope 'frame)
-						  (original-window (selected-window))
-						  (window (progn
-									  (message (format "Switching to: %s" buffer))
-									  (cnit/aw-select-force)))
-						  (new-window-p (> (length (window-list)) initial-window-count))
-						  (window-type (if new-window-p 'window 'reuse)))
-					(progn
-						(select-window original-window)
-						(window--display-buffer buffer window window-type alist)))))))
+		(let* ((aw-dispatch-always t)
+				  (aw-scope 'frame)
+				  (aw-dispatch-alist
+					  (append
+						  '((?q (lambda (_w) (selected-window)) "quit and return current window"))
+						  aw-dispatch-alist))
+				  (window (progn
+							  (message (format "Switching to: %s" buffer))
+							  (aw-select nil))))
+			(window--display-buffer buffer window 'reuse alist))))
 
 (use-package esh-mode
 	:config

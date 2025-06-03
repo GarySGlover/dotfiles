@@ -457,7 +457,7 @@ Display the keys pressed and the associated command in the header line.
   (use-package marginalia
   	:hook (after-init . marginalia-mode))
 #+end_src
-** Mode Line
+** COMMENT Mode Line
 #+begin_src emacs-lisp :tangle yes
   (use-package telephone-line
   	:init
@@ -510,7 +510,6 @@ Display the keys pressed and the associated command in the header line.
   			 (evil . ((cnit/telephone-line-buffer-name 20))))
           telephone-line-rhs
           '((accent . (telephone-line-flymake-segment))
-  			 (evil . (telephone-line-airline-position-segment))
   			 (accent . (telephone-line-misc-info-segment))))
   	(telephone-line-mode t))
 
@@ -1130,9 +1129,13 @@ Enhance re-builder to allow for running query replace regex when hitting return 
   		(setq eldoc-documentation-functions
   			(cons #'flymake-eldoc-function
   				(remove #'flymake-eldoc-function eldoc-documentation-functions))))
+  	(defun cnit/conditionally-enable-eglot ()
+  		"Enable Eglot only if a language server is available."
+  		(unless (derived-mode-p 'emacs-lisp-mode)
+  			(eglot-ensure)))
   	:commands (eglot-ensure)
   	:hook
-  	((prog-mode . eglot-ensure)
+  	((prog-mode . cnit/conditionally-enable-eglot)
   		(eglot-managed-mode . cnit/reorder-eldoc-functions))
   	:config
   	(add-to-list 'eglot-server-programs `(nix-ts-mode . ,(cdr (assoc 'nix-mode eglot-server-programs))))
@@ -1515,20 +1518,16 @@ Hide files matching ~dired-omit-files~ regex or the ~dired-omit-extensions~ list
   			window))
 
   	(defun display-buffer-ace-window (buffer alist)
-  		(let ((initial-window-count (length (window-list))))
-  			(if (eq initial-window-count 1)
-  				nil
-  				(let* ((aw-dispatch-always t)
-  						  (aw-scope 'frame)
-  						  (original-window (selected-window))
-  						  (window (progn
-  									  (message (format "Switching to: %s" buffer))
-  									  (cnit/aw-select-force)))
-  						  (new-window-p (> (length (window-list)) initial-window-count))
-  						  (window-type (if new-window-p 'window 'reuse)))
-  					(progn
-  						(select-window original-window)
-  						(window--display-buffer buffer window window-type alist)))))))
+  		(let* ((aw-dispatch-always t)
+  				  (aw-scope 'frame)
+  				  (aw-dispatch-alist
+  					  (append
+  						  '((?q (lambda (_w) (selected-window)) "quit and return current window"))
+  						  aw-dispatch-alist))
+  				  (window (progn
+  							  (message (format "Switching to: %s" buffer))
+  							  (aw-select nil))))
+  			(window--display-buffer buffer window 'reuse alist))))
 #+end_src
 ** EShell
 #+begin_src emacs-lisp :tangle yes

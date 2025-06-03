@@ -64,6 +64,8 @@ in
         (if (daemonp)
             (add-hook 'server-after-make-frame-hook #'cloveynit-after-frame)
           (cloveynit-after-frame))
+
+        (setq ispell-alternate-dictionary (expand-file-name "emacs/dict.txt" (xdg-config-home)))
       ''
       + (
         if (hasAttr "copilot_enabled_organisations" secrets) then

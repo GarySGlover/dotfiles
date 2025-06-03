@@ -139,6 +139,22 @@ let
     yasnippet-snippets
     zig-mode
   ];
+
+  aspellEnglish = pkgs.aspellWithDicts (
+    ds: with ds; [
+      en
+      en-computers
+      en-science
+    ]
+  );
+
+  dumpDict =
+    dictName:
+    builtins.readFile (
+      pkgs.runCommand "aspell-${dictName}-dict.txt" { buildInputs = [ aspellEnglish ]; } ''
+        ${aspellEnglish}/bin/aspell --lang=${dictName} dump master | sort -u > $out
+      ''
+    );
 in
 {
   config = lib.mkIf config.wolf.roles.editing {
@@ -146,13 +162,7 @@ in
 
     home.packages = with pkgs; [
       # Dictionaries for use with flyspell
-      (aspellWithDicts (
-        ds: with ds; [
-          en
-          en-computers
-          en-science
-        ]
-      ))
+      aspellEnglish
 
       pandoc
 
@@ -177,5 +187,6 @@ in
       ".config/emacs/var/tree-sitter".source =
         "${pkgs.emacsPackages.treesit-grammars.with-all-grammars}/lib";
     };
+    xdg.configFile."emacs/dict.txt".text = (dumpDict "en");
   };
 }

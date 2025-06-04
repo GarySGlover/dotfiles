@@ -46,7 +46,10 @@ in {
       };
     };
 
-    home.packages = with pkgs; [ pre-commit ];
+    home.packages = with pkgs; [
+      pre-commit
+      azure-cli
+    ];
 
     programs.git = {
       enable = true;
@@ -57,6 +60,7 @@ in {
           hooksPath = "${config.xdg.configHome}/git/hooks";
         };
         credential.helper = [
+          "!f() { echo \"password=$(az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv)\"; }; f"
           "store --file ~/.git-credentials"
           "store --file ${config.xdg.configHome}/git/.git-credentials"
         ];

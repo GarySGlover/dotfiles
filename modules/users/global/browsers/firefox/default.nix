@@ -61,11 +61,11 @@ in
         };
         search = {
           force = true;
-          default = "DuckDuckGo";
-          privateDefault = "DuckDuckGo";
+          default = "ddg";
+          privateDefault = "ddg";
           engines = import ./search.nix { inherit pkgs; };
         };
-        extensions = with pkgs.nur.repos.rycee.firefox-addons; [
+        extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
           bitwarden
           enhancer-for-youtube
           ublock-origin
@@ -84,11 +84,11 @@ in
         };
         search = {
           force = true;
-          default = "DuckDuckGo";
-          privateDefault = "DuckDuckGo";
+          default = "ddg";
+          privateDefault = "ddg";
           engines = import ./search.nix { inherit pkgs; } // secrets.work_firefox_search_engines;
         };
-        extensions = with pkgs.nur.repos.rycee.firefox-addons; [
+        extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
           bitwarden
           ublock-origin
           absolute-enable-right-click

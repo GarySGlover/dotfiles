@@ -1,8 +1,8 @@
 { pkgs, ... }:
 {
   # https://github.com/daluca/nix-config/blob/beefe3d38509f4d4218b395db0594db610122c98/home/firefox/search.nix#L4
-  "Google".metaData.hidden = true;
-  "Bing".metaData.hidden = true;
+  "google".metaData.hidden = true;
+  "bing".metaData.hidden = true;
   "Nix Packages" = {
     urls = [
       {

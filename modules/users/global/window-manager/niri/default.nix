@@ -47,6 +47,7 @@ in
     home.packages =
       (with pkgs; [
         xwayland-satellite
+        bluetuith
       ])
       ++ [
         wlr-which-key
@@ -61,10 +62,11 @@ in
         workspace-auto-back-and-forth = [ ];
       };
       cursor = {
-        hide-after-inactaive-ms = 1000;
+        hide-after-inactive-ms = 1000;
         hide-when-typing = [ ];
       };
       hotkey-overlay.skip-at-startup = [ ];
+      gestures.hot-corners.off = [ ];
       layout = {
         # Columns
         always-center-single-column = [ ];
@@ -107,7 +109,7 @@ in
 
       "spawn-at-startup \"waybar\"" = [ ];
       "spawn-at-startup \"udiskie\"" = [ ];
-      "spawn-at-startup \"kanshi\"" = [ ];
+      # "spawn-at-startup \"kanshi\"" = [ ];
       "spawn-at-startup \"xwayland-satellite\"" = [ ];
 
       environment = {
@@ -141,7 +143,7 @@ in
             "0.1-"
           ];
         };
-        "Shift+XF86AudioRaiseVolume" = {
+        "XF86MonBrightnessUp" = {
           _props = {
             allow-when-locked = true;
           };
@@ -151,7 +153,7 @@ in
             "10%+"
           ];
         };
-        "Shift+XF86AudioLowerVolume" = {
+        "XF86MonBrightnessDown" = {
           _props = {
             allow-when-locked = true;
           };
@@ -208,6 +210,11 @@ in
                   cmd = "brave";
                 }
                 {
+                  key = "B";
+                  desc = "Bluetuith";
+                  cmd = "kitty bluetuith";
+                }
+                {
                   key = "c";
                   desc = "Chromium";
                   cmd = "chromium";
@@ -245,451 +252,229 @@ in
               ];
             }
             {
-              key = "w";
-              desc = "Window Management";
-              submenu = [
-                {
-                  key = "f";
-                  cmd = "niri msg action focus-column-right";
-                  desc = "Focus Column Right";
-                  keep_open = true;
-                }
-                {
-                  key = "F";
-                  cmd = "niri msg action focus-column-right-or-first";
-                  desc = "Focus Column Right or First";
-                  keep_open = true;
-                }
-                {
-                  key = "Ctrl+f";
-                  desc = "Move Column Right";
-                  cmd = "niri msg action move-column-right";
-                  keep_open = true;
-                }
-                {
-                  key = "Ctrl+F";
-                  desc = "Move Column to Monitor Right";
-                  cmd = "niri msg action move-column-to-monitor-right";
-                  keep_open = true;
-                }
-              ];
+              key = "f";
+              cmd = "niri msg action focus-column-right-or-first";
+              desc = "Column Right";
+              keep_open = true;
             }
             {
-              key = "f";
-              desc = "Focus Management";
-              submenu = [
-                {
-                  key = "b";
-                  desc = "Focus Column Left";
-                  cmd = "niri msg action focus-column-left";
-                  keep_open = true;
-                }
-                {
-                  key = "p";
-                  desc = "Focus Column Left or Last";
-                  cmd = "niri msg action focus-column-left-or-last";
-                  keep_open = true;
-                }
-                {
-                  key = "t";
-                  desc = "Focus Tiling";
-                  cmd = "niri msg action focus-tiling";
-                  keep_open = true;
-                }
-                {
-                  key = "g";
-                  desc = "Focus Floating";
-                  cmd = "niri msg action focus-floating";
-                  keep_open = true;
-                }
-                {
-                  key = "l";
-                  desc = "Focus Monitor Right";
-                  cmd = "niri msg action focus-monitor-right";
-                  keep_open = true;
-                }
-                {
-                  key = "h";
-                  desc = "Focus Monitor Left";
-                  cmd = "niri msg action focus-monitor-left";
-                  keep_open = true;
-                }
-                {
-                  key = "k";
-                  desc = "Focus Monitor Up";
-                  cmd = "niri msg action focus-monitor-up";
-                  keep_open = true;
-                }
-                {
-                  key = "j";
-                  desc = "Focus Monitor Down";
-                  cmd = "niri msg action focus-monitor-down";
-                  keep_open = true;
-                }
-                {
-                  key = "m";
-                  desc = "Focus Monitor Next";
-                  cmd = "niri msg action focus-monitor-next";
-                  keep_open = true;
-                }
-                {
-                  key = "o";
-                  desc = "Focus Monitor Previous";
-                  cmd = "niri msg action focus-monitor-previous";
-                  keep_open = true;
-                }
-                {
-                  key = "u";
-                  desc = "Focus Window Up";
-                  cmd = "niri msg action focus-window-up";
-                  keep_open = true;
-                }
-                {
-                  key = "d";
-                  desc = "Focus Window Down";
-                  cmd = "niri msg action focus-window-down";
-                  keep_open = true;
-                }
-                {
-                  key = "y";
-                  desc = "Focus Window Up or Bottom";
-                  cmd = "niri msg action focus-window-up-or-bottom";
-                  keep_open = true;
-                }
-                {
-                  key = "v";
-                  desc = "Focus Window Down or Top";
-                  cmd = "niri msg action focus-window-down-or-top";
-                  keep_open = true;
-                }
-                {
-                  key = "r";
-                  desc = "Focus Window Previous";
-                  cmd = "niri msg action focus-window-previous";
-                  keep_open = true;
-                }
-                {
-                  key = "s";
-                  desc = "Focus Window Bottom";
-                  cmd = "niri msg action focus-window-bottom";
-                  keep_open = true;
-                }
-                {
-                  key = "a";
-                  desc = "Focus Window Top";
-                  cmd = "niri msg action focus-window-top";
-                  keep_open = true;
-                }
-                {
-                  key = "x";
-                  desc = "Focus Workspace Up";
-                  cmd = "niri msg action focus-workspace-up";
-                  keep_open = true;
-                }
-                {
-                  key = "z";
-                  desc = "Focus Workspace Down";
-                  cmd = "niri msg action focus-workspace-down";
-                  keep_open = true;
-                }
-                {
-                  key = "c";
-                  desc = "Focus Workspace Previous";
-                  cmd = "niri msg action focus-workspace-previous";
-                  keep_open = true;
-                }
-              ];
+              key = "F";
+              cmd = "niri msg action focus-monitor-right";
+              desc = "Monitor Right";
+              keep_open = true;
+            }
+            {
+              key = "Ctrl+f";
+              desc = "Move Column Right";
+              cmd = "niri msg action move-column-right";
+              keep_open = true;
+            }
+            {
+              key = "Ctrl+F";
+              desc = "Move Column to Monitor Right";
+              cmd = "niri msg action move-column-to-monitor-right";
+              keep_open = true;
+            }
+            {
+              key = "Alt+f";
+              desc = "Move Workspace to Monitor Right";
+              cmd = "niri msg action move-workspace-to-monitor-right";
+              keep_open = true;
+            }
+            {
+              key = "b";
+              cmd = "niri msg action focus-column-left-or-last";
+              desc = "Column Left";
+              keep_open = true;
+            }
+            {
+              key = "B";
+              cmd = "niri msg action focus-monitor-left";
+              desc = "Monitor Left";
+              keep_open = true;
+            }
+            {
+              key = "Ctrl+b";
+              desc = "Move Column Left";
+              cmd = "niri msg action move-column-left";
+              keep_open = true;
+            }
+            {
+              key = "Ctrl+B";
+              desc = "Move Column to Monitor Left";
+              cmd = "niri msg action move-column-to-monitor-left";
+              keep_open = true;
+            }
+            {
+              key = "Alt+b";
+              desc = "Move Workspace to Monitor Left";
+              cmd = "niri msg action move-workspace-to-monitor-left";
+              keep_open = true;
+            }
+            {
+              key = "p";
+              cmd = "niri msg action focus-workspace-up";
+              desc = "Workspace Up";
+              keep_open = true;
+            }
+            {
+              key = "P";
+              cmd = "niri msg action focus-monitor-up";
+              desc = "Monitor Up";
+              keep_open = true;
+            }
+            {
+              key = "Ctrl+p";
+              desc = "Move Column to Workspace Up";
+              cmd = "niri msg action move-column-to-workspace-up";
+              keep_open = true;
+            }
+            {
+              key = "Ctrl+P";
+              desc = "Move Column to Monitor Up";
+              cmd = "niri msg action move-column-to-monitor-up";
+              keep_open = true;
+            }
+            {
+              key = "Alt+p";
+              desc = "Move Workspace to Monitor Up";
+              cmd = "niri msg action move-workspace-to-monitor-up";
+              keep_open = true;
+            }
+            {
+              key = "n";
+              cmd = "niri msg action focus-workspace-down";
+              desc = "Workspace Down";
+              keep_open = true;
+            }
+            {
+              key = "N";
+              cmd = "niri msg action focus-monitor-down";
+              desc = "Monitor Down";
+              keep_open = true;
+            }
+            {
+              key = "Ctrl+n";
+              desc = "Move Column to Workspace Down";
+              cmd = "niri msg action move-column-to-workspace-down";
+              keep_open = true;
+            }
+            {
+              key = "Ctrl+N";
+              desc = "Move Column to Monitor Down";
+              cmd = "niri msg action move-column-to-monitor-down";
+              keep_open = true;
+            }
+            {
+              key = "Alt+n";
+              desc = "Move Workspace to Monitor Down";
+              cmd = "niri msg action move-workspace-to-monitor-down";
+              keep_open = true;
+            }
+            {
+              key = "v";
+              desc = "Move Workspace Up";
+              cmd = "niri msg action move-workspace-up";
+              keep_open = true;
+            }
+            {
+              key = "V";
+              desc = "Move Workspace Down";
+              cmd = "niri msg action move-workspace-down";
+              keep_open = true;
+            }
+            {
+              key = "e";
+              desc = "Toggle Focus Floating";
+              cmd = "niri msg action switch-focus-between-floating-and-tiling";
+            }
+            {
+              key = "E";
+              desc = "Toggle Window Floating";
+              cmd = "niri msg action toggle-window-floating";
+              keep_open = true;
+            }
+            {
+              key = "s";
+              desc = "Screenshot Window";
+              cmd = "niri msg action screenshot-window";
+            }
+            {
+              key = "S";
+              desc = "Screenshot Screen";
+              cmd = "niri msg action screenshot-screen";
+            }
+            {
+              key = "Ctrl+s";
+              desc = "Screenshot";
+              cmd = "niri msg action screenshot";
+            }
+            {
+              key = "c";
+              desc = "Cast Window";
+              cmd = "niri msg action set-dynamic-cast-window";
+            }
+            {
+              key = "C";
+              desc = "Cast Monitor";
+              cmd = "niri msg action set-dynamic-cast-monitor";
+            }
+            {
+              key = "Ctrl+C";
+              desc = "Clear Cast";
+              cmd = "niri msg action clear-dynamic-cast-target";
+            }
+            {
+              key = "x";
+              desc = "Switch Preset Column Width";
+              cmd = "niri msg action switch-preset-column-width";
+              keep_open = true;
+            }
+            {
+              key = "X";
+              desc = "Expand Column to Available Width";
+              cmd = "niri msg action expand-column-to-available-width";
+            }
+            {
+              key = "Ctrl+x";
+              desc = "Maximize Column";
+              cmd = "niri msg action maximize-column";
             }
             {
               key = "m";
-              desc = "Move Management";
-              submenu = [
-                {
-                  key = "b";
-                  desc = "Move Column Left";
-                  cmd = "niri msg action move-column-left";
-                  keep_open = true;
-                }
-                {
-                  key = "p";
-                  desc = "Move Column to First";
-                  cmd = "niri msg action move-column-to-first";
-                  keep_open = true;
-                }
-                {
-                  key = "n";
-                  desc = "Move Column to Last";
-                  cmd = "niri msg action move-column-to-last";
-                  keep_open = true;
-                }
-                {
-                  key = "h";
-                  desc = "Move Column to Monitor Left";
-                  cmd = "niri msg action move-column-to-monitor-left";
-                  keep_open = true;
-                }
-                {
-                  key = "k";
-                  desc = "Move Column to Monitor Up";
-                  cmd = "niri msg action move-column-to-monitor-up";
-                  keep_open = true;
-                }
-                {
-                  key = "j";
-                  desc = "Move Column to Monitor Down";
-                  cmd = "niri msg action move-column-to-monitor-down";
-                  keep_open = true;
-                }
-                {
-                  key = "m";
-                  desc = "Move Column to Monitor Next";
-                  cmd = "niri msg action move-column-to-monitor-next";
-                  keep_open = true;
-                }
-                {
-                  key = "o";
-                  desc = "Move Column to Monitor Previous";
-                  cmd = "niri msg action move-column-to-monitor-previous";
-                  keep_open = true;
-                }
-                {
-                  key = "x";
-                  desc = "Move Column to Workspace Up";
-                  cmd = "niri msg action move-column-to-workspace-up";
-                  keep_open = true;
-                }
-                {
-                  key = "z";
-                  desc = "Move Column to Workspace Down";
-                  cmd = "niri msg action move-column-to-workspace-down";
-                  keep_open = true;
-                }
-                {
-                  key = "u";
-                  desc = "Move Window Up";
-                  cmd = "niri msg action move-window-up";
-                  keep_open = true;
-                }
-                {
-                  key = "d";
-                  desc = "Move Window Down";
-                  cmd = "niri msg action move-window-down";
-                  keep_open = true;
-                }
-                {
-                  key = "t";
-                  desc = "Move Window to Floating";
-                  cmd = "niri msg action move-window-to-floating";
-                  keep_open = true;
-                }
-                {
-                  key = "g";
-                  desc = "Move Window to Tiling";
-                  cmd = "niri msg action move-window-to-tiling";
-                  keep_open = true;
-                }
-                {
-                  key = "l";
-                  desc = "Move Window to Monitor Right";
-                  cmd = "niri msg action move-window-to-monitor-right";
-                  keep_open = true;
-                }
-                {
-                  key = "h";
-                  desc = "Move Window to Monitor Left";
-                  cmd = "niri msg action move-window-to-monitor-left";
-                  keep_open = true;
-                }
-                {
-                  key = "k";
-                  desc = "Move Window to Monitor Up";
-                  cmd = "niri msg action move-window-to-monitor-up";
-                  keep_open = true;
-                }
-                {
-                  key = "j";
-                  desc = "Move Window to Monitor Down";
-                  cmd = "niri msg action move-window-to-monitor-down";
-                  keep_open = true;
-                }
-                {
-                  key = "m";
-                  desc = "Move Window to Monitor Next";
-                  cmd = "niri msg action move-window-to-monitor-next";
-                  keep_open = true;
-                }
-                {
-                  key = "o";
-                  desc = "Move Window to Monitor Previous";
-                  cmd = "niri msg action move-window-to-monitor-previous";
-                  keep_open = true;
-                }
-                {
-                  key = "x";
-                  desc = "Move Window to Workspace Up";
-                  cmd = "niri msg action move-window-to-workspace-up";
-                  keep_open = true;
-                }
-                {
-                  key = "z";
-                  desc = "Move Window to Workspace Down";
-                  cmd = "niri msg action move-window-to-workspace-down";
-                  keep_open = true;
-                }
-                {
-                  key = "r";
-                  desc = "Move Workspace Up";
-                  cmd = "niri msg action move-workspace-up";
-                  keep_open = true;
-                }
-                {
-                  key = "s";
-                  desc = "Move Workspace Down";
-                  cmd = "niri msg action move-workspace-down";
-                  keep_open = true;
-                }
-                {
-                  key = "p";
-                  desc = "Move Workspace to Monitor Up";
-                  cmd = "niri msg action move-workspace-to-monitor-up";
-                  keep_open = true;
-                }
-                {
-                  key = "n";
-                  desc = "Move Workspace to Monitor Down";
-                  cmd = "niri msg action move-workspace-to-monitor-down";
-                  keep_open = true;
-                }
-                {
-                  key = "l";
-                  desc = "Move Workspace to Monitor Right";
-                  cmd = "niri msg action move-workspace-to-monitor-right";
-                  keep_open = true;
-                }
-                {
-                  key = "h";
-                  desc = "Move Workspace to Monitor Left";
-                  cmd = "niri msg action move-workspace-to-monitor-left";
-                  keep_open = true;
-                }
-                {
-                  key = "m";
-                  desc = "Move Workspace to Monitor Next";
-                  cmd = "niri msg action move-workspace-to-monitor-next";
-                  keep_open = true;
-                }
-                {
-                  key = "o";
-                  desc = "Move Workspace to Monitor Previous";
-                  cmd = "niri msg action move-workspace-to-monitor-previous";
-                  keep_open = true;
-                }
-                {
-                  key = "e";
-                  desc = "Consume Window into Column";
-                  cmd = "niri msg action consume-window-into-column";
-                  keep_open = true;
-                }
-                {
-                  key = "q";
-                  desc = "Expel Window from Column";
-                  cmd = "niri msg action expel-window-from-column";
-                  keep_open = true;
-                }
-              ];
+              desc = "Maximize Column";
+              cmd = "niri msg action maximize-column";
             }
             {
-              key = "g";
-              desc = "General Management";
-              submenu = [
-                {
-                  key = "c";
-                  desc = "Center Window";
-                  cmd = "niri msg action center-window";
+              key = "M";
+              desc = "Fullscreen";
+              cmd = "niri msg action fullscreen-window";
+            }
+            {
+              key = "Ctrl+m";
+              desc = "Fake Fullscreen";
+              cmd = "niri msg action toggle-windowed-fullscreen";
+            }
+            {
+              key = "c";
+              desc = "Center column";
+              cmd = "niri msg action center-column";
+            }
+            {
+              key = "C";
+              desc = "Center visible";
+              cmd = "niri msg action center-visible-columns";
+            }
+            {
+              key = "w";
+              desc = "Close Window";
+              cmd = "niri msg action close-window";
 
-                }
-                {
-                  key = "v";
-                  desc = "Center Column";
-                  cmd = "niri msg action center-column";
-                }
-                {
-                  key = "x";
-                  desc = "Close Window";
-                  cmd = "niri msg action close-window";
-
-                }
-                {
-                  key = "f";
-                  desc = "Fullscreen Window";
-                  cmd = "niri msg action fullscreen-window";
-
-                }
-                {
-                  key = "t";
-                  desc = "Toggle Window Floating";
-                  cmd = "niri msg action toggle-window-floating";
-
-                }
-                {
-                  key = "e";
-                  desc = "Expand Column to Available Width";
-                  cmd = "niri msg action expand-column-to-available-width";
-                }
-                {
-                  key = "m";
-                  desc = "Maximize Column";
-                  cmd = "niri msg action maximize-column";
-                }
-                {
-                  key = "r";
-                  desc = "Toggle Column Tabbed Display";
-                  cmd = "niri msg action toggle-column-tabbed-display";
-                }
-                {
-                  key = "s";
-                  desc = "Switch Focus Between Floating and Tiling";
-                  cmd = "niri msg action switch-focus-between-floating-and-tiling";
-                }
-                {
-                  key = "p";
-                  desc = "Switch Preset Column Width";
-                  cmd = "niri msg action switch-preset-column-width";
-                  keep_open = true;
-                }
-                {
-                  key = "n";
-                  desc = "Switch Preset Window Height";
-                  cmd = "niri msg action switch-preset-window-height";
-                  keep_open = true;
-                }
-                {
-                  key = "l";
-                  desc = "Switch Preset Window Width";
-                  cmd = "niri msg action switch-preset-window-width";
-                  keep_open = true;
-                }
-                {
-                  key = "q";
-                  desc = "Quit";
-                  cmd = "niri msg action quit";
-                }
-                {
-                  key = "a";
-                  desc = "Screenshot";
-                  cmd = "niri msg action screenshot";
-                }
-                {
-                  key = "b";
-                  desc = "Screenshot Screen";
-                  cmd = "niri msg action screenshot-screen";
-                }
-                {
-                  key = "d";
-                  desc = "Screenshot Window";
-                  cmd = "niri msg action screenshot-window";
-                }
-              ];
+            }
+            {
+              key = "W";
+              desc = "Quit";
+              cmd = "niri msg action quit";
             }
           ];
         };

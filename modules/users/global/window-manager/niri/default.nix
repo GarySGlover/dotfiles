@@ -222,7 +222,7 @@ in
                 {
                   key = "e";
                   desc = "Emacs";
-                  cmd = "emacsclient --create-frame -no-wait --alternate-editor ''";
+                  cmd = "emacsclient --create-frame -no-wait --alternate-editor 'emacs'";
                 }
                 {
                   key = "f";

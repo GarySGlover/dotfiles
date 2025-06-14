@@ -4,6 +4,17 @@
 #+STARTUP: content
 
 * General Settings
+** Lexical Binding
+Configure lexical binding for the rest of this init. A lexically-bound variable
+has lexical scope, meaning that any reference to the variable must be
+located textually within the binding construct.
+
+This must be kept as the first entry in this list as documented in
+"(elisp)Using Lexical Binding".
+
+#+begin_src emacs-lisp :tangle yes
+  ;; -*- lexical-binding: t -*-
+#+end_src
 ** Emacs Server
 #+begin_src emacs-lisp :tangle yes
   (use-package server
@@ -20,18 +31,6 @@
 #+begin_src emacs-lisp :tangle yes
   (setopt confirm-kill-emacs #'yes-or-no-p)
 #+end_src
-** Lexical Binding
-Configure lexical binding for the rest of this init. A lexically-bound variable
-has lexical scope, meaning that any reference to the variable must be
-located textually within the binding construct.
-
-This must be kept as the first entry in this list as documented in
-"(elisp)Using Lexical Binding".
-
-#+begin_src emacs-lisp :tangle yes
-  ;; -*- lexical-binding: t -*-
-#+end_src
-
 ** Byte compiler warnings
 Silence the byte compiler warnings but still log. This is to prevent
 Emaccs always displaying the \ast{}Warnings\ast{} buffer on startup.
@@ -109,22 +108,24 @@ Some need to be applied by the relevant package that will be loaded later, so cr
 the required language details here that get consumed by the initialisation of the package.
 #+begin_src emacs-lisp :tangle yes
   ;; Remapping modes to new treesitter modes.
-  (setopt major-mode-remap-alist
+  (setq major-mode-remap-alist
   	'((sh-mode . bash-ts-mode)
-    		 (c++-mode . c++-ts-mode)
-    		 (c-or-c++-mode . c-or-c++-ts-mode)
-    		 (c-mode . c-ts-mode)
-    		 (cmake-mode . cmake-ts-mode)
-    		 (csharp-mode . csharp-ts-mode)
-    		 (css-mode . css-ts-mode)
-    		 (indent-bars-mode . indent-bars-ts-mode)
-    		 (java-mode . java-ts-mode)
-    		 (javascript-mode . js-ts-mode)
-    		 (js-json-mode . json-ts-mode)
-    		 (python-mode . python-ts-mode)
-    		 (ruby-mode . ruby-ts-mode)
-    		 (conf-toml-mode . toml-ts-mode)
-  		 (html-mode . html-ts-mode)))
+  		 (c++-mode . c++-ts-mode)
+  		 (c-or-c++-mode . c-or-c++-ts-mode)
+  		 (c-mode . c-ts-mode)
+  		 (cmake-mode . cmake-ts-mode)
+  		 (csharp-mode . csharp-ts-mode)
+  		 (css-mode . css-ts-mode)
+  		 (indent-bars-mode . indent-bars-ts-mode)
+  		 (java-mode . java-ts-mode)
+  		 (javascript-mode . js-ts-mode)
+  		 (js-json-mode . json-ts-mode)
+  		 (python-mode . python-ts-mode)
+  		 (ruby-mode . ruby-ts-mode)
+  		 (conf-toml-mode . toml-ts-mode)
+  		 (html-mode . html-ts-mode)
+  		 (markdown-mode . markdown-ts-mode)
+  		 (mhtml-mode . mhtml-ts-mode)))
 
   ;; Associating filename regex lookups to major modes.
   (dolist (mode-assoc
@@ -1047,26 +1048,7 @@ Enhance re-builder to allow for running query replace regex when hitting return 
 ** Copilot
 #+begin_src emacs-lisp :tangle yes
   (use-package copilot
-  	:demand t
-  	:init
-  	(defvar cnit/copilot-enabled-projects nil)
-  	(defvar cnit/copilot-disabled-projects nil)
-  	(defun cnit/copilot--enable-for-org (org)
-  		(when (member (intern org) cnit/copilot-enabled-organisations)
-  			(copilot-mode t)))
-  	(defun cnit/copilot--enable-for-project-dir (dir)
-  		(unless (member dir cnit/copilot-disabled-projects)
-  			(if (or (member dir cnit/copilot-enabled-projects)
-  					(y-or-n-p (format "Enable copilot-mode for project %s? " dir)))
-  				(progn
-  					(add-to-list 'cnit/copilot-enabled-projects dir)
-  					(copilot-mode t))
-  				(add-to-list 'cnit/copilot-disabled-projects dir))))
-  	(defun cnit/copilot-enable ()
-  		(unless (when-let ((org (cnit/repo-org))) (cnit/copilot--enable-for-org (cnit/repo-org)))
-  			(when-let ((project-dir (caddr (project-current))))
-  				(cnit/copilot--enable-for-project-dir project-dir))))
-  	:hook ((prog-mode yaml-ts-mode) . cnit/copilot-enable)
+  	:hook ((prog-mode yaml-ts-mode) . copilot-mode)
   	:config
   	(setopt copilot-indent-offset-warning-disable t)
   	(defvar-keymap cnit/copilot-completion-repeat-map

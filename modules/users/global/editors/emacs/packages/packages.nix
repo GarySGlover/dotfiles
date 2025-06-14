@@ -70,7 +70,6 @@ let
     # consult-flyspell
     consult-yasnippet
     # devdocs
-    # exec-path-from-shell
     # gcmh
     git-timemachine
     # json-navigator
@@ -105,7 +104,6 @@ let
     elisp-autofmt
     embark
     embark-consult
-    exec-path-from-shell
     format-all
     general
     gptel

@@ -13,15 +13,15 @@ in
   config = mkIf config.wolf.roles.editing {
     programs.emacs = {
       enable = true;
-      package = pkgs.emacs;
+      package = pkgs.emacs-git-pgtk;
     };
-    services.emacs.enable = true;
+    services.emacs.enable = false;
     home.sessionVariables.EDITOR = "${pkgs.writeShellScript "emacs-editor" ''
       #!/usr/bin/env bash
       if infocmp xterm | grep -q 'xterm' &> /dev/null; then
           emacsclient --tty --alternate-editor "" "$@"
       else
-          emacsclient --reuse-frame --alternate-editor "" "$@"
+          emacsclient --reuse-frame --alternate-editor "" "emacs"
       fi
     ''}";
 

@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t -*-
+
 (use-package server
 	:commands (server-running-p)
 	:config
@@ -7,8 +9,6 @@
 (setopt visible-bell t)
 
 (setopt confirm-kill-emacs #'yes-or-no-p)
-
-;; -*- lexical-binding: t -*-
 
 (use-package comp
 	:custom native-comp-async-report-warnings-errors 'silent)
@@ -52,22 +52,24 @@
 	:config (setopt select-active-regions nil))
 
 ;; Remapping modes to new treesitter modes.
-(setopt major-mode-remap-alist
+(setq major-mode-remap-alist
 	'((sh-mode . bash-ts-mode)
-  		 (c++-mode . c++-ts-mode)
-  		 (c-or-c++-mode . c-or-c++-ts-mode)
-  		 (c-mode . c-ts-mode)
-  		 (cmake-mode . cmake-ts-mode)
-  		 (csharp-mode . csharp-ts-mode)
-  		 (css-mode . css-ts-mode)
-  		 (indent-bars-mode . indent-bars-ts-mode)
-  		 (java-mode . java-ts-mode)
-  		 (javascript-mode . js-ts-mode)
-  		 (js-json-mode . json-ts-mode)
-  		 (python-mode . python-ts-mode)
-  		 (ruby-mode . ruby-ts-mode)
-  		 (conf-toml-mode . toml-ts-mode)
-		 (html-mode . html-ts-mode)))
+		 (c++-mode . c++-ts-mode)
+		 (c-or-c++-mode . c-or-c++-ts-mode)
+		 (c-mode . c-ts-mode)
+		 (cmake-mode . cmake-ts-mode)
+		 (csharp-mode . csharp-ts-mode)
+		 (css-mode . css-ts-mode)
+		 (indent-bars-mode . indent-bars-ts-mode)
+		 (java-mode . java-ts-mode)
+		 (javascript-mode . js-ts-mode)
+		 (js-json-mode . json-ts-mode)
+		 (python-mode . python-ts-mode)
+		 (ruby-mode . ruby-ts-mode)
+		 (conf-toml-mode . toml-ts-mode)
+		 (html-mode . html-ts-mode)
+		 (markdown-mode . markdown-ts-mode)
+		 (mhtml-mode . mhtml-ts-mode)))
 
 ;; Associating filename regex lookups to major modes.
 (dolist (mode-assoc
@@ -773,26 +775,7 @@ Throw a `user-error` if the key is not found."
 						  :key #'cnit/retrieve-anthropic-api-key)))
 
 (use-package copilot
-	:demand t
-	:init
-	(defvar cnit/copilot-enabled-projects nil)
-	(defvar cnit/copilot-disabled-projects nil)
-	(defun cnit/copilot--enable-for-org (org)
-		(when (member (intern org) cnit/copilot-enabled-organisations)
-			(copilot-mode t)))
-	(defun cnit/copilot--enable-for-project-dir (dir)
-		(unless (member dir cnit/copilot-disabled-projects)
-			(if (or (member dir cnit/copilot-enabled-projects)
-					(y-or-n-p (format "Enable copilot-mode for project %s? " dir)))
-				(progn
-					(add-to-list 'cnit/copilot-enabled-projects dir)
-					(copilot-mode t))
-				(add-to-list 'cnit/copilot-disabled-projects dir))))
-	(defun cnit/copilot-enable ()
-		(unless (when-let ((org (cnit/repo-org))) (cnit/copilot--enable-for-org (cnit/repo-org)))
-			(when-let ((project-dir (caddr (project-current))))
-				(cnit/copilot--enable-for-project-dir project-dir))))
-	:hook ((prog-mode yaml-ts-mode) . cnit/copilot-enable)
+	:hook ((prog-mode yaml-ts-mode) . copilot-mode)
 	:config
 	(setopt copilot-indent-offset-warning-disable t)
 	(defvar-keymap cnit/copilot-completion-repeat-map

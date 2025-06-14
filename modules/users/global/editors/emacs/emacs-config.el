@@ -751,6 +751,7 @@ surrounded by word boundaries."
 		gptel-send
 		gptel-menu)
 	:hook (gptel-post-stream . gptel-auto-scroll)
+	:bind ("C-c l" . gptel-menu)
 	:config
 	(require 'gptel-org)
 	(defun cnit/retrieve-anthropic-api-key ()
@@ -767,12 +768,13 @@ Throw a `user-error` if the key is not found."
 				((functionp secret)
 					(funcall secret))
 				(t secret))))
+	(gptel-make-anthropic "Claude"
+		:stream t
+		:key #'cnit/retrieve-anthropic-api-key)
 	(setopt
-		gptel-model 'claude-3-7-sonnet-20250219
 		gptel-default-mode 'org-mode
-		gptel-backend (gptel-make-anthropic "Claude"
-						  :stream t
-						  :key #'cnit/retrieve-anthropic-api-key)))
+		gptel-backend (gptel-make-gh-copilot "Copilot")
+		gptel-model 'gpt-4.1))
 
 (use-package copilot
 	:hook ((prog-mode yaml-ts-mode) . copilot-mode)
@@ -793,28 +795,6 @@ Throw a `user-error` if the key is not found."
 			  ("M-p" . copilot-accept-completion-by-paragraph)
 			  ("M-f" . copilot-next-completion)
 			  ("M-b" . copilot-previous-completion)))
-
-(use-package copilot-chat
-	:commands (copilot-chat-transient))
-
-(use-package emacs
-	:init
-	(defun cnit/llm-chat (&optional prefix)
-		"Decide which LLM chat interface to use based on copilot-mode and prefix argument.
-
-If `copilot-mode` is enabled, use `copilot-chat-transient` for interactive chatting with the Copilot LLM.
-Otherwise, use `gptel-menu` for alternative LLMs.
-
-With a prefix argument (C-u), override the decision:
-- If `copilot-mode` is enabled, use `gptel-menu`.
-- Otherwise, use `copilot-chat-transient`.
-
-PREFIX: Optional argument to override the default behavior."
-		(interactive "P")
-		(if t
-			(if prefix (gptel-menu) (copilot-chat-transient))
-			(if prefix (copilot-chat-transient) (gptel-menu))))
-	:bind ("C-c l" . cnit/llm-chat))
 
 (use-package flymake
 	:config

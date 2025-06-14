@@ -90,7 +90,6 @@ let
     cape
     consult
     copilot
-    copilot-chat
     corfu
     corfu-candidate-overlay
     coterm

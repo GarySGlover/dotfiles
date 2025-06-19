@@ -95,7 +95,10 @@ package manager.
   (unbind-key "<pinch>" 'global-map)
   (unbind-key "C-x m" 'global-map)
 #+end_src
-
+** Truncate lines
+#+begin_src emacs-lisp :tangle yes
+  (setopt truncate-lines t)
+#+end_src
 * Performance Settings
 ** Clipboard copy
 #+begin_src emacs-lisp :tangle yes
@@ -796,7 +799,8 @@ newlines.
 ** Whitespace cleanup
 #+begin_src emacs-lisp :tangle yes
   (use-package ws-butler
-  	:hook (prog-mode . ws-butler-mode))
+  	:init
+  	(ws-butler-global-mode t))
 #+end_src
 ** Electric pair
 #+begin_src emacs-lisp :tangle yes
@@ -1022,7 +1026,7 @@ Enhance re-builder to allow for running query replace regex when hitting return 
   		gptel-send
   		gptel-menu)
   	:hook (gptel-post-stream . gptel-auto-scroll)
-  	:bind ("C-c l" . gptel-menu)
+  	:bind (("C-c l" . gptel-menu))
   	:config
   	(require 'gptel-org)
   	(defun cnit/retrieve-anthropic-api-key ()
@@ -1032,7 +1036,7 @@ Enhance re-builder to allow for running query replace regex when hitting return 
   										  :host "api.anthropic.com"
   										  :user "apikey"
   										  :require '(:secret)))
-                            :secret)))
+  						  :secret)))
   			(cond
   				((null secret)
   					(user-error "API key for api.anthropic.com with login apikey not found"))
@@ -1046,7 +1050,6 @@ Enhance re-builder to allow for running query replace regex when hitting return 
   		gptel-default-mode 'org-mode
   		gptel-backend (gptel-make-gh-copilot "Copilot")
   		gptel-model 'gpt-4.1))
-
 
  #+end_src
 ** Copilot

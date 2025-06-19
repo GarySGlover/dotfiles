@@ -48,6 +48,8 @@
 (unbind-key "<pinch>" 'global-map)
 (unbind-key "C-x m" 'global-map)
 
+(setopt truncate-lines t)
+
 (use-package emacs
 	:config (setopt select-active-regions nil))
 
@@ -537,7 +539,8 @@ major-mode-remap-alist or auto-mode-alist."
     ("C-c f" . cnit/treesit-fold))
 
 (use-package ws-butler
-	:hook (prog-mode . ws-butler-mode))
+	:init
+	(ws-butler-global-mode t))
 
 (use-package elec-pair
 	:hook (after-init . electric-pair-mode)
@@ -751,7 +754,7 @@ surrounded by word boundaries."
 		gptel-send
 		gptel-menu)
 	:hook (gptel-post-stream . gptel-auto-scroll)
-	:bind ("C-c l" . gptel-menu)
+	:bind (("C-c l" . gptel-menu))
 	:config
 	(require 'gptel-org)
 	(defun cnit/retrieve-anthropic-api-key ()
@@ -761,7 +764,7 @@ Throw a `user-error` if the key is not found."
 										  :host "api.anthropic.com"
 										  :user "apikey"
 										  :require '(:secret)))
-                          :secret)))
+						  :secret)))
 			(cond
 				((null secret)
 					(user-error "API key for api.anthropic.com with login apikey not found"))

@@ -53,12 +53,28 @@ let
         '';
       }
     );
+    ws-butler = (
+      melpaBuild {
+        pname = "ws-butler";
+        version = "1";
+        commit = "1";
+        src = pkgs.ws-butler;
+        packageRequires = [ ];
+        recipe = pkgs.writeText "recipe" ''
+          (ws-butler
+            :repo "lewang/ws-butler"
+            :fetcher github
+            :files ("*.el"))
+        '';
+      }
+    );
   };
 
   emacsExtraPackagesLocal = with epkgsl; [
     kbd-mode
     transient-compile
     eglot-booster
+    ws-butler
   ];
 
   emacsExtraPackages = with pkgs.emacsPackages; [
@@ -130,7 +146,6 @@ let
     verb
     vertico
     wgrep
-    ws-butler
     yasnippet
     yasnippet-capf
     yasnippet-snippets

@@ -41,6 +41,30 @@ let
         mainProgram = "wlr-which-key";
       };
     };
+
+  windowRules = [
+    {
+      "match is-window-cast-target=true" = [ ];
+      border = {
+        inactive-color = "#f38ba8";
+        active-color = "#f38ba8";
+      };
+    }
+    {
+      border = {
+        active-color = "#64B5F6";
+      };
+      focus-ring = {
+        active-color = "#64B5F6";
+      };
+      geometry-corner-radius = 10;
+      clip-to-geometry = true;
+    }
+  ];
+  renderedWindowRules = builtins.concatStringsSep "\n\n" (
+    map (rule: lib.hm.generators.toKDL { } { "window-rule" = rule; }) windowRules
+  );
+
 in
 {
   config = mkIf config.wolf.roles.desktop {
@@ -48,153 +72,159 @@ in
       (with pkgs; [
         xwayland-satellite
         bluetuith
+        hyprlock
       ])
       ++ [
         wlr-which-key
       ];
 
-    xdg.configFile."niri/config.kdl".text = lib.hm.generators.toKDL { } {
-      input = {
-        keyboard.xkb.layout = "gb";
-        warp-mouse-to-focus = [ ];
-        disable-power-key-handling = [ ];
-        focus-follows-mouse = [ ];
-        workspace-auto-back-and-forth = [ ];
-      };
-      cursor = {
-        hide-after-inactive-ms = 1000;
-        hide-when-typing = [ ];
-      };
-      hotkey-overlay.skip-at-startup = [ ];
-      gestures.hot-corners.off = [ ];
-      layout = {
-        # Columns
-        always-center-single-column = [ ];
-        center-focused-column = "on-overflow";
-        default-column-width.proportion = 0.5;
-        default-column-display = "tabbed";
-        preset-column-widths = {
-          "proportion 0.25" = [ ];
-          "proportion 0.33333" = [ ];
-          "proportion 0.5" = [ ];
-          "proportion 0.66667" = [ ];
-          "proportion 0.75" = [ ];
-          "proportion 1.0" = [ ];
+    xdg.configFile."niri/config.kdl".text =
+      lib.hm.generators.toKDL { } {
+        prefer-no-csd = [ ];
+        input = {
+          keyboard.xkb.layout = "gb";
+          warp-mouse-to-focus = [ ];
+          disable-power-key-handling = [ ];
+          workspace-auto-back-and-forth = [ ];
+          "focus-follows-mouse max-scroll-amount=\"0%\"" = [ ];
         };
-
-        # Window
-        gaps = 4;
-        border.width = 2;
-
-        # Workspace
-        empty-workspace-above-first = [ ];
-        struts = {
-          left = 16;
-          right = 16;
+        cursor = {
+          hide-after-inactive-ms = 1000;
+          hide-when-typing = [ ];
         };
-
-        # Rows
-        preset-window-heights = {
-          "proportion 0.33333" = [ ];
-          "proportion 0.5" = [ ];
-          "proportion 0.66667" = [ ];
-          "proportion 1.0" = [ ];
-        };
-
-        focus-ring = {
-          active-color = "#7fc8ff";
-          inactive-color = "#7fc8ff";
-        };
-      };
-
-      "spawn-at-startup \"waybar\"" = [ ];
-      "spawn-at-startup \"udiskie\"" = [ ];
-      # "spawn-at-startup \"kanshi\"" = [ ];
-      "spawn-at-startup \"xwayland-satellite\"" = [ ];
-
-      environment = {
-        DISPLAY = ":0";
-      };
-
-      binds = {
-        "Ctrl+SemiColon" = {
-          spawn = "wlr-which-key";
-        };
-
-        XF86AudioRaiseVolume = {
-          _props = {
-            allow-when-locked = true;
+        hotkey-overlay.skip-at-startup = [ ];
+        gestures.hot-corners.off = [ ];
+        layout = {
+          # Columns
+          always-center-single-column = [ ];
+          center-focused-column = "on-overflow";
+          default-column-width.proportion = 0.5;
+          default-column-display = "tabbed";
+          tab-indicator = {
+            hide-when-single-tab = [ ];
           };
-          spawn = [
-            "wpctl"
-            "set-volume"
-            "@DEFAULT_AUDIO_SINK@"
-            "0.1+"
-          ];
-        };
-        XF86AudioLowerVolume = {
-          _props = {
-            allow-when-locked = true;
+          preset-column-widths = {
+            "proportion 0.25" = [ ];
+            "proportion 0.33333" = [ ];
+            "proportion 0.5" = [ ];
+            "proportion 0.66667" = [ ];
+            "proportion 0.75" = [ ];
+            "proportion 1.0" = [ ];
           };
-          spawn = [
-            "wpctl"
-            "set-volume"
-            "@DEFAULT_AUDIO_SINK@"
-            "0.1-"
-          ];
-        };
-        "XF86MonBrightnessUp" = {
-          _props = {
-            allow-when-locked = true;
-          };
-          spawn = [
-            "brightnessctl"
-            "set"
-            "10%+"
-          ];
-        };
-        "XF86MonBrightnessDown" = {
-          _props = {
-            allow-when-locked = true;
-          };
-          spawn = [
-            "brightnessctl"
-            "set"
-            "10%-"
-          ];
-        };
-        XF86AudioMute = {
-          _props = {
-            allow-when-locked = true;
-          };
-          spawn = [
-            "wpctl"
-            "set-mute"
-            "@DEFAULT_AUDIO_SINK@"
-            "toggle"
-          ];
-        };
-        XF86AudioMicMute = {
-          _props = {
-            allow-when-locked = true;
-          };
-          spawn = [
-            "wpctl"
-            "set-mute"
-            "@DEFAULT_AUDIO_SOURCE@"
-            "toggle"
-          ];
-        };
-      };
 
-      window-rule = {
-        geometry-corner-radius = 10;
-        clip-to-geometry = true;
-      };
+          # Window
+          gaps = 4;
+          border.width = 2;
 
-    };
+          # Workspace
+          empty-workspace-above-first = [ ];
+          struts = {
+            left = 16;
+            right = 16;
+          };
 
-    xdg.configFile."wlr-which-key/config.yaml".source =
+          # Rows
+          preset-window-heights = {
+            "proportion 0.33333" = [ ];
+            "proportion 0.5" = [ ];
+            "proportion 0.66667" = [ ];
+            "proportion 1.0" = [ ];
+          };
+
+          focus-ring = {
+            active-color = "#7fc8ff";
+            inactive-color = "#7fc8ff";
+          };
+        };
+
+        "spawn-at-startup \"waybar\"" = [ ];
+        "spawn-at-startup \"udiskie\"" = [ ];
+        "spawn-at-startup \"kanshi\"" = [ ];
+        "spawn-at-startup \"xwayland-satellite\"" = [ ];
+
+        environment = {
+          DISPLAY = ":0";
+          XDG_CONFIG_HOME = "${config.xdg.configHome}";
+        };
+
+        binds = {
+          "Ctrl+SemiColon" = {
+            spawn = [
+              "wlr-which-key"
+              "${config.xdg.configHome}/niri/wlr-which-key-config.yaml"
+            ];
+          };
+
+          XF86AudioRaiseVolume = {
+            _props = {
+              allow-when-locked = true;
+            };
+            spawn = [
+              "wpctl"
+              "set-volume"
+              "@DEFAULT_AUDIO_SINK@"
+              "0.1+"
+            ];
+          };
+          XF86AudioLowerVolume = {
+            _props = {
+              allow-when-locked = true;
+            };
+            spawn = [
+              "wpctl"
+              "set-volume"
+              "@DEFAULT_AUDIO_SINK@"
+              "0.1-"
+            ];
+          };
+          "XF86MonBrightnessUp" = {
+            _props = {
+              allow-when-locked = true;
+            };
+            spawn = [
+              "brightnessctl"
+              "set"
+              "10%+"
+            ];
+          };
+          "XF86MonBrightnessDown" = {
+            _props = {
+              allow-when-locked = true;
+            };
+            spawn = [
+              "brightnessctl"
+              "set"
+              "10%-"
+            ];
+          };
+          XF86AudioMute = {
+            _props = {
+              allow-when-locked = true;
+            };
+            spawn = [
+              "wpctl"
+              "set-mute"
+              "@DEFAULT_AUDIO_SINK@"
+              "toggle"
+            ];
+          };
+          XF86AudioMicMute = {
+            _props = {
+              allow-when-locked = true;
+            };
+            spawn = [
+              "wpctl"
+              "set-mute"
+              "@DEFAULT_AUDIO_SOURCE@"
+              "toggle"
+            ];
+          };
+        };
+      }
+      + "\n"
+      + renderedWindowRules;
+
+    xdg.configFile."niri/wlr-which-key-config.yaml".source =
       (pkgs.formats.yaml { }).generate "wlr-which-key"
         {
           anchor = "center";
@@ -235,6 +265,11 @@ in
                   cmd = "hyprlock";
                 }
                 {
+                  key = "n";
+                  desc = "Nyxt";
+                  cmd = "nyxt";
+                }
+                {
                   key = "s";
                   desc = "Steam";
                   cmd = "steam";
@@ -261,7 +296,6 @@ in
               key = "F";
               cmd = "niri msg action focus-monitor-right";
               desc = "Monitor Right";
-              keep_open = true;
             }
             {
               key = "Ctrl+f";
@@ -273,13 +307,11 @@ in
               key = "Ctrl+F";
               desc = "Move Column to Monitor Right";
               cmd = "niri msg action move-column-to-monitor-right";
-              keep_open = true;
             }
             {
               key = "Alt+f";
               desc = "Move Workspace to Monitor Right";
               cmd = "niri msg action move-workspace-to-monitor-right";
-              keep_open = true;
             }
             {
               key = "b";
@@ -291,7 +323,6 @@ in
               key = "B";
               cmd = "niri msg action focus-monitor-left";
               desc = "Monitor Left";
-              keep_open = true;
             }
             {
               key = "Ctrl+b";
@@ -303,13 +334,11 @@ in
               key = "Ctrl+B";
               desc = "Move Column to Monitor Left";
               cmd = "niri msg action move-column-to-monitor-left";
-              keep_open = true;
             }
             {
               key = "Alt+b";
               desc = "Move Workspace to Monitor Left";
               cmd = "niri msg action move-workspace-to-monitor-left";
-              keep_open = true;
             }
             {
               key = "p";
@@ -321,7 +350,6 @@ in
               key = "P";
               cmd = "niri msg action focus-monitor-up";
               desc = "Monitor Up";
-              keep_open = true;
             }
             {
               key = "Ctrl+p";
@@ -333,13 +361,11 @@ in
               key = "Ctrl+P";
               desc = "Move Column to Monitor Up";
               cmd = "niri msg action move-column-to-monitor-up";
-              keep_open = true;
             }
             {
               key = "Alt+p";
               desc = "Move Workspace to Monitor Up";
               cmd = "niri msg action move-workspace-to-monitor-up";
-              keep_open = true;
             }
             {
               key = "n";
@@ -351,7 +377,6 @@ in
               key = "N";
               cmd = "niri msg action focus-monitor-down";
               desc = "Monitor Down";
-              keep_open = true;
             }
             {
               key = "Ctrl+n";
@@ -363,13 +388,11 @@ in
               key = "Ctrl+N";
               desc = "Move Column to Monitor Down";
               cmd = "niri msg action move-column-to-monitor-down";
-              keep_open = true;
             }
             {
               key = "Alt+n";
               desc = "Move Workspace to Monitor Down";
               cmd = "niri msg action move-workspace-to-monitor-down";
-              keep_open = true;
             }
             {
               key = "v";

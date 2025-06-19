@@ -32,6 +32,10 @@
       url = "github:jdtsmith/eglot-booster";
       flake = false;
     };
+    ws-butler = {
+      url = "github:lewang/ws-butler";
+      flake = false;
+    };
   };
 
   outputs =
@@ -45,6 +49,7 @@
       transient-compile,
       kbd-mode,
       eglot-booster,
+      ws-butler,
       self,
       ...
     }:
@@ -97,6 +102,7 @@
               transient-compile
               kbd-mode
               eglot-booster
+              ws-butler
               ;
           })
           (import ./modules/overlays/tree-sitter-grammars.nix)

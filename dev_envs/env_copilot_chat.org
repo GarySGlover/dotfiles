@@ -1,0 +1,920 @@
+:PROPERTIES:
+:GPTEL_MODEL: gpt-4.1
+:GPTEL_BACKEND: Copilot
+:GPTEL_SYSTEM: You are a large language model living in Emacs and a helpful assistant. Respond concisely.
+:GPTEL_BOUNDS: ((response (699 2639) (2707 3843) (4479 6406) (6455 9082) (9464 13798) (14039 18681) (18847 21977) (22038 22972) (23086 23806) (23867 25273) (25324 26879) (28232 30138)))
+:END:
+I use direnv with nix flakes to setup my development environments. When I download a git repo that's not mine and doesn't have direnv and nix I struggle as I then don't have the tools available that the repository requires. Without committing a .envrc and flake.nix to someone else's repos how could I go about having them for these repos?
+
+Great question! To use direnv + Nix flakes in repositories you don't control (and *without committing* anything to those repos), you have a few good options:
+
+*** 1. Use a Local =.envrc= Only (with =.git/info/exclude=)
+You can create a =.envrc= (and/or =flake.nix=) in the repo directory, *but exclude it from version control* by adding it to =.git/info/exclude= (which works like a personal =.gitignore=).
+Steps:
+
+1. *Create your personal =.envrc= & =flake.nix= inside the repo directory.*
+2. Add =.envrc= and =flake.nix= to =.git/info/exclude=:
+    #+begin_src
+    echo ".envrc" >> .git/info/exclude
+    echo "flake.nix" >> .git/info/exclude
+    #+end_src
+3. Now you can use direnv as usual, but won't accidentally commit these files.
+
+*Pro:* Works seamlessly, avoids polluting remote repo.
+*Con:* You may get merge conflicts if the repo adds those files later.
+
+---
+
+*** 2. Use Directory-local direnv (=use_direnv .=)
+=direnv= supports =use_direnv <path>= so you can *symlink or point to a shared config*:
+- Set up a shared directory with your flake(s) and .envrc recipes.
+- In any checked out repo, =echo 'use_direnv ~/my-flakes/xyz.envrc' > .envrc=
+
+---
+
+*** 3. Use Flake Outside the Repo
+- Create a flake elsewhere (e.g., =~/nix-dev-envs/project-flake/flake.nix=).
+- In the target repo, create a =.envrc= like:
+    #+begin_src
+    use flake ~/nix-dev-envs/project-flake
+    #+end_src
+- Again, exclude =.envrc= as in 1.
+
+---
+
+*** 4. Use a "Wrapper" Directory
+Rather than working in the Git repo's root, create a directory for your work:
+#+begin_src
+~/src/myproject/
+  |-- repo/          # <-- git clone goes here
+  |-- .envrc         # <-- your personal setup, uses flakes as needed
+#+end_src
+=.envrc= can configure the environment or =cd repo= and set things up.
+
+---
+
+*Best practice:* Usually #1 is simplest with =.git/info/exclude=—it’s local, robust, and non-intrusive.
+
+Let me know if you need a specific example or script.
+
+*** How can I handle the .git/info/exclude when I use worktrees?
+
+Great follow-up! Here’s how =.git/info/exclude= works with worktrees:
+
+- Each /worktree/ has its own working directory, but all share the same underlying /.git directory (usually /.git/worktrees/...), /except the main worktree/, which has the main .git directory.
+- *.git/info/exclude is local to each worktree*:
+  - In the main worktree, it's at =repo/.git/info/exclude=
+  - In a linked worktree, it's at =repo/.git/worktrees/<worktree-name>/info/exclude=
+
+*To exclude your .envrc or flake.nix per worktree:*
+
+1. In each worktree, add to the appropriate =info/exclude=:
+   - For main: =repo/.git/info/exclude=
+   - For a linked worktree: =repo/.git/worktrees/<worktree-name>/info/exclude=
+2. =echo .envrc >> .git/info/exclude= (from worktree root) works, since git resolves it to the right info/exclude for your current worktree.
+
+*Tip:* If you create many worktrees, you may want a setup script to append =.envrc= to each worktree's info/exclude.
+
+*Bonus:* All of this remains local to your machine—no risk of accidentally committing your =.envrc= or flake files to the remote repository.
+
+Let me know if you want an example script!
+
+*** Getting really good here. One more peice to solve and then I think I can start building. I want to have the following different dev environments for now:
+azure devops
+docker
+kubernetes
+dotnet
+bash
+python
+
+Each of these I imagine being in there own folder with a flake.nix and each of these flake.nix would have a devShell for direnv. Something like
+#+begin_src
+  devShells = {
+    default = pkgs.mkShell {
+      packages = with pkgs; [
+        // Packages
+      ]
+    };
+  };
+#+end_src
+
+If I pointed the envrc at one of these I'd get those pacakges. How could I get a mix of packages? For example mix the dotnet and kubernetes.
+
+Great plan, and you’re almost there!
+
+You’re right that each folder (e.g. ~/envs/dotnet/flake.nix, ~/envs/kubernetes/flake.nix) would define its own =devShell=.
+To /compose/ (mix) multiple environments, you have a few excellent Nix Flake options:
+
+---
+
+*** 1. "Combo" Flakes That Import Others
+
+You can write a Flake that imports multiple other flakes and merges their =devShell= packages:
+
+#+begin_src nix
+# ~/envs/combo/flake.nix
+{
+  description = "Dotnet + K8s combo env";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    dotnet-env.url = "path:../dotnet";
+    k8s-env.url = "path:../kubernetes";
+  };
+
+  outputs = { self, nixpkgs, dotnet-env, k8s-env, ... }:
+  let
+    pkgs = import nixpkgs { system = "x86_64-linux"; };
+    dotnetPkgs = dotnet-env.devShells.x86_64-linux.default.packages or [];
+    k8sPkgs = k8s-env.devShells.x86_64-linux.default.packages or [];
+  in {
+    devShells.x86_64-linux.default = pkgs.mkShell {
+      packages = dotnetPkgs ++ k8sPkgs;
+    };
+  };
+}
+#+end_src
+
+Then in your =.envrc=:
+#+begin_src sh
+use flake ~/envs/combo
+#+end_src
+
+---
+
+*** 2. "overlays" for Package Combination
+
+Instead of just packages, you can also have each flake export an /overlay/ (a set of package extensions) and combine overlays.
+
+But for your use case, combining package lists as above is simpler.
+
+---
+
+*** 3. One "Meta" Flake, With Inputs
+
+For full flexibility, you can have a =~/envs/unified/flake.nix= where you can use or compose any combo you want.
+
+---
+
+*** Shortcuts
+
+- You can make scriptlets or templates to generate combo flakes quickly.
+- Compose as many (or few) envs as needed without editing the base envs.
+
+---
+
+*Summary*:
+- Each base flake in its own folder, exports a =devShell=.
+- Combo flake imports any and combines their package lists in its own =devShell=.
+- Use that combo with =direnv=.
+
+Let me know if you’d like a ready-made template for the base flakes too!
+
+*** How would the "Meta" Flake look and work?
+
+Here’s how a “Meta” flake would look and work:
+
+** Goal
+
+- You want a single =flake.nix= that /lets you select or combine/ different dev environments (dotnet, k8s, etc.),
+- Possibly with a simple way (e.g. argument, flag, or symlink) to choose which combinations you want for each repo or session.
+
+---
+
+** Example “Meta” Flake Overview
+
+Suppose you have =~/envs/dotnet=, =~/envs/kubernetes=, etc.
+Your meta flake might look like:
+
+#+begin_src nix
+{
+  description = "Meta development environment (composable)";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    dotnet.url = "path:../dotnet";
+    k8s.url = "path:../kubernetes";
+    python.url = "path:../python";
+    # ... more inputs as needed
+  };
+
+  outputs = { self, nixpkgs, dotnet, k8s, python, ... }:
+  let
+    system = "x86_64-linux";
+    pkgs = import nixpkgs { inherit system; };
+
+    getPkgs = flake:
+      flake.devShells.${system}.default.packages or [];
+
+    # Named compositions
+    combos = {
+      dotnet = getPkgs dotnet;
+      k8s = getPkgs k8s;
+      python = getPkgs python;
+      dotnet_k8s = getPkgs dotnet ++ getPkgs k8s;
+      all = getPkgs dotnet ++ getPkgs k8s ++ getPkgs python;
+      # add more combos as needed
+    };
+
+    # Helper: Build a devShell from a package list
+    mkComboShell = pkgsList: pkgs.mkShell { packages = pkgsList; };
+  in
+  {
+    devShells.${system} = {
+      # Each key below gives you a shell with that env
+      dotnet = mkComboShell combos.dotnet;
+      k8s = mkComboShell combos.k8s;
+      python = mkComboShell combos.python;
+      dotnet_k8s = mkComboShell combos.dotnet_k8s;
+      all = mkComboShell combos.all;
+    };
+    # You could also define other outputs (e.g., formatter, checks)
+  };
+}
+#+end_src
+
+---
+
+** How to Use It
+
+1. /(Preparing your meta flake)/
+   Save the above as =~/envs/meta/flake.nix= (adjust the =path:= inputs).
+
+2. /(In your project’s =.envrc=)/
+   You can pick which shell to load:
+   #+begin_src sh
+   use flake ~/envs/meta#dotnet_k8s     # combo shell
+   use flake ~/envs/meta#k8s            # k8s-only shell
+   use flake ~/envs/meta#all            # all packages
+   #+end_src
+   (Syntax: =use flake <flake-path>#<devShell-name>=.)
+
+3. /direnv/ will load the right packages for you.
+
+---
+
+** Customization
+
+- You can add new combos easily in =combos=.
+- If you want to mix environments per-project, just change the =.envrc='s argument.
+
+---
+
+*Tip:* If your individual flakes export more than just =packages=, you might want to merge other fields (e.g. =shellHook=) as needed.
+
+---
+
+Let me know if you want help templating the individual environment flakes too!
+
+*** Could the combos and devShells be automatically generated/combined to make every combination in every possible order dynamically?
+Maybe I could have a list that I add new ones to. It does the imports automatically based on that list as well.
+Even better would be if it could take the subfolders of a particular folder as the list and they're the folders to be used for envs.
+
+Absolutely, you can automate Flake input discovery and dynamic combination—and even enumerate all possible combinations, though /all permutations/ (orders) may be overkill for most dev workflows (because [a, b] and [b, a] will result in the same shell unless order matters). You typically only need combinations (the set of all subsets), not permutations.
+
+*Here’s how you can do it:*
+
+---
+
+*** 1. Automatically Import All Subfolders as Inputs
+
+You can have your meta-flake =flake.nix= scan for all subfolders and import them as Nix flake inputs. Since Nix flakes don’t natively support dynamic inputs (inputs must be statically listed), you’ll use a small pre-processing script to generate your flake input list.
+
+For example:
+
+*Directory Structure*
+#+begin_src
+envs/
+  meta/
+    flake.nix
+  dotnet/
+    flake.nix
+  kubernetes/
+    flake.nix
+  python/
+    flake.nix
+#+end_src
+
+*Step 1: Generate Inputs List via Script*
+
+Make a script (e.g., =envs/meta/gen-inputs.nix= or =update-inputs.sh=) that creates an attrset mapping subfolder names to =path:= entries, e.g.:
+
+#+begin_src nix
+{
+  dotnet.url = "path:../dotnet";
+  kubernetes.url = "path:../kubernetes";
+  python.url = "path:../python";
+}
+#+end_src
+
+And paste that into your meta/flake.nix's =inputs= attribute.
+
+*Step 2: Use a List in the Flake for Combination*
+
+Even with auto-inputs, you can enumerate your environments using a list in Nix:
+
+#+begin_src nix
+envNames = [ "dotnet" "kubernetes" "python" ];
+#+end_src
+
+---
+
+*** 2. Generate All Combinations (not permutations) in Nix
+
+Here’s a helper function for combinations (powerset, minus the empty set):
+
+#+begin_src nix
+# Create all nonempty combinations of a list
+let
+  combinations = list:
+    let
+      recur = n: lst:
+        if n == 0 then [ [] ]
+        else if lst == [] then [ ]
+        else
+          (map (x: [ (head lst) ] ++ x) (recur (n - 1) (tail lst)))
+          ++ (recur n (tail lst));
+    in
+    concatLists (for n in range 1 (length list) (_: recur n list));
+in
+combinations envNames
+#+end_src
+
+More idiomatic modern Nix can be used, but the idea is: given =envNames=, =combinations envNames= gives all non-empty combinations.
+
+---
+
+*** 3. Construct devShells For All Combinations
+
+Now, in your =outputs=, create a devShell for each:
+
+#+begin_src nix
+outputs = { self, nixpkgs, ... }@inputs:
+let
+  system = "x86_64-linux";
+  pkgs = import nixpkgs { inherit system; };
+
+  # List of all environment names (based on subfolders/inputs)
+  envNames = [ "dotnet" "kubernetes" "python" ]; # Generated by your script
+
+  # Get pkgs list for env (from imported flake)
+  getPkgs = name: (inputs.${name}.devShells.${system}.default.packages or []);
+
+  # Get all non-empty combinations of env names
+  combinations = builtins.filter (xs: xs != [])
+    (builtins.tail (builtins.genList (n: builtins.sublist 0 n envNames) (builtins.length envNames + 1)));
+
+  # Helper: convert combination list to a name (e.g. dotnet_kubernetes)
+  comboName = combo: builtins.concatStringsSep "_" combo;
+
+  # Build an attrset mapping combo names to pkgs
+  combos = builtins.listToAttrs (
+    builtins.map
+      (combo:
+        {
+          name = comboName combo;
+          value = pkgs.mkShell {
+            packages = builtins.concatLists (builtins.map getPkgs combo);
+          };
+        }
+      )
+      combinations
+  );
+in
+{
+  devShells.${system} = combos;
+}
+#+end_src
+
+*Note:* You may want a more robust combination generator (above is simplified for readability). For large sets, all combinations scale exponentially!
+
+---
+
+*How to Use*
+
+- Add a new env by making a subfolder.
+- Rerun your script to update the =inputs= list and =envNames=.
+- =direnv= can then use e.g., =use flake ~/envs/meta#dotnet_kubernetes= for any combo.
+
+---
+
+*** TIP
+
+- To automate even further, you could use a simple build step (Makefile, pre-commit, or a git hook) to re-gen =inputs= and =envNames= as you add/remove subfolders.
+- Order does not usually matter unless you have package conflicts and want to set priorities.
+
+---
+
+*Summary:*
+- Use a script to generate the inputs list and environment names.
+- Use Nix to generate all possible non-empty combinations.
+- Automatically build a devShell for each.
+- No manual editing beyond adding/removing env subfolders!
+
+Let me know if you want a ready-to-go generator script or a more advanced example!
+
+*** Let's make all the envs in snake-case. That'll make things easier. Then the combos can be in alphabetic order.
+I'd like the whole generation of this combination peice to be done in the meta flake without relying on any other scripts.
+
+Absolutely, you can do this entirely with Nix—the meta flake can enumerate its own input environments (in snake-case), sort them, and systematically generate all combinations alphabetically, as long as you statically list the inputs. (Dynamic “auto-import” is not possible with “pure” flakes—inputs must be declared in the =inputs= attrset, but combinations can be created programmatically.)
+
+Here is a “bulletproof” pattern:
+
+---
+
+*Directory Structure Example*
+#+begin_src
+envs/
+  meta/
+    flake.nix
+  azure_devops/
+    flake.nix
+  docker/
+    flake.nix
+  kubernetes/
+    flake.nix
+  dotnet/
+    flake.nix
+  bash/
+    flake.nix
+  python/
+    flake.nix
+#+end_src
+
+---
+
+*meta/flake.nix Example*
+#+begin_src nix
+{
+  description = "Meta development environment (composable, snake-case, combos in alpha order)";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    azure_devops.url = "path:../azure_devops";
+    docker.url = "path:../docker";
+    kubernetes.url = "path:../kubernetes";
+    dotnet.url = "path:../dotnet";
+    bash.url = "path:../bash";
+    python.url = "path:../python";
+  };
+
+  outputs = { self, nixpkgs, ... }@inputs:
+    let
+      system = "x86_64-linux";
+      pkgs = import nixpkgs { inherit system; };
+
+      # List of environment names (snake-case, alpha-sorted)
+      envNames =
+        builtins.sort builtins.lessThan [
+          "azure_devops"
+          "bash"
+          "docker"
+          "dotnet"
+          "kubernetes"
+          "python"
+        ];
+
+      # Get package list for a given env flake name
+      getPkgs = name:
+        let flake = inputs.${name};
+        in flake.devShells.${system}.default.packages or [];
+
+      # Generate all possible non-empty combinations, sorted
+      #
+      # based on: https://discourse.nixos.org/t/nix-flakes-combine-devshells/22525/2
+      # returns list of lists of names, all sorted alphabetically
+      concatMap = f: xs:
+        builtins.concatLists (map f xs);
+
+      combinations =
+        let
+          n = builtins.length envNames;
+          # Helper: generate all k-length combinations of xs
+          combos = k: xs:
+            if k == 0 then [ [] ]
+            else if builtins.length xs == 0 then []
+            else
+              (concatMap (ys: [ ([builtins.head xs] ++ ys) ])
+                (combos (k - 1) (builtins.tail xs)))
+              ++ (combos k (builtins.tail xs));
+          # All non-empty combinations
+          allCombos = concatMap (k: combos k envNames) (builtins.genList (i: i+1) n);
+          # Sort each combo alphabetically (though envNames already sorted)
+          sortedCombos = map (xs: builtins.sort builtins.lessThan xs) allCombos;
+        in
+          sortedCombos;
+
+      # Combo name: concat with underscores
+      comboName = combo: builtins.concatStringsSep "_" combo;
+
+      # Build devShell attrset mapping combo names to shells
+      combos = builtins.listToAttrs (
+        map
+          (combo: {
+            name = comboName combo;
+            value = pkgs.mkShell {
+              name = comboName combo;
+              packages = builtins.concatLists (map getPkgs combo);
+            };
+          })
+          combinations
+      );
+    in
+    {
+      devShells.${system} = combos;
+      # Also provide a "default" shell (e.g. just python)
+      devShells.${system}.default = combos.python or (pkgs.mkShell {});
+    };
+}
+#+end_src
+
+---
+
+*How it works*
+
+- =envNames= is the alphabetically-sorted, snake-case list of all imported environments.
+- All non-empty combinations are generated.
+- For each combo, a devShell is created: name is the joined envs (e.g., =dotnet_kubernetes=).
+- You don’t need /any/ script: just add new flakes to =inputs= and =envNames=.
+
+---
+
+*How to use*
+
+- Want a dotnet/k8s/python shell?
+  #+begin_src
+  use flake ~/envs/meta#dotnet_kubernetes_python
+  #+end_src
+- Just bash and docker?
+  #+begin_src
+  use flake ~/envs/meta#bash_docker
+  #+end_src
+- Add new envs: create a folder, add its flake, append to both =inputs= and =envNames=, done.
+
+---
+
+*Caveat:*
+You have to add entries to both =inputs= and =envNames= in the flake, due to Flake static input restrictions.
+
+If you want to avoid that duplication, consider having envNames generated from the inputs keys (excluding nixpkgs and self), like this:
+
+#+begin_src nix
+envNames = builtins.sort builtins.lessThan
+  (builtins.filter (n: n != "self" && n != "nixpkgs") (builtins.attrNames inputs));
+#+end_src
+
+Then you only have to update =inputs= as you add/remove environments.
+
+---
+
+Let me know if you want a fully zero-duplication version, but the above is robust, pure, and automatic for all practical purposes!
+
+*** Do a zero-duplication version. Use double underscores between combos
+So we could have some of the below:
+
+  azure_devops__dotnet
+  dotnet
+  kubernetes__python
+
+Here’s a zero-duplication, self-discovering meta flake that:
+
+- Uses snake-case for input names (i.e., folder names),
+- Produces all non-empty, alphabetical combos of input envs,
+- Joins their names with double underscores (e.g., =azure_devops__dotnet=, =dotnet=, =kubernetes__python=),
+- Requires only inputs to be edited—nothing else.
+
+---
+
+*meta/flake.nix*
+
+#+begin_src nix
+{
+  description = "Meta dev environment: all combos, snake-case, double underscores";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    azure_devops.url = "path:../azure_devops";
+    dotnet.url = "path:../dotnet";
+    kubernetes.url = "path:../kubernetes";
+    python.url = "path:../python";
+    # ...add more envs here...
+  };
+
+  outputs = { self, nixpkgs, ... }@inputs:
+  let
+    system = "x86_64-linux";
+    pkgs = import nixpkgs { inherit system; };
+
+    # Dynamically get all env input names (exclude self & nixpkgs), then sort
+    envNames = builtins.sort builtins.lessThan
+      (builtins.filter (name: !(builtins.elem name [ "self" "nixpkgs" ])) (builtins.attrNames inputs));
+
+    # Helper to get pkgs from a given env input name
+    getPkgs = name:
+      let flake = inputs.${name};
+      in flake.devShells.${system}.default.packages or [];
+
+    # ConcatMap (deprecated in recent Nix), use manual version
+    concatMap = f: xs: builtins.concatLists (map f xs);
+
+    # Generate all nonempty alphabetical combos as lists
+    combos =
+      let
+        n = builtins.length envNames;
+        # Generate all k-length combos
+        combosK = k: xs:
+          if k == 0 then [ [] ] else
+          if builtins.length xs == 0 then []
+          else
+            (map (ys: [ (builtins.head xs) ] ++ ys) (combosK (k - 1) (builtins.tail xs)))
+            ++ (combosK k (builtins.tail xs));
+        # All non-empty combos: for k=1 to n, concat results
+        allCombos = concatMap (k: combosK k envNames) (builtins.genList (i: i+1) n);
+        # Each combo is a list of sorted snake-case names
+      in allCombos;
+
+    # Double-underscore-separated combo name
+    comboName = combo: builtins.concatStringsSep "__" combo;
+
+    # Build devShells attrset
+    allComboShells = builtins.listToAttrs (
+      map
+        (combo: {
+          name = comboName combo;
+          value = pkgs.mkShell {
+            name = comboName combo;
+            packages = builtins.concatLists (map getPkgs combo);
+          };
+        })
+        combos
+    );
+  in
+  {
+    devShells.${system} = allComboShells;
+    # Pick one default (e.g., just python if present, else first env)
+    devShells.${system}.default = allComboShells.python or (allComboShells.${(builtins.head envNames)});
+  };
+}
+#+end_src
+
+---
+
+*Usage examples*
+
+#+begin_src sh
+# one env
+use flake ~/envs/meta#dotnet
+
+# two
+use flake ~/envs/meta#azure_devops__dotnet
+use flake ~/envs/meta#kubernetes__python
+
+# all four
+use flake ~/envs/meta#azure_devops__dotnet__kubernetes__python
+#+end_src
+
+---
+
+- Just add new input envs and their path to =inputs=;
+- names and combinations update automatically!
+
+Let me know if you need a generator for the base env flakes or further improvements!
+
+***   Can change the default to the combo of all of them?
+
+Absolutely! You can set the default devShell to the combination of /all/ environments by finding the combo that includes every env. Here’s a concise modification for your =meta/flake.nix=:
+
+Replace this line:
+#+begin_src nix
+devShells.${system}.default = allComboShells.python or (allComboShells.${(builtins.head envNames)});
+#+end_src
+with:
+#+begin_src nix
+devShells.${system}.default = allComboShells.${builtins.concatStringsSep "__" envNames};
+#+end_src
+
+*Why this works:*
+- =envNames= is already the sorted list of all input environment names.
+- =builtins.concatStringsSep "__" envNames= gives the combo name for /all/ envs (in alphabetical order).
+
+So your full =outputs= becomes:
+#+begin_src nix
+{
+  devShells.${system} = allComboShells;
+  devShells.${system}.default = allComboShells.${builtins.concatStringsSep "__" envNames};
+}
+#+end_src
+
+Now =use flake ~/envs/meta= will give you a shell with every environment by default.
+
+*** Can you give me the file for the azure_devops one.
+It should include these packages:
+azure-cli
+kubelogin
+
+
+
+Certainly! Here’s a simple =flake.nix= for your =azure_devops= environment that provides both =azure-cli= and =kubelogin= in its =devShell=:
+
+#+begin_src nix
+{
+  description = "Azure DevOps Shell Environment";
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+  };
+
+  outputs = { self, nixpkgs }:
+    let
+      system = "x86_64-linux";
+      pkgs = import nixpkgs { inherit system; };
+    in {
+      devShells.${system}.default = pkgs.mkShell {
+        name = "azure_devops";
+        packages = with pkgs; [
+          azure-cli
+          kubelogin
+        ];
+      };
+    };
+}
+#+end_src
+
+Just save this as =envs/azure_devops/flake.nix=.
+You’re ready to compose this with your other environments!
+
+*** Can I make the system for these to cover all systems?
+
+Yes! You can easily make each environment flake (and the meta flake) provide =devShells= for all supported systems, e.g.: =x86_64-linux=, =aarch64-linux=, =x86_64-darwin=, =aarch64-darwin=. This is common with flakes.
+
+Here’s how you can do it for =envs/azure_devops/flake.nix=:
+
+#+begin_src nix
+{
+  description = "Azure DevOps Shell Environment";
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+  };
+
+  outputs = { self, nixpkgs }:
+    let
+      supportedSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
+      ];
+      forAllSystems = f: builtins.listToAttrs (map (system: {
+        name = system;
+        value = f system;
+      }) supportedSystems);
+    in {
+      devShells = forAllSystems (system:
+        let pkgs = import nixpkgs { inherit system; }; in
+        {
+          default = pkgs.mkShell {
+            name = "azure_devops";
+            packages = with pkgs; [
+              azure-cli
+              kubelogin
+            ];
+          };
+        }
+      );
+    };
+}
+#+end_src
+
+*You can use the same pattern in all your other env flakes.*
+
+The meta flake will then be able to access e.g.,
+=dotnet.devShells.x86_64-linux.default=
+=dotnet.devShells.x86_64-darwin.default= and so forth.
+
+If you want the meta flake to be "multi-system" as well, just apply the same =forAllSystems= approach in its =outputs=!
+
+*** Can't the systems be implied automatically?
+
+Good question! Unfortunately, *Nix flakes do not have a built-in mechanism to “auto-detect” which systems are supported* at evaluation time—systems must either:
+
+- Be specified explicitly by you (as in the previous example),
+- Or depend on a conventional list, defined somewhere (e.g. Nixpkgs sets =lib.systems.flakeExposed= in some places).
+
+*Most common and robust practice:*
+Declare =supportedSystems= yourself or centrally (maybe as a module or Nix library, or at the top of your meta flake) and re-use in all your environment and meta flakes.
+_(This is what projects like [flake-utils](https://github.com/numtide/flake-utils) do, though flake-utils is now mostly in maintenance mode.)_
+
+*You /can/ avoid duplication like this:*
+
+/Define the complete system list in one place (e.g. your meta flake), and import it in child flakes, or keep a =supportedSystems.nix= file:/
+
+=supported-systems.nix=
+#+begin_src nix
+[ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ]
+#+end_src
+
+Each flake just imports this file:
+#+begin_src nix
+let
+  supportedSystems = import ../supported-systems.nix;
+in ...
+#+end_src
+
+*Short answer:*
+No, you /cannot/ have “auto-implied” systems based on the caller’s system or the host—you must specify the list somewhere.
+But you can centralize or import it to avoid duplication.
+
+*Tip:*
+Most people just use this fixed list everywhere:
+#+begin_src nix
+[ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ]
+#+end_src
+
+Let me know if you want a code sample for sharing this list automatically!
+
+*** Use flake-utils
+
+Absolutely! =flake-utils= is a well-known flake library precisely for this: it provides a concise (and DRY) way to expose outputs for all supported systems, avoiding manual duplication.
+
+*azure_devops/flake.nix with flake-utils:*
+#+begin_src nix
+{
+  description = "Azure DevOps Shell Environment";
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
+
+  outputs = { self, nixpkgs, flake-utils }: flake-utils.lib.eachDefaultSystem (system:
+    let
+      pkgs = import nixpkgs { inherit system; };
+    in {
+      devShells.default = pkgs.mkShell {
+        name = "azure_devops";
+        packages = with pkgs; [
+          azure-cli
+          kubelogin
+        ];
+      };
+    }
+  );
+}
+#+end_src
+
+*What this does:*
+- Exposes =devShells.default= for each “default system” (Linux & macOS x86/ARM);
+- You don’t need to manually declare =supportedSystems=.
+
+/Use =flake-utils= similarly in all your env and meta flakes—just copy the above style!/
+
+Let me know if you need a =meta/flake.nix= version with =flake-utils= as well.
+
+*** I want you to generate 2 functions now, that I will later want to add into my magit transient.
+The first should make sure .envrc flake.nix flake.lock and the direnv folder are all added to the exlucedes described above. It should account for whether I am in a worktree or not.
+
+Certainly! Here’s the logic you want:
+The function will detect if you’re in a worktree, then add .envrc, flake.nix, flake.lock, and the .direnv folder to the appropriate .git/info/exclude (main repo or worktree).
+
+*** Bash Version
+
+#+begin_src bash
+add_env_files_to_git_exclude() {
+  # Detect git dir (could be .git or .git/worktrees/...)
+  g="$(git rev-parse --absolute-git-dir 2>/dev/null)" || { echo "Not a git repo"; return 1; }
+
+  # Determine info/exclude path
+  exclude_file="$g/info/exclude"
+
+  # Files/folders to exclude
+  for entry in .envrc flake.nix flake.lock .direnv; do
+    # Add pattern if not already present
+    grep -qxF "$entry" "$exclude_file" 2>/dev/null || echo "$entry" >> "$exclude_file"
+  done
+  echo "Added .envrc, flake.nix, flake.lock, and .direnv to $exclude_file"
+}
+#+end_src
+
+---
+
+*** Elisp Version
+
+#+begin_src elisp
+(defun magit-add-env-files-to-git-exclude ()
+  "Add .envrc, flake.nix, flake.lock, and .direnv to the appropriate .git/info/exclude."
+  (interactive)
+  (let* ((git-dir (string-trim (shell-command-to-string "git rev-parse --absolute-git-dir 2>/dev/null")))
+         (exclude-file (expand-file-name "info/exclude" git-dir))
+         (entries '(".envrc" "flake.nix" "flake.lock" ".direnv")))
+    (unless (file-exists-p exclude-file)
+      (user-error "Not a git repo or missing info/exclude"))
+    (with-temp-buffer
+      (insert-file-contents exclude-file)
+      (let ((existing (split-string (buffer-string) "\n" t)))
+        (dolist (entry entries)
+          (unless (member entry existing)
+            (append-to-file (concat entry "\n") nil exclude-file))))
+      (message "Added .envrc, flake.nix, flake.lock, and .direnv to %s" exclude-file))))
+#+end_src
+
+---
+
+These functions auto-detect worktree vs. main repo and update the correct =info/exclude= file.
+Let me know if you want further user feedback, error reporting, or magit integration details!

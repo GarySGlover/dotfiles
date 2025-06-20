@@ -2,7 +2,7 @@
 :GPTEL_MODEL: gpt-4.1
 :GPTEL_BACKEND: Copilot
 :GPTEL_SYSTEM: You are a large language model living in Emacs and a helpful assistant. Respond concisely.
-:GPTEL_BOUNDS: ((response (699 2639) (2707 3843) (4479 6406) (6455 9082) (9464 13798) (14039 18681) (18847 21977) (22038 22972) (23086 23806) (23867 25273) (25324 26879) (28232 30138)))
+:GPTEL_BOUNDS: ((response (8043 9983) (10051 11187) (11823 13750) (13799 16426) (16808 21142) (21383 26025) (26191 29321) (29382 30316) (30430 31150) (31211 32617) (32668 34223) (37495 37664) (37666 37713) (37714 37800) (37802 37875) (37876 37892) (37893 37999) (38002 38051) (38054 38111) (38114 38176) (38178 38249) (38252 38294) (38296 38334) (38337 38368) (38370 38409) (38412 38460) (38462 38498) (38505 38543) (38550 38593) (38596 38622) (38626 38660) (38665 38817) (39156 39482) (39484 39550) (39551 39631) (39633 39731) (39732 39748) (39749 39849) (39852 39905) (39908 39970) (39972 40037) (40040 40080) (40082 40118) (40121 40166) (40168 40186) (40190 40212) (40217 40254) (40259 40304) (40307 40333) (40337 40371) (40376 40432) (40434 40556) (40558 40840) (40990 41222) (41224 41290) (41291 41382) (41384 41457) (41458 41474) (41475 41575) (41578 41631) (41634 41696) (41698 41763) (41766 41806) (41808 41857) (41859 41895) (41898 41943) (41945 41965) (41968 42003) (42006 42050) (42053 42079) (42082 42127) (42131 42148) (42151 42209) (42213 42239) (42244 42278) (42284 42309) (42312 42364) (42366 42562) (42564 42616) (42617 42686) (42687 42703) (42704 42804) (42807 42861) (42863 42928) (42931 42971) (42973 43101) (43103 43237) (43292 43503) (43505 43525) (43527 43591) (43593 43686) (43688 43759) (43760 43762) (43763 43777) (43779 43888) (43890 43939) (43940 43949) (43950 44008) (44010 44083) (44085 44123) (44124 44128) (44129 44163) (44165 44218) (44220 44238) (44239 44245) (44246 44279) (44281 44335) (44337 44361) (44362 44368) (44369 44412) (44414 44443) (44445 44501) (44502 44510) (44511 44535) (44537 44591) (44593 44616) (44617 44623) (44624 44674) (44675 44679) (44680 44731) (44733 44810) (44812 44925) (44927 44977) (44979 45050) (45052 45066) (45067 45069) (45070 45168) (45170 45233) (45235 45298) (45299 45305) (45306 45344) (45346 45422) (45424 45482) (45483 45487) (45488 45544) (45546 45569) (45571 45622) (45623 45625) (45626 45660) (45662 45689) (45691 45798) (45799 45803) (45804 45890) (45892 45900) (45902 45971) (45973 46021) (46023 46052) (46054 46338) (46443 46675) (46677 46704) (46706 46759) (46761 46795) (46796 46798) (46799 46820) (46821 46825) (46826 46933) (46934 46938) (46939 47029) (47031 47073) (47075 47106) (47107 47148) (47152 47154) (47156 47208) (47210 47261) (47263 47292) (47294 47477) (47559 49108) (49332 50220) (50222 50224) (50226 50296) (50298 50361) (50362 50364) (50365 50394) (50396 50410) (50412 50437) (50438 50444) (50445 50488) (50489 50495) (50496 50559) (50560 50566) (50567 50595) (50597 50693) (50695 50745) (50746 50752) (50753 50777) (50779 50810) (50812 50879) (50881 50906) (50908 50968) (50969 50975) (50976 51028) (51030 51053) (51055 51059) (51060 51070) (51071 51102) (51104 51143) (51145 51172) (51173 51185) (51186 51221) (51223 51254) (51256 51334) (51335 51349) (51350 51385) (51386 51396) (51397 51475) (51476 51484) (51485 51488) (51490 51517) (51519 51576) (51577 51583) (51584 51606) (51608 51763) (51765 51852) (51854 51929) (51931 51934) (51935 51943) (51944 52030) (52032 52086) (52088 52092) (52093 52103) (52104 52114) (52115 52127) (52128 52152) (52153 52165) (52166 52194) (52196 52219) (52221 52228) (52229 52235) (52236 52239) (52241 52254) (52256 52258) (52259 52267) (52268 52306) (52308 52356) (52358 52418) (52419 52425) (52426 52429) (52431 53035) (53149 53483) (53485 53487) (53489 53585) (53587 53598) (53599 53603) (53604 53659) (53661 53715) (53717 53720) (53721 53723) (53724 53771) (53773 53826) (53828 53832) (53833 53841) (53842 53885) (53887 53943) (53945 53991) (53992 54000) (54001 54029) (54031 54122) (54124 54174) (54175 54183) (54184 54223) (54225 54318) (54320 54379) (54380 54388) (54389 54421) (54423 54491) (54493 54510) (54511 54521) (54522 54549) (54551 54591) (54593 54598) (54599 54611) (54612 54690) (54691 54703) (54704 54739) (54740 54748) (54749 54758) (54760 54815) (54817 54886) (54887 54895) (54896 54918) (54920 54977) (54979 55034) (55035 55045) (55046 55064) (55066 55116) (55118 55162) (55163 55173) (55174 55177) (55179 55214) (55216 55239) (55240 55252) (55253 55267) (55269 55323) (55325 55353) (55354 55366) (55367 55379) (55381 55400) (55402 55434) (55435 55445) (55446 55497) (55499 55516) (55518 55520) (55521 55525) (55526 55529) (55531 55884) (55924 56624) (56721 59344) (59405 61439) (61624 63319) (63399 63667) (63669 63671) (63673 63768) (63770 63781) (63782 63786) (63787 63842) (63843 63847) (63848 63896) (63897 63899) (63900 63904) (63906 63959) (63961 64004) (64006 64024) (64026 64069) (64070 64078) (64079 64143) (64145 64191) (64193 64264) (64265 64275) (64276 64327) (64328 64336) (64337 64353) (64354 64364) (64365 64426) (64428 64493) (64495 64531) (64533 64612) (64614 64617) (64618 64624) (64625 64630) (64631 64639) (64640 64664) (64665 64673) (64674 64727) (64729 64804) (64806 64808) (64809 64813) (64814 64817) (64819 65258) (65354 65852) (65854 65856) (65857 65859) (65860 65915) (65917 65934) (65936 65991) (65992 65996) (65997 66045) (66046 66048) (66049 66053) (66055 66108) (66110 66153) (66154 66160) (66161 66165) (66167 66218) (66220 66262) (66264 66292) (66293 66303) (66304 66375) (66377 66446) (66448 66498) (66499 66507) (66508 66523) (66524 66534) (66535 66554) (66556 66586) (66588 66636) (66638 66641) (66642 66650) (66651 66710) (66711 66719) (66720 66796) (66798 66836) (66838 66925) (66926 66936) (66937 66955) (66957 66994) (66996 67039) (67041 67045) (67046 67054) (67055 67078) (67080 67115) (67117 67203) (67204 67212) (67213 67231) (67232 67240) (67241 67256) (67258 67380) (67382 67416) (67417 67425) (67426 67471) (67473 67484) (67486 67526) (67528 67553) (67554 67562) (67563 67687) (67688 67694) (67695 67697) (67699 67706) (67708 68391) (68518 70923) (71043 72605) (72655 73088) (73090 73092) (73093 73095) (73096 73187) (73189 73206) (73208 73263) (73264 73268) (73269 73317) (73318 73320) (73321 73325) (73327 73376) (73378 73431) (73433 73437) (73438 73446) (73447 73490) (73491 73499) (73500 73526) (73528 73574) (73576 73647) (73648 73658) (73659 73710) (73712 73766) (73768 73801) (73803 73822) (73823 73833) (73834 73854) (73855 73865) (73866 73899) (73901 73913) (73915 73990) (73992 74067) (74068 74076) (74077 74127) (74129 74184) (74186 74206) (74207 74217) (74218 74279) (74280 74290) (74291 74309) (74311 74348) (74350 74393) (74395 74399) (74400 74408) (74409 74447) (74448 74458) (74459 74525) (74527 74581) (74583 74666) (74667 74675) (74676 74721) (74723 74734) (74736 74776) (74778 74806) (74807 74815) (74816 74881) (74882 74888) (74889 74891) (74893 74900) (74902 75406) (75492 75850) (75852 75854) (75856 75962) (75964 75975) (75976 75980) (75981 76036) (76038 76092) (76094 76098) (76099 76101) (76102 76149) (76151 76204) (76206 76210) (76211 76219) (76220 76263) (76265 76307) (76309 76337) (76338 76348) (76349 76420) (76422 76490) (76492 76543) (76544 76552) (76553 76605) (76607 76642) (76644 76666) (76667 76677) (76678 76703) (76705 76732) (76734 76812) (76813 76825) (76826 76861) (76863 76910) (76912 76925) (76926 76936) (76937 77005) (77006 77014) (77015 77073) (77074 77082) (77083 77119) (77121 77170) (77172 77247) (77248 77256) (77257 77307) (77309 77363) (77365 77385) (77386 77396) (77397 77458) (77460 77500) (77502 77527) (77528 77540) (77541 77562) (77564 77585) (77587 77625) (77626 77636) (77637 77702) (77704 77758) (77760 77842) (77843 77851) (77852 77897) (77899 77918) (77920 77944) (77945 77953) (77954 78010) (78012 78086) (78088 78090) (78091 78095) (78096 78099) (78101 78492)))
 :END:
 I use direnv with nix flakes to setup my development environments. When I download a git repo that's not mine and doesn't have direnv and nix I struggle as I then don't have the tools available that the repository requires. Without committing a .envrc and flake.nix to someone else's repos how could I go about having them for these repos?
 
@@ -897,24 +897,1115 @@ add_env_files_to_git_exclude() {
 *** Elisp Version
 
 #+begin_src elisp
-(defun magit-add-env-files-to-git-exclude ()
-  "Add .envrc, flake.nix, flake.lock, and .direnv to the appropriate .git/info/exclude."
-  (interactive)
-  (let* ((git-dir (string-trim (shell-command-to-string "git rev-parse --absolute-git-dir 2>/dev/null")))
-         (exclude-file (expand-file-name "info/exclude" git-dir))
-         (entries '(".envrc" "flake.nix" "flake.lock" ".direnv")))
-    (unless (file-exists-p exclude-file)
-      (user-error "Not a git repo or missing info/exclude"))
-    (with-temp-buffer
-      (insert-file-contents exclude-file)
-      (let ((existing (split-string (buffer-string) "\n" t)))
-        (dolist (entry entries)
-          (unless (member entry existing)
-            (append-to-file (concat entry "\n") nil exclude-file))))
-      (message "Added .envrc, flake.nix, flake.lock, and .direnv to %s" exclude-file))))
+  (defun magit-add-env-files-to-git-exclude ()
+  	"Add .envrc, flake.nix, flake.lock, and .direnv to the appropriate .git/info/exclude."
+  	(interactive)
+  	(let* ((git-dir (string-trim (shell-command-to-string "git rev-parse --absolute-git-dir 2>/dev/null")))
+  			  (exclude-file (expand-file-name "info/exclude" git-dir))
+  			  (entries '(".envrc" "flake.nix" "flake.lock" ".direnv")))
+  		(unless (file-exists-p exclude-file)
+  			(user-error "Not a git repo or missing info/exclude"))
+  		(with-temp-buffer
+  			(insert-file-contents exclude-file)
+  			(let ((existing (split-string (buffer-string) "\n" t)))
+  				(dolist (entry entries)
+  					(unless (member entry existing)
+  						(append-to-file (concat entry "\n") nil exclude-file)))))))
 #+end_src
 
 ---
 
 These functions auto-detect worktree vs. main repo and update the correct =info/exclude= file.
 Let me know if you want further user feedback, error reporting, or magit integration details!
+
+*** Stick with elisp. The workspace dosen't always have an info folder or an exclude file, if not create them.
+
+Here's a robust Elisp version that:
+
+- Detects =.git= or worktree,
+- Creates the info/exclude file if missing,
+- Adds each entry only if not present.
+
+#+begin_src elisp
+  (defun magit-add-env-files-to-git-exclude ()
+  	"Add .envrc, flake.nix, flake.lock, and .direnv to the appropriate .git/info/exclude.
+  Creates info/exclude if missing. Handles both main repo and worktree."
+  	(interactive)
+  	(let* ((git-dir (string-trim (shell-command-to-string "git rev-parse --absolute-git-dir 2>/dev/null")))
+  			  (info-dir (expand-file-name "info" git-dir))
+  			  (exclude-file (expand-file-name "exclude" info-dir))
+  			  (entries '(".envrc" "flake.nix" "flake.lock" ".direnv")))
+  		(unless (and (file-exists-p git-dir) (not (string-empty-p git-dir)))
+  			(user-error "Not in a git repository"))
+  		(unless (file-directory-p info-dir)
+  			(make-directory info-dir t))
+  		(unless (file-exists-p exclude-file)
+  			(with-temp-buffer (write-file exclude-file)))
+  		(let ((existing (with-temp-buffer
+  							(insert-file-contents exclude-file)
+  							(split-string (buffer-string) "\n" t))))
+  			(dolist (entry entries)
+  				(unless (member entry existing)
+  					(append-to-file (concat entry "\n") nil exclude-file))))))
+#+end_src
+
+This is suitable for your Magit transient or as a standalone interactive function.
+
+*** This solution doesn't work. I have found that worktrees don't support it. However a solution that would work for me is:
+- In the worktree update the .gitignore with the files to be ignored
+- Run 'git update-index --assume-unchanged -- .gitignore' to ignore changes to .gitignore
+Can you write the elise function to do this instead?
+
+Absolutely! Here’s a robust Emacs Lisp (=elisp=) function to:
+
+1. Ensure =.gitignore= exists in the worktree root;
+2. Add =.envrc=, =flake.nix=, =flake.lock=, and =.direnv= to =.gitignore= (avoid duplicates);
+3. Run =git update-index --assume-unchanged -- .gitignore= to ignore future changes in the index.
+
+#+begin_src elisp
+  (defun magit-add-env-files-to-gitignore-and-assume-unchanged ()
+  	"Add .envrc, flake.nix, flake.lock, and .direnv to .gitignore (worktree local).
+  Runs 'git update-index --assume-unchanged -- .gitignore' to avoid tracking .gitignore changes."
+  	(interactive)
+  	(let* ((root (string-trim (shell-command-to-string "git rev-parse --show-toplevel 2>/dev/null")))
+  			  (gitignore (expand-file-name ".gitignore" root))
+  			  (entries '(".envrc" "flake.nix" "flake.lock" ".direnv")))
+  		(unless (and (file-exists-p root) (not (string-empty-p root)))
+  			(user-error "Not in a git worktree"))
+  		(unless (file-exists-p gitignore)
+  			(with-temp-buffer (write-file gitignore)))
+  		(let ((existing
+  				  (with-temp-buffer
+  					  (insert-file-contents gitignore)
+  					  (split-string (buffer-string) "\n" t))))
+  			(dolist (entry entries)
+  				(unless (member entry existing)
+  					(append-to-file (concat entry "\n") nil gitignore))))
+  		(call-process "git" nil "*Git Assume Unchanged*" t
+              "update-index" "--assume-unchanged" "--" ".gitignore")
+  		(message "Added entries to .gitignore and marked as assume-unchanged.")))
+#+end_src
+
+*Usage:*
+Call =M-x magit-add-env-files-to-gitignore-and-assume-unchanged= in your repo/wortkree workspace root.
+
+Let me know if you want a version that also /removes/ or reverts =assume-unchanged=!
+
+*** If the gitignore doesn't end with a newline this puts the .envrc on the end of another line
+I would like a function to revert assume-unchanged
+
+Great catch! Here is an updated function that ensures =.gitignore= ends with a newline before appending entries, plus a function to revert =assume-unchanged= for =.gitignore=.
+
+---
+
+*1. Safe Add-and-Mark-Function*
+#+begin_src elisp
+  (defun magit-add-env-files-to-gitignore-and-assume-unchanged ()
+  	"Safely add .envrc, flake.nix, flake.lock, and .direnv to .gitignore in the worktree root.
+  Ensures a final newline. Marks .gitignore as assume-unchanged in git."
+  	(interactive)
+  	(let* ((root (string-trim (shell-command-to-string "git rev-parse --show-toplevel 2>/dev/null")))
+  			  (gitignore (expand-file-name ".gitignore" root))
+  			  (entries '(".envrc" "flake.nix" "flake.lock" ".direnv")))
+  		(unless (and (file-exists-p root) (not (string-empty-p root)))
+  			(user-error "Not in a git worktree"))
+  		;; Create if missing and ensure proper newline
+  		(unless (file-exists-p gitignore)
+  			(with-temp-buffer (write-file gitignore)))
+  		(with-temp-buffer
+  			(insert-file-contents gitignore)
+  			;; Ensure file ends with a single newline
+  			(goto-char (point-max))
+  			(unless (or (bobp) (eq (char-before) ?\n))
+  				(insert "\n"))
+  			(let ((existing (split-string (buffer-string) "\n" t)))
+  				(dolist (entry entries)
+  					(unless (member entry existing)
+  						(insert entry "\n"))))
+  			(write-region (point-min) (point-max) gitignore))
+  		(call-process "git" nil "*Git Assume Unchanged*" t
+              "update-index" "--assume-unchanged" "--" ".gitignore")))
+#+end_src
+
+---
+
+*2. Revert "assume-unchanged" Function*
+#+begin_src elisp
+  (defun magit-revert-assume-unchanged-gitignore ()
+  	"Clear assume-unchanged flag for .gitignore in the worktree root."
+  	(interactive)
+  	(let* ((root (string-trim (shell-command-to-string "git rev-parse --show-toplevel 2>/dev/null")))
+  			  (gitignore (expand-file-name ".gitignore" root)))
+  		(unless (and (file-exists-p root) (not (string-empty-p root)))
+  			(user-error "Not in a git worktree"))
+  		(call-process "git" nil "*Git No Assume Unchanged*" t
+              "update-index" "--no-assume-unchanged" "--" ".gitignore")
+  		(message "Cleared assume-unchanged for .gitignore.")))
+#+end_src
+
+---
+
+Let me know if you need these integrated into Magit transients!
+
+*** Yeah would be good to integrate into Magit now.
+
+Here’s how to integrate both commands into a Magit transient menu.
+
+Below, you get a magit section for your envrc/nix-helper, with two simple actions that call your ignore and revert helpers.
+
+#+begin_src elisp
+  ;; Helper functions
+  (defun magit-add-env-files-to-gitignore-and-assume-unchanged ()
+    "Safely add .envrc, flake.nix, flake.lock, and .direnv to .gitignore in the worktree root.
+  Ensures a final newline. Marks .gitignore as assume-unchanged in git."
+    (interactive)
+    (let* ((root (string-trim (shell-command-to-string "git rev-parse --show-toplevel 2>/dev/null")))
+           (gitignore (expand-file-name ".gitignore" root))
+           (entries '(".envrc" "flake.nix" "flake.lock" ".direnv")))
+      (unless (and (file-exists-p root) (not (string-empty-p root)))
+        (user-error "Not in a git worktree"))
+      (unless (file-exists-p gitignore)
+        (with-temp-buffer (write-file gitignore)))
+      (with-temp-buffer
+        (insert-file-contents gitignore)
+        ;; Ensure file ends with a single newline
+        (goto-char (point-max))
+        (unless (or (bobp) (eq (char-before) ?\n))
+          (insert "\n"))
+        (let ((existing (split-string (buffer-string) "\n" t)))
+          (dolist (entry entries)
+            (unless (member entry existing)
+              (insert entry "\n"))))
+        (write-region (point-min) (point-max) gitignore))
+      (call-process "git" nil "*Git Assume Unchanged*" t
+                    "update-index" "--assume-unchanged" "--" ".gitignore")
+      (message "Added .envrc, flake.nix, flake.lock, and .direnv to .gitignore and marked it as assume-unchanged.")))
+
+  (defun magit-revert-assume-unchanged-gitignore ()
+    "Clear assume-unchanged flag for .gitignore in the worktree root."
+    (interactive)
+    (let* ((root (string-trim (shell-command-to-string "git rev-parse --show-toplevel 2>/dev/null")))
+           (gitignore (expand-file-name ".gitignore" root)))
+      (unless (and (file-exists-p root) (not (string-empty-p root)))
+        (user-error "Not in a git worktree"))
+      (call-process "git" nil "*Git No Assume Unchanged*" t
+                    "update-index" "--no-assume-unchanged" "--" ".gitignore")
+      (message "Cleared assume-unchanged for .gitignore.")))
+
+  ;; The Magit transient
+  (transient-define-prefix magit-envrc-nix-helper ()
+    "Envrc/Nix project helper tools."
+    [["Envrc/Nix Helper"
+      ("a" "Add entries to .gitignore & assume-unchanged" magit-add-env-files-to-gitignore-and-assume-unchanged)
+      ("r" "Revert assume-unchanged on .gitignore" magit-revert-assume-unchanged-gitignore)
+     ]])
+
+  ;; You can bind this transient to a key in Magit Status or globally:
+  ;; Example: add to magit-status-mode-map on "N"
+  (with-eval-after-load 'magit
+    (define-key magit-status-mode-map (kbd "N") #'magit-envrc-nix-helper))
+#+end_src
+
+Now, in Magit status (=M-x magit-status=), simply press =N= to bring up your helper menu!
+
+Let me know if you want further customizations, more helper actions, or integration into Magit’s popup menus.
+
+*** I want the magit-dispatch transient to also include this binding of N to the nix helper transient
+
+Absolutely! The best way is to add a binding for N in =magit-dispatch=.
+Here’s a robust method you can add to your config—N will bring up your Nix helper from both Magit Status and the magit-dispatch (=?=) popup:
+
+#+begin_src elisp
+  ;; 1. The helper transient
+  (transient-define-prefix magit-envrc-nix-helper ()
+    "Envrc/Nix project helper tools."
+    [["Envrc/Nix Helper"
+      ("a" "Add entries to .gitignore & assume-unchanged" magit-add-env-files-to-gitignore-and-assume-unchanged)
+      ("r" "Revert assume-unchanged on .gitignore" magit-revert-assume-unchanged-gitignore)]])
+
+  ;; 2. Add 'N' to magit-dispatch transient
+  (with-eval-after-load 'magit
+  	(transient-append-suffix 'magit-dispatch "M"
+  		'("N" "Envrc/Nix helper" magit-envrc-nix-helper)))
+
+  ;; 3. Optional: also bind in magit-status-mode-map
+  (with-eval-after-load 'magit
+    (define-key magit-status-mode-map (kbd "N") #'magit-envrc-nix-helper))
+#+end_src
+
+Now =N= appears in both =magit-dispatch= (=?= or =M-x magit-dispatch=) and in Magit status buffers!
+
+*** I'm now testing the meta flake and the paths for inputs can't be relative.
+
+Correct—when using =path:= in flake inputs, Nix expects paths to be either:
+
+- *absolute* (e.g., =path:/home/user/envs/azure_devops=), or
+- *relative to the directory containing the flake.nix being evaluated*.
+
+However, for most workflows (especially for “global” or reused flakes), *using absolute paths is safest* and most reliable.
+If you use relative paths, they must be correct with respect to where that particular =flake.nix= resides—and you must always invoke nix/direnv from (or symlink to) that directory.
+
+*Tip:*
+If you want to avoid hardcoding absolute paths, use environment variables or symlinks. For example:
+
+#+begin_src nix
+inputs = {
+  azure_devops.url = "path:${builtins.getEnv "HOME"}/src/envs/azure_devops";
+};
+#+end_src
+but /this only works in pure mode if the env var is whitelisted (see NIX_ENROLLED_ENVIRONMENT_VARIABLES)*.
+
+*Recommendation:*
+- Use absolute paths for each input, especially if your meta flake is outside the directories of the input flakes.
+- Or, keep meta and env flakes together, and always run =nix=, =direnv=, etc. from the meta flake’s directory, so simple =../azure_devops= etc. works.
+
+*Example:*
+#+begin_src nix
+inputs = {
+  azure_devops.url = "path:/home/youruser/envs/azure_devops";
+  docker.url = "path:/home/youruser/envs/docker";
+  # etc
+};
+#+end_src
+
+*Conclusion:*
+If you need to share the meta flake across machines or users, you might want to script the flake input generation to use the correct absolute paths for each system.
+
+Let me know if you want a sample setup or flake pre-processor!
+
+*** I think we just can't do it with inputs in that way. I'm willing to modify all the sub flakes like azure to a standard nix derivation and have the meta flake find the folders automatically and use them through import
+
+That’s a great idea and absolutely doable!
+
+*If you switch each environment flake (e.g., azure_devops’s flake.nix) to a plain Nix module or derivation (not a flake—just a nix file that exports a shell or package list),* then your meta flake can easily enumerate all subfolders, import them, and combine their contents dynamically. This sidesteps Nix flake static input limitations and lets you programmatically discover subfolders at evaluation time!
+
+---
+
+** *Pattern Example*
+
+Suppose this structure:
+
+#+begin_src
+envs/
+  meta/
+    flake.nix
+  azure_devops/
+    shell.nix   ;; or default.nix
+  docker/
+    shell.nix
+  python/
+    shell.nix
+  dotnet/
+    shell.nix
+#+end_src
+
+Each =shell.nix= would look like:
+
+#+begin_src nix
+{ pkgs }:
+pkgs.mkShell {
+  packages = with pkgs; [ azure-cli kubelogin ]; # for azure_devops
+}
+#+end_src
+
+Your =meta/flake.nix= could then do:
+
+#+begin_src nix
+  {
+    description = "Meta dev environment (automatic shell discovery)";
+    inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+
+    outputs = { self, nixpkgs }:
+      let
+        system = "x86_64-linux";
+        pkgs = import nixpkgs { inherit system; };
+        envs-dir = ../; # assuming meta is in envs/meta, so ../ = envs
+        env-names = builtins.filter
+          (name: name != "meta" && builtins.pathExists (envs-dir + "/${name}/shell.nix"))
+          (builtins.attrNames (builtins.readDir envs-dir));
+        # Import each env shell
+        env-shells = map
+          (name: import (envs-dir + "/${name}/shell.nix") { inherit pkgs; })
+          env-names;
+        # Produce all non-empty combinations (powerset minus empty)
+        concatMap = f: xs: builtins.concatLists (map f xs);
+        combos =
+          let
+            n = builtins.length env-names;
+            combosK = k: xs:
+              if k == 0 then [ [] ] else
+              if builtins.length xs == 0 then []
+              else
+                (map (ys: [ (builtins.head xs) ] ++ ys) (combosK (k - 1) (builtins.tail xs)))
+                ++ (combosK k (builtins.tail xs));
+            allCombos = concatMap (k: combosK k env-names) (builtins.genList (i: i+1) n);
+          in
+            allCombos;
+        comboName = combo: builtins.concatStringsSep "__" combo;
+        mkComboShell = combo:
+          let idx = builtins.map (env: builtins.elemAt env-names (builtins.elemAt combo env)) (builtins.genList (i: i) (builtins.length combo));
+              shells = map (name: import (envs-dir + "/${name}/shell.nix") { inherit pkgs; }) combo;
+              pkgs-lists = map (shell: shell.packages or []) shells;
+          in
+          pkgs.mkShell { name = comboName combo; packages = builtins.concatLists pkgs-lists; };
+        allComboShells = builtins.listToAttrs (
+          map
+            (combo: {
+              name = comboName combo;
+              value = mkComboShell combo;
+            })
+            combos
+        );
+      in
+        {
+          devShells.${system} = allComboShells;
+          devShells.${system}.default =
+            allComboShells.${builtins.concatStringsSep "__" env-names};
+        };
+  }
+#+end_src
+
+*NOTES:*
+- You can enhance/adjust shell.nix interfaces, or flow e.g., =shellHook= or other fields as needed.
+- As written, you really do dynamically import all sibling =shell.nix= files—no static flake inputs required!
+
+---
+
+*** *How to Use*
+
+- Add new =env_name/shell.nix= files and they become available—no configuration required.
+- The meta flake will always see the living list of environments.
+
+---
+
+*You can combine this with your Magit helper functions exactly as before!*
+
+Let me know if you need a working mini-repo example or a ready-made script for transitioning your env folders.
+
+*** Nix can't use kebab case for variables you've also dropped the use of flake-utils that handles all systems
+
+Great points!
+- *Nix variables/attr names* must be valid identifiers: /snake_case/ is safe, /kebab-case/ breaks.
+- *flake-utils* is ideal for multi-system outputs (DRY & robust).
+
+Here’s a revised meta flake using *flake-utils* for all common systems, dynamic discovery of subdirs, and *snake_case* env folders:
+
+---
+
+#+begin_src nix
+  {
+    description = "Meta dev environment (auto shell discovery, multi-system, snake_case dirs)";
+    inputs = {
+      nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+      flake-utils.url = "github:numtide/flake-utils";
+    };
+    outputs = { self, nixpkgs, flake-utils, ... }:
+      flake-utils.lib.eachDefaultSystem (system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+          envs-dir = ../;  # meta is in envs/meta
+          # Get all sibling dirs that contain shell.nix
+          env_names = builtins.filter
+            (d: d != "meta" && builtins.pathExists (envs-dir + "/${d}/shell.nix"))
+            (builtins.attrNames (builtins.readDir envs-dir));
+          # Import all shell.nix for this system
+          getShell = name: import (envs-dir + "/${name}/shell.nix") { inherit pkgs; };
+          mkComboName = combo: builtins.concatStringsSep "__" combo;
+          # Generate all non-empty combos
+          concatMap = f: xs: builtins.concatLists (map f xs);
+          combosK = k: xs:
+            if k == 0 then [ [] ] else
+            if xs == [] then []
+            else
+              (map (ys: [ (builtins.head xs) ] ++ ys) (combosK (k - 1) (builtins.tail xs)))
+              ++ (combosK k (builtins.tail xs));
+          combos =
+            let n = builtins.length env_names;
+            in concatMap (k: combosK k env_names) (builtins.genList (i: i+1) n);
+          mkComboShell = combo:
+            let shells = map getShell combo;
+                pkgs-lists = map (shell: shell.packages or []) shells;
+            in pkgs.mkShell {
+              name = mkComboName combo;
+              packages = builtins.concatLists pkgs-lists;
+            };
+          all_dev_shells =
+            builtins.listToAttrs (
+              map (combo: {
+                name = mkComboName combo;
+                value = mkComboShell combo;
+              }) combos);
+        in {
+          devShells = all_dev_shells // {
+            default = all_dev_shells.${mkComboName env_names};
+          };
+        }
+      );
+  }
+#+end_src
+
+---
+
+*You get:*
+- Pure dynamic =shell.nix= import from snake_case subfolders.
+- All combos, emitted in the outputs.
+- Multi-system outputs automatically (thanks to flake-utils; just copy this meta flake approach to any system).
+- No static inputs, no kebab-case.
+
+Let me know if you want a matching template for the per-env =shell.nix= too!
+
+*** Yes give me an example shell.nix
+
+Certainly! Here’s an example =shell.nix= for use in your env folders (e.g. =envs/azure_devops/shell.nix=), meant to be imported by the meta flake:
+
+#+begin_src nix
+{ pkgs }:
+
+pkgs.mkShell {
+  name = "azure_devops";
+  packages = with pkgs; [
+    azure-cli
+    kubelogin
+  ];
+}
+#+end_src
+
+*Usage notes:*
+- This file does not reference nixpkgs or system directly; it expects =pkgs= to be passed in (as your meta flake does).
+- You can add additional shell settings (like =shellHook=, etc.) if needed.
+- Use snake_case for the containing folder and avoid spaces or dashes.
+
+This pattern works identically for each of your tool environments (docker, kubernetes, dotnet, etc)—modify =packages= as required!
+
+*** I've got direnv running something, but I don't get any of the packages in the environment
+
+No worries! This usually means that either:
+
+- You're not in a Nix shell (so only direnv's shell config, not Nix's packages, is active),
+- OR: your =.envrc= isn’t configured to use the meta flake’s devShell,
+- OR: your meta flake’s devShell output isn’t evaluating to a working shell.
+
+Let’s check step-by-step:
+
+---
+
+*** 1. Check Your =.envrc=
+
+Make sure it contains something like this (replace path and combo-shell as needed):
+
+#+begin_src sh
+use flake /absolute/path/to/envs/meta#azure_devops__python  # or #default for all
+# or just:
+use flake /absolute/path/to/envs/meta
+#+end_src
+- /Relative paths/ must be correct from the directory containing =.envrc=, but absolute is more robust.
+
+---
+
+*** 2. Check =direnv status=
+
+From your project directory, run:
+#+begin_src sh
+direnv status
+#+end_src
+It should print the shell and show that it exported variables using =nix=.
+
+---
+
+*** 3. Try Running Directly
+
+Try:
+#+begin_src sh
+nix develop /absolute/path/to/envs/meta#azure_devops__python
+#+end_src
+If this does _not_ drop you in a shell with =azure-cli=/=kubelogin=, your meta flake likely isn’t providing those packages as expected—see the next point.
+
+---
+
+*** 4. Check Your Meta Flake's Output
+
+Run:
+#+begin_src sh
+nix flake show /absolute/path/to/envs/meta
+#+end_src
+You should see all your =devShells= (like =x86_64-linux.azure_devops__python=).
+
+---
+
+*** 5. Confirm Your =shell.nix=
+
+Your =shell.nix= must *return a mkShell*!
+For example, in =envs/azure_devops/shell.nix=:
+#+begin_src nix
+{ pkgs }:
+
+pkgs.mkShell {
+  packages = with pkgs; [ azure-cli kubelogin ];
+}
+#+end_src
+- If you have a legacy-style =shell.nix= that just does =with import <nixpkgs> { }; ...=, this pattern won’t work with your meta-flake auto-import!
+
+---
+
+*** 6. Confirm Your Meta Flake Imports
+
+If you did everything as in the last solution, your meta flake is combining imported =shell.nix= files /as functions/ with a =pkgs= argument. /No flakes in env folders!/ Example call:
+#+begin_src nix
+import ../azure_devops/shell.nix { inherit pkgs; }
+#+end_src
+
+---
+
+*** 7. Shell Refresh
+
+After changing =.envrc=, always run:
+#+begin_src sh
+direnv reload
+#+end_src
+
+---
+
+*** 8. Check for Load Errors
+
+If =direnv reload= prints “...something not allowed in pure evaluation” or “could not find shell.nix”, double-check your paths and meta flake logic.
+
+---
+
+*If all this looks right and STILL no packages:*
+- Paste your =.envrc=, meta flake, and one of your shell.nix files here for troubleshooting (you can remove anything private).
+- Make sure you're starting a new shell after changes.
+
+---
+
+Let me know what you find, and I’ll debug with you!
+
+*** If I do the import manually for one of them it works.
+
+Great, that means your =shell.nix= files and environment definitions are correct—the issue is likely in *how the meta flake is importing those shell.nix files dynamically*.
+
+This almost always comes down to *Nix’s handling of file system paths and context* inside a flake.
+
+*** The core problem
+
+When you do:
+#+begin_src nix
+import ../azure_devops/shell.nix { inherit pkgs; }
+#+end_src
+in your meta flake (which is at =envs/meta/flake.nix=), that works locally—but /inside the outputs function/, Nix may resolve relative paths with respect to where the flake is called from, *not* always where =flake.nix= lives. With flakes and “pure evaluation”, relative imports can easily break, especially with =nix develop= or =direnv= calling from outside your meta directory.
+
+*** Robust Solution
+
+*Always anchor your search for sibling environment directories* /by getting the absolute path/. The best way in a flake is:
+
+- Use =toString ./..= (which expands to /an absolute path to the parent directory at evaluation time/) rather than just =../=.
+- Use /absolute/ paths when dynamically importing.
+
+*** Example fix
+
+#+begin_src nix
+let
+  envs-dir = toString ./..; # always absolute to envs/
+  env_names = builtins.filter
+    (d: d != "meta" && builtins.pathExists (envs-dir + "/${d}/shell.nix"))
+    (builtins.attrNames (builtins.readDir envs-dir));
+  getShell = name: import (envs-dir + "/${name}/shell.nix") { inherit pkgs; };
+in
+# use getShell everywhere as before
+#+end_src
+
+*This should fix the “works manually but not in meta flake” issue!*
+
+---
+
+*** Checklist
+
+- Use =toString ./..= (not just =../=) for your flake’s =envs-dir=.
+- Use =${envs-dir}/${name}/shell.nix= (absolute) for importing.
+- Double-check that you are running =nix develop= or direnv from a location containing (or pointing to) your meta flake.
+
+---
+
+If you make this change, =direnv reload= or =nix develop .= in meta should now provide the right packages.
+/If problems persist, paste the relevant letting/importing part of your flake here and I’ll debug further!
+
+*** Can we simplify this for testing and remove the idea of mapping combos into it so given an env folder where I have azure and dotnet I'll only have them and not the azure__dotnet
+
+Absolutely! For testing (and many real setups), you can have your meta flake collect all sibling envs and simply combine all their =shell.nix= packages into a single devShell, /without/ generating all possible combos.
+
+Here’s a minimal, flake-utils-enabled, “sum of all envs” meta flake
+(=envs/meta/flake.nix=):
+
+#+begin_src nix
+{
+  description = "Unified dev env: all sibling envs, no combos";
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
+
+  outputs = { self, nixpkgs, flake-utils, ... }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs { inherit system; };
+        envs-dir = toString ./..; # envs/meta/flake.nix, so ../ = envs/
+        env-names = builtins.filter
+          (d: d != "meta" && builtins.pathExists (envs-dir + "/${d}/shell.nix"))
+          (builtins.attrNames (builtins.readDir envs-dir));
+        getShellPkgs = name: (import (envs-dir + "/${name}/shell.nix") { inherit pkgs; }).packages or [];
+        all-packages = builtins.concatLists (map getShellPkgs env-names);
+      in {
+        devShells.default = pkgs.mkShell {
+          name = "all_envs";
+          packages = all-packages;
+        };
+      }
+    );
+}
+#+end_src
+
+*Usage:*
+- Put this in =envs/meta/flake.nix=.
+- Add env dirs (e.g., azure, dotnet) with their own =shell.nix= as before.
+- =direnv= or =nix develop ./envs/meta= will give you a shell with all env tool packages.
+
+*Result:*
+- No combinatorial logic.
+- Always one unified environment for all detected env subfolders (other than meta itself).
+
+Let me know if you want a version that only picks specific envs or wants combos later!
+
+*** Don't unify the environment, for now give me the individual environments
+
+Of course! To get one devShell per environment (e.g., azure, dotnet, python…), but not unified or combined, your meta flake can dynamically expose a devShell for each detected sibling folder.
+
+Here’s a minimal =envs/meta/flake.nix= using flake-utils:
+
+#+begin_src nix
+  {
+    description = "Separate dev env for each sibling env folder (no combos, no unification)";
+
+    inputs = {
+      nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+      flake-utils.url = "github:numtide/flake-utils";
+    };
+
+    outputs = { self, nixpkgs, flake-utils, ... }:
+      flake-utils.lib.eachDefaultSystem (system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+          envs-dir = toString ./..; # envs/meta/flake.nix, so ../ = envs/
+          env-names = builtins.filter
+            (d: d != "meta" && builtins.pathExists (envs-dir + "/${d}/shell.nix"))
+            (builtins.attrNames (builtins.readDir envs-dir));
+
+          mkShell = name:
+            import (envs-dir + "/${name}/shell.nix") { inherit pkgs; };
+
+          # Build attr set: { env_name = <devShell>; ... }
+          dev-shells = builtins.listToAttrs (
+            map (name: { name = name; value = mkShell name; }) env-names
+          );
+        in {
+          devShells = dev-shells;
+          # Optional: pick one as default (or leave undefined)
+          # devShells.default = dev-shells.${builtins.head env-names};
+        }
+      );
+  }
+#+end_src
+
+*Usage:*
+- Suppose you have =envs/azure/shell.nix= and =envs/dotnet/shell.nix=.
+- After this flake is ready, you can use (in a .envrc or for =nix develop=):
+
+  #+begin_src sh
+  use flake /absolute/path/to/envs/meta#azure
+  # or
+  use flake /absolute/path/to/envs/meta#dotnet
+  #+end_src
+
+- No environment will include tools from the others.
+
+---
+
+Let me know if you want a version that sets a default shell, or further tweaks!
+
+*** That works then. So now we need to start adding combos back in without breaking anything
+
+Excellent! You're ready for /configurable combos/—keeping all previous behavior, but adding support for custom grouped environments (e.g., azure__dotnet, python__dotnet). Here’s a robust way to do it while:
+
+- Auto-exposing individual environments (as before),
+- Letting you define /just the combos you want/ (not every possible subset),
+- Avoiding duplicated code or naming mismatches.
+
+---
+
+*Add a variable to your meta flake listing your combos—composed of detected env-names:*
+
+#+begin_src nix
+  {
+    description = "Per-env and selected combo devShells";
+
+    inputs = {
+      nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+      flake-utils.url = "github:numtide/flake-utils";
+    };
+
+    outputs = { self, nixpkgs, flake-utils, ... }:
+      flake-utils.lib.eachDefaultSystem (system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+          envs-dir = toString ./..;
+          env-names = builtins.filter
+            (d: d != "meta" && builtins.pathExists (envs-dir + "/${d}/shell.nix"))
+            (builtins.attrNames (builtins.readDir envs-dir));
+
+          # Combinations you want to expose (edit/add here)
+          combo-list = [
+            ["azure" "dotnet"]
+            ["python" "dotnet"]
+            # Add e.g. ["azure" "python"]
+          ];
+          combo-name = combo: builtins.concatStringsSep "__" combo;
+
+          mkShell = name: import (envs-dir + "/${name}/shell.nix") { inherit pkgs; };
+          comboShell = combo:
+            let packages = builtins.concatLists (map (name: (mkShell name).packages or []) combo);
+            in pkgs.mkShell {
+              name = combo-name combo;
+              packages = packages;
+            };
+
+          # Individual devShells
+          per-env-shells =
+            builtins.listToAttrs (map (name: { name = name; value = mkShell name; }) env-names);
+
+          # Combo devShells
+          combo-shells =
+            builtins.listToAttrs (map (combo: { name = combo-name combo; value = comboShell combo; }) combo-list);
+
+          # Merge them: individual + combos
+          all-shells = per-env-shells // combo-shells;
+        in {
+          devShells = all-shells;
+          # Optional: pick default
+          # devShells.default = (per-env-shells.${builtins.head env-names} or combo-shells.${combo-name (builtins.head combo-list)});
+        }
+      );
+  }
+#+end_src
+
+---
+
+*How it works:*
+- Put combo-lists you WANT to exist (editing combo-list). Combinations not listed will not appear.
+- Individual environments (azure, python, dotnet, etc) still available.
+
+*Example usage:*
+#+begin_src sh
+use flake /absolute/path/to/envs/meta#dotnet              # just dotnet env
+use flake /absolute/path/to/envs/meta#azure__dotnet       # combo env
+use flake /absolute/path/to/envs/meta#python__dotnet      # combo env
+#+end_src
+
+---
+
+/This approach keeps it simple, explicit, and easy to maintain!/
+Let me know if you want every possible combo generated instead, or want extra metadata with your combos (like description, custom shell hooks, etc.)
+
+*** Individuals work but the combos don't. Are you sure that the packages are being extracted when they are being combined?
+
+Great question—and this is the subtle part:
+Each =shell.nix= (env) returns a whole mkShell derivation.
+The crucial bit: When you import =shell.nix= and then do =(mkShell "env").packages=, there's a risk:
+- If "packages" isn't set as a top-level attr, or
+- if extraAttrs are present in mkShell (but not propagated),
+then you /won't/ see packages at =derivation.packages=, only inside the shell env’s /buildInputs/.
+
+*What you want:*
+A shell.nix in each env dir that provides
+- either just a list (for packages)
+- or a /derivation/ with a top-level =packages= attr
+- or both (for compat)
+
+*Minimal robust version:*
+Make your =shell.nix= look like this (same as before):
+
+#+begin_src nix
+{ pkgs }:
+pkgs.mkShell {
+  name = "dotnet";
+  packages = with pkgs; [ dotnet-sdk_7 ];
+}
+#+end_src
+
+If you use
+#+begin_src nix
+(import (envs-dir + "/${name}/shell.nix") { inherit pkgs; }).packages
+#+end_src
+it will work because =mkShell= includes "packages" as an output attribute.
+
+*But beware!*
+If you created =shell.nix= differently, or with legacy =buildInputs= instead,
+you may NOT get =packages= as an explicit attribute.
+
+*** Diagnostic checklist
+
+Try this in your meta flake (for debugging):
+
+#+begin_src nix
+let
+  shell = import (envs-dir + "/dotnet/shell.nix") { inherit pkgs; };
+in
+  builtins.attrNames shell
+#+end_src
+
+- If "packages" is /not/ an attr, your =shell.nix= needs updating.
+
+*** Make it robust for both cases
+
+For each shell:
+
+- If =.packages= exists, use that
+- Else, fallback to =.buildInputs= (legacy style), else =[]=
+- E.g.:
+
+#+begin_src nix
+getShellPkgs = name: let
+  shell = import (envs-dir + "/${name}/shell.nix") { inherit pkgs; };
+in
+  # Prefer "packages", fall back to "buildInputs", else empty
+  shell.packages or shell.buildInputs or [];
+#+end_src
+
+Replace your combo packaging line with
+
+#+begin_src nix
+comboShell = combo:
+  let packages = builtins.concatLists (map getShellPkgs combo);
+  in pkgs.mkShell {
+    name = combo-name combo;
+    packages = packages;
+  };
+#+end_src
+
+*** In summary:
+
+- Any env folder whose packages don’t appear when you do =nix develop ...=, make sure you have a =packages= attr in its =shell.nix= output.
+- Add the above =getShellPkgs= robustness for extraction in the meta/flake.nix.
+
+---
+
+*If you share the relevant lines from your meta/flake.nix and sample shell.nix, I can confirm/adjust! But these two changes should solve it in almost all cases.*
+
+*** Can't see any difference. How about changing the shell.nix so that packages are exported along with the mkShell?
+
+Yes! Making =shell.nix= return a /set/ containing both =packages= and the =mkShell= is the most robust and composable approach.
+
+*Example for envs/azure/shell.nix:*
+#+begin_src nix
+{ pkgs }:
+
+let
+  myPackages = with pkgs; [ azure-cli kubelogin ];
+in
+{
+  packages = myPackages;
+  shell = pkgs.mkShell {
+    name = "azure";
+    packages = myPackages;
+  };
+}
+#+end_src
+
+*How to modify your meta flake:*
+
+- For individual environments, use =import ...shell=
+- For combos, combine the =.packages= of each env, then provide a new mkShell
+
+*Sample logic for meta/flake.nix combos:*
+#+begin_src nix
+getEnv = name: import (envs-dir + "/${name}/shell.nix") { inherit pkgs; };
+getPackages = name: (getEnv name).packages or [];
+getShell = name: (getEnv name).shell;
+
+comboShell = combo:
+  let packages = builtins.concatLists (map getPackages combo);
+  in pkgs.mkShell {
+    name = combo-name combo;
+    packages = packages;
+  };
+#+end_src
+
+- For individuals: expose "shell"
+- For combos: expose comboShell
+
+*Putting it together:*
+#+begin_src nix
+per-env-shells = builtins.listToAttrs (map (name: { name = name; value = getShell name; }) env-names);
+combo-shells = builtins.listToAttrs (map (combo: { name = combo-name combo; value = comboShell combo; }) combo-list);
+#+end_src
+
+*Summary:*
+- This pattern ensures =.packages= is always available for composing, and =.shell= is a proper mkShell for individuals.
+- Combos are guaranteed to have the union of packages, and each individual env works as before.
+
+Let me know if you want a full meta flake sample with this approach!
+
+*** Put together the whole meta flake for this
+
+Absolutely! Here’s a ready-to-use meta flake (envs/meta/flake.nix)
+that:
+
+- Uses flake-utils for all main systems
+- Dynamically discovers each =envs/<env>/shell.nix= (which are expected to export a set: ={ packages = [...]; shell = mkShell ...; }=)
+- Exposes all envs individually, plus custom combos you define in one list
+- Combines combo packages using the =.packages= field
+- Uses proper mkShell for each output
+
+#+begin_src nix
+  {
+    description = "Per-env devShells, plus editable combos. Env shells as {packages, shell}";
+
+    inputs = {
+      nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+      flake-utils.url = "github:numtide/flake-utils";
+    };
+
+    outputs = { self, nixpkgs, flake-utils, ... }:
+      flake-utils.lib.eachDefaultSystem (system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+          envs-dir = toString ./..;
+          env-names = builtins.filter
+            (d: d != "meta" && builtins.pathExists (envs-dir + "/${d}/shell.nix"))
+            (builtins.attrNames (builtins.readDir envs-dir));
+
+          # Combos you want to expose (edit as needed):
+          combo-list = [
+            ["azure" "dotnet"]
+            ["python" "dotnet"]
+            # Add more combos here as needed
+          ];
+
+          combo-name = combo: builtins.concatStringsSep "__" combo;
+
+          getEnv = name: import (envs-dir + "/${name}/shell.nix") { inherit pkgs; };
+          getPackages = name: (getEnv name).packages or [];
+          getShell = name: (getEnv name).shell;
+
+          comboShell = combo:
+            let packages = builtins.concatLists (map getPackages combo);
+            in pkgs.mkShell {
+              name = combo-name combo;
+              packages = packages;
+            };
+
+          per-env-shells = builtins.listToAttrs
+            (map (name: { name = name; value = getShell name; }) env-names);
+
+          combo-shells = builtins.listToAttrs
+            (map (combo: { name = combo-name combo; value = comboShell combo; }) combo-list);
+
+          all-shells = per-env-shells // combo-shells;
+        in {
+          devShells = all-shells;
+          # Optionally set a default:
+          # devShells.default = per-env-shells.${builtins.head env-names};
+        }
+      );
+  }
+#+end_src
+
+*Usage:*
+
+- Each env (like =envs/azure/shell.nix=) should look like:
+  #+begin_src nix
+  { pkgs }:
+  let
+    myPackages = with pkgs; [ azure-cli kubelogin ];
+  in
+  {
+    packages = myPackages;
+    shell = pkgs.mkShell {
+      name = "azure";
+      packages = myPackages;
+    };
+  }
+  #+end_src
+- You'll get devShells for each env (=#azure=, =#dotnet=, ...) and for each combo you included (=#azure__dotnet=, ...).
+
+Let me know if you need any tweaks or if you want the default devShell set!
+
+*** Excellent now we are working. Can you generate the combo-list dynamically now?
+
+Yes! You can generate the combo-list dynamically to include every non-empty subset of env-names (i.e., the powerset minus the empty set and minus the length-1 sets to avoid duplicating the individual shells).
+
+Here’s a complete meta flake using the powerset trick to make =combo-list= (sorted, snake_case, with combos of at least two envs):
+
+#+begin_src nix
+  {
+    description = "Per-env devShells and all combos (auto combo-list). Env shells as {packages, shell}";
+
+    inputs = {
+      nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+      flake-utils.url = "github:numtide/flake-utils";
+    };
+
+    outputs = { self, nixpkgs, flake-utils, ... }:
+      flake-utils.lib.eachDefaultSystem (system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+          envs-dir = toString ./..;
+          env-names = builtins.filter
+            (d: d != "meta" && builtins.pathExists (envs-dir + "/${d}/shell.nix"))
+            (builtins.attrNames (builtins.readDir envs-dir));
+          # Compute all non-empty combos with 2 or more envs
+          concatMap = f: xs: builtins.concatLists (map f xs);
+          combosK = k: xs:
+            if k == 0 then [ [] ]
+            else if xs == [] then []
+            else
+              (map (ys: [ (builtins.head xs) ] ++ ys) (combosK (k - 1) (builtins.tail xs)))
+              ++ (combosK k (builtins.tail xs));
+          n = builtins.length env-names;
+          combo-list =
+            concatMap (k: combosK k env-names) (lib.range 2 n); # k from 2 to n
+          combo-name = combo: builtins.concatStringsSep "__" combo;
+          # Reuse Nixpkgs' lib.range for 2..n
+          lib = import (nixpkgs + "/lib");
+          getEnv = name: import (envs-dir + "/${name}/shell.nix") { inherit pkgs; };
+          getPackages = name: (getEnv name).packages or [];
+          getShell = name: (getEnv name).shell;
+          comboShell = combo:
+            let packages = builtins.concatLists (map getPackages combo);
+            in pkgs.mkShell {
+              name = combo-name combo;
+              packages = packages;
+            };
+          per-env-shells = builtins.listToAttrs
+            (map (name: { name = name; value = getShell name; }) env-names);
+          combo-shells = builtins.listToAttrs
+            (map (combo: { name = combo-name combo; value = comboShell combo; }) combo-list);
+          all-shells = per-env-shells // combo-shells;
+        in {
+          devShells = all-shells;
+          # Optionally set a default, e.g. the combo of all envs:
+          # devShells.default = combo-shells.${combo-name env-names};
+        }
+      );
+  }
+#+end_src
+
+*How this works:*
+- You get =devShells.<env>= for each env
+- You get =devShells.<combo1>__<combo2>= for every (>=2) combo (order is alphabetical by env-names)
+- You don’t need to ever add a combo manually!
+
+Let me know if you want:
+- A default combo (just uncomment the default line)
+- Only certain combos (filter out undesired combos)
+- More advanced combo naming or meta-data!
+
+***

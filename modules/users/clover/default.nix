@@ -11,6 +11,7 @@ let
       "internet"
       "programming"
       "work"
+      "wayland"
     ];
     belisarius = [
       "cad"
@@ -21,12 +22,14 @@ let
       "internet"
       "programming"
       "work"
+      "wayland"
     ];
     cornaith = [
       "desktop"
       "editing"
       "gaming"
-      "internet"
+      "internete"
+      "wayland"
     ];
     clover-z270pd3 = [
       "desktop"
@@ -34,6 +37,7 @@ let
       "editing"
       "programming"
       "work"
+      "wayland"
     ];
     MW-RSY-GPRG8C3 = [
       "desktop"
@@ -77,6 +81,7 @@ in
       internet = builtins.elem "internet" host_role."${opt.host}";
       programming = builtins.elem "programming" host_role."${opt.host}";
       work = builtins.elem "work" host_role."${opt.host}";
+      wayland = builtins.elem "wayland" host_role."${opt.host}";
     };
 
     languages = {

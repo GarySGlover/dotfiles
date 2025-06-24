@@ -48,5 +48,6 @@ with types;
     internet = mkOption { type = bool; };
     programming = mkOption { type = bool; };
     work = mkOption { type = bool; };
+    wayland = mkOption { type = bool; };
   };
 }

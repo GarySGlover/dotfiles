@@ -8,7 +8,6 @@
 
   outputs =
     {
-      self,
       nixpkgs,
       flake-utils,
       ...
@@ -34,7 +33,7 @@
             ++ (combosK k (builtins.tail xs));
         n = builtins.length env-names;
         combo-list = concatMap (k: combosK k env-names) (lib.range 2 n); # k from 2 to n
-        combo-name = combo: builtins.concatStringsSep "__" combo;
+        combo-name = combo: builtins.concatStringsSep "_" combo;
         # Reuse Nixpkgs' lib.range for 2..n
         lib = import (nixpkgs + "/lib");
         getEnv = name: import (envs-dir + "/${name}/shell.nix") { inherit pkgs; };

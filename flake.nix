@@ -16,7 +16,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     emacs-overlay.url = "github:nix-community/emacs-overlay/master";
-    ags.url = "github:aylur/ags/main";
+    ags.url = "github:aylur/ags";
     nur.url = "github:nix-community/NUR";
 
     # Emacs Packages
@@ -44,15 +44,10 @@
       home-manager,
       nixpkgs,
       sops-nix,
-      ags,
       nur,
-      transient-compile,
-      kbd-mode,
-      eglot-booster,
-      ws-butler,
       self,
       ...
-    }:
+    }@inputs:
     let
       lib = nixpkgs.lib;
       inherit (lib)
@@ -97,14 +92,6 @@
         config = import ./config.nix { inherit lib; };
         overlays = [
           emacs-overlay.overlay
-          (final: prev: {
-            inherit
-              transient-compile
-              kbd-mode
-              eglot-booster
-              ws-butler
-              ;
-          })
           (import ./modules/overlays/tree-sitter-grammars.nix)
           (import ./modules/overlays/codeium.nix)
           nur.overlays.default
@@ -114,8 +101,8 @@
       extraSpecialArgs = {
         inherit
           pkgs
-          ags
           self
+          inputs
           ;
       };
 
@@ -226,7 +213,10 @@
         };
         MW-RSY-GPRG8C3 = {
           nixos = false;
-          users = [ "gary" "clover" ];
+          users = [
+            "gary"
+            "clover"
+          ];
         };
       };
 

@@ -2,6 +2,7 @@
   lib,
   config,
   pkgs,
+  inputs,
   ...
 }:
 let
@@ -13,7 +14,7 @@ let
         pname = "kbd-mode";
         version = "1";
         commit = "1";
-        src = pkgs.kbd-mode;
+        src = inputs.kbd-mode;
         packageRequires = [ ];
         recipe = pkgs.writeText "recipe" ''
           (kbd-mode
@@ -28,7 +29,7 @@ let
         pname = "transient-compile";
         version = "1";
         commit = "1";
-        src = pkgs.transient-compile;
+        src = inputs.transient-compile;
         packageRequires = [ f ];
         recipe = pkgs.writeText "recipe" ''
           (transient-compile
@@ -43,7 +44,7 @@ let
         pname = "eglot-booster";
         version = "1";
         commit = "1";
-        src = pkgs.eglot-booster;
+        src = inputs.eglot-booster;
         packageRequires = [ ];
         recipe = pkgs.writeText "recipe" ''
           (eglot-booster
@@ -58,7 +59,7 @@ let
         pname = "ws-butler";
         version = "1";
         commit = "1";
-        src = pkgs.ws-butler;
+        src = inputs.ws-butler;
         packageRequires = [ ];
         recipe = pkgs.writeText "recipe" ''
           (ws-butler

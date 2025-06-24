@@ -682,6 +682,11 @@ major-mode-remap-alist or auto-mode-alist."
 			(goto-char pt)
 			(hkey-either)))
 
+	(defun avy-action-narrow-region (pt)
+		"Narrow to region from point to second avy jump."
+		(avy-action-with-region pt 'narrow-to-region)
+		t)
+
 	(setq-default avy-dispatch-alist
 		'((?E . avy-action-embark-act)
 			 (?e . avy-action-embark-act-region)
@@ -696,6 +701,7 @@ major-mode-remap-alist or auto-mode-alist."
 			 (?y . avy-action-yank-region)
 			 (?z . avy-action-zap-to-char)
 			 (?m . avy-action-mark-region)
+			 (?n . avy-action-narrow-region)
 			 (?\r . avy-action-hyprbole)))
 
 	(setopt

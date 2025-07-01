@@ -49,6 +49,7 @@
       ...
     }@inputs:
     let
+      wolfLib = import ./functions.nix { lib = nixpkgs.lib; };
       lib = nixpkgs.lib;
       inherit (lib)
         pathExists
@@ -101,6 +102,7 @@
       extraSpecialArgs = {
         inherit
           pkgs
+          wolfLib
           self
           inputs
           ;

@@ -6,7 +6,7 @@
 let
   inherit (lib) mkIf;
   theme = config.wolf.theme;
-  faces = theme.faces;
+  colors = theme.colors;
 in
 {
   config = mkIf config.wolf.roles.desktop {
@@ -18,58 +18,54 @@ in
         enableBashIntegration = true;
       };
       extraConfig = ''
-        foreground            #${faces.fgDefault}
-        background            #${faces.bgDefault}
-        selection_foreground  #${faces.fgHighlight}
-        selection_background  #${faces.bgHighlight}
+        foreground            ${colors.foreground}
+        background            ${colors.background}
+        selection_foreground  ${colors.strong}
+        selection_background  ${colors.backgroundGray}
 
-        url_color #${faces.fgLink}
+        url_color ${colors.blue}
 
         # black
-        color0  #${faces.fgAnsiColorBlack}
-        color8  #${faces.fgAnsiColorBrightBlack}
+        color0  #000000
+        color8  ${colors.darkGray}
 
         # red
-        color1  #${faces.fgAnsiColorRed}
-        color9  #${faces.fgAnsiColorBrightRed}
+        color1  ${colors.red}
+        color9  ${colors.strongRed}
 
         # green
-        color2  #${faces.fgAnsiColorGreen}
-        color10 #${faces.fgAnsiColorBrightGreen}
+        color2  ${colors.green}
+        color10 ${colors.strongGreen}
 
         # yellow
-        color3  #${faces.fgAnsiColorYellow}
-        color11 #${faces.fgAnsiColorBrightYellow}
+        color3  ${colors.yellow}
+        color11 ${colors.strongYellow}
 
         # blue
-        color4  #${faces.fgAnsiColorBlue}
-        color12 #${faces.fgAnsiColorBrightBlue}
+        color4  ${colors.blue}
+        color12 ${colors.strongBlue}
 
         # magenta
-        color5  #${faces.fgAnsiColorMagenta}
-        color13 #${faces.fgAnsiColorBrightMagenta}
+        color5  ${colors.magenta}
+        color13 ${colors.strongMagenta}
 
         # cyan
-        color6  #${faces.fgAnsiColorCyan}
-        color14 #${faces.fgAnsiColorBrightCyan}
+        color6  ${colors.cyan}
+        color14 ${colors.strongCyan}
 
         # white
-        color7  #${faces.fgAnsiColorWhite}
-        color15 #${faces.fgAnsiColorBrightWhite}
-
-        # Cursor colours
-        cursor            #${faces.fgCursor}
-        cursor_text_color #${faces.fgCursor}
+        color7  #FFFFFF
+        color15 ${colors.lightGray}
 
         # Tab bar colours
-        active_tab_foreground   #${faces.fgTabBarTab}
-        active_tab_background   #${faces.bgTabBarTab}
-        inactive_tab_foreground #${faces.fgTabBarTabInactive}
-        inactive_tab_background #${faces.bgTabBarTabInactive}
+        active_tab_foreground   ${colors.strong}
+        active_tab_background   ${colors.weak}
+        inactive_tab_foreground ${colors.foreground}
+        inactive_tab_background ${colors.background}
 
         # Splits/Windows
-        active_border_color #${faces.fgBorder}
-        inactive_border_color #${faces.fgBorderInactive}
+        active_border_color ${colors.strong}
+        inactive_border_color ${colors.weak}
         background_opacity 1.0
       '';
     };

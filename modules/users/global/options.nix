@@ -1,4 +1,36 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  wolfLib,
+  ...
+}:
+let
+  colorBases = [
+    "red"
+    "orange"
+    "yellow"
+    "lime"
+    "green"
+    "springGreen"
+    "cyan"
+    "azure"
+    "blue"
+    "violet"
+    "magenta"
+    "rose"
+    "gray"
+    "brown"
+  ];
+  mkColorOption =
+    base: kind:
+    lib.mkOption {
+      type = lib.types.str;
+      default =
+        config.wolf.theme.defaultColors."${
+          if kind == "" then base else "${kind}${wolfLib.capitalize base}"
+        }";
+    };
+in
 with lib;
 with types;
 {
@@ -16,8 +48,67 @@ with types;
       type = ints.unsigned;
       default = config.wolf.theme.font.size;
     };
-    faces = mkOption { type = types.attrs; };
-    dracula = mkOption { type = types.attrs; };
+    defaultColors = mkOption {
+      type = types.attrs;
+    };
+    colors =
+      {
+        background = mkOption { type = str; };
+        foreground = mkOption {
+          type = str;
+          default = config.wolf.theme.defaultColors.foreground;
+        };
+        light = mkOption {
+          type = str;
+          default = config.wolf.theme.defaultColors.light;
+        };
+        dark = mkOption {
+          type = str;
+          default = config.wolf.theme.defaultColors.dark;
+        };
+        weak = mkOption {
+          type = str;
+          default = config.wolf.theme.defaultColors.weak;
+        };
+        strong = mkOption {
+          type = str;
+          default = config.wolf.theme.defaultColors.strong;
+        };
+      }
+      // builtins.listToAttrs (
+        builtins.concatMap (
+          base:
+          let
+            baseCapitalized = wolfLib.capitalize base;
+          in
+          [
+            {
+              name = base;
+              value = mkColorOption base "";
+            }
+            {
+              name = "light${baseCapitalized}";
+              value = mkColorOption base "light";
+            }
+            {
+              name = "dark${baseCapitalized}";
+              value = mkColorOption base "dark";
+            }
+            {
+              name = "weak${baseCapitalized}";
+              value = mkColorOption base "weak";
+            }
+            {
+              name = "strong${baseCapitalized}";
+              value = mkColorOption base "strong";
+            }
+            {
+              name = "background${baseCapitalized}";
+              value = mkColorOption base "background";
+            }
+          ]
+        ) colorBases
+      );
     name = mkOption { type = str; };
     type = mkOption {
       type = enum [

@@ -5,9 +5,7 @@
 }:
 let
   theme = config.wolf.theme;
-  faces = theme.faces;
-  element = theme.element;
-  dracula = theme.dracula;
+  colors = theme.colors;
 in
 {
   config = {
@@ -28,102 +26,102 @@ in
         theme = {
           k9s = {
             body = {
-              fgColor = "#${faces.fgDefault}";
-              bgColor = "#${faces.bgDefault}";
-              logoColor = "#${dracula.purple}";
+              fgColor = "${colors.foreground}";
+              bgColor = "${colors.background}";
+              logoColor = "${colors.violet}";
             };
             prompt = {
-              fgColor = "#${faces.fgDefault}";
-              bgColor = "#${faces.bgDefault}";
-              suggestColor = "#${dracula.purple}";
+              fgColor = "${colors.foreground}";
+              bgColor = "${colors.background}";
+              suggestColor = "${colors.violet}";
             };
             info = {
-              fgColor = "#${dracula.pink}";
-              sectionColor = "#${faces.fgDefault}";
+              fgColor = "${colors.magenta}";
+              sectionColor = "${colors.foreground}";
             };
             dialog = {
-              fgColor = "#${faces.fgDefault}";
-              bgColor = "#${faces.bgDefault}";
-              buttonFgColor = "#${faces.fgDefault}";
-              buttonBgColor = "#${dracula.purple}";
-              buttonFocusFgColor = "#${dracula.yellow}";
-              buttonFocusBgColor = "#${dracula.pink}";
-              labelFgColor = "#${dracula.orange}";
-              fieldFgColor = "#${faces.fgDefault}";
+              fgColor = "${colors.foreground}";
+              bgColor = "${colors.background}";
+              buttonFgColor = "${colors.foreground}";
+              buttonBgColor = "${colors.backgroundViolet}";
+              buttonFocusFgColor = "${colors.yellow}";
+              buttonFocusBgColor = "${colors.backgroundMagenta}";
+              labelFgColor = "${colors.orange}";
+              fieldFgColor = "${colors.foreground}";
             };
             frame = {
               border = {
-                fgColor = "#${faces.bgHighlight}";
-                focusColor = "#${faces.bgHighlight}";
+                fgColor = "${colors.backgroundGray}";
+                focusColor = "${colors.backgroundGray}";
               };
               menu = {
-                fgColor = "#${faces.fgDefault}";
-                keyColor = "#${dracula.pink}";
-                numKeyColor = "#${dracula.pink}";
+                fgColor = "${colors.foreground}";
+                keyColor = "${colors.magenta}";
+                numKeyColor = "${colors.magenta}";
               };
               crumbs = {
-                fgColor = "#${faces.fgDefault}";
-                bgColor = "#${faces.bgTabBarTabInactive}";
-                activeColor = "#${faces.bgTabBarTab}";
+                fgColor = "${colors.foreground}";
+                bgColor = "#${colors.weak}";
+                activeColor = "#${colors.background}";
               };
               status = {
-                newColor = "#${dracula.cyan}";
-                modifyColor = "#${dracula.purple}";
-                addColor = "#${dracula.green}";
-                errorColor = "#${dracula.red}";
-                highlightColor = "#${dracula.orange}";
-                killColor = "#${faces.fgFontLockCommentFace}";
-                completedColor = "#${faces.fgFontLockCommentFace}";
+                newColor = "${colors.cyan}";
+                modifyColor = "${colors.violet}";
+                addColor = "${colors.green}";
+                errorColor = "${colors.red}";
+                highlightColor = "${colors.orange}";
+                killColor = "${colors.red}";
+                completedColor = "${colors.blue}";
               };
               title = {
-                fgColor = "#${faces.fgDefault}";
-                bgColor = "#${faces.bgHighlight}";
-                highlightColor = "#${dracula.orange}";
-                counterColor = "#${dracula.purple}";
-                filterColor = "#${dracula.pink}";
+                fgColor = "${colors.foreground}";
+                bgColor = "${colors.backgroundGray}";
+                highlightColor = "${colors.orange}";
+                counterColor = "${colors.violet}";
+                filterColor = "${colors.magenta}";
               };
             };
             views = {
               charts = {
                 bgColor = "default";
                 defaultDialColors = [
-                  "#${dracula.purple}"
-                  "#${dracula.red}"
+                  "${colors.violet}"
+                  "${colors.red}"
                 ];
                 defaultChartColors = [
-                  "#${dracula.purple}"
-                  "#${dracula.red}"
+                  "${colors.violet}"
+                  "${colors.red}"
                 ];
               };
               table = {
-                fgColor = "#${faces.fgDefault}";
-                bgColor = "#${faces.bgDefault}";
+                fgColor = "${colors.foreground}";
+                bgColor = "${colors.background}";
                 header = {
-                  fgColor = "#${faces.fgDefault}";
-                  bgColor = "#${faces.bgDefault}";
-                  sorterColor = "#${dracula.cyan}";
+                  fgColor = "${colors.foreground}";
+                  bgColor = "${colors.background}";
+                  sorterColor = "${colors.cyan}";
                 };
               };
               xray = {
-                fgColor = "#${faces.fgDefault}";
-                bgColor = "#${faces.bgDefault}";
-                cursorColor = "#${faces.bgHighlight}";
-                graphicColor = "#${dracula.purple}";
+                fgColor = "${colors.foreground}";
+                bgColor = "${colors.background}";
+                cursorColor = "${colors.backgroundGray}";
+                graphicColor = "${colors.violet}";
                 showIcons = false;
               };
               yaml = {
-                keyColor = "#${faces.fgFontLockVariableNameFace}";
-                colonColor = "#${faces.fgFontLockDelimiterFace}";
-                valueColor = "#${faces.fgFontLockStringFace}";
+                keyColor = "${colors.orange}";
+                colonColor = "${colors.foreground}";
+                valueColor = "#${colors.foreground}";
               };
               logs = {
-                fgColor = "#${faces.fgDefault}";
-                bgColor = "#${faces.bgDefault}";
+                fgColor = "${colors.foreground}";
+                bgColor = "${colors.background}";
                 indicator = {
-                  fgColor = "#${faces.fgDefault}";
-                  bgColor = "#${dracula.purple}";
-                  toggleOnColor = "#${dracula.green}";
-                  toggleOffColor = "#${dracula.cyan}";
+                  fgColor = "${colors.foreground}";
+                  bgColor = "${colors.backgroundViolet}";
+                  toggleOnColor = "${colors.green}";
+                  toggleOffColor = "${colors.cyan}";
                 };
               };
             };

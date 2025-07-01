@@ -101,6 +101,7 @@ in
         };
 
         "spawn-at-startup \"waybar\"" = [ ];
+        "spawn-at-startup \"ags\" \"run\" \"--gtk4\"" = [ ];
         "spawn-at-startup \"udiskie\"" = [ ];
         "spawn-at-startup \"kanshi\"" = [ ];
         "spawn-at-startup \"xwayland-satellite\"" = [ ];
@@ -111,10 +112,17 @@ in
         };
 
         binds = {
-          "Ctrl+SemiColon" = {
+          "Alt+SemiColon" = {
             spawn = [
               "wlr-which-key"
               "${config.xdg.configHome}/niri/wlr-which-key-config.yaml"
+            ];
+          };
+          "Ctrl+SemiColon" = {
+            spawn = [
+              "ags"
+              "request"
+              "toggleMenus"
             ];
           };
 

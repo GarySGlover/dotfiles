@@ -102,6 +102,11 @@ in
                   desc = "Work Browser";
                   cmd = "floorp";
                 }
+                {
+                  key = "x";
+                  desc = "AGS Which Key";
+                  cmd = "ags request toggleMenus";
+                }
               ];
             }
             {

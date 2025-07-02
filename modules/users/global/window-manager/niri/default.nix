@@ -122,8 +122,11 @@ in
             spawn = [
               "ags"
               "request"
-              "toggleMenus"
+              "toggleMenu"
             ];
+          };
+          "Super+T" = {
+            spawn = [ "kitty" ];
           };
 
           XF86AudioRaiseVolume = {

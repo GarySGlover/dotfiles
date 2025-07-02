@@ -7,6 +7,7 @@ let
       mkdir -p $out
       cp app.ts $out/app.ts
       mkdir -p $out/which_key_menu
+      cp niri.ts $out/niri.ts
       cp which_key_menu/binds.ts $out/which_key_menu/binds.ts
       cp which_key_menu/menu.ts $out/which_key_menu/menu.ts
     '';

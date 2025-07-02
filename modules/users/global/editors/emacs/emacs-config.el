@@ -1339,6 +1339,12 @@ If PREFIX provided then clear old result from buffer first"
 
 (setopt browse-url-browser-function #'cnit/browse-url-quesiton)
 
+(use-package repeat
+	:config
+	(setopt
+		repeat-echo-function #'repeat-echo-mode-line
+		repeat-exit-timeout 2))
+
 (defvar-keymap cnit/navigation-repeat-map
 	:repeat t
 	"n" #'next-line

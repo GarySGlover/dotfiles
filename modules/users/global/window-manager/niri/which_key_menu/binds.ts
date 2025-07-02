@@ -1,10 +1,21 @@
-import { Action, MenuAction } from "./menu";
+import { Menu } from "./menu";
+import { execAsync } from "astal/process";
 
-function niri(action: string) {
-  return Action.exec(`niri msg action ${action}`);
+class Action {
+  public static exec(cmd: string | string[]) {
+    return () => execAsync(cmd);
+  }
+  public static set_menu(menu: Menu.Action[]) {
+    return () => {
+      Menu.map.set(menu);
+    };
+  }
+  public static niri(action: string) {
+    return Action.exec(`niri msg action ${action}`);
+  }
 }
 
-export const apps: MenuAction[] = [
+export const apps: Menu.Action[] = [
   { key: "b", label: "Brave", action: Action.exec("brave") },
   {
     key: "B",
@@ -48,7 +59,7 @@ export const apps: MenuAction[] = [
   },
 ];
 
-export const main: MenuAction[] = [
+export const main: Menu.Action[] = [
   {
     key: "a",
     label: "Apps →",
@@ -58,227 +69,227 @@ export const main: MenuAction[] = [
   {
     key: "f",
     label: "Focus Column →",
-    action: niri("focus-column-right-or-first"),
+    action: Action.niri("focus-column-right-or-first"),
     keepOpen: true,
   },
   {
     key: "F",
     label: "Focus Monitor →",
-    action: niri("focus-monitor-right"),
+    action: Action.niri("focus-monitor-right"),
     keepOpen: true,
   },
   {
     key: "Ctrl+f",
     label: "Move Column →",
-    action: niri("move-column-right"),
+    action: Action.niri("move-column-right"),
     keepOpen: true,
   },
   {
     key: "Ctrl+F",
     label: "Move Column ⇨ Monitor →",
-    action: niri("move-column-to-monitor-right"),
+    action: Action.niri("move-column-to-monitor-right"),
     keepOpen: true,
   },
   {
     key: "Alt+f",
     label: "Move Workspace ⇨ Monitor →",
-    action: niri("move-workspace-to-monitor-right"),
+    action: Action.niri("move-workspace-to-monitor-right"),
     keepOpen: true,
   },
   {
     key: "b",
     label: "Focus Column ←",
-    action: niri("focus-column-left-or-last"),
+    action: Action.niri("focus-column-left-or-last"),
     keepOpen: true,
   },
   {
     key: "B",
     label: "Focus Monitor ←",
-    action: niri("focus-monitor-left"),
+    action: Action.niri("focus-monitor-left"),
     keepOpen: true,
   },
   {
     key: "Ctrl+b",
     label: "Move Column ←",
-    action: niri("move-column-left"),
+    action: Action.niri("move-column-left"),
     keepOpen: true,
   },
   {
     key: "Ctrl+B",
     label: "Move Column ⇨ Monitor ←",
-    action: niri("move-column-to-monitor-left"),
+    action: Action.niri("move-column-to-monitor-left"),
     keepOpen: true,
   },
   {
     key: "Alt+b",
     label: "Move Workspace ⇨ Monitor ←",
-    action: niri("move-workspace-to-monitor-left"),
+    action: Action.niri("move-workspace-to-monitor-left"),
     keepOpen: true,
   },
   {
     key: "p",
     label: "Focus Workspace ↑",
-    action: niri("focus-workspace-up"),
+    action: Action.niri("focus-workspace-up"),
     keepOpen: true,
   },
   {
     key: "P",
     label: "Focus Monitor ↑",
-    action: niri("focus-monitor-up"),
+    action: Action.niri("focus-monitor-up"),
     keepOpen: true,
   },
   {
     key: "Ctrl+p",
     label: "Move Column ⇧ Workspace ↑",
-    action: niri("move-column-to-workspace-up"),
+    action: Action.niri("move-column-to-workspace-up"),
     keepOpen: true,
   },
   {
     key: "Ctrl+P",
     label: "Move Column ⇨ Monitor ↑",
-    action: niri("move-column-to-monitor-up"),
+    action: Action.niri("move-column-to-monitor-up"),
     keepOpen: true,
   },
   {
     key: "Alt+p",
     label: "Move Workspace ⇨ Monitor ↑",
-    action: niri("move-workspace-to-monitor-up"),
+    action: Action.niri("move-workspace-to-monitor-up"),
     keepOpen: true,
   },
   {
     key: "n",
     label: "Focus Workspace ↓",
-    action: niri("focus-workspace-down"),
+    action: Action.niri("focus-workspace-down"),
     keepOpen: true,
   },
   {
     key: "N",
     label: "Focus Monitor ↓",
-    action: niri("focus-monitor-down"),
+    action: Action.niri("focus-monitor-down"),
     keepOpen: true,
   },
   {
     key: "Ctrl+n",
     label: "Move Column ⇧ Workspace ↓",
-    action: niri("move-column-to-workspace-down"),
+    action: Action.niri("move-column-to-workspace-down"),
     keepOpen: true,
   },
   {
     key: "Ctrl+N",
     label: "Move Column ⇨ Monitor ↓",
-    action: niri("move-column-to-monitor-down"),
+    action: Action.niri("move-column-to-monitor-down"),
     keepOpen: true,
   },
   {
     key: "Alt+n",
     label: "Move Workspace ⇨ Monitor ↓",
-    action: niri("move-workspace-to-monitor-down"),
+    action: Action.niri("move-workspace-to-monitor-down"),
     keepOpen: true,
   },
   {
     key: "v",
     label: "Move Workspace ↑",
-    action: niri("move-workspace-up"),
+    action: Action.niri("move-workspace-up"),
     keepOpen: true,
   },
   {
     key: "V",
     label: "Move Workspace ↓",
-    action: niri("move-workspace-down"),
+    action: Action.niri("move-workspace-down"),
     keepOpen: true,
   },
   {
     key: "e",
     label: "Toggle Focus ↔ Floating",
-    action: niri("switch-focus-between-floating-and-tiling"),
+    action: Action.niri("switch-focus-between-floating-and-tiling"),
     keepOpen: true,
   },
   {
     key: "E",
     label: "Toggle Floating",
-    action: niri("toggle-window-floating"),
+    action: Action.niri("toggle-window-floating"),
     keepOpen: true,
   },
   {
     key: "s",
     label: "📸 Screenshot Window",
-    action: niri("screenshot-window"),
+    action: Action.niri("screenshot-window"),
   },
   {
     key: "S",
     label: "📸 Screenshot Screen",
-    action: niri("screenshot-screen"),
+    action: Action.niri("screenshot-screen"),
   },
   {
     key: "Ctrl+s",
     label: "📸 Screenshot",
-    action: niri("screenshot"),
+    action: Action.niri("screenshot"),
   },
   {
     key: "c",
     label: "📺 Cast Window",
-    action: niri("set-dynamic-cast-window"),
+    action: Action.niri("set-dynamic-cast-window"),
   },
   {
     key: "C",
     label: "📺 Cast Monitor",
-    action: niri("set-dynamic-cast-monitor"),
+    action: Action.niri("set-dynamic-cast-monitor"),
   },
   {
     key: "Ctrl+C",
     label: "❌ Clear Cast",
-    action: niri("clear-dynamic-cast-target"),
+    action: Action.niri("clear-dynamic-cast-target"),
   },
   {
     key: "x",
     label: "↔ Switch Column Width",
-    action: niri("switch-preset-column-width"),
+    action: Action.niri("switch-preset-column-width"),
     keepOpen: true,
   },
   {
     key: "X",
     label: "⬌ Expand Column",
-    action: niri("expand-column-to-available-width"),
+    action: Action.niri("expand-column-to-available-width"),
     keepOpen: true,
   },
   {
     key: "Ctrl+x",
     label: "⬛ Maximize Column",
-    action: niri("maximize-column"),
+    action: Action.niri("maximize-column"),
     keepOpen: true,
   },
   {
     key: "m",
     label: "⬛ Maximize Column",
-    action: niri("maximize-column"),
+    action: Action.niri("maximize-column"),
     keepOpen: true,
   },
   {
     key: "M",
     label: "⛶ Fullscreen",
-    action: niri("fullscreen-window"),
+    action: Action.niri("fullscreen-window"),
     keepOpen: true,
   },
   {
     key: "Ctrl+m",
     label: "⛶ Fake Fullscreen",
-    action: niri("toggle-windowed-fullscreen"),
+    action: Action.niri("toggle-windowed-fullscreen"),
     keepOpen: true,
   },
   {
     key: "c",
     label: "🧲 Center Column",
-    action: niri("center-column"),
+    action: Action.niri("center-column"),
   },
   {
     key: "C",
     label: "🧲 Center Visible",
-    action: niri("center-visible-columns"),
+    action: Action.niri("center-visible-columns"),
   },
   {
     key: "w",
     label: "❌ Close Window",
-    action: niri("close-window"),
+    action: Action.niri("close-window"),
   },
-  { key: "W", label: "💣 Quit", action: niri("quit") },
+  { key: "W", label: "💣 Quit", action: Action.niri("quit") },
 ];

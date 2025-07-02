@@ -262,6 +262,9 @@
           nixfmt-rfc-style
           nixd
 
+          # TypeScript
+          typescript-language-server
+
           # Formatter for various languages
           nodePackages.prettier
 

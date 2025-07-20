@@ -206,11 +206,7 @@
    ("cp" (lambda ()
       (cnit/modes-highlight 'copilot-mode "Copilot"))
     copilot-mode)]
-  ["Indent" ("ai" (lambda ()
-      (cnit/modes-highlight
-       'aggressive-indent-mode "Aggressive Indent"))
-    aggressive-indent-mode)
-   ("ei" (lambda ()
+  ["Indent" ("ei" (lambda ()
       (cnit/modes-highlight 'electric-indent-mode "Electric Indent"))
     electric-indent-mode)
    ("it" (lambda ()

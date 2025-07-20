@@ -1,6 +1,6 @@
 #+title: My Emacs Config
 #+author: Gary Glover
-c#+property: header-args :results silent
+#+property: header-args :results silent
 #+STARTUP: content
 
 * General Settings
@@ -266,11 +266,7 @@ the required language details here that get consumed by the initialisation of th
      ("cp" (lambda ()
         (cnit/modes-highlight 'copilot-mode "Copilot"))
       copilot-mode)]
-    ["Indent" ("ai" (lambda ()
-        (cnit/modes-highlight
-         'aggressive-indent-mode "Aggressive Indent"))
-      aggressive-indent-mode)
-     ("ei" (lambda ()
+    ["Indent" ("ei" (lambda ()
         (cnit/modes-highlight 'electric-indent-mode "Electric Indent"))
       electric-indent-mode)
      ("it" (lambda ()

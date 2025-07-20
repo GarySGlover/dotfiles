@@ -1,13 +1,5 @@
 #!/usr/bin/env bash
 # [[file:packages.org::*Init][Init:1]]
-temp_files=()
-function get_auto_clean_temp_file() {
-	local var_name="$1"
-	readonly "$var_name=$(mktemp || exit 1)"
-	temp_files+=("${!var_name}")
-}
-# shellcheck disable=SC2154
-trap 'for file in "${temp_files[@]}"; do rm -f -- "$file"; done' EXIT SIGINT
 function spinner() {
 	if [[ ${SPINNER_DEBUG-FALSE} == "TRUE" ]]; then
 		echo "Debug: " "$1" >&2
@@ -20,7 +12,7 @@ function spinner() {
 gum style \
 	--foreground 212 --border-foreground 212 --border double \
 	--align center --width 50 --margin "1 2" --padding "2 4" \
-	'K9S Runner for AKS Clusters'
+	'Kubernetes Connect'
 # Banner:1 ends here
 
 # [[file:packages.org::*AZ Account List][AZ Account List:1]]
@@ -51,11 +43,7 @@ readonly RESOURCE_GROUP
 # Get resource group:1 ends here
 
 # [[file:packages.org::*Login to cluster][Login to cluster:1]]
-get_auto_clean_temp_file TEMP_CONTEXT || exit 1
 spinner "Logging into $CLUSTER" -- \
-	az aks get-credentials --only-show-errors --name "$CLUSTER" --resource-group "$RESOURCE_GROUP" --subscription "$SUBSCRIPTION" --file "$TEMP_CONTEXT" || exit 1
+	az aks get-credentials --only-show-errors --name "$CLUSTER" --resource-group "$RESOURCE_GROUP" --subscription "$SUBSCRIPTION" || exit 1
+kubelogin convert-kubeconfig -l azurecli
 # Login to cluster:1 ends here
-
-# [[file:packages.org::*Load K9S][Load K9S:1]]
-k9s -A --kubeconfig "$TEMP_CONTEXT" --insecure-skip-tls-verify
-# Load K9S:1 ends here

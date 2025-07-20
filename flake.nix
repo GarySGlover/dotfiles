@@ -1,6 +1,12 @@
 {
   description = "Clover Nix Configuration";
 
+  nixConfig = {
+    extra-experimental-features = "nix-command flakes";
+    extra-substituters = "https://nix-community.cachix.org";
+    extra-trusted-public-keys = "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=";
+  };
+
   inputs = {
     nixpkgs.url = "nixpkgs/nixpkgs-unstable";
     home-manager = {
@@ -269,11 +275,11 @@
           nodePackages.prettier
 
           # Python
-          python312
-          python312Packages.black
-          python312Packages.flake8
-          python312Packages.pipx
-          python312Packages.pip
+          python313
+          python313Packages.black
+          python313Packages.flake8
+          python313Packages.pipx
+          python313Packages.pip
           pyright
         ];
       };

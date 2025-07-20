@@ -26,17 +26,10 @@ in
     ''}";
 
     xdg.configFile."emacs/emacs-config.el".source = ./emacs-config.el;
-    xdg.configFile."emacs/early-init.el".text = ''
+    xdg.configFile."emacs/searly-init.el".text = ''
       ;; -*- lexical-binding: t -*-
 
       (setq use-package-compute-statistics t)
-
-      (let* ((cache-dir (expand-file-name "eln-cache/" user-emacs-directory))
-             (version-dir (car (directory-files cache-dir t (concat "^" (regexp-quote emacs-version) "-"))))
-             (vertico-dir (and version-dir (directory-files version-dir t "^vertico-"))))
-        (when vertico-dir
-          (dolist (dir vertico-dir)
-            (delete-file dir))))
 
       (setopt gc-cons-threshold (* 50 1000 1000))
     '';

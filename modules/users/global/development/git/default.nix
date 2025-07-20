@@ -1,10 +1,15 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   inherit (builtins) hasAttr;
   inherit (lib) mkIf forEach;
-  secrets =
-    import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
-in {
+  secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
+in
+{
   config = {
     xdg.configFile = {
       "git/hooks/pre-commit" = {
@@ -72,14 +77,27 @@ in {
           user = "${secrets.github_user}";
         };
       };
-      aliases = { fetchp = "fetch --force"; };
-      includes = forEach secrets.git_remotes_emails (x: {
-        condition = "hasconfig:remote.*.url:${x.condition}";
-        contents = { user = { email = "${x.email}"; }; };
-      }) ++ forEach secrets.git_folders_emails (x: {
-        condition = "gitdir:${x.condition}";
-        contents = { user = { email = "${x.email}"; }; };
-      });
+      aliases = {
+        fetchp = "fetch --force";
+        clean-ignored = "!f() { if [ \"$1\" = \"--delete\" ]; then git ls-files --ignored --exclude-standard --others -z | xargs -0 rm -rf; else git ls-files --ignored --exclude-standard --others; echo 'Run with --delete to actually remove.'; fi; }; f";
+      };
+      includes =
+        forEach secrets.git_remotes_emails (x: {
+          condition = "hasconfig:remote.*.url:${x.condition}";
+          contents = {
+            user = {
+              email = "${x.email}";
+            };
+          };
+        })
+        ++ forEach secrets.git_folders_emails (x: {
+          condition = "gitdir:${x.condition}";
+          contents = {
+            user = {
+              email = "${x.email}";
+            };
+          };
+        });
     };
   };
 }

@@ -79,33 +79,12 @@ let
   ];
 
   emacsExtraPackages = with pkgs.emacsPackages; [
-    terraform-doc
-    yaml
-    yaml-pro
-    # auto-yasnippet
-    breadcrumb
-    # consult-flyspell
-    consult-yasnippet
-    # devdocs
-    # gcmh
-    git-timemachine
-    # json-navigator
-    # kubel
-    # mini-frame
-    # nerd-icons-completion
-    # nerd-icons-dired
-    # no-littering
-    # ox-gfm
-    # pandoc-mode
-    # pdf-tools
-    # powershell
-    # quickrun
-    # rainbow-delimiters
     ace-window
-    aggressive-indent
     avy
+    breadcrumb
     cape
     consult
+    consult-yasnippet
     copilot
     corfu
     corfu-candidate-overlay
@@ -122,6 +101,7 @@ let
     embark-consult
     format-all
     general
+    git-timemachine
     gptel
     helpful
     hyperbole
@@ -130,7 +110,6 @@ let
     magit
     marginalia
     markdown-mode
-    meow
     nix-ts-mode
     ob-async
     orderless
@@ -140,13 +119,16 @@ let
     rainbow-mode
     standard-themes
     telephone-line
+    terraform-doc
     terraform-mode
     transient
-    treesit-grammars.with-all-grammars
     treesit-fold
+    treesit-grammars.with-all-grammars
     verb
     vertico
     wgrep
+    yaml
+    yaml-pro
     yasnippet
     yasnippet-capf
     yasnippet-snippets

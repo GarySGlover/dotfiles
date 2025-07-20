@@ -35,7 +35,7 @@ those we are waiting on their completion.
 #+begin_src nix :tangle packages.nix :comments link
   { pkgs, ... }:
   {
-    inherit (import ./ak9s.nix { inherit pkgs; }) ak9s;
+    inherit (import ./kc.nix { inherit pkgs; }) kc;
     inherit (import ./devops-clone.nix { inherit pkgs; }) devops-clone;
     inherit (import ./e.nix { inherit pkgs; }) e;
     inherit (import ./azure-tools.nix { inherit pkgs; }) azure-tools;
@@ -142,14 +142,13 @@ those we are waiting on their completion.
   }
 #+end_src
 
-* ak9s
+* kc
 :PROPERTIES:
-:header-args:bash: :tangle ak9s :shebang #!/usr/bin/env bash :comments link
+:header-args:bash: :tangle kc :shebang #!/usr/bin/env bash :comments link
 :END:
 ** script
 *** Init
 #+begin_src bash :noweb yes
-  <<auto_clean_temp_file>>
   <<spinner>>
 #+end_src
 *** Banner
@@ -157,7 +156,7 @@ those we are waiting on their completion.
   gum style \
   	--foreground 212 --border-foreground 212 --border double \
   	--align center --width 50 --margin "1 2" --padding "2 4" \
-  	'K9S Runner for AKS Clusters'
+  	'Kubernetes Connect'
 #+end_src
 
 *** AZ Account List
@@ -200,30 +199,26 @@ Pull resource group for named cluster from the az aks list output.
 
 *** Login to cluster
 #+begin_src bash
-  get_auto_clean_temp_file TEMP_CONTEXT || exit 1
   spinner "Logging into $CLUSTER" -- \
-  	az aks get-credentials --only-show-errors --name "$CLUSTER" --resource-group "$RESOURCE_GROUP" --subscription "$SUBSCRIPTION" --file "$TEMP_CONTEXT" || exit 1
-#+end_src
-
-*** Load K9S
-#+begin_src bash
-  k9s -A --kubeconfig "$TEMP_CONTEXT" --insecure-skip-tls-verify
+  	az aks get-credentials --only-show-errors --name "$CLUSTER" --resource-group "$RESOURCE_GROUP" --subscription "$SUBSCRIPTION" || exit 1
+  kubelogin convert-kubeconfig -l azurecli
 #+end_src
 
 ** nix derivation
-#+begin_src nix :tangle ak9s.nix :comments link
+#+begin_src nix :tangle kc.nix :comments link
   { pkgs, ... }:
   {
-    ak9s = pkgs.writeShellApplication {
-      name = "ak9s";
+    kc = pkgs.writeShellApplication {
+      name = "kc";
       runtimeInputs = with pkgs; [
         k9s
         azure-cli
         gum
         jq
         kubectl
+        kubelogin
       ];
-      text = builtins.readFile ./ak9s;
+      text = builtins.readFile ./kc;
     };
   }
 #+end_src

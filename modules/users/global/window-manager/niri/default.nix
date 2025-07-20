@@ -39,6 +39,7 @@ in
       xwayland-satellite
       bluetuith
       hyprlock
+      wl-kbptr
     ];
 
     xdg.configFile."niri/config.kdl".text =
@@ -112,13 +113,13 @@ in
         };
 
         binds = {
-          "Alt+SemiColon" = {
+          "Ctrl+SemiColon" = {
             spawn = [
               "wlr-which-key"
               "${config.xdg.configHome}/niri/wlr-which-key-config.yaml"
             ];
           };
-          "Ctrl+SemiColon" = {
+          "Ctrl+Alt+SemiColon" = {
             spawn = [
               "ags"
               "request"

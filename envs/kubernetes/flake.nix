@@ -30,7 +30,7 @@
           # Packages for azure packages
           kubelogin
 
-          local-pkgs.ak9s
+          local-pkgs.kc
         ];
       in {
         devShells.default =

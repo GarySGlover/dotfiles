@@ -1,16 +1,17 @@
 # [[file:packages.org::*nix derivation][nix derivation:1]]
 { pkgs, ... }:
 {
-  ak9s = pkgs.writeShellApplication {
-    name = "ak9s";
+  kc = pkgs.writeShellApplication {
+    name = "kc";
     runtimeInputs = with pkgs; [
       k9s
       azure-cli
       gum
       jq
       kubectl
+      kubelogin
     ];
-    text = builtins.readFile ./ak9s;
+    text = builtins.readFile ./kc;
   };
 }
 # nix derivation:1 ends here

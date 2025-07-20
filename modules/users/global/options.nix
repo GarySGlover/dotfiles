@@ -51,6 +51,31 @@ with types;
     defaultColors = mkOption {
       type = types.attrs;
     };
+    colors_2 = {
+      background = mkOption { type = str; };
+      bg = mkOption { type = str; };
+      bg_alt = mkOption { type = str; };
+      bg_dim = mkOption { type = str; };
+      blue = mkOption { type = str; };
+      border_active = mkOption { type = str; };
+      border_inactive = mkOption { type = str; };
+      brown = mkOption { type = str; };
+      cyan = mkOption { type = str; };
+      fg = mkOption { type = str; };
+      fg_alt = mkOption { type = str; };
+      fg_bright = mkOption { type = str; };
+      fg_dim = mkOption { type = str; };
+      fg_max = mkOption { type = str; };
+      foreground = mkOption { type = str; };
+      green = mkOption { type = str; };
+      orange = mkOption { type = str; };
+      purple = mkOption { type = str; };
+      red = mkOption { type = str; };
+      selection_bg = mkOption { type = str; };
+      selection_fg = mkOption { type = str; };
+      yellow = mkOption { type = str; };
+    };
+
     colors =
       {
         background = mkOption { type = str; };

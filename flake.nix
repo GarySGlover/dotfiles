@@ -125,20 +125,19 @@
           value = home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
             inherit extraSpecialArgs;
-            modules =
-              [
-                (
-                  { ... }:
-                  {
-                    home.username = user;
-                    home.homeDirectory = mkForce "/home/${user}";
-                    wolf.host = host;
-                    wolf.secretsPath = ./secrets;
-                  }
-                )
-              ]
-              ++ listNixFilesRecursive ./modules/users/global
-              ++ listNixFilesRecursive ./modules/users/${user};
+            modules = [
+              (
+                { ... }:
+                {
+                  home.username = user;
+                  home.homeDirectory = mkForce "/home/${user}";
+                  wolf.host = host;
+                  wolf.secretsPath = ./secrets;
+                }
+              )
+            ]
+            ++ listNixFilesRecursive ./modules/users/global
+            ++ listNixFilesRecursive ./modules/users/${user};
           };
         };
 
@@ -172,31 +171,31 @@
         nixosSystem {
           inherit system specialArgs;
           inherit pkgs;
-          modules =
-            [
-              sops-nix.nixosModules.sops
-              home-manager.nixosModules.home-manager
-              {
-                home-manager = {
-                  inherit extraSpecialArgs;
-                  useGlobalPkgs = true;
-                  useUserPackages = true;
-                  backupFileExtension = "hm-backup";
-                  users = userHome;
-                  sharedModules = [
-                    (
-                      { ... }:
-                      {
-                        wolf.host = host;
-                      }
-                    )
-                  ] ++ (listNixFilesRecursive ./modules/users/global);
-                };
-              }
-            ]
-            ++ (listNixFilesRecursive ./modules/hosts/global)
-            ++ (listNixFilesRecursive ./modules/hosts/${host})
-            ++ hostLegacyModule;
+          modules = [
+            sops-nix.nixosModules.sops
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                inherit extraSpecialArgs;
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                backupFileExtension = "hm-backup";
+                users = userHome;
+                sharedModules = [
+                  (
+                    { ... }:
+                    {
+                      wolf.host = host;
+                    }
+                  )
+                ]
+                ++ (listNixFilesRecursive ./modules/users/global);
+              };
+            }
+          ]
+          ++ (listNixFilesRecursive ./modules/hosts/global)
+          ++ (listNixFilesRecursive ./modules/hosts/${host})
+          ++ hostLegacyModule;
         };
 
       hostCfgs = {
@@ -255,8 +254,19 @@
       homeConfigurations = listToAttrs (forEach homeCfgs (name: mkHomeCfg name));
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [
+
           # Pre-commit
-          pre-commit
+          (pre-commit.overrideAttrs (oldAttrs: {
+            makeWrapperArgs = ''
+              --set PYTHONPATH $PYTHONPATH
+              --suffix PYTHONPATH : ${
+                python3.withPackages (ps: [
+                  ps.gitpython
+                  ps.click
+                ])
+              }/lib/python3.13/site-packages
+            '';
+          }))
           yamlfmt
           yamllint
 

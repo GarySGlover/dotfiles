@@ -1,9 +1,8 @@
 repos:
-  # TODO: Currently getting error "No module named 'git'"
-  # - repo: https://gitlab.com/vojko.pribudic.foss/pre-commit-update
-  #   rev: v0.8.0
-  #   hooks:
-  #     - id: pre-commit-update
+  - repo: https://gitlab.com/vojko.pribudic.foss/pre-commit-update
+    rev: v0.8.0
+    hooks:
+      - id: pre-commit-update
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:

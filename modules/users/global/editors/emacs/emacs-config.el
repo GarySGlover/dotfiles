@@ -1599,12 +1599,12 @@ If PREFIX provided then clear old result from buffer first"
   (let* ((browser
           (read-char-choice
            "Browser: 'p' personal 'w' work 'e' eww:" '(?p ?w ?e)))
-         (browse-url-firefox-program
+         (browse-url-firefox-arguments
           (cond
            ((eq browser ?p)
-            "firefox")
+            '("-P" "home"))
            ((eq browser ?w)
-            "floorp"))))
+            '("-P" "work")))))
     (cond
      ((eq browser ?e)
       (eww-browse-url url))

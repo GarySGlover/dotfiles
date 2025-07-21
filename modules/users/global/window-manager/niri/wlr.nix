@@ -65,7 +65,7 @@ in
                 {
                   key = "c";
                   desc = "Chromium";
-                  cmd = "chromium";
+                  cmd = "DRI_PRIME=1 chromium";
                 }
                 {
                   key = "e";
@@ -75,7 +75,7 @@ in
                 {
                   key = "f";
                   desc = "Firefox";
-                  cmd = "firefox";
+                  cmd = "DRI_PRIME=1 firefox --no-remote -P home";
                 }
                 {
                   key = "l";
@@ -100,7 +100,7 @@ in
                 {
                   key = "w";
                   desc = "Work Browser";
-                  cmd = "floorp";
+                  cmd = "DRI_PRIME=1 firefox --no-remote -P work";
                 }
                 {
                   key = "x";

@@ -53,46 +53,48 @@ in
     programs.firefox = {
       enable = true;
       languagePacks = [ "en-GB" ];
-      profiles.default = {
-        settings = sharedSettings // {
-          "browser.download.dir" = "/home/clover/tmp/personal"; # Download folder
-          "browser.sessionstore.max_resumed_crashes" = 0; # No resume previous session
-          "permissions.default.desktop-notification" = 2;
+      profiles = {
+        home = {
+          id = 0;
+          name = "home";
+          isDefault = true;
+          settings = sharedSettings // {
+            "browser.download.dir" = "/home/clover/tmp/personal"; # Download folder
+            "browser.sessionstore.max_resumed_crashes" = 0; # No resume previous session
+            "permissions.default.desktop-notification" = 2;
+          };
+          search = {
+            force = true;
+            default = "ddg";
+            privateDefault = "ddg";
+            engines = import ./search.nix { inherit pkgs; };
+          };
+          extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
+            bitwarden
+            enhancer-for-youtube
+            ublock-origin
+          ];
         };
-        search = {
-          force = true;
-          default = "ddg";
-          privateDefault = "ddg";
-          engines = import ./search.nix { inherit pkgs; };
+        work = {
+          id = 1;
+          name = "work";
+          isDefault = false;
+          settings = sharedSettings // {
+            "browser.download.dir" = "/home/clover/tmp/work"; # Download folder
+            "browser.sessionstore.max_resumed_crashes" = 0; # No resume previous session
+            "permissions.default.desktop-notification" = 0;
+          };
+          search = {
+            force = true;
+            default = "ddg";
+            privateDefault = "ddg";
+            engines = import ./search.nix { inherit pkgs; } // secrets.work_firefox_search_engines;
+          };
+          extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
+            bitwarden
+            ublock-origin
+          ];
         };
-        extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
-          bitwarden
-          enhancer-for-youtube
-          ublock-origin
-          absolute-enable-right-click
-        ];
-      };
-    };
-    programs.floorp = {
-      enable = true;
-      languagePacks = [ "en-GB" ];
-      profiles.default = {
-        settings = sharedSettings // {
-          "browser.download.dir" = "/home/clover/tmp/work"; # Download folder
-          "browser.sessionstore.max_resumed_crashes" = 0; # No resume previous session
-          "permissions.default.desktop-notification" = 0;
-        };
-        search = {
-          force = true;
-          default = "ddg";
-          privateDefault = "ddg";
-          engines = import ./search.nix { inherit pkgs; } // secrets.work_firefox_search_engines;
-        };
-        extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
-          bitwarden
-          ublock-origin
-          absolute-enable-right-click
-        ];
       };
     };
   };

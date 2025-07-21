@@ -395,6 +395,8 @@ completing-read prompter."
           ws-butler-mode
           yas-minor-mode))
 
+(setopt line-number-mode nil)
+
 (use-package
  indent-bars
  :config (setopt indent-bars-treesit-support t)

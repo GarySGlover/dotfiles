@@ -479,7 +479,8 @@ candidate in a popup.
 #+begin_src emacs-lisp :tangle yes
   (use-package marginalia :hook (after-init . marginalia-mode))
 #+end_src
-** Mode line modes
+** Mode line
+Hide modes
 #+begin_src emacs-lisp :tangle yes
   (setopt mode-line-collapse-minor-modes
           '(abbrev-mode
@@ -494,6 +495,11 @@ candidate in a popup.
             whitespace-mode
             ws-butler-mode
             yas-minor-mode))
+#+end_src
+
+Change mode line format
+#+begin_src emacs-lisp :tangle yes
+  (setopt line-number-mode nil)
 #+end_src
 ** Indent bars
 #+begin_src emacs-lisp :tangle yes

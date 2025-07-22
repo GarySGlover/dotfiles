@@ -361,7 +361,8 @@ editors.
    (setopt
     corfu-auto nil
     corfu-cycle t
-    corfu-on-exact-match 'show)
+    corfu-on-exact-match 'show
+    tab-always-indent 'complete)
    :bind (:map corfu-map ("RET" . nil) ("C-<tab>" . corfu-complete))
    :hook (after-init . global-corfu-mode))
 #+end_src
@@ -1488,11 +1489,9 @@ worktrees for branches in my ~/features directory.
 ** Direnv
 #+begin_src emacs-lisp :tangle yes
   (use-package
-   direnv
-   :config
-   (setopt direnv-always-show-summary nil)
-   (add-to-list 'warning-suppress-types '(direnv))
-   :hook (after-init . direnv-mode))
+   envrc
+   :hook (after-init . envrc-global-mode)
+   :bind (("C-c d" . envrc-command-map)))
 #+end_src
 ** EditorConfig
 #+begin_src emacs-lisp :tangle yes

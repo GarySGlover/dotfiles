@@ -90,7 +90,6 @@ let
     corfu-candidate-overlay
     coterm
     denote
-    direnv
     disproject
     dtrt-indent
     eat
@@ -99,6 +98,7 @@ let
     elisp-autofmt
     embark
     embark-consult
+    envrc
     format-all
     general
     git-timemachine

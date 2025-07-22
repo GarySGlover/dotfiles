@@ -277,7 +277,8 @@
  (setopt
   corfu-auto nil
   corfu-cycle t
-  corfu-on-exact-match 'show)
+  corfu-on-exact-match 'show
+  tab-always-indent 'complete)
  :bind (:map corfu-map ("RET" . nil) ("C-<tab>" . corfu-complete))
  :hook (after-init . global-corfu-mode))
 
@@ -1282,11 +1283,9 @@ arguments."
  :bind (:map ctl-x-map ("p" . disproject-dispatch)))
 
 (use-package
- direnv
- :config
- (setopt direnv-always-show-summary nil)
- (add-to-list 'warning-suppress-types '(direnv))
- :hook (after-init . direnv-mode))
+ envrc
+ :hook (after-init . envrc-global-mode)
+ :bind (("C-c d" . envrc-command-map)))
 
 (use-package
  editorconfig

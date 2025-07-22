@@ -37,7 +37,10 @@ Modifier locks
   (t! activate meta-quote)
   (t! activate meta-lock)
   (t! activate control-meta)
-  (t! activate control-meta-lock))
+  (t! activate control-meta-lock)
+  (t! activate control-meta-quote)
+  (t! activate super)
+  (t! activate super-quote))
 
 (deflayermap base
              , (switch
@@ -60,14 +63,17 @@ Modifier locks
              , (multi (on-press release-vkey devil-control) ,)
              spc (multi (on-press release-vkey devil-control) (macro , spc))
              ret (multi (on-press release-vkey devil-control) (macro , ret))
-             z (t! devil-sequence control control-quote)
+             g (on-press release-vkey devil-control)
              m (t! devil-sequence control meta)
              r (t! devil-sequence control control-lock)
-             g (multi (macro C-g) (on-press release-vkey devil-control))
+             q (t! devil-sequence control super)
+             z (t! devil-sequence control control-quote)
              ___ (multi (on-press release-vkey devil-control) lctl _))
 
 (deflayermap devil-control-lock
-             , (on-press release-vkey devil-control-lock)
+             g (on-press release-vkey devil-control-lock)
+             m (t! devil-sequence control-lock meta)
+             z @activate-devil-control-quote
              ___ (multi lctl _))
 
 (deflayermap devil-control-quote
@@ -75,14 +81,16 @@ Modifier locks
              ___ (multi (on-press release-vkey devil-control-quote) lctl _))
 
 (deflayermap devil-meta
-             , (multi (on-press release-vkey devil-meta) lalt ,)
-             z (t! devil-sequence meta meta-quote)
+             g (on-press release-vkey devil-meta)
              m (t! devil-sequence meta control-meta)
              r (t! devil-sequence meta meta-lock)
+             z (t! devil-sequence meta meta-quote)
              ___ (multi (on-press release-vkey devil-meta) lalt _))
 
 (deflayermap devil-meta-lock
-             , (on-press release-vkey devil-meta-lock)
+             g (on-press release-vkey devil-meta-lock)
+             m (t! devil-sequence meta-lock control-meta)
+             z @activate-devil-meta-quote
              ___ (multi lalt _))
 
 (deflayermap devil-meta-quote
@@ -90,15 +98,28 @@ Modifier locks
              ___ (multi (on-press release-vkey devil-meta-quote) lalt _))
 
 (deflayermap devil-control-meta
-             , (multi (on-press release-vkey devil-control-meta) lctl lalt ,)
+             g (on-press release-vkey devil-control-meta)
              r (t! devil-sequence meta control-meta-lock)
+             z (t! devil-sequence control-meta control-meta-quote)
              ___ (multi (on-press release-vkey devil-control-meta) lctl lalt _))
 
 (deflayermap devil-control-meta-lock
-             , (on-press release-vkey devil-control-meta-lock)
+             g (on-press release-vkey devil-control-meta-lock)
+             z @activate-devil-control-meta-quote
              ___ (multi lctl lalt _))
 
+(deflayermap devil-control-meta-quote
+             , (multi (on-press release-vkey devil-control-meta-quote) lctl lalt ,)
+               ___ (multi (on-press release-vkey devil-control-meta-quote) lctl lalt _))
 
+(deflayermap devil-super
+             g (on-press release-vkey devil-super)
+             z @activate-devil-super-quote
+             ___ (multi (on-press release-vkey devil-super) lmet _))
+
+(deflayermap devil-super-quote
+             , (multi (on-press release-vkey devil-super-quote) lmet ,)
+             ___ (multi (on-press release-vkey devil-super-quote) lmet _))
 
 (deftemplate devil-key (layer)
              (concat devil- $layer) (layer-while-held (concat devil- $layer))
@@ -112,6 +133,9 @@ Modifier locks
  (t! devil-key meta-lock)
  (t! devil-key meta-quote)
  (t! devil-key control-meta)
- (t! devil-key control-meta-lock))
+ (t! devil-key control-meta-lock)
+ (t! devil-key control-meta-quote)
+ (t! devil-key super)
+ (t! devil-key super-quote))
 
 ;;; kanata.kbd ends here

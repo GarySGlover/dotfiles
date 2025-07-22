@@ -322,6 +322,11 @@ in
               desc = "Quit";
               cmd = "niri msg action quit";
             }
+            {
+              key = "g";
+              desc = "Close WLR";
+              cmd = "";
+            }
           ];
         };
   };

@@ -126,6 +126,28 @@ in
               "toggleMenu"
             ];
           };
+          "Ctrl+Shift+Period" = {
+            spawn = [
+              "wl-kbptr"
+              "-o"
+              "modes=tile,bisect"
+              "-o"
+              "home_row_keys=isrtneaoghb"
+            ];
+          };
+          "Ctrl+Period" = {
+            spawn = [
+              "wl-kbptr"
+              "-o"
+              "modes=floating,bisect"
+              "-o"
+              "mode_floating.source=detect"
+              "-o"
+              "mode_floating.label_symbols=isrtneao"
+              "-o"
+              "home_row_keys=isrtneaoghb"
+            ];
+          };
           "Super+T" = {
             spawn = [ "kitty" ];
           };

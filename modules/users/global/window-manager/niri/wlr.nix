@@ -110,6 +110,11 @@ in
               ];
             }
             {
+              key = "d";
+              desc = "Mouse";
+              cmd = "wl-kbptr -o modes=tile,bisect -o home_row_keys=isrtneaoghb";
+            }
+            {
               key = "f";
               cmd = "niri msg action focus-column-right-or-first";
               desc = "Column Right";

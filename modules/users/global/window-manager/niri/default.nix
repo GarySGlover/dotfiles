@@ -146,6 +146,8 @@ in
               "mode_floating.label_symbols=isrtneao"
               "-o"
               "home_row_keys=isrtneaoghb"
+              "-o"
+              "mode_floating.label_font_size=20 50% 100"
             ];
           };
           "Super+T" = {

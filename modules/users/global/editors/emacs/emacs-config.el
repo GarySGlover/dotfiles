@@ -308,7 +308,7 @@
    ("r" "Replace" consult-yank-replace)
    ("k" "KMacro" consult-kmacro)]
   ["Navigation"
-   ("t" "Goto line" consult-goto-line)
+   ("t" "Gotoline" consult-goto-line)
    ("m" "Mark" consult-mark)
    ("M" "Global mark" consult-global-mark)
    ("i" "imenu" consult-imenu :if-not-derived org-mode)
@@ -322,7 +322,9 @@
   ["Find"
    ("g" "Grep" consult-ripgrep)
    ("G" "Git grep" consult-git-grep)
-   ("f" "Find" consult-fd)]])
+    ("f" "Find" consult-fd)
+    ("s" "Snippets" consult-yasnippet)
+    ("S" "Visit snippets" consult-yasnippet-visit-snippet-file)]])
 
 (use-package
  embark
@@ -406,6 +408,11 @@ completing-read prompter."
 (use-package winner :init (winner-mode 1))
 
 (use-package
+ beframe
+ :init (beframe-mode 1)
+ :bind ("C-c B" . beframe-transient))
+
+(use-package
  hyperbole
  :bind
  (("C-M-RET" . hkey-either)
@@ -481,6 +488,11 @@ If not, prompt the user whether to allow running all code blocks silently."
  (setopt org-confirm-babel-evaluate 'cnit/org-confirm-babel-evaluate))
 
 (use-package ob-async)
+
+(use-package
+ org-menu
+ :after org
+ :bind (:map org-mode-map ("C-c M" . org-menu)))
 
 (use-package
  denote

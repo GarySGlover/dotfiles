@@ -400,7 +400,7 @@ candidate in a popup.
      ("r" "Replace" consult-yank-replace)
      ("k" "KMacro" consult-kmacro)]
     ["Navigation"
-     ("t" "Goto line" consult-goto-line)
+     ("t" "Gotoline" consult-goto-line)
      ("m" "Mark" consult-mark)
      ("M" "Global mark" consult-global-mark)
      ("i" "imenu" consult-imenu :if-not-derived org-mode)
@@ -414,8 +414,11 @@ candidate in a popup.
     ["Find"
      ("g" "Grep" consult-ripgrep)
      ("G" "Git grep" consult-git-grep)
-     ("f" "Find" consult-fd)]])
+      ("f" "Find" consult-fd)
+      ("s" "Snippets" consult-yasnippet)
+      ("S" "Visit snippets" consult-yasnippet-visit-snippet-file)]])
 #+end_src
+
 ** TODO [#C] Rainbow delimiters
 ** Embark
 #+begin_src emacs-lisp :tangle yes
@@ -513,6 +516,13 @@ Change mode line format
 #+begin_src emacs-lisp :tangle yes
   (use-package winner :init (winner-mode 1))
 #+end_src
+** Beframe
+#+begin_src emacs-lisp :tangle yes
+  (use-package
+   beframe
+   :init (beframe-mode 1)
+   :bind ("C-c B" . beframe-transient))
+#+end_src
 * Infformation Management
 ** TODO [#A] Hyperbole
 #+begin_src emacs-lisp :tangle yes
@@ -602,6 +612,13 @@ Change mode line format
 **** OBAsync
 #+begin_src emacs-lisp :tangle yes
   (use-package ob-async)
+#+end_src
+*** Menu
+#+begin_src emacs-lisp :tangle yes
+  (use-package
+   org-menu
+   :after org
+   :bind (:map org-mode-map ("C-c M" . org-menu)))
 #+end_src
 ** Denote
 Denote is a note taking package that works on one note per file and

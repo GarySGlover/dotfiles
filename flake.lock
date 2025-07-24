@@ -286,6 +286,22 @@
         "type": "github"
       }
     },
+    "org-menu": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1740501733,
+        "narHash": "sha256-iU/a7Z71oRD/Dj2TJ07V+VC6CRpYlNJZu0nJ0wdq7Wg=",
+        "owner": "sheijk",
+        "repo": "org-menu",
+        "rev": "aa3b9b1612023d215084a13e106949c32365525e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "sheijk",
+        "repo": "org-menu",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "ags": "ags",
@@ -296,6 +312,7 @@
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs_3",
         "nur": "nur",
+        "org-menu": "org-menu",
         "sops-nix": "sops-nix",
         "transient-compile": "transient-compile",
         "ws-butler": "ws-butler"

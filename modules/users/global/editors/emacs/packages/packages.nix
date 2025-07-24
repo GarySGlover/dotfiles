@@ -69,6 +69,21 @@ let
         '';
       }
     );
+    org-menu = (
+      melpaBuild {
+        pname = "org-menu";
+        version = "1";
+        commit = "1";
+        src = inputs.org-menu;
+        packageRequires = [ ];
+        recipe = pkgs.writeText "recipe" ''
+          (org-menu
+            :repo "sheijk/org-menu"
+            :fetcher github
+            :files ("*.el"))
+        '';
+      }
+    );
   };
 
   emacsExtraPackagesLocal = with epkgsl; [
@@ -76,12 +91,14 @@ let
     transient-compile
     eglot-booster
     ws-butler
+    org-menu
   ];
 
   emacsExtraPackages = with pkgs.emacsPackages; [
     ace-window
     avy
     breadcrumb
+    beframe
     cape
     consult
     consult-yasnippet

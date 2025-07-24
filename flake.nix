@@ -42,6 +42,10 @@
       url = "github:lewang/ws-butler";
       flake = false;
     };
+    org-menu = {
+      url = "github:sheijk/org-menu";
+      flake = false;
+    };
   };
 
   outputs =

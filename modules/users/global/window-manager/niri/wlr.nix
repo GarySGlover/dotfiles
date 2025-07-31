@@ -83,9 +83,9 @@ in
                   cmd = "hyprlock";
                 }
                 {
-                  key = "n";
-                  desc = "Nyxt";
-                  cmd = "nyxt";
+                  key = "q";
+                  desc = "Qutebrowser";
+                  cmd = "qutebrowser";
                 }
                 {
                   key = "s";

@@ -75,7 +75,7 @@ in
                 {
                   key = "f";
                   desc = "Firefox";
-                  cmd = "DRI_PRIME=1 firefox --no-remote -P home";
+                  cmd = "firefox --no-remote -P home";
                 }
                 {
                   key = "l";
@@ -293,18 +293,13 @@ in
             }
             {
               key = "m";
-              desc = "Maximize Column";
-              cmd = "niri msg action maximize-column";
+              desc = "Fake Fullscreen";
+              cmd = "niri msg action toggle-windowed-fullscreen";
             }
             {
               key = "M";
               desc = "Fullscreen";
               cmd = "niri msg action fullscreen-window";
-            }
-            {
-              key = "Ctrl+m";
-              desc = "Fake Fullscreen";
-              cmd = "niri msg action toggle-windowed-fullscreen";
             }
             {
               key = "c";

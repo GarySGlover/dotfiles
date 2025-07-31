@@ -33,6 +33,7 @@ let
             "libvirtd"
             "input"
             "dialout"
+            "video"
           ];
         };
         work = {

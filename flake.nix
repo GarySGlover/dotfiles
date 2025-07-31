@@ -24,6 +24,10 @@
     emacs-overlay.url = "github:nix-community/emacs-overlay/master";
     ags.url = "github:aylur/ags";
     nur.url = "github:nix-community/NUR";
+    qutebrowser-src = {
+      url = "github:qutebrowser/qutebrowser";
+      flake = false;
+    };
 
     # Emacs Packages
     transient-compile = {
@@ -105,6 +109,8 @@
           emacs-overlay.overlay
           (import ./modules/overlays/tree-sitter-grammars.nix)
           (import ./modules/overlays/codeium.nix)
+          (import ./modules/overlays/n8n.nix)
+          (import ./modules/overlays/qutebrowser.nix)
           nur.overlays.default
         ];
       };

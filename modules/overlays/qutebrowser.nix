@@ -1,4 +1,4 @@
-self: super: {
+inputs: self: super: {
   qutebrowser = super.qutebrowser.override {
     python3 = super.python3.override {
       packageOverrides = self: super: {

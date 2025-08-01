@@ -1,4 +1,4 @@
-final: prev: {
+inputs: final: prev: {
   n8n = prev.n8n.overrideAttrs (finalAttrs: {
     pname = "n8n";
     version = "1.103.2";

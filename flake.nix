@@ -50,21 +50,19 @@
       url = "github:sheijk/org-menu";
       flake = false;
     };
+
+    # MCP Servers
+    modelcontextprotocol-servers = {
+      url = "github:modelcontextprotocol/servers";
+      flake = false;
+    };
   };
 
   outputs =
-    {
-      emacs-overlay,
-      home-manager,
-      nixpkgs,
-      sops-nix,
-      nur,
-      self,
-      ...
-    }@inputs:
+    { self, ... }@inputs:
     let
-      wolfLib = import ./functions.nix { lib = nixpkgs.lib; };
-      lib = nixpkgs.lib;
+      wolfLib = import ./functions.nix { lib = inputs.nixpkgs.lib; };
+      lib = inputs.nixpkgs.lib;
       inherit (lib)
         pathExists
         hasSuffix
@@ -101,18 +99,21 @@
               [ ]
           ) (readDir dir)
         );
-
-      pkgs = import nixpkgs {
+      pkgs = import inputs.nixpkgs {
         inherit system;
         config = import ./config.nix { inherit lib; };
-        overlays = [
-          emacs-overlay.overlay
-          (import ./modules/overlays/tree-sitter-grammars.nix)
-          (import ./modules/overlays/codeium.nix)
-          (import ./modules/overlays/n8n.nix)
-          (import ./modules/overlays/qutebrowser.nix)
-          nur.overlays.default
-        ];
+        overlays =
+          let
+            overlayFiles = builtins.filter (file: builtins.match ".*\\.nix$" file != null) (
+              builtins.attrNames (builtins.readDir ./modules/overlays)
+            );
+            importedOverlays = map (file: import (./modules/overlays + "/${file}") inputs) overlayFiles;
+          in
+          [
+            inputs.emacs-overlay.overlay
+            inputs.nur.overlays.default
+          ]
+          ++ importedOverlays;
       };
 
       extraSpecialArgs = {
@@ -132,7 +133,7 @@
         in
         {
           inherit name;
-          value = home-manager.lib.homeManagerConfiguration {
+          value = inputs.home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
             inherit extraSpecialArgs;
             modules = [
@@ -175,6 +176,7 @@
               host
               users
               self
+              inputs
               ;
           };
         in
@@ -182,10 +184,10 @@
           inherit system specialArgs;
           inherit pkgs;
           modules = [
-            sops-nix.nixosModules.sops
-            home-manager.nixosModules.home-manager
+            inputs.sops-nix.nixosModules.sops
+            inputs.home-manager.nixosModules.home-manager
             {
-              home-manager = {
+              inputs.home-manager = {
                 inherit extraSpecialArgs;
                 useGlobalPkgs = true;
                 useUserPackages = true;
@@ -255,7 +257,7 @@
             inherit system;
             inherit pkgs;
             modules = [
-              (nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-graphical-gnome.nix")
+              (inputs.nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-graphical-gnome.nix")
               ./modules/hosts/live/live.nix
             ];
           };

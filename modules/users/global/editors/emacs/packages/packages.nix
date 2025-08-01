@@ -127,6 +127,7 @@ let
     magit
     marginalia
     markdown-mode
+    mcp
     nix-ts-mode
     ob-async
     orderless
@@ -179,6 +180,9 @@ in
       pandoc
 
       emacs-lsp-booster
+
+      # MCP Servers
+      mcp-server-git
     ];
 
     home.file = {

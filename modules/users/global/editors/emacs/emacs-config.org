@@ -1099,6 +1099,17 @@ Enhance re-builder to allow for running query replace regex when hitting return 
     gptel-backend (gptel-make-gh-copilot "Copilot")
     gptel-model 'gpt-4.1))
  #+end_src
+** MCP
+#+begin_src emacs-lisp :tangle yes
+  (use-package
+   mcp
+   :after gptel
+   :config (require 'mcp-hub) (require 'gptel-integrations)
+   (setq mcp-hub-servers
+         `(("git" .
+            (:command "mcp-server-git" :args ("-r" "~/dotfiles")))))
+   :hook (after-init . mcp-hub-start-all-server))
+#+end_src
 ** Copilot
 #+begin_src emacs-lisp :tangle yes
   (use-package

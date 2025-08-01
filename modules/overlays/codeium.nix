@@ -1,4 +1,4 @@
-self: super: {
+inputs: self: super: {
   codeium = super.codeium.overrideAttrs (oldAttrs: {
     version = "1.12.0";
     src = super.fetchurl {

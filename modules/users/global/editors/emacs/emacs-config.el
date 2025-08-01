@@ -933,6 +933,15 @@ Throw a `user-error` if the key is not found."
   gptel-model 'gpt-4.1))
 
 (use-package
+ mcp
+ :after gptel
+ :config (require 'mcp-hub) (require 'gptel-integrations)
+ (setq mcp-hub-servers
+       `(("git" .
+          (:command "mcp-server-git" :args ("-r" "~/dotfiles")))))
+ :hook (after-init . mcp-hub-start-all-server))
+
+(use-package
  copilot
  :hook ((prog-mode yaml-ts-mode) . copilot-mode)
  :config (setopt copilot-indent-offset-warning-disable t)

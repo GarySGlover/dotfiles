@@ -187,7 +187,7 @@
             inputs.sops-nix.nixosModules.sops
             inputs.home-manager.nixosModules.home-manager
             {
-              inputs.home-manager = {
+              home-manager = {
                 inherit extraSpecialArgs;
                 useGlobalPkgs = true;
                 useUserPackages = true;

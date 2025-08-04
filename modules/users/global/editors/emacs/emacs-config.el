@@ -899,9 +899,10 @@ surrounded by word boundaries."
 
 (use-package
  gptel
- :commands (gptel gptel-send gptel-menu)
- :hook (gptel-post-stream . gptel-auto-scroll)
+ :defer t
+ :commands (gptel gptel-send)
  :bind (("C-c l" . gptel-menu))
+ :hook (gptel-post-stream . gptel-auto-scroll)
  :config (require 'gptel-org)
  (defun cnit/retrieve-anthropic-api-key ()
    "Retrieve the API key for the machine `api.anthropic.com` with login `apikey` using `auth-source-search`.
@@ -930,7 +931,38 @@ Throw a `user-error` if the key is not found."
  (setopt
   gptel-default-mode 'org-mode
   gptel-backend (gptel-make-gh-copilot "Copilot")
-  gptel-model 'gpt-4.1))
+  gptel-model 'gpt-4.1
+   gptel-confirm-tools-calls t))
+
+(use-package
+ gptel-transient
+ :after gptel
+ :commands (gptel-menu)
+ :config
+ (transient-replace-suffix
+  'gptel-menu "g"
+  '("g" "gptel session" "g"
+    :class transient-option
+    :prompt "Existing or new gptel session: "
+    :init-value
+    (lambda (obj)
+      (oset
+       obj value
+       (project-prefixed-buffer-name
+        (gptel-backend-name gptel-backend))))
+    :reader
+    (lambda (prompt _ _history)
+      (read-buffer prompt
+                   (generate-new-buffer-name
+                    (project-prefixed-buffer-name
+                     (gptel-backend-name gptel-backend)))
+                   nil
+                   (lambda (buf-name)
+                     (if (consp buf-name)
+                         (setq buf-name (car buf-name)))
+                     (let ((buf (get-buffer buf-name)))
+                       (and (buffer-local-value 'gptel-mode buf)
+                            (not (eq (current-buffer) buf))))))))))
 
 (use-package
  mcp
@@ -938,7 +970,7 @@ Throw a `user-error` if the key is not found."
  :config (require 'mcp-hub) (require 'gptel-integrations)
  (setq mcp-hub-servers
        `(("git" .
-          (:command "mcp-server-git" :args ("-r" "~/dotfiles")))))
+          (:command "mcp-server-git"))))
  :hook (after-init . mcp-hub-start-all-server))
 
 (use-package
@@ -1301,6 +1333,14 @@ arguments."
 (use-package
  disproject
  :config (setopt disproject-shell-command #'project-eshell)
+ (defun disproject-gptel ()
+   "Run gptel in the current project."
+   (interactive)
+   (let ((default-directory (project-root (project-current)))
+         (gptel-buffer-name (project-prefixed-buffer-name "gptel")))
+     (switch-to-buffer (gptel gptel-buffer-name))))
+ (transient-append-suffix
+  'disproject-dispatch "d" '("i" "Gptel" disproject-gptel))
  :bind (:map ctl-x-map ("p" . disproject-dispatch)))
 
 (use-package

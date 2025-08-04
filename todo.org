@@ -1,23 +1,26 @@
-Things that have anoyed me in the config that could do with
-* Edit indirect / fence-edit.el
+* New things
+** LLM
+*** RAGMACS [[https://github.com/positron-solutions/ragmacs]]. GPTel tools for elisp
+reddit post for it https://www.reddit.com/r/emacs/comments/1mf6j42/dont_generate_retrieve_and_transform_gptel_tools/
+** Transient Help
+reddit post: https://www.reddit.com/r/emacs/comments/1mdi8vu/a_transient_for_help/
+** Edit indirect / fence-edit.el
 https://github.com/Fanael/edit-indirect
 https://github.com/aaronbieber/fence-edit.el
-* Avy multiple cursors
+** Avy multiple cursors
 https://github.com/aatmunbaxi/lasgun.el
-* New packages
+** New packages
 [[http://melpa.org/#/sideline-eglot][sideline-eglot]]
-* Combobulate for TS modes
-* modeline
-- display tab/space and indent offset
-* transient-compile
+** Combobulate for TS modes
+** transient-compile
 allow combining tools into single transient
 tools
 - zig
 - terraform
 - nix (test & build)
-* emacs: multiple cursors / kmacro
-* emacs: meow beacon in devil
-* notification prior to battery going flat
-* qt theming
-* gtk theming
-* ags implementation
+** emacs: multiple cursors / kmacro
+** emacs: meow beacon in devil
+** notification prior to battery going flat
+** qt theming
+** gtk theming
+** ags implementation

@@ -1136,11 +1136,78 @@ Enhance re-builder to allow for running query replace regex when hitting return 
   (use-package
    mcp
    :after gptel
+   :demand t
    :config (require 'mcp-hub) (require 'gptel-integrations)
-   (setq mcp-hub-servers
-         `(("git" .
-            (:command "mcp-server-git"))))
-   :hook (after-init . mcp-hub-start-all-server))
+   (defun cnit/set-mcp-hub-servers-path (repo-path)
+     "Set 'mcp-hub-servers' globally for this Emacs session using REPO-PATH as a string."
+     (interactive (list
+                   (expand-file-name
+                    (read-directory-name "Select MCP base directory: "
+                                         "~/"))))
+     (let ((repo-path (expand-file-name repo-path)))
+       (setq mcp-hub-servers
+             `(("git" .
+                (:command
+                 "mcp-server-git"
+                 :args ("-r" ,repo-path "-v")))))))
+
+   (defvar cnit/last-gptel-project-root nil)
+
+   (defun mcp-restart-servers-for-project (project-root)
+     "Restart MCP hub servers whose :args include PROJECT-ROOT."
+     (interactive)
+     ;; Ensure mcp-hub-servers is up to date for this project
+     (cnit/set-mcp-hub-servers-path project-root)
+     (dolist (server mcp-hub-servers)
+       (let* ((server-name (car server))
+              (server-props (cdr server))
+              (args (plist-get server-props :args)))
+         (when (and args
+                    (seq-some
+                     (lambda (arg)
+                       (and (stringp arg)
+                            (string-match-p
+                             (regexp-quote
+                              (expand-file-name project-root))
+                             arg)))
+                     args))
+           ;; Only restart if server is running (optional)
+           (when (functionp 'mcp-stop-server)
+             (mcp-stop-server server-name))
+           (when (functionp 'mcp-hub-start-server)
+             (mcp-hub--start-server server))))))
+
+   (defun cnit/restart-servers-if-project-changed (&rest _)
+     "Restart MCP servers if the current project root has changed."
+     (let ((current-root
+            (or (and (project-current) (project-root (project-current)))
+                "~/")))
+       (unless (equal current-root cnit/last-gptel-project-root)
+         ;; Put your server-restarting logic here
+         (mcp-restart-servers-for-project current-root)
+         (setq cnit/last-gptel-project-root current-root))))
+
+   (advice-add
+    'gptel-send
+    :before #'cnit/restart-servers-if-project-changed)
+   (advice-add
+    'gptel-menu
+    :before #'cnit/restart-servers-if-project-changed)
+
+   (defun cnit/restart-servers-on-gptel-window-select (&rest _)
+     "Restart MCP servers if the gptel window is selected."
+     (when (bound-and-true-p gptel-mode)
+       (cnit/restart-servers-if-project-changed)))
+
+   (setq window-selection-change-functions
+         (cons
+          #'cnit/restart-servers-on-gptel-window-select
+          window-selection-change-functions))
+
+   ;; Start the MCP hub servers with a default path
+   (cnit/set-mcp-hub-servers-path
+    (or (and (project-current) (project-root (project-current))) "~/"))
+   (mcp-hub-start-all-server))
 #+end_src
 ** Copilot
 #+begin_src emacs-lisp :tangle yes

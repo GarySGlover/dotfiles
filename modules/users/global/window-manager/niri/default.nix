@@ -61,7 +61,7 @@ in
         layout = {
           # Columns
           always-center-single-column = [ ];
-          center-focused-column = "on-overflow";
+          center-focused-column = "always";
           default-column-width.proportion = 0.5;
           default-column-display = "tabbed";
           tab-indicator = {
@@ -71,8 +71,6 @@ in
             "proportion 0.25" = [ ];
             "proportion 0.33333" = [ ];
             "proportion 0.5" = [ ];
-            "proportion 0.66667" = [ ];
-            "proportion 0.75" = [ ];
             "proportion 1.0" = [ ];
           };
 

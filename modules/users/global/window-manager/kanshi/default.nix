@@ -12,6 +12,7 @@ let
   bedroomSony = "Sony SONY TV  *00 0x01010101";
   projector = "Optoma Corporation OPTOMA 1080P Q7EH9350054";
   portable = "KEB display 0x01010101";
+  xrealOnePro = "Nreal XREAL One Pro Unknown";
 in
 {
   config = mkIf config.wolf.roles.desktop {
@@ -142,6 +143,21 @@ in
               {
                 criteria = laptopMonitor;
                 position = "1920,0";
+              }
+            ];
+          };
+        }
+        {
+          profile = {
+            name = "xreal";
+            outputs = [
+              {
+                criteria = xrealOnePro;
+                position = "0,0";
+              }
+              {
+                criteria = laptopMonitor;
+                status = "disable";
               }
             ];
           };

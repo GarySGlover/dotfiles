@@ -34,7 +34,6 @@ let
             "input"
             "dialout"
             "video"
-            "nixbld"
           ];
         };
         work = {

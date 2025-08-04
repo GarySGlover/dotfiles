@@ -302,12 +302,12 @@ in
               cmd = "niri msg action fullscreen-window";
             }
             {
-              key = "c";
+              key = "h";
               desc = "Center column";
               cmd = "niri msg action center-column";
             }
             {
-              key = "C";
+              key = "H";
               desc = "Center visible";
               cmd = "niri msg action center-visible-columns";
             }

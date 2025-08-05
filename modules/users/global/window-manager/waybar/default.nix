@@ -20,22 +20,15 @@ in
           margin = "${toString theme.gaps}";
           exclusive = "true";
           modules-left = [
-            "hyprland/workspaces"
-            "hyprland/submap"
-            "custom/kanata-layer"
           ];
           modules-center = [
-            "hyprland/window"
-          ];
-          modules-right = [
+            "custom/kanata-layer"
             "pulseaudio"
             "battery"
             "clock"
           ];
-          "hyprland/workspaces" = { };
-          "hyprland/submap" = {
-            always-on = "true";
-          };
+          modules-right = [
+          ];
           "clock" = {
             format = "{:%Y%m%d-%H%M}";
             tooltip = "false";

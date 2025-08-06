@@ -114,7 +114,24 @@ package manager.
 
 ** Clipboard copy
 #+begin_src emacs-lisp :tangle yes
-  (use-package emacs :config (setopt select-active-regions nil))
+  (use-package
+   emacs
+   :config (setopt select-active-regions nil)
+
+
+    ;; Configure clipboard support for different systems
+   (cond
+    ;; Linux with wl-copy/wl-paste (Wayland)
+    ((and (eq system-type 'gnu/linux) (executable-find "wl-copy"))
+     (setq interprogram-cut-function
+           (lambda (text &optional _)
+             (let ((process-connection-type nil))
+               (let ((proc
+                      (start-process "wl-copy" "*Messages*" "wl-copy")))
+                 (process-send-string proc text)
+                 (process-send-eof proc)))))
+     (setq interprogram-paste-function
+           (lambda () (shell-command-to-string "wl-paste -n"))))))
 #+end_src
 
 * Language Support Variables

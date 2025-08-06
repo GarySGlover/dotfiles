@@ -110,7 +110,7 @@ in
               ];
             }
             {
-              key = "d";
+              key = "j";
               desc = "Mouse";
               cmd = "wl-kbptr -o modes=tile,bisect -o home_row_keys=isrtneaoghb";
             }
@@ -142,6 +142,12 @@ in
               cmd = "niri msg action move-workspace-to-monitor-right";
             }
             {
+              key = "Ctrl+Alt+f";
+              desc = "Consume or expel the focused window right";
+              cmd = "niri msg action consume-or-expel-window-right";
+              keep_open = true;
+            }
+            {
               key = "b";
               cmd = "niri msg action focus-column-left-or-last";
               desc = "Column Left";
@@ -167,6 +173,12 @@ in
               key = "Alt+b";
               desc = "Move Workspace to Monitor Left";
               cmd = "niri msg action move-workspace-to-monitor-left";
+            }
+            {
+              key = "Ctrl+Alt+b";
+              desc = "Consume or expel the focused window left";
+              cmd = "niri msg action consume-or-expel-window-left";
+              keep_open = true;
             }
             {
               key = "p";
@@ -232,6 +244,30 @@ in
               key = "V";
               desc = "Move Workspace Down";
               cmd = "niri msg action move-workspace-down";
+              keep_open = true;
+            }
+            {
+              key = "u";
+              desc = "Focus the window above";
+              cmd = "niri msg action focus-window-up";
+              keep_open = true;
+            }
+            {
+              key = "Ctrl+u";
+              desc = "Move the window up";
+              cmd = "niri msg action move-window-up";
+              keep_open = true;
+            }
+            {
+              key = "d";
+              desc = "Focus the window below";
+              cmd = "niri msg action focus-window-down";
+              keep_open = true;
+            }
+            {
+              key = "Ctrl+d";
+              desc = "Move the window down";
+              cmd = "niri msg action move-window-down";
               keep_open = true;
             }
             {

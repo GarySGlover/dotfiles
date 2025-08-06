@@ -66,21 +66,25 @@
 (use-package
  emacs
  :config (setopt select-active-regions nil)
-
-
-  ;; Configure clipboard support for different systems
+ ;; Configure clipboard support for different systems
  (cond
   ;; Linux with wl-copy/wl-paste (Wayland)
   ((and (eq system-type 'gnu/linux) (executable-find "wl-copy"))
-   (setq interprogram-cut-function
-         (lambda (text &optional _)
-           (let ((process-connection-type nil))
-             (let ((proc
-                    (start-process "wl-copy" "*Messages*" "wl-copy")))
-               (process-send-string proc text)
-               (process-send-eof proc)))))
-   (setq interprogram-paste-function
-         (lambda () (shell-command-to-string "wl-paste -n"))))))
+   (defun wayland-copy-clipboard (text)
+     (setq wl-copy-process
+           (make-process
+            :name "wl-copy"
+            :buffer nil
+            :command '("wl-copy" "-f" "-n")
+            :connection-type 'pipe))
+     (process-send-string wl-copy-process text)
+     (process-send-eof wl-copy-process))
+   (defun wayland-paste ()
+     (if (and wl-copy-process (process-live-p wl-copy-process))
+         nil ; should return nil if we're the current paste owner
+       (shell-command-to-string "wl-paste -n | tr -d \r")))
+   (setq interprogram-cut-function #'wayland-copy-clipboard)
+   (setq interprogram-paste-function #'wayland-paste))))
 
 ;; Remapping modes to new treesitter modes.
 (setq major-mode-remap-alist

@@ -178,6 +178,59 @@
 (defvar cnit/languages--excluded-ts-warning-modes
   '(sh--redirect-bash-ts-mode indent-bars--ts-mode yaml-pro-ts-mode))
 
+(use-package
+ project
+ :demand t
+ :init
+ (defvar cnit/current-project-dir nil
+   "Directory of the current project.")
+ (defvar cnit/provious-project-dir nil
+   "Directory of the previous project.")
+ (defvar cnit/project-change-hook nil
+   "Hook to run when the project changes.")
+ (defun cnit/window-change-notification ()
+   (let ((current-project-dir (cnit/project-root-directory)))
+     (when (not (equal current-project-dir cnit/current-project-dir))
+       (setq cnit/previous-project-dir cnit/current-project-dir)
+       (setq cnit/current-project-dir current-project-dir)
+       (run-hooks 'cnit/project-change-hook))))
+ (defun cnit/project-root-directory ()
+   "Return the root directory of the current project."
+   (expand-file-name
+    (or (and (project-current) (project-root (project-current)))
+        default-directory)))
+ :commands (project-forget-projects-under)
+ :hook (window-state-change . cnit/window-change-notification)
+ :config
+ (project-forget-projects-under "~/git-clones" t)
+ (project-forget-zombie-projects))
+
+(use-package
+ disproject
+ :config (setopt disproject-shell-command #'project-eshell)
+ (defun disproject-gptel ()
+   "Run gptel in the current project."
+   (interactive)
+   (disproject-with-environment (call-interactively #'project-gptel)))
+ (defun gptel-session-buffer ()
+   "Get the project GPTel session buffer, creating one if necessary."
+   (let* ((gptel-buffer-name
+           (project-prefixed-buffer-name
+            (gptel-backend-name gptel-backend)))
+          (buffer (gptel gptel-buffer-name)))
+     (when (fboundp 'beframe-assume-frame-buffers-selectively)
+       (beframe-assume-frame-buffers-selectively `(,buffer)))
+     buffer))
+ (defun project-gptel ()
+   "Run gptel in the current project."
+   (interactive)
+   (let ((default-directory (project-root (project-current t))))
+     (switch-to-buffer (gptel-session-buffer))))
+ (transient-append-suffix
+  'disproject-dispatch "d" '("i" "Gptel" disproject-gptel))
+ :bind (:map ctl-x-map ("p" . disproject-dispatch))
+ :hook (cnit/project-change-hook . gptel-session-buffer))
+
 (require 'transient)
 
 (defun cnit/modes-highlight (mode-symbol text)
@@ -920,10 +973,13 @@ surrounded by word boundaries."
 
 (use-package
  gptel
+ :init (setopt gptel-backend (gptel-make-gh-copilot "Copilot"))
  :defer t
  :commands (gptel gptel-send)
- :bind (("C-c l" . gptel-menu))
- :hook (gptel-post-stream . gptel-auto-scroll)
+ :bind (("C-c l" . gptel-menu) (:map gptel-mode-map ("M-RET" . gptel-send)))
+ :hook
+ ((gptel-post-stream . gptel-auto-scroll)
+  (cnit/project-change . cnit/gptel-project-change))
  :config (require 'gptel-org)
  (defun cnit/retrieve-anthropic-api-key ()
    "Retrieve the API key for the machine `api.anthropic.com` with login `apikey` using `auth-source-search`.
@@ -949,17 +1005,77 @@ Throw a `user-error` if the key is not found."
   "Claude"
   :stream t
   :key #'cnit/retrieve-anthropic-api-key)
+ (defvar cnit/gptel-project-contexts nil
+   "Alist mapping expanded project root directories to saved GPTel contexts.
+Each entry is of the form (PROJECT-DIR . CONTEXT), PROJECT-DIR is fully expanded.")
+
+ (defun cnit/gptel-save-project-context (project-dir context)
+   "Save CONTEXT for expanded PROJECT-DIR in `cnit/gptel-project-contexts`.
+If the project already exists, replace its context."
+   (let ((dir (expand-file-name project-dir)))
+     (setq cnit/gptel-project-contexts
+           (assq-delete-all dir cnit/gptel-project-contexts))
+     (push (cons dir context) cnit/gptel-project-contexts)))
+
+ (defun cnit/gptel-swap-project-contexts
+     (previous-project-dir current-project-dir)
+   "Swap GPTel contexts between projects.
+Save the current `gptel-context--alist` for PREVIOUS-PROJECT-DIR.
+If a context was saved for CURRENT-PROJECT-DIR, restore it into `gptel-context--alist`."
+   (let ((prev-dir
+          (and previous-project-dir
+               (expand-file-name previous-project-dir)))
+         (cur-dir (expand-file-name current-project-dir)))
+     (when prev-dir
+       (cnit/gptel-save-project-context
+        prev-dir gptel-context--alist))
+     (let ((found (assoc cur-dir cnit/gptel-project-contexts)))
+       (setq gptel-context--alist (cdr found)))))
+
+ (defvar cnit/gptel-project-tools nil
+   "Alist mapping project root directories to MCP tools.")
+ (defun cnit/gptel-save-project-tools (project-dir tools)
+   "Save TOOLS for PROJECT-DIR in `cnit/gptel-project-tools`."
+   (let ((dir (expand-file-name project-dir)))
+     (setq cnit/gptel-project-tools
+           (assq-delete-all dir cnit/gptel-project-tools))
+     (push (cons dir tools) cnit/gptel-project-tools)))
+ (defun cnit/gptel-swap-project-tools
+     (previous-project-dir current-project-dir)
+   "Swap GPTel tools between projects."
+   (let ((prev-dir
+          (and previous-project-dir
+               (expand-file-name previous-project-dir)))
+         (cur-dir (expand-file-name current-project-dir)))
+     (when prev-dir
+       (cnit/gptel-save-project-tools prev-dir gptel-tools))
+     (let ((found (assoc cur-dir cnit/gptel-project-tools)))
+       (setq gptel-tools (cdr found)))))
+
+ (defun cnit/gptel-project-change ()
+   "Handle project change for GPTel."
+   (interactive)
+   (cnit/gptel-swap-project-contexts
+    cnit/previous-project-dir cnit/current-project-dir)
+   (cnit/gptel-swap-project-tools
+    cnit/previous-project-dir cnit/current-project-dir))
+
  (setopt
   gptel-default-mode 'org-mode
-  gptel-backend (gptel-make-gh-copilot "Copilot")
-  gptel-model 'gpt-4.1
-   gptel-confirm-tools-calls t))
+  gptel-model 'gpt-4.1))
 
 (use-package
  gptel-transient
  :after gptel
  :commands (gptel-menu)
  :config
+ (defun cnit/gptel-session-name ()
+   "Return the project-prefixed buffer name for
+ the gptel session."
+   (generate-new-buffer-name
+    (project-prefixed-buffer-name
+     (gptel-backend-name gptel-backend))))
+
  (transient-replace-suffix
   'gptel-menu "g"
   '("g" "gptel session" "g"
@@ -974,10 +1090,7 @@ Throw a `user-error` if the key is not found."
     :reader
     (lambda (prompt _ _history)
       (read-buffer prompt
-                   (generate-new-buffer-name
-                    (project-prefixed-buffer-name
-                     (gptel-backend-name gptel-backend)))
-                   nil
+                   (cnit/gptel-session-name) nil
                    (lambda (buf-name)
                      (if (consp buf-name)
                          (setq buf-name (car buf-name)))
@@ -985,11 +1098,53 @@ Throw a `user-error` if the key is not found."
                        (and (buffer-local-value 'gptel-mode buf)
                             (not (eq (current-buffer) buf))))))))))
 
+(with-eval-after-load 'gptel
+  (gptel-make-tool
+   :name "project_current_directory"
+   :description "Get the current project directory."
+   :function
+   (lambda (&rest _)
+     (let ((project-path
+            (or (and (project-current)
+                     (project-root (project-current)))
+                nil)))
+       (if project-path
+           (format "Current project directory: %s" project-path)
+                   "No project found.")))
+   :args nil
+   :category "project"))
+
+(with-eval-after-load 'gptel
+  (defun cnit/gptel-commit-message ()
+    "Generate a commit message using GPTel."
+    (interactive)
+    "Generate a commit message for the current changes."
+    (let ((gptel-confirm-tool-calls nil)
+          (gptel-include-tool-results nil)
+          (gptel-tools
+           (mapcar
+            #'gptel-get-tool
+            '("project_current_directory" "git_diff_staged"))))
+      (gptel-request
+       "Write the commit message using the conventional commit style. The commit message should be concise and descriptive, summarizing the changes made in the current project directory.")))
+
+  (transient-define-prefix
+   cnit/gptel-menu () "GPTel menu."
+   ["GPTel"
+    ;; Commit message should only be available if the Git-Commit minor mode is active
+    ("m" "Generate commit message" cnit/gptel-commit-message)
+     ("q" "Quit" transient-quit-one)])
+
+  (bind-key "C-c L" #'cnit/gptel-menu))
+
 (use-package
  mcp
  :after gptel
  :demand t
- :config (require 'mcp-hub) (require 'gptel-integrations)
+ :hook (cnit/project-change . cnit/mcp-project-change)
+ :config
+ (require 'mcp-hub)
+ (require 'gptel-integrations)
  (defun cnit/set-mcp-hub-servers-path (repo-path)
    "Set 'mcp-hub-servers' globally for this Emacs session using REPO-PATH as a string."
    (interactive (list
@@ -1002,8 +1157,6 @@ Throw a `user-error` if the key is not found."
               (:command
                "mcp-server-git"
                :args ("-r" ,repo-path "-v")))))))
-
- (defvar cnit/last-gptel-project-root nil)
 
  (defun mcp-restart-servers-for-project (project-root)
    "Restart MCP hub servers whose :args include PROJECT-ROOT."
@@ -1023,43 +1176,31 @@ Throw a `user-error` if the key is not found."
                             (expand-file-name project-root))
                            arg)))
                    args))
-         ;; Only restart if server is running (optional)
+         ;; Stop project servers
          (when (functionp 'mcp-stop-server)
-           (mcp-stop-server server-name))
-         (when (functionp 'mcp-hub-start-server)
-           (mcp-hub--start-server server))))))
+           (mcp-stop-server server-name)))))
+   (cnit/mcp-project-connect-gptel))
 
- (defun cnit/restart-servers-if-project-changed (&rest _)
-   "Restart MCP servers if the current project root has changed."
-   (let ((current-root
-          (or (and (project-current) (project-root (project-current)))
-              "~/")))
-     (unless (equal current-root cnit/last-gptel-project-root)
-       ;; Put your server-restarting logic here
-       (mcp-restart-servers-for-project current-root)
-       (setq cnit/last-gptel-project-root current-root))))
+ (defun cnit/mcp-project-connect-gptel ()
+   "Connect to MCP servers GPTel."
+   (interactive)
+   (let ((old-tools gptel-tools))
+     (gptel-mcp-connect
+      nil (lambda () (setq gptel-tools old-tools)))))
 
- (advice-add
-  'gptel-send
-  :before #'cnit/restart-servers-if-project-changed)
- (advice-add
-  'gptel-menu
-  :before #'cnit/restart-servers-if-project-changed)
-
- (defun cnit/restart-servers-on-gptel-window-select (&rest _)
-   "Restart MCP servers if the gptel window is selected."
-   (when (bound-and-true-p gptel-mode)
-     (cnit/restart-servers-if-project-changed)))
-
- (setq window-selection-change-functions
-       (cons
-        #'cnit/restart-servers-on-gptel-window-select
-        window-selection-change-functions))
+ (defun cnit/mcp-project-change ()
+   "Handle project change by for MCP servers."
+   (interactive)
+   (let ((project-root
+          (expand-file-name
+           (or (and (project-current)
+                    (project-root (project-current)))
+               default-directory))))
+     (mcp-restart-servers-for-project project-root)))
 
  ;; Start the MCP hub servers with a default path
- (cnit/set-mcp-hub-servers-path
-  (or (and (project-current) (project-root (project-current))) "~/"))
- (mcp-hub-start-all-server))
+ (cnit/set-mcp-hub-servers-path (cnit/project-root-directory))
+ (cnit/mcp-project-connect-gptel))
 
 (use-package
  copilot
@@ -1410,26 +1551,6 @@ arguments."
  :commands (magit-get-current-branch)
  :bind
  (("C-c g" . magit-dispatch) ("C-c G" . cnit/magit-status)))
-
-(use-package
- project
- :commands (project-forget-projects-under)
- :config
- (project-forget-projects-under "~/git-clones" t)
- (project-forget-zombie-projects))
-
-(use-package
- disproject
- :config (setopt disproject-shell-command #'project-eshell)
- (defun disproject-gptel ()
-   "Run gptel in the current project."
-   (interactive)
-   (let ((default-directory (project-root (project-current)))
-         (gptel-buffer-name (project-prefixed-buffer-name "gptel")))
-     (switch-to-buffer (gptel gptel-buffer-name))))
- (transient-append-suffix
-  'disproject-dispatch "d" '("i" "Gptel" disproject-gptel))
- :bind (:map ctl-x-map ("p" . disproject-dispatch)))
 
 (use-package
  envrc

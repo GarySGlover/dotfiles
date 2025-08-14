@@ -65,9 +65,12 @@ in
           hooksPath = "${config.xdg.configHome}/git/hooks";
         };
         credential.helper = [
-          "!f() { echo \"password=$(az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv)\"; }; f"
-          "store --file ~/.git-credentials"
-          "store --file ${config.xdg.configHome}/git/.git-credentials"
+          "!f() { \
+            user=$(az account show --query user.name -o tsv | sed 's/@.*//'); \
+            pass=$(az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv); \
+            echo \"username=$user\"; \
+            echo \"password=$pass\"; \
+          }; f"
         ];
         fetch = {
           prune = true;

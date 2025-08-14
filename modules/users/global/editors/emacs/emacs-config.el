@@ -441,23 +441,20 @@ completing-read prompter."
  ((org-mode . cnit/org-save-babel-tangle)
   (org-mode . cnit/exclude-electric-pair)
   (org-mode . visual-line-mode)
-   (org-src-mode . cnit/org-src-lexical-binding))
+  (org-src-mode . cnit/org-src-lexical-binding))
+ :custom
+ (org-pretty-entities t)
+ (org-startup-indented t)
+ (org-src-window-setup 'other-window)
+ (org-todo-keywords
+  '((sequence
+      "TODO(t)" "ACTIVE(a!)" "HOLD(h@)" "|" "DONE(d@)" "CANCELED(c@")))
+  (org-M-RET-may-split-line '((default . nil)))
+  (org-insert-heading-respect-content t)
+  (org-log-into-drawer t)
  :config
  (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
  (declare-function -each "dash")
- (setopt
-  org-pretty-entities t
-  org-startup-indented t
-  org-src-window-setup 'other-window
-  org-todo-keywords
-  '((sequence
-     "TODO(t)"
-     "ACTIVE(a!)"
-     "SCHEDULED(s@)"
-     "HOLD(h@)"
-     "|"
-     "DONE(d@)"
-     "CANCELED(c@)")))
  (modify-syntax-entry ?* "\"" org-mode-syntax-table)
  (modify-syntax-entry ?_ "\"" org-mode-syntax-table)
  (-each
@@ -466,10 +463,14 @@ completing-read prompter."
 
 (use-package
  org-agenda
-  :after org
-  :defer t
- :config
- (setopt org-agenda-files `(,(expand-file-name "agenda/" "~/"))))
+ :after org
+ :defer t
+ :bind (("C-c o" . org-agenda))
+ :custom
+ (org-agenda-files
+  (mapcar
+   (lambda (file) (expand-file-name file "~/org/"))
+   '("tasks.org" "projects.org"))))
 
 (use-package
  ob-core
@@ -495,7 +496,7 @@ If not, prompt the user whether to allow running all code blocks silently."
 (use-package
  org-menu
  :after org
- :bind (:map org-mode-map ("C-c M" . org-menu)))
+ :bind (:map org-mode-map ("C-c O" . org-menu)))
 
 (use-package
  denote
@@ -837,9 +838,8 @@ Keys will be all from a-z excluding those used in `avy-dispatch-alist'"
  (cnit/avy-keys-builder)
 
  :bind
- (("C-c A" . avy-goto-char)
-  ("C-c a" . avy-goto-char-timer)
-  ("C-c C-a" . avy-goto-line)))
+ (("C-c a" . avy-goto-char-timer)
+  ("C-c A" . avy-goto-line)))
 
 (use-package
  re-builder

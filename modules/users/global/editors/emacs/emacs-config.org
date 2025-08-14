@@ -534,7 +534,7 @@ Change mode line format
    :hook (after-init . hyperbole-mode))
 #+end_src
 
-** TODO [#B] Org Mode
+** Org Mode
 #+begin_src emacs-lisp :tangle yes
   (use-package
    org
@@ -556,23 +556,20 @@ Change mode line format
    ((org-mode . cnit/org-save-babel-tangle)
     (org-mode . cnit/exclude-electric-pair)
     (org-mode . visual-line-mode)
-     (org-src-mode . cnit/org-src-lexical-binding))
+    (org-src-mode . cnit/org-src-lexical-binding))
+   :custom
+   (org-pretty-entities t)
+   (org-startup-indented t)
+   (org-src-window-setup 'other-window)
+   (org-todo-keywords
+    '((sequence
+        "TODO(t)" "ACTIVE(a!)" "HOLD(h@)" "|" "DONE(d@)" "CANCELED(c@")))
+    (org-M-RET-may-split-line '((default . nil)))
+    (org-insert-heading-respect-content t)
+    (org-log-into-drawer t)
    :config
    (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
    (declare-function -each "dash")
-   (setopt
-    org-pretty-entities t
-    org-startup-indented t
-    org-src-window-setup 'other-window
-    org-todo-keywords
-    '((sequence
-       "TODO(t)"
-       "ACTIVE(a!)"
-       "SCHEDULED(s@)"
-       "HOLD(h@)"
-       "|"
-       "DONE(d@)"
-       "CANCELED(c@)")))
    (modify-syntax-entry ?* "\"" org-mode-syntax-table)
    (modify-syntax-entry ?_ "\"" org-mode-syntax-table)
    (-each
@@ -583,10 +580,14 @@ Change mode line format
 #+begin_src emacs-lisp :tangle yes
   (use-package
    org-agenda
-    :after org
-    :defer t
-   :config
-   (setopt org-agenda-files `(,(expand-file-name "agenda/" "~/"))))
+   :after org
+   :defer t
+   :bind (("C-c o" . org-agenda))
+   :custom
+   (org-agenda-files
+    (mapcar
+     (lambda (file) (expand-file-name file "~/org/"))
+     '("tasks.org" "projects.org"))))
 #+end_src
 *** Babel
 #+begin_src emacs-lisp :tangle yes
@@ -619,7 +620,7 @@ Change mode line format
   (use-package
    org-menu
    :after org
-   :bind (:map org-mode-map ("C-c M" . org-menu)))
+   :bind (:map org-mode-map ("C-c O" . org-menu)))
 #+end_src
 ** Denote
 Denote is a note taking package that works on one note per file and
@@ -996,9 +997,8 @@ Completing read function for finding and opening notes from the denote-directory
    (cnit/avy-keys-builder)
 
    :bind
-   (("C-c A" . avy-goto-char)
-    ("C-c a" . avy-goto-char-timer)
-    ("C-c C-a" . avy-goto-line)))
+   (("C-c a" . avy-goto-char-timer)
+    ("C-c A" . avy-goto-line)))
 #+end_src
 ** Regex Search Replace
 Enhance re-builder to allow for running query replace regex when hitting return on query.

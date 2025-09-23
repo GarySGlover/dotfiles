@@ -12,7 +12,7 @@ let
   kicad = pkgs.kicad;
 in
 {
-  config = mkIf config.wolf.roles.cad {
+  config = mkIf false {
     home.packages = [
       kicad
     ];

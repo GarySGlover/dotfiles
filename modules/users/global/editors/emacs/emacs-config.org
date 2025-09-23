@@ -211,7 +211,108 @@ the required language details here that get consumed by the initialisation of th
 #+end_src
 
 * Key Bindings
-*** Minor modes transient
+** COMMENT Transient auto builder
+#+begin_src emacs-lisp :tangle yes
+  (let ((grouped-targets
+         (transient-compile-default-sort-function
+          (transient-compile-default-split-function
+           '("Flymake"
+             "Format all"
+             "Highlight Line"
+             "Word Wrap"
+             "Column Number"
+             "Auto Revert"
+             "Flyspell"
+             "Copilot"
+             "Visual Line"
+             "Electric Indent"
+             "Indent tabs"
+             "Indent bars"
+             "WS Butler"
+             "Whitespace"
+             "Rainbow"
+             "Electric Pair"
+             "Show Paren"))))))
+
+  (transient-compile--assign-keys
+   '("test"
+     "test1"
+     "test2"
+     "test3"
+     "test4"
+     "est"
+     "est1"
+     "result"
+     "please")
+   "default")
+
+  (require 's)
+
+  (defface cnit/transient-builder-keychar
+    '((t :inherit font-lock-string-face :underline t))
+    "Face to highlight key character inside group or target name.")
+
+  (defun cnit/transient-builder--propertize (word word-index)
+    "Highlight key character at WORD-INDEX inside WORD."
+    (add-text-properties
+     word-index (1+ word-index) '(face cnit/transient-builder-keychar)
+     word))
+
+  (defvar cnit/transient-highlight-function nil
+    "Function to apply conditional highighting to transient menu items.")
+
+
+  (defface cnit/transient-modes-local-highlight '((t :inherit success))
+    "")
+  (defun cnit/transient-modes-local-highlight (mode-text)
+    (when (and mode-name
+               (symbol-value
+                (intern (format "%s-mode" (s-dashed-words mode-text)))))
+      (add-text-properties
+       0 (length mode-text) '(face cnit/transient-modes-local-highlight)
+       mode-text)))
+
+  (cnit/transient-modes-local-highlight "flymake")
+  (cnit/transient-modes-local-highlight "format all")
+
+  (defun cnit/transient-builder ()
+    (transient-define-prefix
+     cnit/modes-dispatch-test ()
+     :transient-suffix 'transient--do-stay
+     [[:description
+       (lambda ()
+         (let ((w "default"))
+           (cnit/transient-builder--propertize w 0)
+           w))
+       ("df" (lambda ()
+          (let ((w "flymake"))
+            (cnit/transient-modes-local-highlight w)
+            (cnit/transient-builder--propertize w 0)
+            w))
+        flymake-mode)]
+      [:description
+       (lambda ()
+         (let ((w "electric"))
+           (cnit/transient-builder--propertize w 0)
+           w))
+       ("ep" (lambda ()
+          (let ((w "electric pair"))
+            (cnit/transient-modes-local-highlight w)
+            (cnit/transient-builder--propertize w 9)
+            w))
+        electric-pair-mode)
+       ("ei" (lambda ()
+          (let ((w "electric indent"))
+            (cnit/transient-modes-local-highlight w)
+            (cnit/transient-builder--propertize w 9)
+            w))
+        electric-indent-mode)]]))
+
+  (progn
+    (cnit/transient-builder)
+    (cnit/modes-dispatch-test))
+#+end_src
+** Minor modes transient
 #+begin_src emacs-lisp :tangle yes
   (require 'transient)
 
@@ -1587,8 +1688,6 @@ worktrees for branches in my ~/features directory.
      "Handle project change for GPTel."
      (interactive)
      (cnit/gptel-swap-project-contexts
-      cnit/previous-project-dir cnit/current-project-dir)
-     (cnit/gptel-swap-project-tools
       cnit/previous-project-dir cnit/current-project-dir))
 
    (setopt
@@ -1672,7 +1771,7 @@ worktrees for branches in my ~/features directory.
 
     (bind-key "C-c L" #'cnit/gptel-menu))
 #+end_src
-** MCP
+** COMMENT MCP
 #+begin_src emacs-lisp :tangle yes
   (use-package
    mcp
@@ -1743,7 +1842,7 @@ worktrees for branches in my ~/features directory.
 #+begin_src emacs-lisp :tangle yes
   (use-package
    copilot
-   :hook ((prog-mode yaml-ts-mode) . copilot-mode)
+   :defer t
    :config (setopt copilot-indent-offset-warning-disable t)
    (defvar-keymap cnit/copilot-completion-repeat-map
      :repeat

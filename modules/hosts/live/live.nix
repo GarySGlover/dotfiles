@@ -16,7 +16,18 @@ with lib;
       ags
     ];
 
-    # boot.kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
+    boot.initrd.availableKernelModules = [
+      "nvme"
+      "xhci_pci"
+      "usbhid"
+      "thunderbolt"
+    ];
+
+    boot.kernelParams = [
+      # The GPD Pocket3 uses a tablet OLED display, that is mounted rotated 90° counter-clockwise
+      "fbcon=rotate:1"
+      "video=DSI-1:panel_orientation=right_side_up"
+    ];
 
     services.xserver.videoDrivers = mkOverride 40 [
       "virtualbox"
@@ -26,6 +37,9 @@ with lib;
       "modesetting"
       "nvidia"
     ];
+
+    hardware.nvidia.open = false;
+    hardware.graphics.extraPackages = with pkgs; [ intel-vaapi-driver ];
 
     nix.extraOptions = ''
       experimental-features = nix-command flakes

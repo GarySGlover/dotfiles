@@ -68,6 +68,11 @@ in
                   cmd = "DRI_PRIME=1 chromium";
                 }
                 {
+                  key = "E";
+                  desc = "Emacs (new)";
+                  cmd = "emacs --init-directory=~/dotfiles/modules/users/global/editors/emacs/emacs-new/";
+                }
+                {
                   key = "e";
                   desc = "Emacs";
                   cmd = "emacsclient --create-frame -no-wait --alternate-editor 'emacs'";
@@ -100,7 +105,12 @@ in
                 {
                   key = "w";
                   desc = "Work Browser";
-                  cmd = "DRI_PRIME=1 firefox --no-remote -P work";
+                  cmd = "firefox --no-remote -P work";
+                }
+                {
+                  key = "W";
+                  desc = "Work Chrome";
+                  cmd = "google-chrome-stable";
                 }
                 {
                   key = "x";

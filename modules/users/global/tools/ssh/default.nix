@@ -5,11 +5,14 @@ in
 {
   config = {
     programs.ssh = {
+      enableDefaultConfig = false;
       enable = true;
-      addKeysToAgent = "yes";
-      forwardAgent = true;
-      compression = true;
       matchBlocks = {
+        "*" = {
+          addKeysToAgent = "yes";
+          compression = true;
+          forwardAgent = true;
+        };
         "ssh.dev.azure.com" = {
           hostname = "ssh.dev.azure.com";
           identityFile = "${homeDir}/.ssh/id_rsa_dev.azure.com";

@@ -9,10 +9,6 @@ in
       type = bool;
       default = true;
     };
-    docker = mkOption {
-      type = bool;
-      default = false;
-    };
     kvm = mkOption {
       type = bool;
       default = false;

@@ -33,7 +33,6 @@ in
             criteria = officeDellUpper;
             scale = 1.0;
             mode = "1920x1200@59.950Hz";
-
           };
         }
         {
@@ -68,7 +67,12 @@ in
         {
           profile = {
             name = "laptop";
-            outputs = [ { criteria = laptopMonitor; } ];
+            outputs = [
+              {
+                criteria = laptopMonitor;
+                status = "enable";
+              }
+            ];
           };
         }
         {
@@ -82,14 +86,17 @@ in
               {
                 criteria = officeDellUpper;
                 position = "0,0";
+                status = "enable";
               }
               {
                 criteria = officeDellLower;
                 position = "0,1200";
+                status = "enable";
               }
               {
                 criteria = officePhilips;
                 position = "1920,560";
+                status = "enable";
               }
             ];
           };
@@ -104,6 +111,7 @@ in
               }
               {
                 criteria = bedroomSony;
+                status = "enable";
               }
             ];
           };
@@ -118,6 +126,7 @@ in
               }
               {
                 criteria = projector;
+                status = "enable";
               }
             ];
           };
@@ -128,6 +137,7 @@ in
             outputs = [
               {
                 criteria = projector;
+                status = "enable";
               }
             ];
           };
@@ -139,10 +149,12 @@ in
               {
                 criteria = portable;
                 position = "0,0";
+                status = "enable";
               }
               {
                 criteria = laptopMonitor;
                 position = "1920,0";
+                status = "enable";
               }
             ];
           };
@@ -154,10 +166,12 @@ in
               {
                 criteria = xrealOnePro;
                 position = "0,0";
+                status = "enable";
               }
               {
                 criteria = laptopMonitor;
-                status = "disable";
+                position = "0,1080";
+                status = "enable";
               }
             ];
           };

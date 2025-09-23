@@ -71,7 +71,7 @@ in
           };
           extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
             bitwarden
-            enhancer-for-youtube
+            # enhancer-for-youtube
             ublock-origin
           ];
         };

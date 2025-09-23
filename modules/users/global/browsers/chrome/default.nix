@@ -11,6 +11,7 @@ in
   config = mkIf (config.wolf.roles.internet && config.wolf.roles.work) {
     home.packages = with pkgs; [
       chromium
+      google-chrome
     ];
   };
 }

@@ -42,11 +42,21 @@ in
       wl-kbptr
     ];
 
+    home.file.".xkb/symbols/custom".text = ''
+      partial modifier_keys
+      xkb_symbols "ralt_hyper" {
+          key <RALT> { [ Hyper_R ] };
+      };
+    '';
+
     xdg.configFile."niri/config.kdl".text =
       lib.hm.generators.toKDL { } {
         prefer-no-csd = [ ];
         input = {
-          keyboard.xkb.layout = "gb";
+          keyboard.xkb = {
+            layout = "gb";
+            options = "custom:ralt_hyper";
+          };
           warp-mouse-to-focus = [ ];
           disable-power-key-handling = [ ];
           workspace-auto-back-and-forth = [ ];
@@ -61,14 +71,13 @@ in
         layout = {
           # Columns
           always-center-single-column = [ ];
-          center-focused-column = "always";
-          default-column-width.proportion = 0.5;
+          center-focused-column = "on-overflow";
+          default-column-width.proportion = 1.0;
           default-column-display = "tabbed";
           tab-indicator = {
             hide-when-single-tab = [ ];
           };
           preset-column-widths = {
-            "proportion 0.25" = [ ];
             "proportion 0.33333" = [ ];
             "proportion 0.5" = [ ];
             "proportion 1.0" = [ ];

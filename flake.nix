@@ -289,6 +289,7 @@
           # Nix
           nixfmt-rfc-style
           nixd
+          nix
 
           # TypeScript
           typescript-language-server
@@ -303,6 +304,9 @@
           python313Packages.pipx
           python313Packages.pip
           pyright
+
+          # Emacs init development
+          glib
         ];
       };
     };

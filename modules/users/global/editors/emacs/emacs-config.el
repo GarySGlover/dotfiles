@@ -1379,8 +1379,6 @@ If a context was saved for CURRENT-PROJECT-DIR, restore it into `gptel-context--
    "Handle project change for GPTel."
    (interactive)
    (cnit/gptel-swap-project-contexts
-    cnit/previous-project-dir cnit/current-project-dir)
-   (cnit/gptel-swap-project-tools
     cnit/previous-project-dir cnit/current-project-dir))
 
  (setopt
@@ -1461,73 +1459,8 @@ If a context was saved for CURRENT-PROJECT-DIR, restore it into `gptel-context--
   (bind-key "C-c L" #'cnit/gptel-menu))
 
 (use-package
- mcp
- :after gptel
- :demand t
- :hook (cnit/project-change . cnit/mcp-project-change)
- :config
- (require 'mcp-hub)
- (require 'gptel-integrations)
- (defun cnit/set-mcp-hub-servers-path (repo-path)
-   "Set 'mcp-hub-servers' globally for this Emacs session using REPO-PATH as a string."
-   (interactive (list
-                 (expand-file-name
-                  (read-directory-name "Select MCP base directory: "
-                                       "~/"))))
-   (let ((repo-path (expand-file-name repo-path)))
-     (setq mcp-hub-servers
-           `(("git" .
-              (:command
-               "mcp-server-git"
-               :args ("-r" ,repo-path "-v")))))))
-
- (defun mcp-restart-servers-for-project (project-root)
-   "Restart MCP hub servers whose :args include PROJECT-ROOT."
-   (interactive)
-   ;; Ensure mcp-hub-servers is up to date for this project
-   (cnit/set-mcp-hub-servers-path project-root)
-   (dolist (server mcp-hub-servers)
-     (let* ((server-name (car server))
-            (server-props (cdr server))
-            (args (plist-get server-props :args)))
-       (when (and args
-                  (seq-some
-                   (lambda (arg)
-                     (and (stringp arg)
-                          (string-match-p
-                           (regexp-quote
-                            (expand-file-name project-root))
-                           arg)))
-                   args))
-         ;; Stop project servers
-         (when (functionp 'mcp-stop-server)
-           (mcp-stop-server server-name)))))
-   (mcp-hub-start-all-server (cnit/mcp-project-connect-gptel)))
-
- (defun cnit/mcp-project-connect-gptel ()
-   "Connect to MCP servers GPTel."
-   (interactive)
-   (let ((old-tools gptel-tools))
-     (gptel-mcp-connect
-      nil (lambda () (setq gptel-tools old-tools)))))
-
- (defun cnit/mcp-project-change ()
-   "Handle project change by for MCP servers."
-   (interactive)
-   (let ((project-root
-          (expand-file-name
-           (or (and (project-current)
-                    (project-root (project-current)))
-               default-directory))))
-     (mcp-restart-servers-for-project project-root)))
-
- ;; Start the MCP hub servers with a default path
- (cnit/set-mcp-hub-servers-path (cnit/project-root-directory))
- (cnit/mcp-project-connect-gptel))
-
-(use-package
  copilot
- :hook ((prog-mode yaml-ts-mode) . copilot-mode)
+ :defer t
  :config (setopt copilot-indent-offset-warning-disable t)
  (defvar-keymap cnit/copilot-completion-repeat-map
    :repeat

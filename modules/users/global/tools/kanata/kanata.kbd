@@ -1,141 +1,20 @@
 ;;; kanata --- Summary
 ;;; Commentary:
 
-#| config todo
-Modifier locks
-|#
-
-#| config completed:
-- Timeouts for all
-- . . > .
-- . z {_} > C-{_}
-- . {_} > C-{_}
-- . m z {_} > M-{_}
-- . m {_} > M-{_}
-- . m m {_} > C-M-{_}
-|#
-
 ;;; Code:
-(defcfg process-unmapped-keys yes
-        linux-dev /dev/input/event0:/dev/input/by-id/usb-Clover_Clover_Split-event-kbd)
+(defcfg
+ process-unmapped-keys
+ yes
+ linux-dev
+ /dev/input/event0:/dev/input/by-id/usb-Clover_Clover_Split-event-kbd)
 
 (defsrc)
 
-(defvar
-  devil-timeout 5000)
-
-(deftemplate activate (layer)
-             (concat activate-devil- $layer) (multi
-                                              (on-idle $devil-timeout tap-vkey (concat release-devil- $layer))
-                                              (on-press press-virtualkey (concat devil- $layer))))
-
-(defalias
-  (t! activate control)
-  (t! activate control-lock)
-  (t! activate control-quote)
-  (t! activate meta)
-  (t! activate meta-quote)
-  (t! activate meta-lock)
-  (t! activate control-meta)
-  (t! activate control-meta-lock)
-  (t! activate control-meta-quote)
-  (t! activate super)
-  (t! activate super-quote))
-
-(deflayermap base
-             , (switch
-                ((not
-                  (or
-                   (input real lctl)
-                   (input real rctl)
-                   (input real lsft)
-                   (input real rsft)
-                   (input real lmet)
-                   (input real rmet)
-                   (input real lalt)
-                   (input real ralt)))) @activate-devil-control break
-                () , break))
-
-(deftemplate devil-sequence (old new)
-             (multi (on-press release-vkey (concat devil- $old)) (concat @activate-devil- $new)))
-
-(deflayermap devil-control
-             , (multi (on-press release-vkey devil-control) ,)
-             spc (multi (on-press release-vkey devil-control) (macro , spc))
-             ret (multi (on-press release-vkey devil-control) (macro , ret))
-             g (on-press release-vkey devil-control)
-             m (t! devil-sequence control meta)
-             r (t! devil-sequence control control-lock)
-             q (t! devil-sequence control super)
-             z (t! devil-sequence control control-quote)
-             ___ (multi (on-press release-vkey devil-control) lctl _))
-
-(deflayermap devil-control-lock
-             g (on-press release-vkey devil-control-lock)
-             m (t! devil-sequence control-lock meta)
-             z @activate-devil-control-quote
-             ___ (multi lctl _))
-
-(deflayermap devil-control-quote
-             , (multi (on-press release-vkey devil-control-quote) lctl ,)
-             ___ (multi (on-press release-vkey devil-control-quote) lctl _))
-
-(deflayermap devil-meta
-             g (on-press release-vkey devil-meta)
-             m (t! devil-sequence meta control-meta)
-             r (t! devil-sequence meta meta-lock)
-             z (t! devil-sequence meta meta-quote)
-             ___ (multi (on-press release-vkey devil-meta) lalt _))
-
-(deflayermap devil-meta-lock
-             g (on-press release-vkey devil-meta-lock)
-             m (t! devil-sequence meta-lock control-meta)
-             z @activate-devil-meta-quote
-             ___ (multi lalt _))
-
-(deflayermap devil-meta-quote
-             , (multi (on-press release-vkey devil-meta-quote) lalt ,)
-             ___ (multi (on-press release-vkey devil-meta-quote) lalt _))
-
-(deflayermap devil-control-meta
-             g (on-press release-vkey devil-control-meta)
-             r (t! devil-sequence meta control-meta-lock)
-             z (t! devil-sequence control-meta control-meta-quote)
-             ___ (multi (on-press release-vkey devil-control-meta) lctl lalt _))
-
-(deflayermap devil-control-meta-lock
-             g (on-press release-vkey devil-control-meta-lock)
-             z @activate-devil-control-meta-quote
-             ___ (multi lctl lalt _))
-
-(deflayermap devil-control-meta-quote
-             , (multi (on-press release-vkey devil-control-meta-quote) lctl lalt ,)
-               ___ (multi (on-press release-vkey devil-control-meta-quote) lctl lalt _))
-
-(deflayermap devil-super
-             g (on-press release-vkey devil-super)
-             z @activate-devil-super-quote
-             ___ (multi (on-press release-vkey devil-super) lmet _))
-
-(deflayermap devil-super-quote
-             , (multi (on-press release-vkey devil-super-quote) lmet ,)
-             ___ (multi (on-press release-vkey devil-super-quote) lmet _))
-
-(deftemplate devil-key (layer)
-             (concat devil- $layer) (layer-while-held (concat devil- $layer))
-             (concat release-devil- $layer) (on-press release-vkey (concat devil- $layer)))
-
-(defvirtualkeys
- (t! devil-key control)
- (t! devil-key control-lock)
- (t! devil-key control-quote)
- (t! devil-key meta)
- (t! devil-key meta-lock)
- (t! devil-key meta-quote)
- (t! devil-key control-meta)
- (t! devil-key control-meta-lock)
- (t! devil-key control-meta-quote)
- (t! devil-key super)
- (t! devil-key super-quote))
+(deflayermap
+ base
+ caps
+ (tap-hold 200 200 esc lctl)
+ spc
+ (tap-hold 200 200 spc lalt))
 
 ;;; kanata.kbd ends here

@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Config dir for the "new" emacs instance
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/emacs-new"
+
+# Unique socket name for this emacs instance
+SOCKET_NAME="emacs-new"
+
+# Path for the server socket
+SOCKET_PATH="${XDG_RUNTIME_DIR:-/tmp}/emacs/${SOCKET_NAME}"
+
+mkdir -p "$(dirname "$SOCKET_PATH")"
+
+# Try emacsclient first, fall back to starting emacs
+if emacsclient --socket-name="$SOCKET_NAME" -n "$@" 2>/dev/null; then
+	exit 0
+else
+	exec emacs \
+		--init-directory "$CONFIG_DIR" \
+		--fg-daemon="$SOCKET_NAME" \
+		"$@"
+fi

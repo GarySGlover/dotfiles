@@ -133,6 +133,7 @@ let
 
   emacsExtraPackages = with pkgs.emacsPackages; [
     ace-window
+    aidermacs
     avy
     breadcrumb
     beframe
@@ -215,6 +216,8 @@ in
     home.packages = with pkgs; [
       # Dictionaries for use with flyspell
       aspellEnglish
+
+      aider-chat
 
       pandoc
 

@@ -53,7 +53,6 @@ in
 
     home.packages = with pkgs; [
       pre-commit
-      azure-cli
     ];
 
     programs.git = {

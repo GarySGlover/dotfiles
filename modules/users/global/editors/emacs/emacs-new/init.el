@@ -262,7 +262,7 @@ This prevents overlapping themes; something I would rarely want."
 ;; as I don't use other vc systems.
 
 (bind-key "s-p" project-prefix-map)
-(keymap-set project-prefix-map "v" #'magit-status)
+(keymap-set project-prefix-map "v" #'magit-project-status)
 (with-eval-after-load 'project
   (setopt
    project-switch-use-entire-map t
@@ -325,6 +325,7 @@ This prevents overlapping themes; something I would rarely want."
 
 (add-hook 'after-init-hook 'envrc-global-mode 91)
 (with-eval-after-load 'envrc
+  (setopt envrc-show-summary-in-minibuffer nil)
   (define-key envrc-mode-map (kbd "s-e") 'envrc-command-map))
 
 
@@ -333,26 +334,9 @@ This prevents overlapping themes; something I would rarely want."
 ;;   Auto generate from branch with name scheme
 ;;   Branch with title, lower snake cased
 
-;; worktree/34043_test-application__app1
-;; worktree/34043_test_application__app1
-;; worktree/34043_test.application__app1
-;; worktree/test-elisp__app2
-;; /test-lisp__Ecom.Promotions
 
-
-;; (rx (or bol "/")
-;;   (zero-or-one (and (group-n 1 (one-or-more digit)) "_"))
-;;   (and (group-n 2 alpha (one-or-more (or wordchar "-" "."))) "__")
-;;   (and (group-n 3 alpha (one-or-more (or wordchar "-" "."))) eol))
-
-;; "\\(?:^\\|/\\)\\(?:\\(?1:[[:digit:]]+\\)_\\)?\\(?2:[[:alpha:]][.[:word:]-]+\\)__\\(?3:[[:alpha:]][.[:word:]-]+\\)$"
-
-
-;; (defun cnit-worktree-get-ticket-number (worktree-directory)
-;;   "Get ticket number from worktree directory "
-
-(with-eval-after-load 'magit
-  t)
+;; This is being prepped in magit-worktrees.el and will be ported
+;; here when completed.
 ;; Completions
 ;; This section will include all completion types and options. This
 ;; includes, but is not limited to, programming, textual, shell and LLM
@@ -393,14 +377,40 @@ This prevents overlapping themes; something I would rarely want."
 (defun tempel-setup-capf ()
   "Add the Tempel Capf to `completion-at-point-functions'"
   (setq-local completion-at-point-functions
-              (cons #'tempel-complete completion-at-point-functions)))
+              (cons #'tempel-expand completion-at-point-functions)))
 
 (add-hook 'conf-mode-hook 'tempel-setup-capf)
 (add-hook 'prog-mode-hook 'tempel-setup-capf)
 (add-hook 'text-mode-hook 'tempel-setup-capf)
 
-(with-eval-after-load 'tempel
-  (setopt tempel-trigger-prefix "<"))
+;; (with-eval-after-load 'tempel
+;;   (setopt tempel-trigger-prefix "<"))
+
+
+;; Minibuffer completions annotations. Applies useful extended details
+;; such as documentation, values, file details etc.
+
+(add-hook 'after-init-hook (lambda () (marginalia-mode)))
+(with-eval-after-load 'marginalia
+  (bind-key "M-a" #'marginalia-cycle 'minibuffer-mode-map))
+
+
+;; Aider integration. Integration of Aider for project aware LLM work.
+
+;; https://aider.chat/docs/llms/github.html
+;; https://github.com/MatthewZMD/aidermacs
+;; BUG: model is hardcoded to github copilot, however I would like the dynamic models.
+;;      this may get fixed in future aider and aidermacs variants. For now I also need
+;;      to create the file .aider.config.yaml and .aider.model.settings.yml according
+;;      to the to this part of an aider issue:
+;;      https://github.com/Aider-AI/aider/issues/2227#issuecomment-3141551921
+
+(bind-key "s-a" #'aidermacs-transient-menu)
+(with-eval-after-load 'aidermacs
+  (setopt
+   aidermacs-default-chat-mode 'ask
+   aidermacs-extra-args '("--model" "github_copilot/gpt-4.1")
+   aidermacs-default-model "github_copilot/gpt-4.1"))
 ;; Prog mode
 ;; Enable supportive modes for programming.
 

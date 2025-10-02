@@ -21,6 +21,10 @@ in
           hostname = "github.com";
           identityFile = "${homeDir}/.ssh/id_ed25519_github.com";
         };
+        "192.168.*.*".extraOptions = {
+          StrictHostKeyChecking = "no";
+          UserKnownHostsFile = "/dev/null";
+        };
       };
     };
 

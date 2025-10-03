@@ -21,8 +21,8 @@ in
     "uas"
     "sd_mod"
   ];
-  boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ ];
+  boot.initrd.kernelModules = [ "amdgpu" ];
+  boot.kernelModules = [ "amdgpu" ];
   boot.extraModulePackages = [ ];
   # https://www.reddit.com/r/archlinux/comments/1fabknf/solved_desktop_environment_artifacts_on_asus_tuf/
   boot.kernelParams = [

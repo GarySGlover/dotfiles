@@ -117,6 +117,7 @@ in
         environment = {
           DISPLAY = ":0";
           XDG_CONFIG_HOME = "${config.xdg.configHome}";
+          OLLAMA_API_BASE = "http://127.0.0.1:11434";
         };
 
         binds = {

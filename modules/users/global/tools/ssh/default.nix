@@ -1,6 +1,22 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 let
   homeDir = config.home.homeDirectory;
+  sshKeygenScript = pkgs.writeShellScript "generate-ssh-keys" ''
+    set -eu
+
+    mkdir -p "${homeDir}/.ssh"
+    chmod 700 "${homeDir}/.ssh"
+
+    # Generate generic RSA key if missing
+    if [ ! -f "${homeDir}/.ssh/id_rsa" ]; then
+      ssh-keygen -t rsa -b 4096 -N "" -f "${homeDir}/.ssh/id_rsa"
+    fi
+
+    # Generate generic Ed25519 key if missing
+    if [ ! -f "${homeDir}/.ssh/id_ed25519" ]; then
+      ssh-keygen -t ed25519 -N "" -f "${homeDir}/.ssh/id_ed25519"
+    fi
+  '';
 in
 {
   config = {
@@ -29,5 +45,19 @@ in
     };
 
     services.ssh-agent.enable = true;
+
+    systemd.user.services.generate-ssh-keys = {
+      Unit = {
+        Description = "Generate SSH keys if missing";
+        After = [ "default.target" ];
+      };
+      Service = {
+        Type = "oneshot";
+        ExecStart = "${sshKeygenScript}";
+      };
+      Install = {
+        WantedBy = [ "default.target" ];
+      };
+    };
   };
 }

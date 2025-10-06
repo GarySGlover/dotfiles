@@ -40,6 +40,22 @@
         "type": "github"
       }
     },
+    "azure-devops-mcp": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1759514955,
+        "narHash": "sha256-rWVqeVdaL0ROhcHEQQMzx6uoNKFbxnbs+VxcTVxpS+w=",
+        "owner": "microsoft",
+        "repo": "azure-devops-mcp",
+        "rev": "a0511e4fd71848b6cfb9a7197ffb8c977a3f6b99",
+        "type": "github"
+      },
+      "original": {
+        "owner": "microsoft",
+        "repo": "azure-devops-mcp",
+        "type": "github"
+      }
+    },
     "eglot-booster": {
       "flake": false,
       "locked": {
@@ -320,6 +336,7 @@
     "root": {
       "inputs": {
         "ags": "ags",
+        "azure-devops-mcp": "azure-devops-mcp",
         "eglot-booster": "eglot-booster",
         "emacs-overlay": "emacs-overlay",
         "home-manager": "home-manager",

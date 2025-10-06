@@ -225,6 +225,7 @@ in
 
       # MCP Servers
       mcp-server-git
+      mcp-server-azuredevops
     ];
 
     home.file = {

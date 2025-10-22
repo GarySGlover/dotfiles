@@ -472,7 +472,7 @@ This filters `project--list` in place and writes the updated list to disk."
 (with-eval-after-load 'aidermacs
   (setopt
    aidermacs-default-chat-mode 'ask
-   aidermacs-extra-args '("--model" "github_copilot/gpt-4.1 --no-show-model-warnings")
+   aidermacs-extra-args '("--model" "github_copilot/gpt-4.1" "--no-show-model-warnings")
    aidermacs-default-model "github_copilot/gpt-4.1"))
 ;; Ollama config. Struggles with memory locally
 ;; (with-eval-after-load 'aidermacs

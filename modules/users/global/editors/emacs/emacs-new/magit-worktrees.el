@@ -1,5 +1,10 @@
 ;; -*- lexical-binding: t; -*-
 
+;; Notes
+;; worktree created from feature/02460-name-name in repo `repository` doesn't capture
+;; work item number correcty annd didn't use repo name worktree ended up at
+;; 02460_feature_02460-name-name__test.repo
+
 (defun cnit-magit--select-repo ()
   "Return the current repo path and name, prompting if not in a Git repo."
   (let ((repo-path (magit-toplevel)))
@@ -11,14 +16,6 @@
     `((path ,repo-path)
       (name
        ,(file-name-nondirectory (directory-file-name repo-path))))))
-
-(defun cnit-magit--select-branch (repo-path)
-  "Prompt the user to select a branch (local or remote) in REPO-PATH."
-  (let* ((default-directory repo-path)
-         (local-branches (magit-list-local-branch-names))
-         (remote-branches (magit-list-remote-branch-names))
-         (all-branches (append local-branches remote-branches)))
-    (completing-read "Select branch: " all-branches nil t)))
 
 (defun cnit-magit--select-branch (repo-path)
   "Prompt the user to select a branch (local or remote) in REPO-PATH."
@@ -181,28 +178,75 @@ fetch tickets from the provider and prompt again."
      (t
       selection)))) ;; BUG - user can type non numbers for a new ticket
 
-(defun cnit-magit--worktree-dir
-    (repo-name local-branch &optional ticket)
-  "Return the worktree directory path for an existing branch.
-
-REPO-NAME is the name of the repository.
-LOCAL-BRANCH is the local branch name (string).
-If TICKET is non-nil, it is used as a prefix for the worktree directory name."
-  (let ((worktree-suffix
-         (concat
-          (downcase
-           (string-replace "/" "_" local-branch))
-          "__" "test.repo")))
-    (if ticket
-        (expand-file-name (concat ticket "_" worktree-suffix)
-                          "~/worktrees")
-      (expand-file-name worktree-suffix "~/worktrees"))))
-
 (defun cnit-magit--create-worktree (repo-path worktree-dir branch)
   "Create a git worktree for BRANCH at WORKTREE-DIR from REPO-PATH."
   (unless (file-directory-p worktree-dir)
     (let ((default-directory repo-path))
       (magit-worktree-add worktree-dir branch))))
+
+(defun cnit-magit--parse-branch-for-info (local-branch)
+  "Parse LOCAL-BRANCH and extract type, ticket, and name information.
+
+LOCAL-BRANCH is expected to be in the form \"type/ticket-name\" or \"ticket-name\".
+Returns an alist with keys:
+- 'type: the branch type (e.g. \"feature\"), or nil if not present.
+- 'ticket: the ticket number as a string, or nil if not present.
+- 'name: the remainder of the branch name as a string.
+
+Example:
+  (cnit-magit--parse-branch-for-info \"feature/1234-fix-bug\")
+  => ((type . \"feature\") (ticket . \"1234\") (name . \"fix-bug\"))
+"
+  (when (string-match
+         (rx
+          string-start
+          (zero-or-one (and (group-n 1 (one-or-more letter)) "/"))
+          (zero-or-one (and (group-n 2 (one-or-more num)) "-"))
+          (group-n 3 (one-or-more graphic))
+          string-end)
+         local-branch)
+    `((type . ,(match-string 1 local-branch))
+      (ticket . ,(match-string 2 local-branch))
+      (name . ,(match-string 3 local-branch)))))
+
+(defun cnit-magit--get-ticket-for-branch (local-branch)
+  "Get the ticket number for LOCAL-BRANCH.
+
+First attempts to parse the ticket number from the branch name using
+`cnit-magit--parse-branch-for-info`. If not found, prompts the user
+to select or enter a ticket number using `cnit-magit--prompt-ticket`.
+
+Returns the ticket number as a string, or nil if none is selected."
+  (or (cdr
+       (assoc
+        'ticket (cnit-magit--parse-branch-for-info local-branch)))
+      (cnit-magit--prompt-ticket local-branch)))
+
+(defun cnit-magit--worktree-dir (name repo-name &optional type ticket)
+  "Return the worktree directory path for a branch.
+
+NAME is the branch name (string).
+REPO-NAME is the name of the repository.
+TYPE is the branch type (e.g. \"feature\"), or nil.
+TICKET is the ticket number as a string, or nil.
+
+The directory name is constructed as:
+  <name>__[ticket][__type]__<repo-name>
+All components are lowercased. If TICKET or TYPE are nil, they are omitted.
+
+Returns the absolute path to the worktree directory."
+  (let ((ticket-tag
+         (if ticket
+             (format "__%s" ticket)
+           ""))
+        (type-tag
+         (if type
+             (format "__%s" (downcase type))
+           ""))
+        (repo-tag (format "__%s" repo-name)))
+    (expand-file-name (concat
+                       (downcase name) ticket-tag type-tag repo-tag)
+                      "~/worktrees")))
 
 ;; Main worktree flows
 (defun cnit-magit-worktree-checkout-existing ()
@@ -215,8 +259,15 @@ If TICKET is non-nil, it is used as a prefix for the worktree directory name."
               (local-branch
                (cnit-magit--ensure-local-branch branch repo-path))
               (worktree
-               (let ((ticket
-                      (cnit-magit--prompt-ticket local-branch)))
-                 (cnit-magit--worktree-dir repo-name local-branch
+               (let* ((ticket
+                       (cnit-magit--get-ticket-for-branch
+                        local-branch))
+                      (info
+                       (cnit-magit--parse-branch-for-info
+                        local-branch))
+                      (type (cdr (assoc 'type info)))
+                      (name (cdr (assoc 'name info))))
+                 (cnit-magit--worktree-dir name repo-name
+                                           type
                                            ticket))))
     (magit-worktree-checkout worktree local-branch)))

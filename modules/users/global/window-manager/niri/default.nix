@@ -39,7 +39,15 @@ in
       xwayland-satellite
       bluetuith
       hyprlock
-      wl-kbptr
+      (wl-kbptr.overrideAttrs (old: {
+        src = fetchFromGitHub {
+          owner = "moverest";
+          repo = "wl-kbptr";
+          rev = "1c6c9275a49f6def4c37707e741da47f5098be7c";
+          sha256 = "sha256-UEVPeqD1Oj3cK2Hq2eLpGy6Jdjd9i0tQNXdiDWAUIM0=";
+        };
+        version = "unstable-local";
+      }))
     ];
 
     home.file.".xkb/symbols/custom".text = ''
@@ -134,7 +142,7 @@ in
               "toggleMenu"
             ];
           };
-          "Ctrl+Shift+Period" = {
+          "Ctrl+Period" = {
             spawn = [
               "wl-kbptr"
               "-o"
@@ -143,7 +151,7 @@ in
               "home_row_keys=isrtneaoghb"
             ];
           };
-          "Ctrl+Period" = {
+          "Ctrl+Shift+Period" = {
             spawn = [
               "wl-kbptr"
               "-o"

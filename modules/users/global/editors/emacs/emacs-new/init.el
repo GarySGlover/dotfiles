@@ -163,6 +163,18 @@
          (dedicated . t)
          (body-function . select-window)
          (window-parameters (no-delete-other-windows . t)))))
+
+
+;; Window splitting. Prefer to use the longest dimension for splitting,
+;; this ensures the splitting uses the direction with the most available
+;; display space.
+
+(setopt split-window-preferred-direction 'longest)
+
+
+;; Window layout history
+
+(add-hook 'after-init-hook #'winner-mode)
 ;; Theme
 
 (defun cnit-pre-load-theme (_theme)
@@ -252,6 +264,18 @@ This prevents overlapping themes; something I would rarely want."
   (set-face-attribute 'rainbow-delimiters-unmatched-face nil
                       :foreground 'unspecified
                       :inherit 'error))
+
+
+;; Ediff is used for easy working with buffer differences. By default it
+;; uses a second frame for the control panel, but that doesn't work well
+;; with tiling window managers.
+
+(with-eval-after-load 'ediff-wind
+  (winner-mode t)
+  (add-hook 'ediff-after-quit-hook-internal 'winner-undo)
+  (setopt
+   ediff-window-setup-function #'ediff-setup-windows-plain
+   ediff-split-window-function #'split-window-sensibly))
 ;; Project
 ;; This section covers managing projects, whether version-controlled or
 ;; not. It provides tools for navigating, planning, and tracking work
@@ -318,6 +342,44 @@ This prevents overlapping themes; something I would rarely want."
 (advice-add
  'project-prompt-project-dir
  :before 'cnit-project-prompter-advice)
+
+
+;; Cleanup any projects that are inside other projects. This is to help
+;; cleanup modules that are downloaded as part of builds, tests and
+;; pre-commits.
+
+(defun cnit/project-prune-nested-projects ()
+  "Remove projects from `project--list` that are nested inside other projects.
+Keeps only the topmost project directories.
+
+This filters `project--list` in place and writes the updated list to disk."
+  (interactive)
+  (require 'seq)
+  (project--ensure-read-project-list)
+  (let* ((projects (mapcar #'car project--list))
+         (sorted (seq-sort #'string-lessp projects))
+         (pruned '())
+         (last-root nil))
+    ;; Go linearly through sorted list; skip any path that’s under the last kept root
+    (dolist (proj sorted)
+      (unless (and last-root
+                   (string-prefix-p
+                    (file-name-as-directory last-root)
+                    (file-name-as-directory proj)
+                    (file-name-case-insensitive-p proj)))
+        (push proj pruned)
+        (setq last-root proj)))
+
+    ;; Keep only entries whose root is in pruned list
+    (setq project--list
+          (seq-filter
+           (lambda (entry) (member (car entry) pruned))
+           project--list))
+
+    (project--write-project-list)
+    (message "Pruned nested projects; %d remain"
+             (length project--list))
+    (length project--list)))
 
 
 ;; Automatically configure development environment dependencies when
@@ -406,11 +468,19 @@ This prevents overlapping themes; something I would rarely want."
 ;;      https://github.com/Aider-AI/aider/issues/2227#issuecomment-3141551921
 
 (bind-key "s-a" #'aidermacs-transient-menu)
+;; Copilot config
 (with-eval-after-load 'aidermacs
   (setopt
    aidermacs-default-chat-mode 'ask
-   aidermacs-extra-args '("--model" "github_copilot/gpt-4.1")
+   aidermacs-extra-args '("--model" "github_copilot/gpt-4.1 --no-show-model-warnings")
    aidermacs-default-model "github_copilot/gpt-4.1"))
+;; Ollama config. Struggles with memory locally
+;; (with-eval-after-load 'aidermacs
+;;   (setopt
+;;    aidermacs-extra-args '("--model" "ollama_chat/codellama:7b")
+;;    aidermacs-default-model "ollama_chat/codellama:7b"
+;;    aidermacs-weak-model "ollama_chat/mistral:7b"
+;;    aidermacs-architect-model "ollama_chat/deepseek-r1:8b"))
 ;; Prog mode
 ;; Enable supportive modes for programming.
 
@@ -459,6 +529,10 @@ This prevents overlapping themes; something I would rarely want."
             (when (derived-mode-p 'lisp-data-mode)
               (check-parens)))
           -90)
+;; Nix
+
+(add-to-list 'auto-mode-alist `(,(rx ".nix" string-end) . nix-ts-mode))
+(cnit-update-format-all-formatter "Nix" 'nixfmt)
 (provide 'init)
 
 ;;; init.el ends here

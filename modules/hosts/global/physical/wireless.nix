@@ -14,6 +14,8 @@ in
     sops.secrets.wireless-env = { };
 
     networking.networkmanager.enable = false;
+    networking.networkmanager.dns = "systemd-resolved";
+    services.resolved.enable = true;
     networking.wireless = {
       enable = true;
       secretsFile = config.sops.secrets.wireless-env.path;

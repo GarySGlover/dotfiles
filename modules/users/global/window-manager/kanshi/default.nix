@@ -171,7 +171,7 @@ in
               {
                 criteria = laptopMonitor;
                 position = "0,1080";
-                status = "enable";
+                status = "disable";
               }
             ];
           };

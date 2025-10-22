@@ -579,35 +579,10 @@ If not, prompt the user whether to allow running all code blocks silently."
  treesit
  :defer t
  :functions cloveynit/report-unused-ts-modes
- :init
- (defun cloveynit/report-unused-ts-modes ()
-   "Report TreeSitter modes that are not mapped in
-major-mode-remap-alist or auto-mode-alist."
-   (let ((ts-modes (apropos-internal "-ts-mode$" 'functionp)))
-     (dolist (ts-mode ts-modes)
-       (let ((used-in-major-mode-remap-alist
-              (seq-some
-               (lambda (entry) (equal ts-mode (cdr entry)))
-               major-mode-remap-alist))
-             (used-in-auto-mode-alist
-              (seq-some
-               (lambda (entry)
-                 (equal ts-mode (cdr entry)))
-               auto-mode-alist))
-             (excluded
-              (seq-some
-               (lambda (entry) (equal ts-mode entry))
-               cnit/languages--excluded-ts-warning-modes)))
-         (unless (or used-in-major-mode-remap-alist
-                     used-in-auto-mode-alist
-                     excluded)
-           (warn "TS Mode not mapped: %s" ts-mode))))))
-
  :config
  (setopt
   treesit-font-lock-level 4
-  treesit-extra-load-path `(,(expand-file-name "~/.config/emacs/var/tree-sitter")))
- (cloveynit/report-unused-ts-modes))
+  treesit-extra-load-path `(,(expand-file-name "~/.config/emacs/var/tree-sitter"))))
 
 (use-package
     treesit-fold

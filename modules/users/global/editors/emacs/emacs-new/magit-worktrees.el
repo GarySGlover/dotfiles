@@ -1,10 +1,5 @@
 ;; -*- lexical-binding: t; -*-
 
-;; Notes
-;; worktree created from feature/02460-name-name in repo `repository` doesn't capture
-;; work item number correcty annd didn't use repo name worktree ended up at
-;; 02460_feature_02460-name-name__test.repo
-
 (defun cnit-magit--select-repo ()
   "Return the current repo path and name, prompting if not in a Git repo."
   (let ((repo-path (magit-toplevel)))

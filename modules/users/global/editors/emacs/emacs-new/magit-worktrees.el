@@ -58,17 +58,15 @@ Return an alist with keys (ticket type name repo) or nil if no match."
   (when (string-match
          (rx
           (or string-start "/")
-          (zero-or-one (and (group-n 1 (one-or-more digit)) "_"))
-          (zero-or-one
-           (and (group-n 2 alpha (one-or-more wordchar)) "_"))
-          (and (group-n 3 alpha (one-or-more (or wordchar "-" ".")))
-               "__")
-          (and (group-n 4 alpha (one-or-more (or wordchar "-" ".")))
-               string-end))
+          (group-n 1 (one-or-more (or wordchar "-")))
+          (zero-or-one (and "__" (group-n 2 (one-or-more num))))
+          (zero-or-one (and "__" (group-n 3 (one-or-more letter))))
+          (and "__" (group-n 4 (one-or-more (or wordchar "-" "."))))
+          (or string-end "/"))
          basename)
-    `((ticket . ,(match-string 1 basename))
-      (type . ,(match-string 2 basename))
-      (name . ,(match-string 3 basename))
+    `((name . ,(match-string 1 basename))
+      (ticket . ,(match-string 2 basename))
+      (type . ,(match-string 3 basename))
       (repo . ,(match-string 4 basename)))))
 
 (defun cnit-magit--list-worktrees ()
@@ -142,41 +140,63 @@ onto `cnit-magit--ticket-providers`.")
 (defun cnit-magit--prompt-ticket (local-branch)
   "Prompt for a ticket number for LOCAL-BRANCH.
 First show local tickets and provider names.  If a provider is selected,
-fetch tickets from the provider and prompt again."
+fetch tickets from the provider and prompt again.
+
+Only allows new tickets that are all digits. If the user enters an empty string,
+returns nil."
   (let* ((local-tickets
           (cnit-magit--ticket-candidates-for-branch local-branch))
          (providers (mapcar #'car cnit-magit--ticket-providers))
          (initial-candidates
           (append local-tickets providers '("None")))
-         (selection
-          (completing-read
-           "Select ticket or provider (None = no ticket): "
-           initial-candidates
-           nil
-           nil)))
-    (cond
-     ;; User selected a local ticket
-     ((member selection local-tickets)
-      selection)
-     ;; User selected a provider
-     ((member selection providers)
-      (let* ((fetch-fn
-              (cdr (assoc selection cnit-magit--ticket-providers)))
-             (provider-tickets
-              (when fetch-fn
-                (funcall fetch-fn local-branch)))
-             (ticket
-              (completing-read (format "Select ticket from %s: "
-                                       selection)
-                               provider-tickets
-                               nil t)))
-        ticket))
-     ;; User chose "None"
-     ((string= selection "None")
-      nil)
-     ;; User typed a new ticket number
-     (t
-      selection)))) ;; BUG - user can type non numbers for a new ticket
+         (done nil)
+         (result nil))
+    (while (not done)
+      (let ((selection
+             (completing-read
+              "Select ticket or provider (None = no ticket): "
+              initial-candidates
+              nil
+              nil)))
+        (cond
+         ;; User selected a local ticket
+         ((member selection local-tickets)
+          (setq result selection)
+          (setq done t))
+         ;; User selected a provider
+         ((member selection providers)
+          (let* ((fetch-fn
+                  (cdr
+                   (assoc selection cnit-magit--ticket-providers)))
+                 (provider-tickets
+                  (when fetch-fn
+                    (funcall fetch-fn local-branch)))
+                 (ticket
+                  (completing-read (format "Select ticket from %s: "
+                                           selection)
+                                   provider-tickets
+                                   nil t)))
+            (if (or (not ticket) (string-empty-p ticket))
+                (setq result nil)
+              (setq result ticket))
+            (setq done t)))
+         ;; User chose "None"
+         ((string= selection "None")
+          (setq result nil)
+          (setq done t))
+         ;; User typed a new ticket number
+         (t
+          (cond
+           ((string-empty-p selection)
+            (setq result nil)
+            (setq done t))
+           ((string-match-p "\\`[0-9]+\\'" selection)
+            (setq result selection)
+            (setq done t))
+           (t
+            (message "Ticket must be all digits. Please try again.")
+            (sit-for 1)))))))
+    result))
 
 (defun cnit-magit--create-worktree (repo-path worktree-dir branch)
   "Create a git worktree for BRANCH at WORKTREE-DIR from REPO-PATH."
@@ -248,6 +268,57 @@ Returns the absolute path to the worktree directory."
                        (downcase name) ticket-tag type-tag repo-tag)
                       "~/worktrees")))
 
+(defun cnit-magit--new-branch-name ()
+  "Prompt the user for a new branch name, format it, and return it as a string.
+
+The name is lowercased, spaces and non-alphanumeric characters are replaced with '-',
+and leading/trailing dashes are removed."
+  (let ((name-raw
+         (downcase
+          (completing-read
+           "Branch name: "
+           (-map
+            (lambda (x) (cdr (assoc 'name x)))
+            (cnit-magit--list-worktrees))))))
+    (replace-regexp-in-string
+     (rx
+      (or (and bos (one-or-more "-")) (and (one-or-more "-") eos)))
+     ""
+     (replace-regexp-in-string
+      (rx (one-or-more (not alnum))) "-" name-raw))))
+
+(defun cnit-magit--new-branch-type ()
+  "Prompt the user for a branch type and return it as a lowercase string.
+
+Returns nil if the user enters an empty string."
+  (let ((result
+         (downcase
+          (completing-read "Type: " '("Feature" "Bug") nil t))))
+    (if (string-empty-p result)
+        nil
+      result)))
+
+(defun cnit-magit--worktree-branch
+    (worktree name &optional type ticket)
+  "Create a new branch and corresponding worktree.
+
+WORKTREE is the directory for the new worktree.
+NAME is the branch name (string).
+TYPE is the branch type (e.g. \"feature\"), or nil.
+TICKET is the ticket number as a string, or nil.
+
+Prompts for a starting point for the branch, constructs the branch name,
+and creates the worktree and branch."
+  (let* ((start (magit-read-starting-point "Branch"))
+         (branch-name
+          (concat
+           (when type
+             (concat type "/"))
+           (when ticket
+             (concat ticket "-"))
+           name)))
+    (magit-worktree-branch worktree branch-name start)))
+
 ;; Main worktree flows
 (defun cnit-magit-worktree-checkout-existing ()
   "Checkout an existing branch into a worktree folder."
@@ -271,3 +342,20 @@ Returns the absolute path to the worktree directory."
                                            type
                                            ticket))))
     (magit-worktree-checkout worktree local-branch)))
+
+(defun cnit-magit-worktree-chekout-new ()
+  "Checkout a new branch into a worktree folder."
+  (interactive)
+  (when-let* ((repo (cnit-magit--select-repo))
+              (repo-path (car (alist-get 'path repo)))
+              (repo-name (car (alist-get 'name repo)))
+              (name (cnit-magit--new-branch-name)))
+    (let* ((type (cnit-magit--new-branch-type))
+           (ticket
+            (cnit-magit--prompt-ticket
+             (if type
+                 (format "%s/%s" type name)
+               name)))
+           (worktree
+            (cnit-magit--worktree-dir name repo-name type ticket)))
+      (cnit-magit--worktree-branch worktree name type ticket))))

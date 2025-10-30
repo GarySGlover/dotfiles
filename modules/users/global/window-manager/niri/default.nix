@@ -36,7 +36,7 @@ in
   ];
   config = mkIf config.wolf.roles.wayland {
     home.packages = with pkgs; [
-      xwayland-satellite
+      wbg
       bluetuith
       hyprlock
       (wl-kbptr.overrideAttrs (old: {
@@ -120,7 +120,7 @@ in
         "spawn-at-startup \"ags\" \"run\" \"--gtk4\"" = [ ];
         "spawn-at-startup \"udiskie\"" = [ ];
         "spawn-at-startup \"kanshi\"" = [ ];
-        "spawn-at-startup \"xwayland-satellite\"" = [ ];
+        "spawn-at-startup \"wbg\" \"${toString ./wallpaper.png}\"" = [ ];
 
         environment = {
           DISPLAY = ":0";

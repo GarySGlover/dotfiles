@@ -656,24 +656,30 @@ directories. This should happen automaticaly on a project switch
 command.
 #+begin_src emacs-lisp
   (with-eval-after-load 'project
-    (defvar cnit-project-base-directories '("~/feature/" "~/dev/"))
-    "List of directories containing vc controlled subdirectories.")
-  (defun cnit-project-prompter-advice ()
-    "Update remembered projects."
-    (project-forget-zombie-projects)
+    (require 'dash)
+    (defvar cnit-project-base-directories
+      '("~/feature/" "~/dev/" "~/worktrees" "~/git-clones" "~/dotfiles" "~/nook")
+      "List of directories containing vc controlled subdirectories.")
+    (defun cnit-remember-projects-under-recursive (dir)
+      "Remember projects under DIR recursively.
+  End recursion at the first folder that is a project."
+      (if (project--find-in-directory dir)
+          (project-remember-projects-under dir)
+        (-each
+         (-filter
+          #'file-directory-p
+          (directory-files dir
+                           t
+                           (rx
+                            string-start (not ".") (one-or-more any))))
+         #'cnit-remember-projects-under-recursive)))
     (let ((inhibit-message t))
-      (mapc
-       (lambda (dir) (project-remember-projects-under dir))
-       (flatten-list
-        (mapcar
-         (lambda (dir)
-           (seq-filter
-            (lambda (x) (file-directory-p x))
-            (directory-files dir t "^[^.].*")))
-         cnit-project-base-directories)))))
+      (-each
+       (-filter #'file-directory-p cnit-project-base-directories)
+       #'cnit-remember-projects-under-recursive)))
   (advice-add
    'project-prompt-project-dir
-   :before 'cnit-project-prompter-advice)
+   :before #'project-forget-zombie-projects)
 #+end_src
 
 Cleanup any projects that are inside other projects. This is to help

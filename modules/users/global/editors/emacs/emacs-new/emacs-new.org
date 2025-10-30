@@ -15,6 +15,16 @@
 Stored here until I get around to migrating into org-agenda when that
 is setup.
 
+- Org agenda / Denote
+  https://github.com/ryuslash/git-auto-commit-mode
+  Create single repo for both.
+  Use directory locals for git auto commit.
+  Need to figure out a way to pull.
+  https://www.labri.fr/perso/nrougier/GTD/index.html
+  Want to be able to add notes / update state of todo items. These should be
+  captured nicely into drawers/timestamped sections.
+- Embark act
+- Build/Compile (pre-commit make)
 - Aidermacs voice
 - Kubernetes mode
   - Support multiple contexts
@@ -32,7 +42,6 @@ is setup.
 - Minor mode management (easy enable/disable). Have previously done
   this using a transient, but not sure if this is the approach I want
   to take.
-- Org agenda
 - re-builder default to rx
 
 * Headers
@@ -360,7 +369,13 @@ display space.
 
 Window layout history
 #+begin_src emacs-lisp
-  (add-hook 'after-init-hook #'winner-mode)
+  (add-hook 'after-init-hook (lambda () (winner-mode t)))
+#+end_src
+
+Enable repeat mode. Can help with actions in key sequences that may
+need to be repeated.
+#+begin_src emacs-lisp
+  (add-hook 'after-init-hook (lambda () (repeat-mode t)))
 #+end_src
 
 * cnit Functions
@@ -441,7 +456,11 @@ Format all default formatter helper
   (add-hook 'emacs-startup-hook #'cnit-load-system-theme)
 #+end_src
 
-* Org Mode
+* Productivity
+Configuration for tools that enhance productivity, navigation, and
+overall workflow in Emacs.
+
+** Org mode
 Most packages won't get there own section. However org mode and it's
 various extensions are a significant part of the Emacs experience.
 
@@ -479,6 +498,66 @@ tasks that I want to be able to run prior to the save and exit.
     (advice-add #'org-edit-src-exit :around #'cnit-org-edit-src-exit))
 #+end_src
 
+Org insert headings that work alongside hyperbole. As hyperbole task
+the meta-return key, need to bind somewhere else.
+#+begin_src emacs-lisp
+  (with-eval-after-load 'org
+    (bind-key "s-<return>" #'org-meta-return 'org-mode-map)
+    (bind-key "s-<backspace>" #'org-meta-return 'org-mode-map)
+    (setopt org-insert-heading-respect-content t))
+#+end_src
+
+Org agenda basic settings. Configuration of location and files.
+#+begin_src emacs-lisp
+  (with-eval-after-load 'org
+    (setopt
+     org-directory "~/nook/agenda"
+     org-agenda-files '("inbox.org" "main.org")
+     org-refile-targets '(("main.org" :maxlevel . 3)))
+    (advice-add
+     'org-refile
+     :after (lambda (&rest _) (org-save-all-org-buffers))))
+#+end_src
+
+Org capture
+#+begin_src emacs-lisp
+  (bind-key "s-c" #'org-capture)
+  (with-eval-after-load 'org-capture
+    (defun cnit-org-current-parent-target ()
+      "Return a refile target pointing to the current heading."
+      (org-back-to-heading t)
+      ;; Return a cons of (heading . buffer)
+      (let
+          ((heading (nth 4 (org-heading-components))) ; get heading title
+           (buf (current-buffer)))
+        (list (list heading buf))))
+
+    (setopt
+     org-capture-templates
+     '(("i"
+        "Inbox"
+        entry
+        (file+headline "~/nook/agenda/inbox.org" "Inbox")
+        "* TODO %? [/] [%]\n:PROPERTIES:\n:CREATED: %U\n:END:\n")
+       ("s"
+        "Subtask"
+        entry
+        (function cnit-org-current-parent-target)
+        "* TODO %? [/][%]\n:PROPERTIES:\n:CREATED: %U\n:END:\n"))))
+#+end_src
+
+Org agenda views
+#+begin_src emacs-lisp
+  (bind-key "s-o" #'org-agenda)
+  (with-eval-after-load 'org-agenda
+    (setopt org-agenda-custom-commands
+            '(("r" "Review" tags-todo "+inbox" ((org-agenda-overriding-header "Inbox"))))))
+#+end_src
+
+** Hyperbole
+#+begin_src emacs-lisp
+  (add-hook 'after-init-hook (lambda () (hyperbole-mode t)))
+#+end_src
 * Editing
 Tools and enhancements to make editing more efficient and
 precise. Focuses on improving readability, providing structural
@@ -638,7 +717,7 @@ pre-commits.
 Automatically configure development environment dependencies when
 entering a project. Using direnv as the main utility.
 #+begin_src emacs-lisp
-  (add-hook 'after-init-hook 'envrc-global-mode 91)
+  (add-hook 'after-init-hook (lambda () (envrc-global-mode t)) 91)
   (with-eval-after-load 'envrc
     (setopt envrc-show-summary-in-minibuffer nil)
     (define-key envrc-mode-map (kbd "s-e") 'envrc-command-map))
@@ -662,7 +741,7 @@ completions.
 Improve on the inbuilt completions. Display multiple candidates to
 make selections easier.
 #+begin_src emacs-lisp
-  (add-hook 'after-init-hook #'vertico-mode)
+  (add-hook 'after-init-hook (lambda () (vertico-mode t)))
   (with-eval-after-load 'vertico
     (setopt vertico-cycle t))
 #+end_src
@@ -741,6 +820,12 @@ Aider integration. Integration of Aider for project aware LLM work.
 Options and configuration of major modes. A large proportion of major
 modes will be programming languages themselves, however this section
 also covers non-programming major modes.
+
+** Dired mode
+#+begin_src emacs-lisp
+  (with-eval-after-load 'dired
+    (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1))))
+#+end_src
 
 ** Prog mode
 Enable supportive modes for programming.

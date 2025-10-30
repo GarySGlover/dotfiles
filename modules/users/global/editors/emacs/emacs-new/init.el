@@ -174,7 +174,13 @@
 
 ;; Window layout history
 
-(add-hook 'after-init-hook #'winner-mode)
+(add-hook 'after-init-hook (lambda () (winner-mode t)))
+
+
+;; Enable repeat mode. Can help with actions in key sequences that may
+;; need to be repeated.
+
+(add-hook 'after-init-hook (lambda () (repeat-mode t)))
 ;; Theme
 
 (defun cnit-pre-load-theme (_theme)
@@ -192,7 +198,7 @@ This prevents overlapping themes; something I would rarely want."
      (load-theme 'modus-vivendi) (load-theme 'modus-operandi))))
 
 (add-hook 'emacs-startup-hook #'cnit-load-system-theme)
-;; Org Mode
+;; Org mode
 ;; Most packages won't get there own section. However org mode and it's
 ;; various extensions are a significant part of the Emacs experience.
 
@@ -228,6 +234,65 @@ This prevents overlapping themes; something I would rarely want."
     (apply orig r))
   (advice-add #'org-edit-src-save :around #'cnit-org-edit-src-save)
   (advice-add #'org-edit-src-exit :around #'cnit-org-edit-src-exit))
+
+
+;; Org insert headings that work alongside hyperbole. As hyperbole task
+;; the meta-return key, need to bind somewhere else.
+
+(with-eval-after-load 'org
+  (bind-key "s-<return>" #'org-meta-return 'org-mode-map)
+  (bind-key "s-<backspace>" #'org-meta-return 'org-mode-map)
+  (setopt org-insert-heading-respect-content t))
+
+
+;; Org agenda basic settings. Configuration of location and files.
+
+(with-eval-after-load 'org
+  (setopt
+   org-directory "~/nook/agenda"
+   org-agenda-files '("inbox.org" "main.org")
+   org-refile-targets '(("main.org" :maxlevel . 3)))
+  (advice-add
+   'org-refile
+   :after (lambda (&rest _) (org-save-all-org-buffers))))
+
+
+;; Org capture
+
+(bind-key "s-c" #'org-capture)
+(with-eval-after-load 'org-capture
+  (defun cnit-org-current-parent-target ()
+    "Return a refile target pointing to the current heading."
+    (org-back-to-heading t)
+    ;; Return a cons of (heading . buffer)
+    (let
+        ((heading (nth 4 (org-heading-components))) ; get heading title
+         (buf (current-buffer)))
+      (list (list heading buf))))
+
+  (setopt
+   org-capture-templates
+   '(("i"
+      "Inbox"
+      entry
+      (file+headline "~/nook/agenda/inbox.org" "Inbox")
+      "* TODO %? [/] [%]\n:PROPERTIES:\n:CREATED: %U\n:END:\n")
+     ("s"
+      "Subtask"
+      entry
+      (function cnit-org-current-parent-target)
+      "* TODO %? [/][%]\n:PROPERTIES:\n:CREATED: %U\n:END:\n"))))
+
+
+;; Org agenda views
+
+(bind-key "s-o" #'org-agenda)
+(with-eval-after-load 'org-agenda
+  (setopt org-agenda-custom-commands
+          '(("r" "Review" tags-todo "+inbox" ((org-agenda-overriding-header "Inbox"))))))
+;; Hyperbole
+
+(add-hook 'after-init-hook (lambda () (hyperbole-mode t)))
 ;; Editing
 ;; Tools and enhancements to make editing more efficient and
 ;; precise. Focuses on improving readability, providing structural
@@ -385,7 +450,7 @@ This filters `project--list` in place and writes the updated list to disk."
 ;; Automatically configure development environment dependencies when
 ;; entering a project. Using direnv as the main utility.
 
-(add-hook 'after-init-hook 'envrc-global-mode 91)
+(add-hook 'after-init-hook (lambda () (envrc-global-mode t)) 91)
 (with-eval-after-load 'envrc
   (setopt envrc-show-summary-in-minibuffer nil)
   (define-key envrc-mode-map (kbd "s-e") 'envrc-command-map))
@@ -407,7 +472,7 @@ This filters `project--list` in place and writes the updated list to disk."
 ;; Improve on the inbuilt completions. Display multiple candidates to
 ;; make selections easier.
 
-(add-hook 'after-init-hook #'vertico-mode)
+(add-hook 'after-init-hook (lambda () (vertico-mode t)))
 (with-eval-after-load 'vertico
   (setopt vertico-cycle t))
 
@@ -481,6 +546,10 @@ This filters `project--list` in place and writes the updated list to disk."
 ;;    aidermacs-default-model "ollama_chat/codellama:7b"
 ;;    aidermacs-weak-model "ollama_chat/mistral:7b"
 ;;    aidermacs-architect-model "ollama_chat/deepseek-r1:8b"))
+;; Dired mode
+
+(with-eval-after-load 'dired
+  (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1))))
 ;; Prog mode
 ;; Enable supportive modes for programming.
 

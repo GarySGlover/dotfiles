@@ -289,7 +289,16 @@ This prevents overlapping themes; something I would rarely want."
 (bind-key "s-o" #'org-agenda)
 (with-eval-after-load 'org-agenda
   (setopt org-agenda-custom-commands
-          '(("r" "Review" tags-todo "+inbox" ((org-agenda-overriding-header "Inbox"))))))
+          '(("r"
+             "Review"
+             tags-todo
+             "+inbox"
+             ((org-agenda-overriding-header "Inbox")))
+            ("m" "Main tasks"
+             ((todo
+               ""
+               ((org-agenda-files '("main.org"))
+                (org-agenda-overriding-header "Main Tasks"))))))))
 ;; Hyperbole
 
 (add-hook 'after-init-hook (lambda () (hyperbole-mode t)))
@@ -462,14 +471,33 @@ This filters `project--list` in place and writes the updated list to disk."
   (define-key envrc-mode-map (kbd "s-e") 'envrc-command-map))
 
 
-;; - Magit workspaces.
-;;   Add ticket number, but don't force
-;;   Auto generate from branch with name scheme
-;;   Branch with title, lower snake cased
+;; Allow safe directories list for dir-locals to prevent being asked
+;; repeatedly.
 
+(defvar cnit-trusted-dir-locals
+  '("~/nook/" "~/projects/work/" "~/projects/personal/")
+  "List of directories whose .dir-locals.el files are fully trusted.")
 
-;; This is being prepped in magit-worktrees.el and will be ported
-;; here when completed.
+(defun cnit-trusted-dir-p (dir)
+  "Return non-nil if DIR is in or under one of `cnit-trusted-dir-locals`."
+  (let ((dir (expand-file-name dir)))
+    (seq-some
+     (lambda (trusted)
+       (string-prefix-p (expand-file-name trusted) dir))
+     cnit-trusted-dir-locals)))
+
+(defun cnit-hack-local
+    (orig-fun all-vars unsafe-vars risky-vars dir-name)
+  (if (cnit-trusted-dir-p dir-name)
+      t ;; Automatically trust everything
+    (apply orig-fun
+           variables
+           all-vars
+           unsafe-vars
+           risky-vars
+           dir-name)))
+
+(advice-add 'hack-local-variables-confirm :around #'cnit-hack-local)
 ;; Completions
 ;; This section will include all completion types and options. This
 ;; includes, but is not limited to, programming, textual, shell and LLM

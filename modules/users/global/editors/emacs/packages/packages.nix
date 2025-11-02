@@ -158,6 +158,7 @@ let
     format-all
     general
     git-timemachine
+    git-auto-commit-mode
     gptel
     helpful
     indent-bars

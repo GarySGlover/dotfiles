@@ -20,6 +20,7 @@ in
     xdg.configFile."emacs/early-init.el".source = ./emacs-new/early-init.el;
     xdg.configFile."emacs/init.el".source = ./emacs-new/init.el;
     xdg.configFile."emacs/cnit-functions.el".source = ./emacs-new/cnit-functions.el;
+    xdg.configFile."emacs/templates".source = ./emacs-new/templates;
     xdg.configFile."emacs/external-programs.el".text = ''
       ;;; external-programs.el --- Paths to external programs required by my emacs configuration and custom functions.  -*- lexical-binding: t; -*-
 

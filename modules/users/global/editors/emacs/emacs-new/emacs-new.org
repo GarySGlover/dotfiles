@@ -377,6 +377,11 @@ need to be repeated.
   (add-hook 'after-init-hook (lambda () (repeat-mode t)))
 #+end_src
 
+Prevent accidental closing of Emacs
+#+begin_src emacs-lisp
+  (setopt confirm-kill-emacs #'y-or-n-p)
+#+end_src
+
 * cnit Functions
 :PROPERTIES:
 :header-args:emacs-lisp+: :tangle cnit-functions.el

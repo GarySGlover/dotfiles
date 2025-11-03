@@ -180,6 +180,11 @@
 ;; need to be repeated.
 
 (add-hook 'after-init-hook (lambda () (repeat-mode t)))
+
+
+;; Prevent accidental closing of Emacs
+
+(setopt confirm-kill-emacs #'y-or-n-p)
 ;; Theme
 
 (defun cnit-pre-load-theme (_theme)

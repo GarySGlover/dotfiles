@@ -9,7 +9,6 @@
 (defun cnit-emacs-server ()
   "Start Emacs server if not already running."
   (unless (and (fboundp 'server-running-p) (server-running-p))
-    (setopt server-name "emacs-new")
     (server-start)))
 (run-with-idle-timer 5 nil #'cnit-emacs-server)
 

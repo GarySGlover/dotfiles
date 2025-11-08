@@ -1,9 +1,0 @@
-* Requirements [0/8]
-- [ ] Managed configuration
-- [ ] Bitwarden integration
-- [ ] Editor
-- [ ] Profiles
-- [ ] Drag / drop
-- [ ] Highlight region
-- [ ] Multiple search engines
-- [ ] Call from Emacs

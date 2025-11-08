@@ -17,17 +17,8 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixos-wsl = {
-      url = "github:nix-community/NixOS-WSL";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     emacs-overlay.url = "github:nix-community/emacs-overlay/master";
-    ags.url = "github:aylur/ags";
     nur.url = "github:nix-community/NUR";
-    qutebrowser-src = {
-      url = "github:qutebrowser/qutebrowser";
-      flake = false;
-    };
 
     # Emacs Packages
     transient-compile = {

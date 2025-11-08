@@ -33,7 +33,7 @@
 
   environment.systemPackages = with pkgs; [
     clinfo
-    glxinfo
+    mesa-demos
     vulkan-tools
     amdgpu_top
     rocmPackages.rocm-smi

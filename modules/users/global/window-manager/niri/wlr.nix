@@ -87,11 +87,6 @@ in
                   cmd = "hyprlock";
                 }
                 {
-                  key = "q";
-                  desc = "Qutebrowser";
-                  cmd = "qutebrowser";
-                }
-                {
                   key = "s";
                   desc = "Steam";
                   cmd = "steam";

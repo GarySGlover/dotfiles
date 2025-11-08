@@ -41,7 +41,6 @@ in
     home.packages = [
       wlr-which-key
     ];
-
     xdg.configFile."niri/wlr-which-key-config.yaml".source =
       (pkgs.formats.yaml { }).generate "wlr-which-key"
         {
@@ -120,9 +119,26 @@ in
               ];
             }
             {
-              key = "j";
-              desc = "Mouse";
-              cmd = "wl-kbptr -o modes=tile,bisect -o home_row_keys=isrtneaoghb";
+              key = "o";
+              desc = "Overlay";
+              submenu = [
+                {
+                  key = "a";
+                  desc = "Audio Device";
+                  cmd = "";
+                }
+                {
+                  key = "b";
+                  desc = "Battery";
+                  cmd = "swayosd-client --custom-progress=$(awk '/[0-9]+/ {printf \"%.2f\\n\", $0/100}' /sys/class/power_supply/BAT0/capacity) --custom-progress-text=Battery";
+                }
+                {
+                  key = "c";
+                  desc = "Clock";
+                  cmd = "swayosd-client --custom-message=\"$(date)\"";
+                }
+
+              ];
             }
             {
               key = "f";

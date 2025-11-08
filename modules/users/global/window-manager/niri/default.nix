@@ -32,13 +32,13 @@ in
 {
   imports = [
     ./wlr.nix
-    ./ags.nix
   ];
   config = mkIf config.wolf.roles.wayland {
     home.packages = with pkgs; [
       wbg
       bluetuith
       hyprlock
+      swayosd
       (wl-kbptr.overrideAttrs (old: {
         src = fetchFromGitHub {
           owner = "moverest";
@@ -121,11 +121,11 @@ in
         "spawn-at-startup \"udiskie\"" = [ ];
         "spawn-at-startup \"kanshi\"" = [ ];
         "spawn-at-startup \"wbg\" \"${toString ./wallpaper.png}\"" = [ ];
+        "spawn-at-startup \"swayosd-server\"" = [ ];
 
         environment = {
           DISPLAY = ":0";
           XDG_CONFIG_HOME = "${config.xdg.configHome}";
-          OLLAMA_API_BASE = "http://127.0.0.1:11434";
         };
 
         binds = {
@@ -133,13 +133,6 @@ in
             spawn = [
               "wlr-which-key"
               "${config.xdg.configHome}/niri/wlr-which-key-config.yaml"
-            ];
-          };
-          "Ctrl+Alt+SemiColon" = {
-            spawn = [
-              "ags"
-              "request"
-              "toggleMenu"
             ];
           };
           "Ctrl+Period" = {
@@ -169,16 +162,13 @@ in
           "Super+T" = {
             spawn = [ "kitty" ];
           };
-
           XF86AudioRaiseVolume = {
             _props = {
               allow-when-locked = true;
             };
             spawn = [
-              "wpctl"
-              "set-volume"
-              "@DEFAULT_AUDIO_SINK@"
-              "0.1+"
+              "swayosd-client"
+              "--output-volume=raise"
             ];
           };
           XF86AudioLowerVolume = {
@@ -186,30 +176,8 @@ in
               allow-when-locked = true;
             };
             spawn = [
-              "wpctl"
-              "set-volume"
-              "@DEFAULT_AUDIO_SINK@"
-              "0.1-"
-            ];
-          };
-          "XF86MonBrightnessUp" = {
-            _props = {
-              allow-when-locked = true;
-            };
-            spawn = [
-              "brightnessctl"
-              "set"
-              "10%+"
-            ];
-          };
-          "XF86MonBrightnessDown" = {
-            _props = {
-              allow-when-locked = true;
-            };
-            spawn = [
-              "brightnessctl"
-              "set"
-              "10%-"
+              "swayosd-client"
+              "--output-volume=lower"
             ];
           };
           XF86AudioMute = {
@@ -217,10 +185,8 @@ in
               allow-when-locked = true;
             };
             spawn = [
-              "wpctl"
-              "set-mute"
-              "@DEFAULT_AUDIO_SINK@"
-              "toggle"
+              "swayosd-client"
+              "--output-volume=mute-toggle"
             ];
           };
           XF86AudioMicMute = {
@@ -228,12 +194,29 @@ in
               allow-when-locked = true;
             };
             spawn = [
-              "wpctl"
-              "set-mute"
-              "@DEFAULT_AUDIO_SOURCE@"
-              "toggle"
+              "swayosd-client"
+              "--input-volume=mute-toggle"
             ];
           };
+          "XF86MonBrightnessUp" = {
+            _props = {
+              allow-when-locked = true;
+            };
+            spawn = [
+              "swayosd-client"
+              "--brigtness=raise"
+            ];
+          };
+          "XF86MonBrightnessDown" = {
+            _props = {
+              allow-when-locked = true;
+            };
+            spawn = [
+              "swayosd-client"
+              "--brigtness=lower"
+            ];
+          };
+
         };
       }
       + "\n"

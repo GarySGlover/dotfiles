@@ -9,6 +9,16 @@ let
   secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
 
   epkgsl = with pkgs.emacsPackages; {
+    magit-worktrees = pkgs.emacsPackages.trivialBuild rec {
+      pname = "magit-worktrees";
+      version = "1.0";
+      src = ./emacs-new/magit-worktrees.el;
+      propagatedUserEnvPkgs = [
+        magit
+        dash
+      ];
+      buildInputs = propagatedUserEnvPkgs;
+    };
     kbd-mode = (
       melpaBuild {
         pname = "kbd-mode";
@@ -129,6 +139,7 @@ let
     ws-butler
     org-menu
     hyperbole
+    magit-worktrees
   ];
 
   emacsExtraPackages = with pkgs.emacsPackages; [

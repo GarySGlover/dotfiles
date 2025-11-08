@@ -1,4 +1,13 @@
-;; -*- lexical-binding: t; -*-
+;;; magit-worktrees.el --- Magit worktree helpers   -*- lexical-binding: t; -*-
+
+;;; Commentary:
+;; Help create worktrees based on a naming convention.  Will create
+;; either based on existing branch or create a new branch if required.
+
+;;; Code:
+(require 'magit)
+(require 'dash)
+(require 'rx)
 
 (defun cnit-magit--select-repo ()
   "Return the current repo path and name, prompting if not in a Git repo."
@@ -137,7 +146,7 @@ onto `cnit-magit--ticket-providers`.")
 First show local tickets and provider names.  If a provider is selected,
 fetch tickets from the provider and prompt again.
 
-Only allows new tickets that are all digits. If the user enters an empty string,
+Only allows new tickets that are all digits.  If the user enters an empty string,
 returns nil."
   (let* ((local-tickets
           (cnit-magit--ticket-candidates-for-branch local-branch))
@@ -193,12 +202,6 @@ returns nil."
             (sit-for 1)))))))
     result))
 
-(defun cnit-magit--create-worktree (repo-path worktree-dir branch)
-  "Create a git worktree for BRANCH at WORKTREE-DIR from REPO-PATH."
-  (unless (file-directory-p worktree-dir)
-    (let ((default-directory repo-path))
-      (magit-worktree-add worktree-dir branch))))
-
 (defun cnit-magit--parse-branch-for-info (local-branch)
   "Parse LOCAL-BRANCH and extract type, ticket, and name information.
 
@@ -210,8 +213,7 @@ Returns an alist with keys:
 
 Example:
   (cnit-magit--parse-branch-for-info \"feature/1234-fix-bug\")
-  => ((type . \"feature\") (ticket . \"1234\") (name . \"fix-bug\"))
-"
+  => ((type . \"feature\") (ticket . \"1234\") (name . \"fix-bug\"))"
   (when (string-match
          (rx
           string-start
@@ -228,7 +230,7 @@ Example:
   "Get the ticket number for LOCAL-BRANCH.
 
 First attempts to parse the ticket number from the branch name using
-`cnit-magit--parse-branch-for-info`. If not found, prompts the user
+`cnit-magit--parse-branch-for-info`.  If not found, prompts the user
 to select or enter a ticket number using `cnit-magit--prompt-ticket`.
 
 Returns the ticket number as a string, or nil if none is selected."
@@ -314,7 +316,7 @@ and creates the worktree and branch."
            name)))
     (magit-worktree-branch worktree branch-name start)))
 
-;; Main worktree flows
+;;;###autoload
 (defun cnit-magit-worktree-checkout-existing ()
   "Checkout an existing branch into a worktree folder."
   (interactive)
@@ -338,6 +340,7 @@ and creates the worktree and branch."
                                            ticket))))
     (magit-worktree-checkout worktree local-branch)))
 
+;;;###autoload
 (defun cnit-magit-worktree-chekout-new ()
   "Checkout a new branch into a worktree folder."
   (interactive)
@@ -354,3 +357,7 @@ and creates the worktree and branch."
            (worktree
             (cnit-magit--worktree-dir name repo-name type ticket)))
       (cnit-magit--worktree-branch worktree name type ticket))))
+
+(provide 'magit-worktrees)
+
+;;; magit-worktrees.el ends here

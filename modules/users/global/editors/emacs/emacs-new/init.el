@@ -376,25 +376,29 @@ This prevents overlapping themes; something I would rarely want."
 ;; this here
 ;; https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-05/msg01039.html.
 
-(defun cnit-memoize-project-current (orig &optional prompt directory)
-  (if (boundp 'memoize-project-current--cache)
-      memoize-project-current--cache
-    (set
-     (make-local-variable 'memoize-project-current--cache)
-     (funcall orig prompt directory))))
-(defun cnit-project-mode-line-format ()
-  "Memoize 'project-current' for mode line performance."
-  (let ((original-project-current (symbol-function 'project-current)))
-        (unwind-protect
-         (progn
-           (fset 'project-current
-                 (lambda (&optional prompt directory)
-                   (cnit-memoize-project-current original-project-current
-                                                 prompt
-                                                 directory)))
-           (project-mode-line-format))
-         (fset 'project-current original-project-current))))
-(advice-add 'project-mode-line-format :override #'cnit-project-mode-line-format)
+(with-eval-after-load 'project
+  (defun cnit-memoize-project-current
+      (orig &optional prompt directory)
+    (if (boundp 'memoize-project-current--cache)
+        memoize-project-current--cache
+      (set
+       (make-local-variable 'memoize-project-current--cache)
+       (funcall orig prompt directory))))
+  (defun cnit-project-mode-line-format ()
+    "Memoize 'project-current' for mode line performance."
+    (let ((original-project-current
+           (symbol-function 'project-current)))
+      (unwind-protect
+          (progn
+            (fset 'project-current
+                  (lambda (&optional prompt directory)
+                    (cnit-memoize-project-current
+                     original-project-current prompt directory)))
+            (project-mode-line-format))
+        (fset 'project-current original-project-current))))
+  (advice-add
+   'project-mode-line-format
+   :override #'cnit-project-mode-line-format))
 
 
 ;; Forget zombie projects and import projects in standard project
@@ -404,7 +408,12 @@ This prevents overlapping themes; something I would rarely want."
 (with-eval-after-load 'project
   (require 'dash)
   (defvar cnit-project-base-directories
-    '("~/feature/" "~/dev/" "~/worktrees" "~/git-clones" "~/dotfiles" "~/nook")
+    '("~/feature/"
+      "~/dev/"
+      "~/worktrees"
+      "~/git-clones"
+      "~/dotfiles"
+      "~/nook")
     "List of directories containing vc controlled subdirectories.")
   (defun cnit-remember-projects-under-recursive (dir)
     "Remember projects under DIR recursively.
@@ -419,13 +428,32 @@ End recursion at the first folder that is a project."
                          (rx
                           string-start (not ".") (one-or-more any))))
        #'cnit-remember-projects-under-recursive)))
-  (let ((inhibit-message t))
-    (-each
-     (-filter #'file-directory-p cnit-project-base-directories)
-     #'cnit-remember-projects-under-recursive)))
-(advice-add
- 'project-prompt-project-dir
- :before #'project-forget-zombie-projects)
+  (defun cnit-project-prompt-dir-advice ()
+
+    (let ((inhibit-message t))
+      (-each
+       (-filter
+        #'file-directory-p cnit-project-base-directories)
+       #'cnit-remember-projects-under-recursive))
+    (advice-remove
+     'project-prompt-project-dir #'cnit-project-prompt-dir-advice))
+  (advice-add
+   'project-prompt-project-dir
+   :before #'cnit-project-prompt-dir-advice)
+  (advice-add
+   'project-prompt-project-dir
+   :before #'project-forget-zombie-projects))
+(autoload 'cnit-magit-worktree-checkout-existing "magit-worktrees"
+  nil
+  t)
+(autoload 'cnit-magit-worktree-chekout-new "magit-worktrees" nil t)
+(with-eval-after-load 'magit
+  (transient-append-suffix
+   'magit-worktree "c"
+   '("f" "from branch" cnit-magit-worktree-checkout-existing))
+  (transient-append-suffix
+   'magit-worktree "f"
+   '("n" "new branch" cnit-magit-worktree-chekout-new)))
 
 
 ;; Cleanup any projects that are inside other projects. This is to help
@@ -636,6 +664,10 @@ This filters `project--list` in place and writes the updated list to disk."
             (when (derived-mode-p 'lisp-data-mode)
               (check-parens)))
           -90)
+;; Terraform
+
+(with-eval-after-load 'format-all
+  (cnit-update-format-all-formatter "Terraform" 'terrform-fmt))
 ;; Nix
 
 (add-to-list 'auto-mode-alist `(,(rx ".nix" string-end) . nix-ts-mode))

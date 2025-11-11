@@ -120,7 +120,7 @@ in
                 {
                   key = "a";
                   desc = "Audio Device";
-                  cmd = "";
+                  cmd = "swayosd-client --custom-message=\"$(wpctl inspect @DEFAULT_SINK@ | awk -F'= ' '/node.description/ {gsub(/\"/, \"\", $2); print $2}')\"";
                 }
                 {
                   key = "b";

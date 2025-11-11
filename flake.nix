@@ -67,7 +67,7 @@
         filterAttrs
         mkForce
         nixosSystem
-      ;
+        ;
       inherit (builtins)
         readDir
         head
@@ -75,7 +75,7 @@
         mapAttrs
         listToAttrs
         attrValues
-      ;
+        ;
 
       system = if builtins ? currentSystem then builtins.currentSystem else "x86_64-linux";
       listNixFilesRecursive =
@@ -86,11 +86,11 @@
             let
               path = dir + "/${name}";
             in
-              if type == "directory" then
+            if type == "directory" then
               if pathExists (dir + "/${name}/default.nix") then path else listNixFilesRecursive path
-              else if hasSuffix ".nix" name then
+            else if hasSuffix ".nix" name then
               path
-              else
+            else
               [ ]
           ) (readDir dir)
         );
@@ -104,10 +104,10 @@
             );
             importedOverlays = map (file: import (./modules/overlays + "/${file}") inputs) overlayFiles;
           in
-            [
-              inputs.emacs-overlay.overlay
-              inputs.nur.overlays.default
-            ]
+          [
+            inputs.emacs-overlay.overlay
+            inputs.nur.overlays.default
+          ]
           ++ importedOverlays;
       };
 
@@ -117,7 +117,7 @@
           wolfLib
           self
           inputs
-        ;
+          ;
       };
 
       mkHomeCfg =
@@ -126,26 +126,26 @@
           user = "${head (match "(.+)@.+" name)}";
           host = "${head (match ".+@(.+)" name)}";
         in
-          {
-            inherit name;
-            value = inputs.home-manager.lib.homeManagerConfiguration {
-              inherit pkgs;
-              inherit extraSpecialArgs;
-              modules = [
-		(
-                  { ... }:
+        {
+          inherit name;
+          value = inputs.home-manager.lib.homeManagerConfiguration {
+            inherit pkgs;
+            inherit extraSpecialArgs;
+            modules = [
+              (
+                { ... }:
                 {
                   home.username = user;
                   home.homeDirectory = mkForce "/home/${user}";
                   wolf.host = host;
                   wolf.secretsPath = ./secrets;
                 }
-		)
-              ]
+              )
+            ]
             ++ listNixFilesRecursive ./modules/users/global
             ++ listNixFilesRecursive ./modules/users/${user};
-            };
           };
+        };
 
       mkNixOsCfg =
         {
@@ -172,38 +172,38 @@
               users
               self
               inputs
-            ;
+              ;
           };
         in
-          nixosSystem {
-            inherit system specialArgs;
-            inherit pkgs;
-            modules = [
-              inputs.sops-nix.nixosModules.sops
-              inputs.home-manager.nixosModules.home-manager
-              {
-		home-manager = {
-                  inherit extraSpecialArgs;
-                  useGlobalPkgs = true;
-                  useUserPackages = true;
-                  backupFileExtension = "hm-backup";
-                  users = userHome;
-                  sharedModules = [
-                    (
-                      { ... }:
+        nixosSystem {
+          inherit system specialArgs;
+          inherit pkgs;
+          modules = [
+            inputs.sops-nix.nixosModules.sops
+            inputs.home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                inherit extraSpecialArgs;
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                backupFileExtension = "hm-backup";
+                users = userHome;
+                sharedModules = [
+                  (
+                    { ... }:
                     {
                       wolf.host = host;
                     }
-                    )
-                  ]
+                  )
+                ]
                 ++ (listNixFilesRecursive ./modules/users/global);
-		};
-              }
-            ]
+              };
+            }
+          ]
           ++ (listNixFilesRecursive ./modules/hosts/global)
           ++ (listNixFilesRecursive ./modules/hosts/${host})
           ++ hostLegacyModule;
-          };
+        };
 
       hostCfgs = {
         auberon = {
@@ -238,15 +238,15 @@
         attrValues (mapAttrs (host: v: forEach v.users (user: "${user}@${host}")) hostCfgs)
       );
     in
-      {
-	nixosConfigurations =
-          mapAttrs (
-            host: v:
+    {
+      nixosConfigurations =
+        mapAttrs (
+          host: v:
           mkNixOsCfg {
             inherit host;
             users = v.users;
           }
-          ) (filterAttrs (n: v: v.nixos) hostCfgs)
+        ) (filterAttrs (n: v: v.nixos) hostCfgs)
         // {
           live = nixosSystem {
             inherit system;
@@ -258,51 +258,51 @@
           };
         };
 
-	homeConfigurations = listToAttrs (forEach homeCfgs (name: mkHomeCfg name));
-	devShells.${system}.default = pkgs.mkShell {
-          packages = with pkgs; [
+      homeConfigurations = listToAttrs (forEach homeCfgs (name: mkHomeCfg name));
+      devShells.${system}.default = pkgs.mkShell {
+        packages = with pkgs; [
 
-            # Pre-commit
-            (pre-commit.overrideAttrs (oldAttrs: {
-              makeWrapperArgs = ''
-		--set PYTHONPATH $PYTHONPATH
-              --suffix PYTHONPATH : ${
-                python3.withPackages (ps: [
-                  ps.gitpython
-                  ps.click
-                ])
-              }/lib/python3.13/site-packages
-              '';
-            }))
-            yamlfmt
-            yamllint
+          # Pre-commit
+          (pre-commit.overrideAttrs (oldAttrs: {
+            makeWrapperArgs = ''
+              		--set PYTHONPATH $PYTHONPATH
+                            --suffix PYTHONPATH : ${
+                              python3.withPackages (ps: [
+                                ps.gitpython
+                                ps.click
+                              ])
+                            }/lib/python3.13/site-packages
+            '';
+          }))
+          yamlfmt
+          yamllint
 
-            # Shell
-            shfmt
-            argbash
+          # Shell
+          shfmt
+          argbash
 
-            # Nix
-            nixfmt-rfc-style
-            nixd
-            nix
+          # Nix
+          nixfmt-rfc-style
+          nixd
+          nix
 
-            # TypeScript
-            typescript-language-server
+          # TypeScript
+          typescript-language-server
 
-            # Formatter for various languages
-            nodePackages.prettier
+          # Formatter for various languages
+          nodePackages.prettier
 
-            # Python
-            python313
-            python313Packages.black
-            python313Packages.flake8
-            python313Packages.pipx
-            python313Packages.pip
-            pyright
+          # Python
+          python313
+          python313Packages.black
+          python313Packages.flake8
+          python313Packages.pipx
+          python313Packages.pip
+          pyright
 
-            # Emacs init development
-            glib
-          ];
-	};
+          # Emacs init development
+          glib
+        ];
       };
+    };
 }

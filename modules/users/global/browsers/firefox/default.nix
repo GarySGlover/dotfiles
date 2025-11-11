@@ -52,6 +52,7 @@ in
   config = lib.mkIf config.wolf.roles.internet {
     programs.firefox = {
       enable = true;
+      package = pkgs.firefox-bin;
       languagePacks = [ "en-GB" ];
       profiles = {
         home = {

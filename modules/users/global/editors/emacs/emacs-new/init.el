@@ -321,16 +321,31 @@ This prevents overlapping themes; something I would rarely want."
                (derived-mode-p 'lisp-data-mode)
                format-all-mode)
       (format-all-buffer)))
-     (add-hook 'before-save-hook 'cnit-format-all-buffer-hook)
+  (add-hook 'before-save-hook 'cnit-format-all-buffer-hook)
+  (advice-add
+   'format-all--buffer-from-hook
+   :before
+   (lambda (&rest _r)
+     (format-all-ensure-formatter)
+     t))
   (advice-add
    'format-all-buffer
-   :before (lambda (&rest _r) (format-all-ensure-formatter) t))
+   :before
+   (lambda (&rest _r)
+     (format-all-ensure-formatter)
+     t))
   (advice-add
    'format-all-region
-   :before (lambda (&rest _r) (format-all-ensure-formatter) t))
+   :before
+   (lambda (&rest _r)
+     (format-all-ensure-formatter)
+     t))
   (advice-add
    'format-all-region-or-buffer
-   :before (lambda (&rest _r) (format-all-ensure-formatter) t)))
+   :before
+   (lambda (&rest _r)
+     (format-all-ensure-formatter)
+     t)))
 
 
 ;; Highlight unmatched closing delimiters only in the error face
@@ -429,7 +444,7 @@ End recursion at the first folder that is a project."
                           string-start (not ".") (one-or-more any))))
        #'cnit-remember-projects-under-recursive)))
   (defun cnit-project-prompt-dir-advice ()
-
+    "Discover projects in base directories."
     (let ((inhibit-message t))
       (-each
        (-filter
@@ -443,6 +458,11 @@ End recursion at the first folder that is a project."
   (advice-add
    'project-prompt-project-dir
    :before #'project-forget-zombie-projects))
+
+
+;; Magit worktree enhancements. Creation of worktree in standard folder
+;; using branch naming scheme.
+
 (autoload 'cnit-magit-worktree-checkout-existing "magit-worktrees"
   nil
   t)
@@ -664,10 +684,6 @@ This filters `project--list` in place and writes the updated list to disk."
             (when (derived-mode-p 'lisp-data-mode)
               (check-parens)))
           -90)
-;; Terraform
-
-(with-eval-after-load 'format-all
-  (cnit-update-format-all-formatter "Terraform" 'terrform-fmt))
 ;; Nix
 
 (add-to-list 'auto-mode-alist `(,(rx ".nix" string-end) . nix-ts-mode))

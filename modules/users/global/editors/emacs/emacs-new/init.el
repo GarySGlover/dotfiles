@@ -632,6 +632,15 @@ This filters `project--list` in place and writes the updated list to disk."
 ;;    aidermacs-default-model "ollama_chat/codellama:7b"
 ;;    aidermacs-weak-model "ollama_chat/mistral:7b"
 ;;    aidermacs-architect-model "ollama_chat/deepseek-r1:8b"))
+;; Tools
+;; This section covers general tools that don't fit into any other
+;; area. This will cover things such as build, debug, shells and anything
+;; else that is a general function or tool.
+
+;; Capture ansi color codes in complilation buffer for better display.
+
+(with-eval-after-load 'compile
+  (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter))
 ;; Dired mode
 
 (with-eval-after-load 'dired

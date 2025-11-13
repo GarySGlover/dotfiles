@@ -902,6 +902,18 @@ Aider integration. Integration of Aider for project aware LLM work.
   ;;    aidermacs-weak-model "ollama_chat/mistral:7b"
   ;;    aidermacs-architect-model "ollama_chat/deepseek-r1:8b"))
 #+end_src
+
+* Tools
+This section covers general tools that don't fit into any other
+area. This will cover things such as build, debug, shells and anything
+else that is a general function or tool.
+
+Capture ansi color codes in complilation buffer for better display.
+#+begin_src emacs-lisp
+  (with-eval-after-load 'compile
+    (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter))
+#+end_src
+
 * Major modes
 Options and configuration of major modes. A large proportion of major
 modes will be programming languages themselves, however this section

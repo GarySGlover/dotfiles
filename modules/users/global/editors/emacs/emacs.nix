@@ -1,16 +1,9 @@
 {
   pkgs,
-  config,
-  lib,
   ...
 }:
-with lib;
-let
-  theme = config.wolf.theme;
-  secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
-in
 {
-  config = mkIf config.wolf.roles.editing {
+  config = {
     programs.emacs = {
       enable = true;
       package = pkgs.emacs-git-pgtk;
@@ -56,11 +49,7 @@ in
 
     home.sessionVariables.EDITOR = "${pkgs.writeShellScript "emacs-editor" ''
       #!/usr/bin/env bash
-      if infocmp xterm | grep -q 'xterm' &> /dev/null; then
-          emacsclient --tty --alternate-editor "" "$@"
-      else
-          emacsclient --reuse-frame --alternate-editor "" "emacs"
-      fi
+      emacsclient --create-frame --alternate-editor "emacs" "$@"
     ''}";
 
     programs.git.ignores = [

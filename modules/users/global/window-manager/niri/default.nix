@@ -24,6 +24,18 @@ let
       geometry-corner-radius = 10;
       clip-to-geometry = true;
     }
+    {
+      "match title=\"Org Capture\" app-id=\"emacs\"" = [ ];
+      default-column-width = {
+        proportion = 0.5;
+      };
+      default-window-height = {
+        proportion = 0.5;
+      };
+      open-floating = true;
+      open-focused = true;
+      "default-floating-position x=30 y=30 relative-to=\"top-right\"" = [ ];
+    }
   ];
   renderedWindowRules = builtins.concatStringsSep "\n\n" (
     map (rule: lib.hm.generators.toKDL { } { "window-rule" = rule; }) windowRules
@@ -50,20 +62,13 @@ in
       }))
     ];
 
-    home.file.".xkb/symbols/custom".text = ''
-      partial modifier_keys
-      xkb_symbols "ralt_hyper" {
-          key <RALT> { [ Hyper_R ] };
-      };
-    '';
-
     xdg.configFile."niri/config.kdl".text =
       lib.hm.generators.toKDL { } {
         prefer-no-csd = [ ];
+        screenshot-path = "null";
         input = {
           keyboard.xkb = {
             layout = "gb";
-            options = "custom:ralt_hyper";
           };
           warp-mouse-to-focus = [ ];
           disable-power-key-handling = [ ];
@@ -116,8 +121,8 @@ in
           };
         };
 
+        "spawn-at-startup \"emacs\" \"--daemon=wm\"" = [ ];
         "spawn-at-startup \"waybar\"" = [ ];
-        "spawn-at-startup \"ags\" \"run\" \"--gtk4\"" = [ ];
         "spawn-at-startup \"udiskie\"" = [ ];
         "spawn-at-startup \"kanshi\"" = [ ];
         "spawn-at-startup \"wbg\" \"${toString ./wallpaper.png}\"" = [ ];
@@ -129,6 +134,18 @@ in
         };
 
         binds = {
+          "Super+C" = {
+            spawn = [
+              "emacsclient"
+              "--socket-name=wm"
+              "-e"
+              "(cnit-wm-org-capture)"
+            ];
+          };
+
+          "Super+T" = {
+            spawn = [ "kitty" ];
+          };
           "Ctrl+SemiColon" = {
             spawn = [
               "wlr-which-key"
@@ -158,9 +175,6 @@ in
               "-o"
               "mode_floating.label_font_size=20 50% 100"
             ];
-          };
-          "Super+T" = {
-            spawn = [ "kitty" ];
           };
           XF86AudioRaiseVolume = {
             _props = {

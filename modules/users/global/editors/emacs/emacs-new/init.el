@@ -76,16 +76,16 @@
     (with-no-warnings (execute-extended-command prefixarg))))
 
 (bind-key
- "s-x m"
+ "C-c x m"
  #'cnit-command-execute-extended-command-using-mode
  global-map)
 (bind-key
- "s-x k"
+ "C-c x k"
  #'cnit-command-execute-extended-command-using-modes-and-keymaps
  global-map)
 (bind-key
- "s-x d" #'cnit-command-execute-extended-command-default global-map)
-(bind-key "s-x x" #'cnit-command-execute-extended-command global-map)
+ "C-c x d" #'cnit-command-execute-extended-command-default global-map)
+(bind-key "C-c x x" #'cnit-command-execute-extended-command global-map)
 
 
 ;; Which key for showing menu of keybinds.
@@ -244,8 +244,8 @@ This prevents overlapping themes; something I would rarely want."
 ;; the meta-return key, need to bind somewhere else.
 
 (with-eval-after-load 'org
-  (bind-key "s-<return>" #'org-meta-return 'org-mode-map)
-  (bind-key "s-<backspace>" #'org-meta-return 'org-mode-map)
+  (bind-key "C-c <return>" #'org-meta-return 'org-mode-map)
+  (bind-key "C-c <backspace>" #'org-meta-return 'org-mode-map)
   (setopt org-insert-heading-respect-content t))
 
 
@@ -263,7 +263,7 @@ This prevents overlapping themes; something I would rarely want."
 
 ;; Org capture
 
-(bind-key "s-c" #'org-capture)
+(bind-key "C-c c" #'org-capture)
 (with-eval-after-load 'org-capture
   (defun cnit-org-current-parent-target ()
     "Return a refile target pointing to the current heading."
@@ -290,7 +290,7 @@ This prevents overlapping themes; something I would rarely want."
 
 ;; Org agenda views
 
-(bind-key "s-o" #'org-agenda)
+(bind-key "C-c o" #'org-agenda)
 (with-eval-after-load 'org-agenda
   (setopt org-agenda-custom-commands
           '(("r"
@@ -378,7 +378,7 @@ This prevents overlapping themes; something I would rarely want."
 ;; Bindings for managing projects, these are typically git based projects
 ;; as I don't use other vc systems.
 
-(bind-key "s-p" project-prefix-map)
+(bind-key "C-c p" project-prefix-map)
 (keymap-set project-prefix-map "v" #'magit-project-status)
 (with-eval-after-load 'project
   (setopt
@@ -520,7 +520,7 @@ This filters `project--list` in place and writes the updated list to disk."
 (add-hook 'after-init-hook (lambda () (envrc-global-mode t)) 91)
 (with-eval-after-load 'envrc
   (setopt envrc-show-summary-in-minibuffer nil)
-  (define-key envrc-mode-map (kbd "s-e") 'envrc-command-map))
+  (define-key envrc-mode-map (kbd "C-c e") 'envrc-command-map))
 
 
 ;; Allow safe directories list for dir-locals to prevent being asked
@@ -618,7 +618,7 @@ This filters `project--list` in place and writes the updated list to disk."
 ;;      to the to this part of an aider issue:
 ;;      https://github.com/Aider-AI/aider/issues/2227#issuecomment-3141551921
 
-(bind-key "s-a" #'aidermacs-transient-menu)
+(bind-key "C-c a" #'aidermacs-transient-menu)
 ;; Copilot config
 (with-eval-after-load 'aidermacs
   (setopt
@@ -632,6 +632,16 @@ This filters `project--list` in place and writes the updated list to disk."
 ;;    aidermacs-default-model "ollama_chat/codellama:7b"
 ;;    aidermacs-weak-model "ollama_chat/mistral:7b"
 ;;    aidermacs-architect-model "ollama_chat/deepseek-r1:8b"))
+
+
+;; Gptel
+
+(with-eval-after-load 'gptel
+  (setopt
+   gptel-backend (gptel-make-gh-copilot "Copilot")
+   gptel-model 'gpt-4.1
+   gptel-default-mode 'org-mode)
+  (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll))
 ;; Tools
 ;; This section covers general tools that don't fit into any other
 ;; area. This will cover things such as build, debug, shells and anything
@@ -641,6 +651,41 @@ This filters `project--list` in place and writes the updated list to disk."
 
 (with-eval-after-load 'compile
   (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter))
+;; Window manager support
+;; This section defines functions and settings to support using emacs
+;; functionality directly from the window manager through the use of
+;; emacsclient.
+
+;; Allow capturing org inbox tasks.
+
+;; emacsclient -s wm -e '(cnit-wm-org-capture)'
+
+(advice-add
+ 'org-capture-finalize
+ :after
+ (defun cnit-wm-org-capture-delete-frame ()
+   (if (equal "Org Capture" (frame-parameter nil 'name))
+       (delete-frame))))
+
+(defun cnit-wm-org-capture ()
+  (interactive)
+  (require 'cl-lib)
+  (let ((frame
+         (make-frame
+          '((name . "Org Capture")
+            (window-system . pgtk)
+            ;; (minibuffer . nil)
+            (undecorated . t)
+            (vertical-scroll-bars . nil)
+            (horizontal-scroll-bars . nil)
+            (menu-bar-lines . 0)
+            (tool-bar-lines . 0)))))
+    (with-selected-frame frame
+      (cl-letf (((symbol-function 'switch-to-buffer-other-window)
+                 'switch-to-buffer))
+        (org-capture nil "i")
+        (setq-local mode-line-format nil)
+        (delete-other-windows)))))
 ;; Dired mode
 
 (with-eval-after-load 'dired

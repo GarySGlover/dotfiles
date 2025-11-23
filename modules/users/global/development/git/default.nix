@@ -57,8 +57,8 @@ in
 
     programs.git = {
       enable = true;
-      userName = "${secrets.git_username}";
-      extraConfig = {
+      settings = {
+        user.name = "${secrets.git_username}";
         core = {
           askPass = "";
           hooksPath = "${config.xdg.configHome}/git/hooks";
@@ -78,10 +78,10 @@ in
         github = mkIf (hasAttr "github_user" secrets) {
           user = "${secrets.github_user}";
         };
-      };
-      aliases = {
-        fetchp = "fetch --force";
-        clean-ignored = "!f() { if [ \"$1\" = \"--delete\" ]; then git ls-files --ignored --exclude-standard --others -z | xargs -0 rm -rf; else git ls-files --ignored --exclude-standard --others; echo 'Run with --delete to actually remove.'; fi; }; f";
+        alias = {
+          fetchp = "fetch --force";
+          clean-ignored = "!f() { if [ \"$1\" = \"--delete\" ]; then git ls-files --ignored --exclude-standard --others -z | xargs -0 rm -rf; else git ls-files --ignored --exclude-standard --others; echo 'Run with --delete to actually remove.'; fi; }; f";
+        };
       };
       includes =
         forEach secrets.git_remotes_emails (x: {

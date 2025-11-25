@@ -187,21 +187,32 @@
 (setopt confirm-kill-emacs #'y-or-n-p)
 ;; Theme
 
-(defun cnit-pre-load-theme (_theme)
-  "Disable any loaded themes before enabling a new THEME.
+(advice-add
+ 'load-theme
+ :before
+ (defun cnit-pre-load-theme (&rest _args)
+   "Disable any loaded themes before enabling a new THEME.
 This prevents overlapping themes; something I would rarely want."
-  (dolist (theme custom-enabled-themes)
-    (disable-theme theme)))
-
-(advice-add 'load-theme :before #'cnit-pre-load-theme)
+   (dolist (theme custom-enabled-themes)
+     (disable-theme theme))))
 
 (defun cnit-load-system-theme ()
   "Load a theme based on the system color scheme."
   (when (fboundp 'cnit-with-system-colour-scheme)
     (cnit-with-system-colour-scheme
-     (load-theme 'modus-vivendi) (load-theme 'modus-operandi))))
+     (load-theme 'modus-vivendi t) (load-theme 'modus-operandi t))))
 
 (add-hook 'emacs-startup-hook #'cnit-load-system-theme)
+;; Productivity
+;; Configuration for tools that enhance productivity, navigation, and
+;; overall workflow in Emacs.
+
+;; Navigate quickly around the visiable frames.
+
+(bind-key "M-j" #'avy-goto-char-timer)
+(bind-key "M-j" #'avy-isearch isearch-mode-map)
+(with-eval-after-load 'avy
+  (setopt avy-style 'words))
 ;; Org mode
 ;; Most packages won't get there own section. However org mode and it's
 ;; various extensions are a significant part of the Emacs experience.

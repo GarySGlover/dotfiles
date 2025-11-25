@@ -286,19 +286,8 @@
           nixd
           nix
 
-          # TypeScript
-          typescript-language-server
-
           # Formatter for various languages
           nodePackages.prettier
-
-          # Python
-          python313
-          python313Packages.black
-          python313Packages.flake8
-          python313Packages.pipx
-          python313Packages.pip
-          pyright
 
           # Emacs init development
           glib

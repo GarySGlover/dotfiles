@@ -144,24 +144,36 @@
   (popper-echo-mode 1))
 (add-hook 'after-init-hook (lambda () (popper-mode t)))
 
-(setq display-buffer-alist
-      `(((or .
-             (,cnit-regex-buffers-occur (derived-mode-p 'occur-mode)))
-         (display-buffer-in-side-window)
-         (window-height . cnit-fit-window-to-buffer-with-max)
-         (side . bottom)
-         (dedictated . t)
-         (body-function . select-window)
-         (window-parameters (no-delete-other-windows . t)))
-        ((or .
-             (,cnit-regex-buffers-helpful
-              (derived-mode-p 'helpful-mode)))
-         (display-buffer-in-side-window)
-         (window-width . cnit-fit-window-to-buffer-with-max)
-         (side . right)
-         (dedicated . t)
-         (body-function . select-window)
-         (window-parameters (no-delete-other-windows . t)))))
+(setopt display-buffer-alist nil)
+
+(add-to-list
+ 'display-buffer-alist
+ `(((or .
+        (,cnit-regex-buffers-occur (derived-mode-p 'occur-mode)))
+    (display-buffer-in-side-window)
+    (window-height . cnit-fit-window-to-buffer-with-max)
+    (side . bottom)
+    (dedictated . t)
+    (body-function . select-window)
+    (window-parameters (no-delete-other-windows . t)))))
+
+(add-to-list
+ 'display-buffer-alist
+ `((or . (,cnit-regex-buffers-helpful (derived-mode-p 'helpful-mode)))
+   (display-buffer-in-side-window)
+   (window-width . cnit-fit-window-to-buffer-with-max)
+   (side . right)
+   (dedicated . t)
+   (body-function . select-window)
+   (window-parameters (no-delete-other-windows . t))))
+
+(with-eval-after-load 'magit
+  (setopt magit-display-buffer-function #'display-buffer))
+(add-to-list
+ 'display-buffer-alist
+ `((derived-mode . magit-mode)
+   (display-buffer-reuse-mode-window)
+   (inhibit-same-window . nil)))
 
 
 ;; Window splitting. Prefer to use the longest dimension for splitting,
@@ -571,7 +583,8 @@ This filters `project--list` in place and writes the updated list to disk."
 
 (add-hook 'after-init-hook (lambda () (vertico-mode t)))
 (with-eval-after-load 'vertico
-  (setopt vertico-cycle t))
+  (setopt vertico-cycle t)
+  (bind-key "C-<return>" #'vertico-exit-input 'vertico-map))
 
 
 ;; Improved filering of completion candidates. Helps to find things
@@ -662,6 +675,40 @@ This filters `project--list` in place and writes the updated list to disk."
 
 (with-eval-after-load 'compile
   (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter))
+
+
+;; Use emacs to help entering text into any program.
+
+(require 'emacs-everywhere)
+
+(setq
+ emacs-everywhere-system-configs
+ (append
+  emacs-everywhere-system-configs
+  '(((wayland . niri)
+     :focus-command ("niri" "msg" "action" "focus-window" "--id" "%w")
+     :info-function emacs-everywhere--app-info-linux-niri))))
+
+(defun emacs-everywhere--app-info-linux-niri ()
+  "Return information on the current active window, on a Linux Niri session."
+  (require 'json)
+  (let* ((json
+          (json-read-from-string
+           (emacs-everywhere--call
+            "niri" "msg" "-j" "focused-window"))) ;; -j for json
+         (wid (cdr (assq 'id json)))
+         (window-id
+          (if (numberp wid)
+              (number-to-string wid)
+            wid))
+         (window-title (cdr (assq 'title json)))
+         (app-name (cdr (assq 'app_id json)))
+         (window-geometry nil)) ;; no geometry in niri
+    (make-emacs-everywhere-app
+     :id window-id
+     :class app-name
+     :title window-title
+     :geometry window-geometry)))
 ;; Window manager support
 ;; This section defines functions and settings to support using emacs
 ;; functionality directly from the window manager through the use of

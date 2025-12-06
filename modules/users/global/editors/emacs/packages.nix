@@ -164,6 +164,7 @@ let
     editorconfig
     ef-themes
     elisp-autofmt
+    emacs-everywhere
     embark
     embark-consult
     envrc
@@ -239,6 +240,10 @@ in
       # MCP Servers
       mcp-server-git
       mcp-server-azuredevops
+
+      # Emacs everywhere
+      wl-clipboard
+      wtype
     ];
 
     home.file = {

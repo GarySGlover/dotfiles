@@ -18,6 +18,7 @@ let
         dash
       ];
       buildInputs = propagatedUserEnvPkgs;
+      nativeBuildInputs = with pkgs; [ git ];
     };
     kbd-mode = (
       melpaBuild {

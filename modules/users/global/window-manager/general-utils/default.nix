@@ -11,5 +11,10 @@ with lib;
       brightnessctl
       udiskie # Disk auto mount
     ];
+
+    services.udiskie = {
+      enable = true;
+      automount = true;
+    };
   };
 }

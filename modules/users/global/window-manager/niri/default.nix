@@ -26,6 +26,7 @@ let
     }
     {
       "match title=\"Org Capture\" app-id=\"emacs\"" = [ ];
+      "match title=\"Emacs Everywhere\" app-id=\"emacs\"" = [ ];
       default-column-width = {
         proportion = 0.5;
       };
@@ -46,6 +47,33 @@ in
     ./wlr.nix
   ];
   config = mkIf config.wolf.roles.wayland {
+    systemd.user.services.swayosd-server = {
+      Unit = {
+        Description = "Sway OSD Server";
+      };
+      Service = {
+        ExecStart = "${pkgs.swayosd}/bin/swayosd-server";
+        Restart = "always";
+      };
+      Install = {
+        WantedBy = [ "graphical-session.target" ];
+      };
+    };
+
+    systemd.user.services.emacs-wm-daemon = {
+      Unit = {
+        Description = "Emacs daemon for WM (emacs --daemon=wm)";
+      };
+      Service = {
+        ExecStart = "${pkgs.runtimeShell} -c 'exec emacs --fg-daemon=wm'";
+        SuccessExitStatus = 15;
+        Restart = "always";
+      };
+      Install = {
+        WantedBy = [ "graphical-session.target" ];
+      };
+    };
+
     home.packages = with pkgs; [
       wbg
       bluetuith
@@ -121,12 +149,8 @@ in
           };
         };
 
-        "spawn-at-startup \"emacs\" \"--daemon=wm\"" = [ ];
         "spawn-at-startup \"waybar\"" = [ ];
-        "spawn-at-startup \"udiskie\"" = [ ];
-        "spawn-at-startup \"kanshi\"" = [ ];
         "spawn-at-startup \"wbg\" \"${toString ./wallpaper.png}\"" = [ ];
-        "spawn-at-startup \"swayosd-server\"" = [ ];
 
         environment = {
           DISPLAY = ":0";
@@ -140,6 +164,15 @@ in
               "--socket-name=wm"
               "-e"
               "(cnit-wm-org-capture)"
+            ];
+          };
+
+          "Super+E" = {
+            spawn = [
+              "emacsclient"
+              "--socket-name=wm"
+              "-e"
+              "(emacs-everywhere)"
             ];
           };
 

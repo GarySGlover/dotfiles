@@ -15,10 +15,10 @@ let
   xrealOnePro = "Nreal XREAL One Pro Unknown";
 in
 {
-  config = mkIf config.wolf.roles.desktop {
+  config = mkIf config.wolf.roles.wayland {
     services.kanshi = {
       enable = true;
-      systemdTarget = "hyprland-session.target";
+      systemdTarget = "graphical-session.target";
       settings = [
         {
           output = {

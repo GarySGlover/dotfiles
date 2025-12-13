@@ -127,8 +127,9 @@
     (fit-window-to-buffer
      window (floor (frame-height) 3) 0 (floor (frame-width) 3) 0)))
 
-(defconst cnit-regex-buffers-occur (rx "*occur*"))
+(defconst cnit-regex-buffers-occur (rx "*Occur*"))
 (defconst cnit-regex-buffers-helpful (rx "*helpful" (1+ nonl) "*"))
+(defconst cnit-regex-buffers-info (rx "*info*"))
 
 (bind-key "C-`" #'popper-toggle)
 (bind-key "M-`" #'popper-cycle)
@@ -148,18 +149,21 @@
 
 (add-to-list
  'display-buffer-alist
- `(((or .
-        (,cnit-regex-buffers-occur (derived-mode-p 'occur-mode)))
-    (display-buffer-in-side-window)
-    (window-height . cnit-fit-window-to-buffer-with-max)
-    (side . bottom)
-    (dedictated . t)
-    (body-function . select-window)
-    (window-parameters (no-delete-other-windows . t)))))
+ `((or . (,cnit-regex-buffers-occur (derived-mode-p 'occur-mode)))
+   (display-buffer-in-side-window)
+   (window-height . cnit-fit-window-to-buffer-with-max)
+   (side . bottom)
+   (dedicated . t)
+   (body-function . select-window)
+   (window-parameters (no-delete-other-windows . t))))
 
 (add-to-list
  'display-buffer-alist
- `((or . (,cnit-regex-buffers-helpful (derived-mode-p 'helpful-mode)))
+ `((or .
+       (,cnit-regex-buffers-helpful
+        (derived-mode-p 'helpful-mode)
+        ,cnit-regex-buffers-info
+        (derived-mode-p 'Info-mode)))
    (display-buffer-in-side-window)
    (window-width . cnit-fit-window-to-buffer-with-max)
    (side . right)
@@ -167,12 +171,14 @@
    (body-function . select-window)
    (window-parameters (no-delete-other-windows . t))))
 
+;; Magit buffers will prefer to reuse an existing window displaying
+;; magit. Will use the current window if magit not showing anywhere.
 (with-eval-after-load 'magit
   (setopt magit-display-buffer-function #'display-buffer))
 (add-to-list
  'display-buffer-alist
  `((derived-mode . magit-mode)
-   (display-buffer-reuse-mode-window)
+   (display-buffer-reuse-mode-window display-buffer-same-window)
    (inhibit-same-window . nil)))
 
 
@@ -483,6 +489,11 @@ End recursion at the first folder that is a project."
    :before #'project-forget-zombie-projects))
 
 
+;; Basig magit settings.
+
+(with-eval-after-load 'magit
+  (setopt magit-commit-show-diff nil))
+
 ;; Magit worktree enhancements. Creation of worktree in standard folder
 ;; using branch naming scheme.
 
@@ -620,8 +631,7 @@ This filters `project--list` in place and writes the updated list to disk."
 (add-hook 'prog-mode-hook 'tempel-setup-capf)
 (add-hook 'text-mode-hook 'tempel-setup-capf)
 
-;; (with-eval-after-load 'tempel
-;;   (setopt tempel-trigger-prefix "<"))
+(bind-key "C-c t" #'tempel-insert)
 
 
 ;; Minibuffer completions annotations. Applies useful extended details

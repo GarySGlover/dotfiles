@@ -398,6 +398,34 @@ This prevents overlapping themes; something I would rarely want."
   (setopt
    ediff-window-setup-function #'ediff-setup-windows-plain
    ediff-split-window-function #'split-window-sensibly))
+
+
+;; Ansi color dwim. Will apply to region if select, otherwise whole
+;; buffer. Run with prefix to preserve sequences rather than remove.
+
+(defun cnit-ansi-color-dwim (&optional arg)
+  "Apply ansi-color to region if active, else to whole buffer.
+With prefix ARG, preserve color sequences (don't remove them)."
+  (interactive "P")
+  (let* ((beg
+          (if (use-region-p)
+              (region-beginning)
+            (point-min)))
+         (end
+          (if (use-region-p)
+              (region-end)
+            (point-max))))
+    (if arg
+        (ansi-color-apply-on-region beg end)
+      (ansi-color-apply-on-region beg end t))))
+
+(defvar buffer-quick-edits-prefix-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "c" 'cnit-ansi-color-dwim)
+    map)
+  "Keymap for buffer quick edits.")
+
+(bind-key "C-c b" buffer-quick-edits-prefix-map)
 ;; Project
 ;; This section covers managing projects, whether version-controlled or
 ;; not. It provides tools for navigating, planning, and tracking work
@@ -492,7 +520,9 @@ End recursion at the first folder that is a project."
 ;; Basig magit settings.
 
 (with-eval-after-load 'magit
-  (setopt magit-commit-show-diff nil))
+  (setopt
+   magit-commit-show-diff nil
+   magit-process-popup-time 5))
 
 ;; Magit worktree enhancements. Creation of worktree in standard folder
 ;; using branch naming scheme.
@@ -731,7 +761,7 @@ This filters `project--list` in place and writes the updated list to disk."
 (advice-add
  'org-capture-finalize
  :after
- (defun cnit-wm-org-capture-delete-frame ()
+ (defun cnit-wm-org-capture-delete-frame (&rest _unused)
    (if (equal "Org Capture" (frame-parameter nil 'name))
        (delete-frame))))
 
@@ -757,7 +787,15 @@ This filters `project--list` in place and writes the updated list to disk."
 ;; Dired mode
 
 (with-eval-after-load 'dired
-  (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1))))
+  (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1)))
+  (setopt
+   dired-kill-when-opening-new-dired-buffer t
+   dired-do-revert-buffer t
+   dired-auto-revert-buffer t
+   dired-dwim-target t))
+
+(with-eval-after-load 'wdired
+  (setopt wdired-allow-to-change-permissions t))
 ;; Prog mode
 ;; Enable supportive modes for programming.
 

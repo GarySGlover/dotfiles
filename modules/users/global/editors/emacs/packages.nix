@@ -80,21 +80,6 @@ let
         '';
       }
     );
-    org-menu = (
-      melpaBuild {
-        pname = "org-menu";
-        version = "1";
-        commit = "1";
-        src = inputs.org-menu;
-        packageRequires = [ ];
-        recipe = pkgs.writeText "recipe" ''
-          (org-menu
-            :repo "sheijk/org-menu"
-            :fetcher github
-            :files ("*.el"))
-        '';
-      }
-    );
 
     hyperbole = melpaBuild {
       pname = "hyperbole";
@@ -138,74 +123,66 @@ let
     transient-compile
     eglot-booster
     ws-butler
-    org-menu
     hyperbole
     magit-worktrees
   ];
 
-  emacsExtraPackages = with pkgs.emacsPackages; [
-    ace-window
-    aidermacs
-    avy
-    breadcrumb
-    beframe
-    benchmark-init
-    cape
-    consult
-    consult-yasnippet
-    copilot
-    corfu
-    corfu-candidate-overlay
-    coterm
-    denote
-    disproject
-    dtrt-indent
-    eat
-    editorconfig
-    ef-themes
-    elisp-autofmt
-    emacs-everywhere
-    embark
-    embark-consult
-    envrc
-    format-all
-    general
-    git-timemachine
-    git-auto-commit-mode
-    gptel
-    helpful
-    indent-bars
-    keycast
-    magit
-    marginalia
-    markdown-mode
-    mcp
-    nix-ts-mode
-    ob-async
-    orderless
-    org
-    org-auto-tangle
-    ox-pandoc
-    popper
-    rainbow-mode
-    rainbow-delimiters
-    standard-themes
-    tempel
-    terraform-doc
-    terraform-mode
-    transient
-    treesit-fold
-    treesit-grammars.with-all-grammars
-    verb
-    vertico
-    wgrep
-    yaml
-    yaml-pro
-    yasnippet
-    yasnippet-capf
-    yasnippet-snippets
-    zig-mode
-  ];
+  emacsExtraPackages =
+    with pkgs.emacsPackages;
+    [
+      aidermacs
+      avy
+      beframe
+      benchmark-init
+      cape
+      consult
+      consult-yasnippet
+      corfu
+      corfu-candidate-overlay
+      coterm
+      denote
+      dtrt-indent
+      editorconfig
+      elisp-autofmt
+      emacs-everywhere
+      embark
+      embark-consult
+      envrc
+      format-all
+      git-auto-commit-mode
+      git-timemachine
+      gptel
+      helpful
+      indent-bars
+      magit
+      marginalia
+      markdown-mode
+      mcp
+      ob-async
+      orderless
+      org
+      org-auto-tangle
+      popper
+      rainbow-delimiters
+      rainbow-mode
+      standard-themes
+      tempel
+      transient
+      treesit-fold
+      treesit-grammars.with-all-grammars
+      verb
+      vertico
+      wgrep
+    ]
+    ++ [
+      # Language modes
+      nix-ts-mode
+      terraform-doc
+      terraform-mode
+      yaml
+      yaml-pro
+      zig-mode
+    ];
 
   aspellEnglish = pkgs.aspellWithDicts (
     ds: with ds; [

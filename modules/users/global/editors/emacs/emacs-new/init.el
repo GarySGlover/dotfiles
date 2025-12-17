@@ -216,9 +216,10 @@ This prevents overlapping themes; something I would rarely want."
 
 (defun cnit-load-system-theme ()
   "Load a theme based on the system color scheme."
+  (require 'standard-themes)
   (when (fboundp 'cnit-with-system-colour-scheme)
     (cnit-with-system-colour-scheme
-     (load-theme 'modus-vivendi t) (load-theme 'modus-operandi t))))
+     (load-theme 'standard-dark-tinted t) (load-theme 'standard-light-tinted t))))
 
 (add-hook 'emacs-startup-hook #'cnit-load-system-theme)
 ;; Productivity

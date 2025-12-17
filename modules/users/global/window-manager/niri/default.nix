@@ -50,10 +50,12 @@ in
     systemd.user.services.swayosd-server = {
       Unit = {
         Description = "Sway OSD Server";
+        After = [ "graphical-session.target" ];
       };
       Service = {
         ExecStart = "${pkgs.swayosd}/bin/swayosd-server";
         Restart = "always";
+        RestartSec = 5;
       };
       Install = {
         WantedBy = [ "graphical-session.target" ];
@@ -149,7 +151,6 @@ in
           };
         };
 
-        "spawn-at-startup \"waybar\"" = [ ];
         "spawn-at-startup \"wbg\" \"${toString ./wallpaper.png}\"" = [ ];
 
         environment = {

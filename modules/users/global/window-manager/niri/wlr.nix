@@ -93,6 +93,12 @@ in
                 }
                 {
                   key = "t";
+                  desc = "Eshell";
+                  cmd = "emacsclient --eval '(eshell t)' --create-frame -no-wait --alternate-editor 'emacs --eval'";
+                }
+
+                {
+                  key = "T";
                   desc = "Terminal";
                   cmd = "kitty";
                 }

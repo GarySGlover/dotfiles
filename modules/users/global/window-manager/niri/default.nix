@@ -90,6 +90,7 @@ in
         };
         version = "unstable-local";
       }))
+      xwayland-satellite
     ];
 
     xdg.configFile."niri/config.kdl".text =
@@ -156,6 +157,13 @@ in
         environment = {
           DISPLAY = ":0";
           XDG_CONFIG_HOME = "${config.xdg.configHome}";
+        };
+
+        recent-windows = {
+          # Remove default binds as these conflict with some of the
+          # emacs config for binds
+          binds = {
+          };
         };
 
         binds = {

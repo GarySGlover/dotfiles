@@ -25,21 +25,9 @@ in
 
   allowUnfree = true;
 
-  allowUnfreePredicate =
-    pkg:
-    elem (getName pkg) [
-      "aspell-dict-en-science"
-      "codeium"
-      "steam"
-      "steam-unwrapped"
-      "terraform"
-      "enhancer-for-youtube"
-      "nvidia-x11"
-      "nvidia-settings"
-    ];
-
   permittedInsecurePackages = [
     "openssl-1.1.1w" # Temporary for AZ
+    "python3.13-ecdsa-0.19.1"
   ];
 
   rocmSupport = true; # AMD Cuda suppor

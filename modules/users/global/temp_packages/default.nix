@@ -1,6 +1,8 @@
 { pkgs, lib, ... }:
 let
   myPackages = with pkgs; [
+    onlykey
+    onlykey-cli
   ];
 in
 {

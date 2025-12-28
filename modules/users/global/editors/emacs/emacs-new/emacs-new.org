@@ -594,6 +594,237 @@ Org agenda views
                   (org-agenda-overriding-header "Main Tasks"))))))))
 #+end_src
 
+Modal editing suite. Reduces the need for using modifier keys. Also Meow
+has an enhanced kmacro interace called beacon, which can help in
+reducing the requirement for tools such as multiple cursors.
+
+#+begin_src emacs-lisp
+  (with-eval-after-load (require 'meow)
+    (defvar-keymap cnit-meow-tools-prefix-map
+      :doc "Tools prefix"
+      :prefix
+      'cnit-meow-tools-prefix
+      "g"
+      #'gptel-menu)
+    (defvar-keymap cnit-meow-mark-prefix-map
+      :doc "Meow mark map"
+      :prefix
+      'cnit-meow-mark-prefix
+      "g"
+      #'meow-grab
+      "d"
+      #'meow-mark-defun
+      "m"
+      #'meow-mark-email
+      "f"
+      #'meow-mark-filename
+      "l"
+      #'meow-mark-list
+      "n"
+      #'meow-mark-number
+      "p"
+      #'meow-mark-page
+      "s"
+      #'meow-mark-symbol
+      "u"
+      #'meow-mark-url
+      "w"
+      #'meow-mark-word
+      "i"
+      #'meow-mark-line
+      "r"
+      #'meow-mark-letter
+      "x"
+      #'meow-mark-sexp
+      "t"
+      #'meow-mark-sentence
+      "y"
+      #'meow-mark-uuid
+      "h"
+      #'meow-mark-whitespace
+      "a"
+      #'meow-beginning-of-thing
+      "e"
+      #'meow-end-of-thing)
+    (defvar-keymap cnit-meow-next-prefix-map
+      :doc "Meow next map"
+      :prefix
+      'cnit-meow-next-prefix
+      "w"
+      #'meow-next-word
+      "s"
+      #'meow-next-symbol)
+    (meow-normal-define-key
+     ;; Digit expansion
+     '("0" . meow-expand-0)
+     '("1" . meow-expand-1)
+     '("2" . meow-expand-2)
+     '("3" . meow-expand-3)
+     '("4" . meow-expand-4)
+     '("5" . meow-expand-5)
+     '("6" . meow-expand-6)
+     '("7" . meow-expand-7)
+     '("8" . meow-expand-8)
+     '("9" . meow-expand-9)
+     '("-" . meow-reverse)
+
+     ;; Movement
+     '("b" . cnit-meow-left)
+     '("f" . cnit-meow-right)
+     '("p" . cnit-meow-prev)
+     '("n" . cnit-meow-next)
+
+     ;; Editing
+     '("i" . cnit-meow-insert)
+     '("a" . cnit-meow-append)
+     '("d" . cnit-meow-delete)
+     '("w" . meow-save)
+     '("k" . meow-kill)
+     '("y" . meow-yank)
+
+     ;; Selection
+     '("g" . meow-cancel-selection)
+     '("l" . cnit-meow-line)
+     '("j" . meow-join)
+     '("r" . repeat)
+
+     ;; General
+     '("u" . universal-argument)
+     '("m" . cnit-meow-mark)
+     '("t" . cnit-meow-tools-prefix)
+     '("h" . help-command))
+    (define-key
+     meow-beacon-state-keymap
+     [remap cnit-meow-insert]
+     'meow-beacon-insert)
+    (define-key
+     meow-beacon-state-keymap
+     [remap cnit-meow-append]
+     'meow-beacon-append)
+    (define-key
+     meow-beacon-state-keymap
+     [remap cnit-meow-delete]
+     'meow-beacon-noop)
+    (meow-global-mode 1))
+
+  (defun cnit-meow-left ()
+    (interactive)
+    (if (region-active-p)
+        (meow-left-expand)
+      (meow-left)))
+
+  (defun cnit-meow-right ()
+    (interactive)
+    (if (region-active-p)
+        (meow-right-expand)
+      (meow-right)))
+
+  (defun cnit-meow-prev (arg)
+    (interactive "P")
+    (if (region-active-p)
+        (meow-prev-expand arg)
+      (meow-prev arg)))
+
+  (defun cnit-meow-next (arg)
+    (interactive "P")
+    (if (region-active-p)
+        (meow-next-expand arg)
+      (meow-next arg)))
+
+  (defun cnit-meow-delete ()
+    "Deletes region if active otherwise calls meow-delete."
+    (interactive)
+    (if (region-active-p)
+        (delete-active-region)
+      (meow-delete)))
+
+  (defun cnit-meow-line (n)
+    (interactive "p")
+    (if (region-active-p)
+        (cond
+         ((and (< (point) (mark)) (> (point) (line-beginning-position)))
+          (beginning-of-line))
+         ((and (> (point) (mark)) (< (point) (line-end-position)))
+          (end-of-line))
+         (t
+          (meow-line-expand n)))
+      (meow-line n)))
+
+  (defun cnit-meow-insert (arg)
+    (interactive "P")
+    (if (meow--with-universal-argument-p arg)
+        (let ((current-prefix-arg nil))
+          (meow-open-above))
+      (meow-insert)))
+
+  (defun cnit-meow-append (arg)
+    (interactive "P")
+    (if (meow--with-universal-argument-p arg)
+        (let ((current-prefix-arg nil))
+          (meow-open-below))
+      (meow-append)))
+
+  (defun cnit-meow-mark (arg)
+    (interactive "P")
+    (if (meow--with-universal-argument-p arg)
+        (let ((current-prefix-arg nil))
+          (set-transient-map cnit-meow-mark-prefix))
+      (set-mark-command arg)))
+
+  (defmacro cnit-meow-define-thing-functions (thing)
+    (let* ((thing-sym
+            (if (symbolp thing)
+                thing
+              (intern thing)))
+           (thing-name (symbol-name thing-sym)))
+      `(progn
+         ;; next
+         (unless (fboundp (intern (concat "meow-next-" ,thing-name)))
+           (defun ,(intern (concat "meow-next-" thing-name)) (n)
+             (interactive "p")
+             (meow-next-thing ',thing-sym ',thing-sym n)))
+         ;; back
+         (unless (fboundp (intern (concat "meow-back-" ,thing-name)))
+           (defun ,(intern (concat "meow-back-" thing-name)) (n)
+             (interactive "p")
+             (meow-next-thing ',thing-sym ',thing-sym (- n))))
+         ;; kill
+         (unless (fboundp (intern (concat "meow-kill-" ,thing-name)))
+           (defun ,(intern (concat "meow-kill-" thing-name)) (arg)
+             (interactive "p")
+             (meow-kill-thing ',thing-sym arg)))
+         ;; backward-kill
+         (unless (fboundp
+                  (intern (concat "meow-backward-kill-" ,thing-name)))
+           (defun ,(intern (concat "meow-backward-kill-" thing-name))
+               (arg)
+             (interactive "p")
+             (,(intern (concat "meow-kill-" thing-name)) (- arg))))
+         ;; mark
+         (unless (fboundp (intern (concat "meow-mark-" ,thing-name)))
+           (defun ,(intern (concat "meow-mark-" thing-name)) (arg)
+             (interactive "p")
+             (meow-mark-thing ',thing-sym ',thing-sym arg))))))
+
+  (eval-when-compile
+    (dolist (thing
+             '(symbol
+               list
+               sexp
+               defun
+               number
+               filename
+               url
+               email
+               uuid
+               word
+               sentence
+               whitespace
+               line
+               page))
+      (eval `(cnit-meow-define-thing-functions ,thing))))
+#+end_src
+
 ** Hyperbole
 #+begin_src emacs-lisp
   (add-hook 'after-init-hook (lambda () (hyperbole-mode t)))

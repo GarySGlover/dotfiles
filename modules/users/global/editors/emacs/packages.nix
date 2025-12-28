@@ -158,6 +158,7 @@ let
       marginalia
       markdown-mode
       mcp
+      meow
       ob-async
       orderless
       org

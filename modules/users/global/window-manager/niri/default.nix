@@ -21,7 +21,6 @@ let
       focus-ring = {
         active-color = "#64B5F6";
       };
-      geometry-corner-radius = 10;
       clip-to-geometry = true;
     }
     {
@@ -35,6 +34,7 @@ let
       };
       open-floating = true;
       open-focused = true;
+      open-fullscreen = false;
       "default-floating-position x=30 y=30 relative-to=\"top-right\"" = [ ];
     }
   ];
@@ -133,10 +133,6 @@ in
 
           # Workspace
           empty-workspace-above-first = [ ];
-          struts = {
-            left = 16;
-            right = 16;
-          };
 
           # Rows
           preset-window-heights = {
@@ -151,8 +147,6 @@ in
             inactive-color = "#7fc8ff";
           };
         };
-
-        "spawn-at-startup \"wbg\" \"${toString ./wallpaper.png}\"" = [ ];
 
         environment = {
           DISPLAY = ":0";
@@ -194,28 +188,13 @@ in
               "${config.xdg.configHome}/niri/wlr-which-key-config.yaml"
             ];
           };
-          "Ctrl+Period" = {
+          "Ctrl+Shift+Period" = {
             spawn = [
               "wl-kbptr"
               "-o"
               "modes=tile,bisect"
               "-o"
               "home_row_keys=isrtneaoghb"
-            ];
-          };
-          "Ctrl+Shift+Period" = {
-            spawn = [
-              "wl-kbptr"
-              "-o"
-              "modes=floating,bisect"
-              "-o"
-              "mode_floating.source=detect"
-              "-o"
-              "mode_floating.label_symbols=isrtneao"
-              "-o"
-              "home_row_keys=isrtneaoghb"
-              "-o"
-              "mode_floating.label_font_size=20 50% 100"
             ];
           };
           XF86AudioRaiseVolume = {

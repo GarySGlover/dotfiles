@@ -4,7 +4,7 @@ function spinner() {
 	if [[ ${SPINNER_DEBUG-FALSE} == "TRUE" ]]; then
 		echo "Debug: " "$1" >&2
 	fi
-	gum spin --spinner points --title "$@"
+	gum spin --show-output --spinner points --title "$@"
 }
 # Init:1 ends here
 
@@ -82,7 +82,7 @@ for repo in "${REPOS[@]}"; do
 	else
 		url=$(echo "$DEVOPS_REPOS" | jq --arg repo "$repo" --arg type "$DOWNLOAD_TYPE" -r '.value[] | select(.name==$repo) | .[$type]')
 		spinner "Downloading $PROJECT/$repo" -- \
-			git clone "$url" "$path" --origin origin || true
+			git clone "$url" "$path" --bare --origin origin || true
 	fi
 done
 # Download:1 ends here

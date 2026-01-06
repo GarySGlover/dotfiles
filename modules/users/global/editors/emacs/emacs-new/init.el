@@ -273,15 +273,6 @@ This prevents overlapping themes; something I would rarely want."
   (advice-add #'org-edit-src-exit :around #'cnit-org-edit-src-exit))
 
 
-;; Org insert headings that work alongside hyperbole. As hyperbole task
-;; the meta-return key, need to bind somewhere else.
-
-(with-eval-after-load 'org
-  (bind-key "C-c <return>" #'org-meta-return 'org-mode-map)
-  (bind-key "C-c <backspace>" #'org-meta-return 'org-mode-map)
-  (setopt org-insert-heading-respect-content t))
-
-
 ;; Org agenda basic settings. Configuration of location and files.
 
 (with-eval-after-load 'org
@@ -552,21 +543,6 @@ This prevents overlapping themes; something I would rarely want."
              line
              page))
     (eval `(cnit-meow-define-thing-functions ,thing))))
-;; Hyperbole
-
-(add-hook 'after-init-hook (lambda () (hyperbole-mode t)))
-(with-eval-after-load 'hyperbole
-  (setq temp-buffer-show-function nil)
-  (remove-hook 'temp-buffer-show-hook #'hkey-help-show))
-(with-eval-after-load 'avy
-  (setf (alist-get ?\r avy-dispatch-alist)
-        (defun avy-action-hkey-either (pt)
-          (unwind-protect
-              (save-excursion
-                (goto-char pt)
-                (hkey-either))
-            (select-window (cdr (ring-ref avy-ring 0))))
-          t)))
 ;; Editing
 ;; Tools and enhancements to make editing more efficient and
 ;; precise. Focuses on improving readability, providing structural

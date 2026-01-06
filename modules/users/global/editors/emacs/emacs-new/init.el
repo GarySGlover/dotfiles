@@ -555,6 +555,18 @@ This prevents overlapping themes; something I would rarely want."
 ;; Hyperbole
 
 (add-hook 'after-init-hook (lambda () (hyperbole-mode t)))
+(with-eval-after-load 'hyperbole
+  (setq temp-buffer-show-function nil)
+  (remove-hook 'temp-buffer-show-hook #'hkey-help-show))
+(with-eval-after-load 'avy
+  (setf (alist-get ?\r avy-dispatch-alist)
+        (defun avy-action-hkey-either (pt)
+          (unwind-protect
+              (save-excursion
+                (goto-char pt)
+                (hkey-either))
+            (select-window (cdr (ring-ref avy-ring 0))))
+          t)))
 ;; Editing
 ;; Tools and enhancements to make editing more efficient and
 ;; precise. Focuses on improving readability, providing structural
@@ -929,6 +941,7 @@ This filters `project--list` in place and writes the updated list to disk."
    gptel-backend (gptel-make-gh-copilot "Copilot")
    gptel-model 'gpt-4.1
    gptel-default-mode 'org-mode)
+  (add-hook 'gptel-mode-hook 'visual-line-mode)
   (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll))
 ;; Tools
 ;; This section covers general tools that don't fit into any other

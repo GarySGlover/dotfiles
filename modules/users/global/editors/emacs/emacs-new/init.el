@@ -88,28 +88,6 @@
 (bind-key "C-c x x" #'cnit-command-execute-extended-command global-map)
 
 
-;; Which key for showing menu of keybinds.
-
-(run-with-idle-timer 10 nil #'require 'which-key)
-(keymap-set help-map "C-h" #'which-key-C-h-dispatch) ; Fix for which key in the help map. Otherwise C-h would run help for help.
-(keymap-set help-map "M-t" #'which-key-show-top-level)
-(keymap-set help-map "M-m" #'which-key-show-major-mode)
-(keymap-set help-map "M-M" #'which-key-show-full-major-mode)
-(keymap-set help-map "M-k" #'which-key-show-keymap)
-(keymap-set help-map "M-K" #'which-key-show-full-keymap)
-(keymap-set help-map "M-n" #'which-key-show-minor-mode-keymap)
-(keymap-set help-map "M-N" #'which-key-show-full-minor-mode-keymap)
-(with-eval-after-load 'which-key
-  (setopt
-   which-key-show-early-on-C-h t
-   which-key-idle-delay 10000.0
-   which-key-idle-secondary-delay 0.05
-   which-key-sort-order 'which-key-local-then-key-order)
-  (set-face-attribute 'which-key-local-map-description-face nil
-                      :weight 'bold)
-  (which-key-mode t))
-
-
 ;; Improve the inbuilt help with extra contextual information
 
 (bind-key [remap describe-function] #'helpful-callable)
@@ -231,7 +209,32 @@ This prevents overlapping themes; something I would rarely want."
 (bind-key "M-j" #'avy-goto-char-timer)
 (bind-key "M-j" #'avy-isearch isearch-mode-map)
 (with-eval-after-load 'avy
-  (setopt avy-style 'words))
+  (setopt avy-style 'at-full
+	  avy-single-candidate-jump nil))
+
+
+;; Embark for acting upon objects.
+
+(bind-key "C-." #'embark-act)
+
+;; Embark based help
+(setq prefix-help-command #'embark-prefix-help-command)
+(bind-key "C-h b" #'embark-bindings)
+(with-eval-after-load 'embark
+  (bind-key "g" #'gptel-add 'embark-region-map))
+(with-eval-after-load 'vertico-multiform
+  (add-to-list
+   'vertico-multiform-categories '(embark-keybinding grid)))
+
+(with-eval-after-load 'avy
+  (setf (alist-get ?. avy-dispatch-alist)
+        (defun avy-action-embark (pt)
+          (unwind-protect
+              (save-excursion
+                (goto-char pt)
+                (embark-act))
+            (select-window (cdr (ring-ref avy-ring 0))))
+          t)))
 ;; Org mode
 ;; Most packages won't get there own section. However org mode and it's
 ;; various extensions are a significant part of the Emacs experience.
@@ -854,7 +857,11 @@ This filters `project--list` in place and writes the updated list to disk."
 ;; Improve on the inbuilt completions. Display multiple candidates to
 ;; make selections easier.
 
-(add-hook 'after-init-hook (lambda () (vertico-mode t)))
+(add-hook
+ 'after-init-hook
+ (lambda ()
+   (vertico-mode t)
+   (vertico-multiform-mode t)))
 (with-eval-after-load 'vertico
   (setopt vertico-cycle t)
   (bind-key "C-<return>" #'vertico-exit-input 'vertico-map))

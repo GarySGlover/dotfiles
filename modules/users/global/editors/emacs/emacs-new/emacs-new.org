@@ -603,60 +603,106 @@ reducing the requirement for tools such as multiple cursors.
 
 #+begin_src emacs-lisp
   (with-eval-after-load (require 'meow)
-    (defvar-keymap cnit-meow-tools-prefix-map
-      :doc "Tools prefix"
-      :prefix
-      'cnit-meow-tools-prefix
-      "g"
-      #'gptel-menu)
-    (defvar-keymap cnit-meow-mark-prefix-map
-      :doc "Meow mark map"
-      :prefix
-      'cnit-meow-mark-prefix
-      "g"
-      #'meow-grab
-      "d"
-      #'meow-mark-defun
-      "m"
-      #'meow-mark-email
-      "f"
-      #'meow-mark-filename
-      "l"
-      #'meow-mark-list
-      "n"
-      #'meow-mark-number
-      "p"
-      #'meow-mark-page
-      "s"
-      #'meow-mark-symbol
-      "u"
-      #'meow-mark-url
-      "w"
-      #'meow-mark-word
-      "i"
-      #'meow-mark-line
-      "r"
-      #'meow-mark-letter
-      "x"
-      #'meow-mark-sexp
-      "t"
-      #'meow-mark-sentence
-      "y"
-      #'meow-mark-uuid
-      "h"
-      #'meow-mark-whitespace
-      "a"
-      #'meow-beginning-of-thing
-      "e"
-      #'meow-end-of-thing)
-    (defvar-keymap cnit-meow-next-prefix-map
-      :doc "Meow next map"
-      :prefix
-      'cnit-meow-next-prefix
-      "w"
-      #'meow-next-word
-      "s"
-      #'meow-next-symbol)
+    (define-key meow-keymap [remap describe-key] nil)
+    (setopt meow-use-clipboard t)
+    (defvar cnit-meow-tools-prefix-map
+      (let ((map (make-sparse-keymap)))
+        (dolist (pair
+                 '(("a" . avy-goto-char-timer)
+                   ("o" . org-agenda)
+                   ("c" . org-capture)
+                   ("g" . gptel-menu)
+                   ("p" . project-prefix)))
+          (define-key map (car pair) (cdr pair)))
+        map)
+      "Meow tools prefix map.")
+    (fset 'project-prefix project-prefix-map)
+    (fset 'cnit-meow-tools-prefix cnit-meow-tools-prefix-map)
+
+    (defvar cnit-meow-mark-prefix-map
+      (let ((map (make-sparse-keymap)))
+        (dolist (pair
+                 '(("g" . meow-grab)
+                   ("d" . meow-mark-defun)
+                   ("m" . meow-mark-email)
+                   ("f" . meow-mark-filename)
+                   ("i" . meow-mark-list)
+                   ("n" . meow-mark-number)
+                   ("p" . meow-mark-page)
+                   ("s" . meow-mark-symbol)
+                   ("u" . meow-mark-url)
+                   ("w" . meow-mark-word)
+                   ("l" . meow-mark-line)
+                   ("x" . meow-mark-sexp)
+                   ("t" . meow-mark-sentence)
+                   ("y" . meow-mark-uuid)
+                   ("h" . meow-mark-whitespace)
+                   ("a" . meow-beginning-of-thing)
+                   ("e" . meow-end-of-thing)))
+          (define-key map (car pair) (cdr pair)))
+        map)
+      "Meow mark prefix keymap.")
+    (fset 'cnit-meow-mark-prefix cnit-meow-mark-prefix-map)
+
+    (defvar cnit-meow-next-prefix-map
+      (let ((map (make-sparse-keymap)))
+        (dolist (pair
+                 '(("d" . meow-next-defun)
+                   ("m" . meow-next-email)
+                   ("f" . meow-next-filename)
+                   ("i" . meow-next-list)
+                   ("n" . meow-next-number)
+                   ("p" . meow-next-page)
+                   ("s" . meow-next-symbol)
+                   ("u" . meow-next-url)
+                   ("w" . meow-next-word)
+                   ("l" . meow-next-line)
+                   ("x" . meow-next-sexp)
+                   ("t" . meow-next-sentence)
+                   ("y" . meow-next-uuid)
+                   ("h" . meow-next-whitespace)))
+          (define-key map (car pair) (cdr pair)))
+        map)
+      "Meow next prefix keymap.")
+    (fset 'cnit-meow-next-prefix cnit-meow-next-prefix-map)
+
+    (defvar cnit-meow-back-prefix-map
+      (let ((map (make-sparse-keymap)))
+        (dolist (pair
+                 '(("d" . meow-back-defun)
+                   ("m" . meow-back-email)
+                   ("f" . meow-back-filename)
+                   ("i" . meow-back-list)
+                   ("n" . meow-back-number)
+                   ("p" . meow-back-page)
+                   ("s" . meow-back-symbol)
+                   ("u" . meow-back-url)
+                   ("w" . meow-back-word)
+                   ("l" . meow-back-line)
+                   ("x" . meow-back-sexp)
+                   ("t" . meow-back-sentence)
+                   ("y" . meow-back-uuid)
+                   ("h" . meow-back-whitespace)))
+          (define-key map (car pair) (cdr pair)))
+        map)
+      "Meow back prefix keymap.")
+    (fset 'cnit-meow-back-prefix cnit-meow-back-prefix-map)
+
+    (defvar cnit-meow-secondary-prefix-map
+      (let ((map (make-sparse-keymap)))
+        (dolist (pair
+                 '(("b" . cnit-meow-back-prefix)
+                   ("f" . cnit-meow-next-prefix)
+                   ("i" . meow-open-above)
+                   ("a" . meow-open-below)
+                   ("d" . delete-region)
+                   ("g" . meow-grab)
+                   ("v" . scroll-down-command)))
+          (define-key map (car pair) (cdr pair)))
+        map)
+      "Meow secondary prefix keymap.")
+    (fset 'cnit-meow-secondary-prefix cnit-meow-secondary-prefix-map)
+
     (meow-normal-define-key
      ;; Digit expansion
      '("0" . meow-expand-0)
@@ -672,74 +718,34 @@ reducing the requirement for tools such as multiple cursors.
      '("-" . meow-reverse)
 
      ;; Movement
-     '("b" . cnit-meow-left)
-     '("f" . cnit-meow-right)
-     '("p" . cnit-meow-prev)
-     '("n" . cnit-meow-next)
+     '("b" . meow-left)
+     '("f" . meow-right)
+     '("p" . meow-prev)
+     '("n" . meow-next)
+     '("v" . scroll-up-command)
 
      ;; Editing
-     '("i" . cnit-meow-insert)
-     '("a" . cnit-meow-append)
-     '("d" . cnit-meow-delete)
+     '("i" . meow-insert)
+     '("a" . meow-append)
+     '("d" . meow-delete)
      '("w" . meow-save)
      '("k" . meow-kill)
      '("y" . meow-yank)
+     '("u" . undo)
 
      ;; Selection
      '("g" . meow-cancel-selection)
      '("l" . cnit-meow-line)
      '("j" . meow-join)
      '("r" . repeat)
+     '("." . embark-act)
 
      ;; General
-     '("u" . universal-argument)
-     '("m" . cnit-meow-mark)
+     '("s" . cnit-meow-secondary-prefix)
+     '("m" . cnit-meow-mark-prefix)
      '("t" . cnit-meow-tools-prefix)
      '("h" . help-command))
-    (define-key
-     meow-beacon-state-keymap
-     [remap cnit-meow-insert]
-     'meow-beacon-insert)
-    (define-key
-     meow-beacon-state-keymap
-     [remap cnit-meow-append]
-     'meow-beacon-append)
-    (define-key
-     meow-beacon-state-keymap
-     [remap cnit-meow-delete]
-     'meow-beacon-noop)
     (meow-global-mode 1))
-
-  (defun cnit-meow-left ()
-    (interactive)
-    (if (region-active-p)
-        (meow-left-expand)
-      (meow-left)))
-
-  (defun cnit-meow-right ()
-    (interactive)
-    (if (region-active-p)
-        (meow-right-expand)
-      (meow-right)))
-
-  (defun cnit-meow-prev (arg)
-    (interactive "P")
-    (if (region-active-p)
-        (meow-prev-expand arg)
-      (meow-prev arg)))
-
-  (defun cnit-meow-next (arg)
-    (interactive "P")
-    (if (region-active-p)
-        (meow-next-expand arg)
-      (meow-next arg)))
-
-  (defun cnit-meow-delete ()
-    "Deletes region if active otherwise calls meow-delete."
-    (interactive)
-    (if (region-active-p)
-        (delete-active-region)
-      (meow-delete)))
 
   (defun cnit-meow-line (n)
     (interactive "p")
@@ -752,27 +758,6 @@ reducing the requirement for tools such as multiple cursors.
          (t
           (meow-line-expand n)))
       (meow-line n)))
-
-  (defun cnit-meow-insert (arg)
-    (interactive "P")
-    (if (meow--with-universal-argument-p arg)
-        (let ((current-prefix-arg nil))
-          (meow-open-above))
-      (meow-insert)))
-
-  (defun cnit-meow-append (arg)
-    (interactive "P")
-    (if (meow--with-universal-argument-p arg)
-        (let ((current-prefix-arg nil))
-          (meow-open-below))
-      (meow-append)))
-
-  (defun cnit-meow-mark (arg)
-    (interactive "P")
-    (if (meow--with-universal-argument-p arg)
-        (let ((current-prefix-arg nil))
-          (set-transient-map cnit-meow-mark-prefix))
-      (set-mark-command arg)))
 
   (defmacro cnit-meow-define-thing-functions (thing)
     (let* ((thing-sym

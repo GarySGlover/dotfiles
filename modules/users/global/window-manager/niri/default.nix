@@ -101,6 +101,12 @@ in
           keyboard.xkb = {
             layout = "gb";
           };
+          touchpad = {
+            tap = [ ];
+            dwt = [ ];
+            drag = true;
+            tap-button-map = "left-right-middle";
+          };
           warp-mouse-to-focus = [ ];
           disable-power-key-handling = [ ];
           workspace-auto-back-and-forth = [ ];

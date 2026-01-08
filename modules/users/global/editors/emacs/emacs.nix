@@ -2,6 +2,17 @@
   pkgs,
   ...
 }:
+let
+  az = pkgs.azure-cli.withExtensions (
+    with pkgs.azure-cli-extensions;
+    [
+      aks-preview
+      azure-devops
+      interactive
+      subscription
+    ]
+  );
+in
 {
   config = {
     programs.emacs = {
@@ -42,6 +53,8 @@
       ;;; Code:
       (defvar cnit-gsettings-executable "${pkgs.glib}/bin/gsettings"
         "Path to the gsettings executable.")
+      (defvar cnit-az-executable "${az}/bin/az"
+        "Path to the azure cli executable.")
 
       (provide 'external-programs)
       ;;; external-programs.el ends here

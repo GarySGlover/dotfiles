@@ -11,15 +11,25 @@
   :options '('ssh 'https)
   :group 'azure-devops)
 
+(defcustom azure-devops-git-repo-base-folder
+  (expand-file-name "azure-devops-projects" user-emacs-directory)
+  "Base directory where Azure DevOps projects are downloaded."
+  :type 'directory
+  :group 'azure-devops)
+
+(defcustom azure-devops-git-download-type 'bare
+  :type 'symbol
+  :options '('bare 'mirror 'full)
+  :group 'azure-devops)
+
 (defcustom azure-devops-org nil
   "Default azure devops org url to use.")
 
 ;; Azure Devops Projects
-(defun azure-devops--fetch-projects (&optional org)
+(defun azure-devops--fetch-projects (org)
   "Return list of projects in ORG.
 If ORG is nil, return nil."
-  (when-let* ((org (or org azure-devops-org))
-              (json
+  (when-let* ((json
                (shell-command-to-string
                 (format
                  "%s devops project list --org %s --output json"
@@ -28,11 +38,6 @@ If ORG is nil, return nil."
                (gethash
                 "value" (json-parse-string json :null-object nil))))
     projects))
-
-(defun azure-devops--project-annotation (cand)
-  (let ((proj (get-text-property 0 'azure-project cand)))
-    (when proj
-      (format "  %s" (gethash "description" proj)))))
 
 (defun azure-devops--project-annotation (cand)
   (when-let* ((proj (get-text-property 0 'azure-project cand))
@@ -55,20 +60,68 @@ If ORG is nil, return nil."
           (annotation-function . azure-devops--project-annotation))
       (complete-with-action action collection string pred))))
 
-(defun azure-devops--read-project ()
+(defun azure-devops--read-project (org)
   (let* ((minibuffer-allow-text-properties t)
-         (projects (azure-devops--fetch-projects))
+         (projects (azure-devops--fetch-projects org))
          (canditates (azure-devops--project-candidates projects))
          (collection-function
           (azure-devops--project-collection canditates)))
     (completing-read "Project: " collection-function nil t)))
 
-(let ((azure-devops-org "https://dev.azure.com/Next-Technology"))
-  (azure-devops--read-project))
+(defun azure-devops--fetch-repos (project org)
+  (when-let* ((json
+               (shell-command-to-string
+                (format
+                 "%s repos list --org %s --project %s --output json"
+                 cnit-az-executable org project)))
+              (repos (json-parse-string json :null-object nil)))
+    repos))
+
+(defun azure-devops--repo-candidates (repos)
+  (mapcar
+   (lambda (repo)
+     (propertize (gethash "name" repo) 'azure-repo repo))
+   repos))
+
+(defun azure-devops--repo-collection (collection)
+  (lambda (string pred action)
+    (if (eq action 'metadata)
+        '(metadata (category . azure-devops-repo))
+      (complete-with-action action collection string pred))))
+
+(defun azure-devops--read-repo (project org)
+  (let* ((minibuffer-allow-text-properties t)
+         (repos (azure-devops--fetch-repos project org))
+         (canditates (azure-devops--repo-candidates repos))
+         (collection-function
+          (azure-devops--repo-collection canditates)))
+    (completing-read "Repo: " collection-function nil t)))
+
+(defun azure-devops-download-repo (repo)
+  (interactive (let ((org
+                      (or azure-devops-org
+                          (read-string
+                           "Enter Azure DevOps organization URL: ")))
+                     project)
+                 (setq project (azure-devops--read-project org))
+                 (unless project
+                   (user-error "No project selected"))
+                 (list (azure-devops--read-repo project org))))
+  ;; download here
+  ;; get remoteUrl or sshUrl
+  ;; download location
+  ;; download type
+  )
+
+(azure-devops-download-repo
+ (let ((azure-devops-org "https://dev.azure.com/Next-Technology"))
+   (azure-devops--read-repo
+    (azure-devops--read-project azure-devops-org) azure-devops-org)))
 
 (provide 'azure-devops)
 
 ;;; azure-devops.el ends here
+
 
 ;; Example embark integrations with embark-keymap and functions that act on a project.
 (defvar-keymap azure-devops-project-embark-map

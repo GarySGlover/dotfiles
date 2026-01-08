@@ -20,6 +20,15 @@ let
       buildInputs = propagatedUserEnvPkgs;
       nativeBuildInputs = with pkgs; [ git ];
     };
+    azure-devops = pkgs.emacsPackages.trivialBuild rec {
+      pname = "azure-devops";
+      version = "1.0";
+      src = ./emacs-new/azure-devops.el;
+      propagatedUserEnvPkgs = [
+      ];
+      buildInputs = propagatedUserEnvPkgs;
+      nativeBuildInputs = with pkgs; [ git ];
+    };
     kbd-mode = (
       melpaBuild {
         pname = "kbd-mode";
@@ -80,42 +89,6 @@ let
         '';
       }
     );
-
-    hyperbole = melpaBuild {
-      pname = "hyperbole";
-      version = "9.0.1";
-
-      src = pkgs.fetchFromGitHub {
-        owner = "rswgnu";
-        repo = "hyperbole";
-        rev = "b36debbea873c2360a6782abcce084f78c0c9ff2";
-        sha256 = "sha256-NevTMr/VJGEN9+Il73ZKOuC07nRkQMoyzJY9qPWvIPw=";
-      };
-
-      packageRequires = [ el-mock ];
-      preBuild = ''
-        export HOME="$TMPDIR"
-        mkdir -p "$HOME/.hyperb" "$HOME/.hypb"
-      '';
-      recipe = pkgs.writeText "recipe" ''
-        (hyperbole
-          :repo "rswgnu/hyperbole"
-          :fetcher github
-          :files ("*.el" "MANIFEST" "dir" "ChangeLog" "Makefile"
-                  "HY-ABOUT" "HY-ANNOUNCE" "HY-CONCEPTS.kotl" "HY-NEWS"
-                  "HY-WHY.kotl" "INSTALL" "DEMO" "DEMO-ROLO.otl" "FAST-DEMO"
-                  "README.md" "_hypb" ".hypb" "hyrolo.py" "smart-clib-sym"
-                  "topwin.py" "hyperbole-banner.png"
-                  ("kotl" "kotl/MANIFEST" "kotl/EXAMPLE.kotl" "kotl/*.el")
-                  ("man" "man/hyperbole.texi" "man/hyperbole.css"
-                   "man/hkey-help.txt" "man/hyperbole.info" "man/hyperbole.html"
-                   "man/hyperbole.pdf")
-                  ("man/im" "man/im/*.png")
-                  ("HY-TALK" "HY-TALK/.hypb" "HY-TALK/HYPB" "HY-TALK/HY-TALK.org"
-                   "HY-TALK/HYPERAMP.org" "HY-TALK/HYPERORG.org")
-                  ("test" "test/MANIFEST" "test/*tests.el" "test/hy-test-*.el")))
-      '';
-    };
   };
 
   emacsExtraPackagesLocal = with epkgsl; [
@@ -123,8 +96,8 @@ let
     transient-compile
     eglot-booster
     ws-butler
-    hyperbole
     magit-worktrees
+    azure-devops
   ];
 
   emacsExtraPackages =

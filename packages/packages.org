@@ -313,7 +313,7 @@ Pull resource group for named cluster from the az aks list output.
   	else
   		url=$(echo "$DEVOPS_REPOS" | jq --arg repo "$repo" --arg type "$DOWNLOAD_TYPE" -r '.value[] | select(.name==$repo) | .[$type]')
   		spinner "Downloading $PROJECT/$repo" -- \
-  			git clone "$url" "$path" --bare --origin origin || true
+  			git clone "$url" "$path" --origin origin || true
   	fi
   done
 #+end_src

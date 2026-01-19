@@ -181,6 +181,12 @@
 ;; Prevent accidental closing of Emacs
 
 (setopt confirm-kill-emacs #'y-or-n-p)
+
+
+;; Delete selection mode for automatically deleting selected region when
+;; performing editing operations.
+
+(add-hook 'after-init-hook (lambda () (delete-selection-mode 1)))
 ;; Theme
 
 (advice-add
@@ -327,222 +333,6 @@ This prevents overlapping themes; something I would rarely want."
                ""
                ((org-agenda-files '("main.org"))
                 (org-agenda-overriding-header "Main Tasks"))))))))
-
-
-;; Modal editing suite. Reduces the need for using modifier keys. Also Meow
-;; has an enhanced kmacro interace called beacon, which can help in
-;; reducing the requirement for tools such as multiple cursors.
-
-
-(with-eval-after-load (require 'meow)
-  (define-key meow-keymap [remap describe-key] nil)
-  (setopt meow-use-clipboard t)
-  (defvar cnit-meow-tools-prefix-map
-    (let ((map (make-sparse-keymap)))
-      (dolist (pair
-               '(("a" . avy-goto-char-timer)
-                 ("o" . org-agenda)
-                 ("c" . org-capture)
-                 ("g" . gptel-menu)
-                 ("p" . project-prefix)))
-        (define-key map (car pair) (cdr pair)))
-      map)
-    "Meow tools prefix map.")
-  (fset 'project-prefix project-prefix-map)
-  (fset 'cnit-meow-tools-prefix cnit-meow-tools-prefix-map)
-
-  (defvar cnit-meow-mark-prefix-map
-    (let ((map (make-sparse-keymap)))
-      (dolist (pair
-               '(("g" . meow-grab)
-                 ("d" . meow-mark-defun)
-                 ("m" . meow-mark-email)
-                 ("f" . meow-mark-filename)
-                 ("i" . meow-mark-list)
-                 ("n" . meow-mark-number)
-                 ("p" . meow-mark-page)
-                 ("s" . meow-mark-symbol)
-                 ("u" . meow-mark-url)
-                 ("w" . meow-mark-word)
-                 ("l" . meow-mark-line)
-                 ("x" . meow-mark-sexp)
-                 ("t" . meow-mark-sentence)
-                 ("y" . meow-mark-uuid)
-                 ("h" . meow-mark-whitespace)
-                 ("a" . meow-beginning-of-thing)
-                 ("e" . meow-end-of-thing)))
-        (define-key map (car pair) (cdr pair)))
-      map)
-    "Meow mark prefix keymap.")
-  (fset 'cnit-meow-mark-prefix cnit-meow-mark-prefix-map)
-
-  (defvar cnit-meow-next-prefix-map
-    (let ((map (make-sparse-keymap)))
-      (dolist (pair
-               '(("d" . meow-next-defun)
-                 ("m" . meow-next-email)
-                 ("f" . meow-next-filename)
-                 ("i" . meow-next-list)
-                 ("n" . meow-next-number)
-                 ("p" . meow-next-page)
-                 ("s" . meow-next-symbol)
-                 ("u" . meow-next-url)
-                 ("w" . meow-next-word)
-                 ("l" . meow-next-line)
-                 ("x" . meow-next-sexp)
-                 ("t" . meow-next-sentence)
-                 ("y" . meow-next-uuid)
-                 ("h" . meow-next-whitespace)))
-        (define-key map (car pair) (cdr pair)))
-      map)
-    "Meow next prefix keymap.")
-  (fset 'cnit-meow-next-prefix cnit-meow-next-prefix-map)
-
-  (defvar cnit-meow-back-prefix-map
-    (let ((map (make-sparse-keymap)))
-      (dolist (pair
-               '(("d" . meow-back-defun)
-                 ("m" . meow-back-email)
-                 ("f" . meow-back-filename)
-                 ("i" . meow-back-list)
-                 ("n" . meow-back-number)
-                 ("p" . meow-back-page)
-                 ("s" . meow-back-symbol)
-                 ("u" . meow-back-url)
-                 ("w" . meow-back-word)
-                 ("l" . meow-back-line)
-                 ("x" . meow-back-sexp)
-                 ("t" . meow-back-sentence)
-                 ("y" . meow-back-uuid)
-                 ("h" . meow-back-whitespace)))
-        (define-key map (car pair) (cdr pair)))
-      map)
-    "Meow back prefix keymap.")
-  (fset 'cnit-meow-back-prefix cnit-meow-back-prefix-map)
-
-  (defvar cnit-meow-secondary-prefix-map
-    (let ((map (make-sparse-keymap)))
-      (dolist (pair
-               '(("b" . cnit-meow-back-prefix)
-                 ("f" . cnit-meow-next-prefix)
-                 ("i" . meow-open-above)
-                 ("a" . meow-open-below)
-                 ("d" . delete-region)
-                 ("g" . meow-grab)
-                 ("v" . scroll-down-command)))
-        (define-key map (car pair) (cdr pair)))
-      map)
-    "Meow secondary prefix keymap.")
-  (fset 'cnit-meow-secondary-prefix cnit-meow-secondary-prefix-map)
-
-  (meow-normal-define-key
-   ;; Digit expansion
-   '("0" . meow-expand-0)
-   '("1" . meow-expand-1)
-   '("2" . meow-expand-2)
-   '("3" . meow-expand-3)
-   '("4" . meow-expand-4)
-   '("5" . meow-expand-5)
-   '("6" . meow-expand-6)
-   '("7" . meow-expand-7)
-   '("8" . meow-expand-8)
-   '("9" . meow-expand-9)
-   '("-" . meow-reverse)
-
-   ;; Movement
-   '("b" . meow-left)
-   '("f" . meow-right)
-   '("p" . meow-prev)
-   '("n" . meow-next)
-   '("v" . scroll-up-command)
-
-   ;; Editing
-   '("i" . meow-insert)
-   '("a" . meow-append)
-   '("d" . meow-delete)
-   '("w" . meow-save)
-   '("k" . meow-kill)
-   '("y" . meow-yank)
-   '("u" . undo)
-
-   ;; Selection
-   '("g" . meow-cancel-selection)
-   '("l" . cnit-meow-line)
-   '("j" . meow-join)
-   '("r" . repeat)
-   '("." . embark-act)
-
-   ;; General
-   '("s" . cnit-meow-secondary-prefix)
-   '("m" . cnit-meow-mark-prefix)
-   '("t" . cnit-meow-tools-prefix)
-   '("h" . help-command))
-  (meow-global-mode 1))
-
-(defun cnit-meow-line (n)
-  (interactive "p")
-  (if (region-active-p)
-      (cond
-       ((and (< (point) (mark)) (> (point) (line-beginning-position)))
-        (beginning-of-line))
-       ((and (> (point) (mark)) (< (point) (line-end-position)))
-        (end-of-line))
-       (t
-        (meow-line-expand n)))
-    (meow-line n)))
-
-(defmacro cnit-meow-define-thing-functions (thing)
-  (let* ((thing-sym
-          (if (symbolp thing)
-              thing
-            (intern thing)))
-         (thing-name (symbol-name thing-sym)))
-    `(progn
-       ;; next
-       (unless (fboundp (intern (concat "meow-next-" ,thing-name)))
-         (defun ,(intern (concat "meow-next-" thing-name)) (n)
-           (interactive "p")
-           (meow-next-thing ',thing-sym ',thing-sym n)))
-       ;; back
-       (unless (fboundp (intern (concat "meow-back-" ,thing-name)))
-         (defun ,(intern (concat "meow-back-" thing-name)) (n)
-           (interactive "p")
-           (meow-next-thing ',thing-sym ',thing-sym (- n))))
-       ;; kill
-       (unless (fboundp (intern (concat "meow-kill-" ,thing-name)))
-         (defun ,(intern (concat "meow-kill-" thing-name)) (arg)
-           (interactive "p")
-           (meow-kill-thing ',thing-sym arg)))
-       ;; backward-kill
-       (unless (fboundp
-                (intern (concat "meow-backward-kill-" ,thing-name)))
-         (defun ,(intern (concat "meow-backward-kill-" thing-name))
-             (arg)
-           (interactive "p")
-           (,(intern (concat "meow-kill-" thing-name)) (- arg))))
-       ;; mark
-       (unless (fboundp (intern (concat "meow-mark-" ,thing-name)))
-         (defun ,(intern (concat "meow-mark-" thing-name)) (arg)
-           (interactive "p")
-           (meow-mark-thing ',thing-sym ',thing-sym arg))))))
-
-(eval-when-compile
-  (dolist (thing
-           '(symbol
-             list
-             sexp
-             defun
-             number
-             filename
-             url
-             email
-             uuid
-             word
-             sentence
-             whitespace
-             line
-             page))
-    (eval `(cnit-meow-define-thing-functions ,thing))))
 ;; Editing
 ;; Tools and enhancements to make editing more efficient and
 ;; precise. Focuses on improving readability, providing structural
@@ -643,7 +433,11 @@ With prefix ARG, preserve color sequences (don't remove them)."
 ;; Bindings for managing projects, these are typically git based projects
 ;; as I don't use other vc systems.
 
-(bind-key "C-c p" project-prefix-map)
+(advice-add
+ #'magit-project-status
+ :before
+ (defun cnit-magit-project-status ()
+   (require 'project)))
 (keymap-set project-prefix-map "v" #'magit-project-status)
 (with-eval-after-load 'project
   (setopt
@@ -685,6 +479,12 @@ With prefix ARG, preserve color sequences (don't remove them)."
 ;; directories. This should happen automaticaly on a project switch
 ;; command.
 
+(defun cnit-project-remember-default-projects ()
+  (interactive)
+  (require 'project)
+  (cnit-project-prompt-dir-advice)
+  (message "Projects updated."))
+(bind-key "C-c p" #'cnit-project-remember-default-projects)
 (with-eval-after-load 'project
   (require 'dash)
   (defvar cnit-project-base-directories

@@ -17,7 +17,8 @@
   :type 'directory
   :group 'azure-devops)
 
-(defcustom azure-devops-git-download-type 'bare
+(defcustom azure-devops-git-download-type 'full
+  "Download type to use for git clone."
   :type 'symbol
   :options '('bare 'mirror 'full)
   :group 'azure-devops)
@@ -113,10 +114,10 @@ If ORG is nil, return nil."
   ;; download type
   )
 
-(azure-devops-download-repo
- (let ((azure-devops-org "https://dev.azure.com/Next-Technology"))
-   (azure-devops--read-repo
-    (azure-devops--read-project azure-devops-org) azure-devops-org)))
+;; (azure-devops-download-repo
+;;  (let ((azure-devops-org "https://dev.azure.com/Next-Technology"))
+;;    (azure-devops--read-repo
+;;     (azure-devops--read-project azure-devops-org) azure-devops-org)))
 
 (provide 'azure-devops)
 
@@ -124,33 +125,33 @@ If ORG is nil, return nil."
 
 
 ;; Example embark integrations with embark-keymap and functions that act on a project.
-(defvar-keymap azure-devops-project-embark-map
-  :doc "Keymap for Embark actions for Azure DevOps projects."
-  :parent
-  embark-general-map
-  "i"
-  #'azure-devops-project-info
-  "l"
-  #'azure-devops-project-list-repos)
-(add-to-list
- 'embark-keymap-alist
- '(azure-devops-project . azure-devops-project-embark-map))
+;; (defvar-keymap azure-devops-project-embark-map
+;;   :doc "Keymap for Embark actions for Azure DevOps projects."
+;;   :parent
+;;   embark-general-map
+;;   "i"
+;;   #'azure-devops-project-info
+;;   "l"
+;;   #'azure-devops-project-list-repos)
+;; (add-to-list
+;;  'embark-keymap-alist
+;;  '(azure-devops-project . azure-devops-project-embark-map))
 
-(defun azure-devops-project-info (project)
-  "Show info about the Azure DevOps PROJECT."
-  (interactive (list (azure-devops--read-project)))
-  (message "Project: %s\nDescription: %s\nID: %s"
-           (gethash "name" project)
-           (gethash "description" project)
-           (gethash "id" project)))
+;; (defun azure-devops-project-info (project)
+;;   "Show info about the Azure DevOps PROJECT."
+;;   (interactive (list (azure-devops--read-project)))
+;;   (message "Project: %s\nDescription: %s\nID: %s"
+;;            (gethash "name" project)
+;;            (gethash "description" project)
+;;            (gethash "id" project)))
 
-(defun azure-devops-project-list-repos (project)
-  "List repositories for the Azure DevOps PROJECT."
-  (interactive (list (azure-devops--read-project)))
-  (let ((repos (azure-devops-repos-list project)))
-    (message "Repos: %s"
-             (mapconcat (lambda (repo) (gethash "name" repo)) repos
-                        ", "))))
+;; (defun azure-devops-project-list-repos (project)
+;;   "List repositories for the Azure DevOps PROJECT."
+;;   (interactive (list (azure-devops--read-project)))
+;;   (let ((repos (azure-devops-repos-list project)))
+;;     (message "Repos: %s"
+;;              (mapconcat (lambda (repo) (gethash "name" repo)) repos
+;;                         ", "))))
 
 ;; Build plan
 ;; List projects -> select project -> list repos -> select 1 or many repos -> git clone bare repos

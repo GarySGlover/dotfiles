@@ -20,15 +20,6 @@ let
       buildInputs = propagatedUserEnvPkgs;
       nativeBuildInputs = with pkgs; [ git ];
     };
-    azure-devops = pkgs.emacsPackages.trivialBuild rec {
-      pname = "azure-devops";
-      version = "1.0";
-      src = ./emacs-new/azure-devops.el;
-      propagatedUserEnvPkgs = [
-      ];
-      buildInputs = propagatedUserEnvPkgs;
-      nativeBuildInputs = with pkgs; [ git ];
-    };
     kbd-mode = (
       melpaBuild {
         pname = "kbd-mode";
@@ -91,14 +82,16 @@ let
     );
   };
 
-  emacsExtraPackagesLocal = with epkgsl; [
-    kbd-mode
-    transient-compile
-    eglot-booster
-    ws-butler
-    magit-worktrees
-    azure-devops
-  ];
+  emacsExtraPackagesLocal =
+    with epkgsl;
+    [
+      kbd-mode
+      transient-compile
+      eglot-booster
+      ws-butler
+      magit-worktrees
+    ]
+    ++ (import ./local-packages/packages.nix { inherit pkgs; });
 
   emacsExtraPackages =
     with pkgs.emacsPackages;

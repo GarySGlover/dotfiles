@@ -19,6 +19,9 @@ with lib;
 
     environment.etc."X11/xinit/xinitrc".text = "";
 
+    # Firware update fix
+    hardware.enableAllFirmware = true;
+
     # Enable sound.
     services.pulseaudio.enable = false;
     services.pipewire = {

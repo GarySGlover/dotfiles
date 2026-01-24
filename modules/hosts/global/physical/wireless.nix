@@ -11,7 +11,10 @@ in
     # Bluetooth enable
     hardware.bluetooth.enable = true;
 
-    sops.secrets.wireless-env = { };
+    sops.secrets.wireless-env = {
+      group = config.users.users.wpa_supplicant.group;
+      mode = "0440";
+    };
 
     networking.networkmanager.enable = false;
     networking.networkmanager.dns = "systemd-resolved";

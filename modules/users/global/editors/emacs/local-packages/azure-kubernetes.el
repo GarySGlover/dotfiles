@@ -16,19 +16,15 @@
 (defvar azure-kubernetes--list (make-hash-table)
   "Hash table of cached Kubernetes clusters")
 
-(defun azure-kubernetes--list (subscription &optional refresh)
+(defun azure-kubernetes--list (subscription)
   "Get a list of kubernetes clusters in SUBSCRIPTION."
-  (let* ((subscription-id (gethash "id" subscription)))
-    (if-let* ((clusters
-               (and (not refresh)
-                    (gethash
-                     subscription-id azure-kubernetes--list))))
-      clusters
-      (when-let* ((json
-                   (azure-shell-json-parse
-                    "aks" "list" "--subscription" subscription-id)))
-        (puthash subscription-id json azure-kubernetes--list)
-        json))))
+  (when-let* ((sub-name (plist-get subscription :name))
+              (buf
+               (get-buffer-create
+                (format "*az:%s:kubernetes*" sub-name))))
+    (when (= (buffer-size buf) 0)
+      (azure-shell buf "aks" "list" "--subscription" sub-name))
+    buf))
 
 (provide 'azure-kubernetes)
 

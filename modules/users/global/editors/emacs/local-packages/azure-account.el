@@ -14,28 +14,22 @@
 (require 'azure-cli)
 (require 'consult)
 
-(defvar azure-account--list nil
-  "Azure account list cache.")
-
-(defun azure-account--list (&optional refresh)
+(defun azure-account--list ()
   "Get a list of subscriptions for the logged in account."
-  (when (or (not azure-account--list) refresh)
-    (when-let* ((json (azure-shell-json-parse "account" "list")))
-      (setq azure-account--list json)))
-  azure-account--list)
+  (let ((buf (get-buffer-create "*az:accounts*")))
+    (when (= (buffer-size buf) 0)
+      (azure-shell buf "account" "list"))
+    buf))
 
-(defun azure-account--select (&optional refresh)
+(defun azure-account--select ()
   "Select an Azure subscription."
   (consult--read
-   (seq-map
-    (lambda (x)
-      (propertize (gethash "name" x) 'consult--candidate x))
-    (azure-account--list))
+   (azure--prepare-consult-table
+    :name (azure-json-parse-buffer (azure-account--list)))
    :annotate
    (lambda (x)
-     (concat
-      (propertize " " 'display '(space :align-to center))
-      (gethash "id" (get-text-property 0 'consult--candidate x))))
+     (azure--center-annotate
+      (plist-get (get-text-property 0 'consult--candidate x) :id)))
    :lookup #'consult--lookup-candidate
    :category 'azure-subscription))
 

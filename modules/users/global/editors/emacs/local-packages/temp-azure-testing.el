@@ -13,19 +13,15 @@
 
 (setopt azure-executable cnit-az-executable)
 
-(require 'consult)
-(let ((s
-       (consult--read
-        (seq-map
-         (lambda (x)
-           (propertize (gethash "name" x) 'consult--candidate x))
-         (azure-account--list))
-        :annotate
-        (lambda (x)
-          (concat
-           (propertize " " 'display '(space :align-to center))
-           (gethash
-            "id" (get-text-property 0 'consult--candidate x))))
-        :lookup #'consult--lookup-candidate
-        :category 'azure-subscription)))
+(azure-account--list)
+
+
+(let ((s (azure-account--select)))
   (azure-kubernetes--list s))
+
+
+(require 'consult)
+
+;; Local Variables:
+;; read-symbol-shorthands: (("t-" . "transducers-"))
+;; End:

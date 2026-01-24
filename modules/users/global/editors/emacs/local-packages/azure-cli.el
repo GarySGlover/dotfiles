@@ -12,21 +12,38 @@
   "The azure cli executable."
   :type 'string)
 
-(defun azure-shell-to-string (&rest args)
-  "Run azure shell synchronously and return the string output.
-ARGS are the arguments to `azure-executable`."
-  (shell-command-to-string
-   (string-join (cons azure-executable args) " ")))
+(defun azure-shell (output-buffer &rest args)
+  "Run azure shell synchronously, logging command to *az:log*."
+  (let* ((log-buffer (get-buffer-create "*az:log*"))
+         (cmdargs
+          (string-join (append args '("--output" "json")) " "))
+         (cmdstr (format "az %s" cmdargs)))
+    (with-current-buffer log-buffer
+      (goto-char (point-max))
+      (insert (format "\n$ %s\n" cmdstr)))
+    (save-window-excursion
+      (shell-command (format "%s %s" azure-executable cmdargs)
+                     output-buffer log-buffer))))
 
-(defun azure-shell-json-parse (&rest args)
-  "Run azure shell syncronously returning the parsed json."
-  (json-parse-string (apply #'azure-shell-to-string
-                            (append
-                             args
-                             '("--output"
-                               "json"
-                               "--only-show-errors")))
-                     :null-object nil))
+(defun azure-json-parse-buffer (buffer)
+  "Parse JSON buffer for Azure work"
+  (with-current-buffer buffer
+    (goto-char (point-min))
+    (json-parse-buffer
+     :object-type 'plist
+     :array-type 'list
+     :null-object nil
+     :false-object nil)))
+
+(defun azure--prepare-consult-table (item-property plist)
+  (mapcar
+   (lambda (x)
+     (propertize (plist-get x item-property) 'consult--candidate x))
+   plist))
+
+(defun azure--center-annotate (annotation)
+  (concat
+   (propertize " " 'display '(space :align-to center)) annotation))
 
 (provide 'azure-cli)
 

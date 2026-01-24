@@ -134,6 +134,7 @@ let
       rainbow-mode
       standard-themes
       tempel
+      transducers
       transient
       treesit-fold
       treesit-grammars.with-all-grammars

@@ -80,18 +80,28 @@ let
         '';
       }
     );
+    local-packages = trivialBuild rec {
+      pname = "local-packages";
+      version = "1.0";
+      src = ./local-packages;
+      propagatedUserEnvPkgs = [ consult ];
+      buildInputs = propagatedUserEnvPkgs;
+      nativeBuildInputs = with pkgs; [ ];
+      postBuild = ''
+        emacs -L . --batch -l package --eval '(package-generate-autoloads "local-packages" ".")'
+      '';
+    };
+
   };
 
-  emacsExtraPackagesLocal =
-    with epkgsl;
-    [
-      kbd-mode
-      transient-compile
-      eglot-booster
-      ws-butler
-      magit-worktrees
-    ]
-    ++ (import ./local-packages/packages.nix { inherit pkgs; });
+  emacsExtraPackagesLocal = with epkgsl; [
+    kbd-mode
+    transient-compile
+    eglot-booster
+    ws-butler
+    magit-worktrees
+    local-packages
+  ];
 
   emacsExtraPackages =
     with pkgs.emacsPackages;

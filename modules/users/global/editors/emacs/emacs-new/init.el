@@ -4,6 +4,11 @@
 
 ;;; Code:
 ;; Basic Emacs Settings
+;; Load local packages autoloads
+
+(load "local-packages-autoloads")
+
+
 ;; Start emacs server after when there is spare time.
 
 (defun cnit-emacs-server ()

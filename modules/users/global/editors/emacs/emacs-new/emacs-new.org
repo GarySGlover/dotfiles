@@ -198,6 +198,11 @@ Set early background colour to help reduce startup flash
 #+end_src
 
 * Basic Emacs Settings
+Load local packages autoloads
+#+begin_src emacs-lisp
+  (load "local-packages-autoloads")
+#+end_src
+
 Start emacs server after when there is spare time.
 #+begin_src emacs-lisp
   (defun cnit-emacs-server ()

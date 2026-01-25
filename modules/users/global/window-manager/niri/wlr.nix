@@ -89,7 +89,7 @@ in
                 {
                   key = "s";
                   desc = "Steam";
-                  cmd = "steam";
+                  cmd = "gamescope -h 1080 --adaptive-sync --hdr-enabled --rt --steam -- steam -pipewire-dmabuf -tenfoot";
                 }
                 {
                   key = "t";

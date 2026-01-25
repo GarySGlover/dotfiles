@@ -37,6 +37,11 @@ let
       open-fullscreen = false;
       "default-floating-position x=30 y=30 relative-to=\"top-right\"" = [ ];
     }
+    {
+      "match app-id=\"gamescope\"" = [ ];
+      open-focused = true;
+      open-fullscreen = true;
+    }
   ];
   renderedWindowRules = builtins.concatStringsSep "\n\n" (
     map (rule: lib.hm.generators.toKDL { } { "window-rule" = rule; }) windowRules

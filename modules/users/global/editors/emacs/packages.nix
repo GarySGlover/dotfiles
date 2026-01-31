@@ -130,6 +130,7 @@ let
       gptel
       helpful
       indent-bars
+      kele
       magit
       marginalia
       markdown-mode
@@ -139,6 +140,7 @@ let
       orderless
       org
       org-auto-tangle
+      org-present
       popper
       rainbow-delimiters
       rainbow-mode

@@ -232,7 +232,7 @@ This prevents overlapping themes; something I would rarely want."
 (setq prefix-help-command #'embark-prefix-help-command)
 (bind-key "C-h b" #'embark-bindings)
 (with-eval-after-load 'embark
-  (bind-key "g" #'gptel-add 'embark-region-map))
+  (bind-key "g" #'gptel-add 'embark-general-map))
 (with-eval-after-load 'vertico-multiform
   (add-to-list
    'vertico-multiform-categories '(embark-keybinding grid)))
@@ -338,6 +338,14 @@ This prevents overlapping themes; something I would rarely want."
                ""
                ((org-agenda-files '("main.org"))
                 (org-agenda-overriding-header "Main Tasks"))))))))
+
+
+;; Org babel for evaluating code blocks.
+
+(with-eval-after-load 'org
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp .t) (eshell . t) (shell . t))))
 ;; Editing
 ;; Tools and enhancements to make editing more efficient and
 ;; precise. Focuses on improving readability, providing structural
@@ -717,7 +725,24 @@ This filters `project--list` in place and writes the updated list to disk."
 
 ;; Gptel
 
+(defvar gptel-prefix
+  (let ((map (make-sparse-keymap)))
+    (bind-key "b" #'gptel map)
+    (bind-key "f" #'gptel-add-file map)
+    (bind-key "m" #'gptel-menu map)
+    (bind-key "p" #'gptel-system-prompt map)
+    (bind-key "r" #'gptel-add map)
+    (bind-key "s" #'gptel-send map)
+    (bind-key "t" #'gptel-tools map)
+    (bind-key "w" #'gptel-rewrite map)
+    map)
+  "Keymap for GPTel related commands.")
+
+(bind-key "C-c g" gptel-prefix)
 (with-eval-after-load 'gptel
+  (let ((map 'gptel-prefix))
+    (bind-key "d" #'gptel-context-remove map)
+    (bind-key "D" #'gptel-context-remove-all map))
   (setopt
    gptel-backend (gptel-make-gh-copilot "Copilot")
    gptel-model 'gpt-4.1
@@ -767,6 +792,90 @@ This filters `project--list` in place and writes the updated list to disk."
      :class app-name
      :title window-title
      :geometry window-geometry)))
+
+
+;; Kubenetes cluster management.
+
+(autoload 'kele-dispatch "kele" nil t)
+(bind-key "C-c k" #'kele-dispatch)
+(with-eval-after-load 'kele
+  (kele-mode)
+  (defun kele--list-kinds (context namespace &rest kinds)
+    (magit-insert-section
+     (kele-list-root)
+     (magit-insert-section
+      (overview) (magit-insert-heading "Overview")
+      (insert
+       (propertize "Context: " 'font-lock-face 'header-line)
+       context
+       "\n")
+      (when namespace
+        (insert
+         (propertize "Namespace: "
+                     'font-lock-face
+                     'header-line)
+         namespace "\n"))
+      (insert
+       (propertize "Last Updated: " 'font-lock-face 'header-line)
+       (format-time-string "%Y-%m-%d %H:%M:%S"
+                           kele--list-snapshot-time)
+       "\n")
+      (insert "\n"))
+     (dolist (kind kinds)
+       (-let*
+        ((gv
+          (car
+           (kele--get-groupversions-for-type
+            kele--global-discovery-cache
+            kind
+            :context context)))
+         ((group version) (kele--groupversion-split gv))
+         (gvk
+          (kele--gvk-create
+           :group group
+           :version version
+           :kind kind)))
+        (condition-case err
+            (magit-insert-section
+             (kele-list-table `((gvk . ,gvk)))
+             (magit-insert-heading
+              (format
+               "%s: %s"
+               (propertize "Resources"
+                           'font-lock-face 'magit-section-heading)
+               (propertize kind
+                           'font-lock-face 'kele-resource-kind-face)))
+             (magit-insert-section-body
+              (vtable-insert
+               (kele--vtable-tabulate gvk context namespace))
+              (vtable-end-of-table) (insert "\n")))
+          (error
+           (message "[kele] Failed to list %s: %s"
+                    kind
+                    (error-message-string err))))))))
+  (defun kele--edit-resource ()
+    (interactive nil kele-get-mode)
+    (-let*
+     ((ctx kele--current-resource-buffer-context)
+      ((&alist
+        'kind
+        kind
+        'apiVersion
+        api-version
+        'metadata
+        (&alist 'name name 'namespace namespace))
+       (kele--resource-buffer-context-resource ctx))
+      (context (kele--resource-buffer-context-context ctx)))
+     (with-editor
+      (kele-kubectl-do
+       "edit"
+       "--context"
+       context
+       "--namespace"
+       namespace
+       kind
+       name))))
+  (bind-key "e" #'kele--edit-resource kele-get-mode-map))
 ;; Window manager support
 ;; This section defines functions and settings to support using emacs
 ;; functionality directly from the window manager through the use of

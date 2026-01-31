@@ -26,6 +26,40 @@
       (azure-shell buf "aks" "list" "--subscription" sub-name))
     buf))
 
+(defun azure-kubernetes--select (&optional subscription)
+  "Select an Azure Kubernetes cluster."
+  (when-let* ((subscription
+               (or subscription (azure-account--select))))
+    (consult--read
+     (azure--prepare-consult-table
+      :name
+      (azure-json-parse-buffer (azure-kubernetes--list subscription)))
+     :lookup #'consult--lookup-candidate
+     :category 'azure-kubernetes-cluster)))
+
+;;;###autoload
+(defun azure-kubernetes-get-credentials (subscription cluster)
+  "Get credentials for the CLUSTER in SUBSCRIPTION.
+If called interactively, prompt for both using `azure-account--select` and `azure-kubernetes--select`."
+  (interactive (let ((sub (azure-account--select)))
+                 (list sub (azure-kubernetes--select sub))))
+  (when-let* ((name (plist-get cluster :name))
+              (rg (plist-get cluster :resourceGroup))
+              (buf
+               (get-buffer-create
+                (format "*az:kubernetes:credentials:%s*" name))))
+    (azure-shell
+     buf
+     "aks"
+     "get-credentials"
+     "--name"
+     name
+     "--resource-group"
+     rg
+     "--subscription"
+     (plist-get subscription :name))
+    buf))
+
 (provide 'azure-kubernetes)
 
 ;;; azure-kubernetes.el ends here

@@ -92,6 +92,11 @@ in
                   cmd = "gamescope -h 1080 --adaptive-sync --hdr-enabled --rt --steam -- steam -pipewire-dmabuf -tenfoot";
                 }
                 {
+                  key = "S";
+                  desc = "Steam";
+                  cmd = "gamescope -h 1080 --backend headless --adaptive-sync --hdr-enabled --rt --steam -- steam -pipewire-dmabuf -tenfoot";
+                }
+                {
                   key = "t";
                   desc = "Eshell";
                   cmd = "emacsclient --eval '(eshell t)' --create-frame -no-wait --alternate-editor 'emacs --eval'";

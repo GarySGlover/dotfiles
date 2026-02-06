@@ -117,6 +117,18 @@ in
           workspace-auto-back-and-forth = [ ];
           "focus-follows-mouse max-scroll-amount=\"0%\"" = [ ];
         };
+        "output \"Nreal XREAL One Pro Unknown\"" = {
+          layout = {
+            center-focused-column = "always";
+            default-column-width.proportion = 0.33;
+            preset-column-widths = {
+              "proportion 0.25" = [ ];
+              "proportion 0.33" = [ ];
+              "proportion 0.5" = [ ];
+              "proportion 1.0" = [ ];
+            };
+          };
+        };
         cursor = {
           hide-after-inactive-ms = 1000;
           hide-when-typing = [ ];
@@ -126,14 +138,13 @@ in
         layout = {
           # Columns
           always-center-single-column = [ ];
-          center-focused-column = "on-overflow";
+          center-focused-column = "never";
           default-column-width.proportion = 1.0;
           default-column-display = "tabbed";
           tab-indicator = {
             hide-when-single-tab = [ ];
           };
           preset-column-widths = {
-            "proportion 0.33333" = [ ];
             "proportion 0.5" = [ ];
             "proportion 1.0" = [ ];
           };

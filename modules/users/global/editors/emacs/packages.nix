@@ -80,6 +80,23 @@ let
         '';
       }
     );
+    gptel-quick = (
+      melpaBuild {
+        pname = "gptel-quick";
+        version = "1";
+        commit = "1";
+        src = inputs.gptel-quick;
+        packageRequires = [
+          gptel
+        ];
+        recipe = pkgs.writeText "recipe" ''
+          (gptel-quick
+            :repo "karthink/gptel-quick"
+            :fetcher github
+            :files ("*.el"))
+        '';
+      }
+    );
     local-packages = trivialBuild rec {
       pname = "local-packages";
       version = "1.0";
@@ -95,12 +112,13 @@ let
   };
 
   emacsExtraPackagesLocal = with epkgsl; [
-    kbd-mode
-    transient-compile
     eglot-booster
-    ws-butler
-    magit-worktrees
+    gptel-quick
     local-packages
+    magit-worktrees
+    transient-compile
+    ws-butler
+    kbd-mode
   ];
 
   emacsExtraPackages =
@@ -128,6 +146,7 @@ let
       git-auto-commit-mode
       git-timemachine
       gptel
+      gptel-agent
       helpful
       indent-bars
       kele
@@ -142,6 +161,7 @@ let
       org-auto-tangle
       org-present
       popper
+      posframe
       rainbow-delimiters
       rainbow-mode
       standard-themes

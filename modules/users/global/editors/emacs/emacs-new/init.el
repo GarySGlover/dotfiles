@@ -232,7 +232,8 @@ This prevents overlapping themes; something I would rarely want."
 (setq prefix-help-command #'embark-prefix-help-command)
 (bind-key "C-h b" #'embark-bindings)
 (with-eval-after-load 'embark
-  (bind-key "g" #'gptel-add 'embark-general-map))
+  (keymap-set embark-general-map "g" #'gptel-add)
+  (keymap-set embark-general-map "?" #'gptel-quick))
 (with-eval-after-load 'vertico-multiform
   (add-to-list
    'vertico-multiform-categories '(embark-keybinding grid)))
@@ -298,7 +299,7 @@ This prevents overlapping themes; something I would rarely want."
 
 ;; Org capture
 
-(bind-key "C-c c" #'org-capture)
+(keymap-set global-map "C-c c" #'org-capture)
 (with-eval-after-load 'org-capture
   (defun cnit-org-current-parent-target ()
     "Return a refile target pointing to the current heading."
@@ -727,22 +728,23 @@ This filters `project--list` in place and writes the updated list to disk."
 
 (defvar gptel-prefix
   (let ((map (make-sparse-keymap)))
-    (bind-key "b" #'gptel map)
-    (bind-key "f" #'gptel-add-file map)
-    (bind-key "m" #'gptel-menu map)
-    (bind-key "p" #'gptel-system-prompt map)
-    (bind-key "r" #'gptel-add map)
-    (bind-key "s" #'gptel-send map)
-    (bind-key "t" #'gptel-tools map)
-    (bind-key "w" #'gptel-rewrite map)
+    (keymap-set map "b" #'gptel)
+    (keymap-set map "f" #'gptel-add-file)
+    (keymap-set map "m" #'gptel-menu)
+    (keymap-set map "p" #'gptel-system-prompt)
+    (keymap-set map "q" #'gptel-quick)
+    (keymap-set map "r" #'gptel-add)
+    (keymap-set map "s" #'gptel-send)
+    (keymap-set map "t" #'gptel-tools)
+    (keymap-set map "w" #'gptel-rewrite)
     map)
   "Keymap for GPTel related commands.")
 
-(bind-key "C-c g" gptel-prefix)
+(keymap-set global-map "C-c g" gptel-prefix)
 (with-eval-after-load 'gptel
-  (let ((map 'gptel-prefix))
-    (bind-key "d" #'gptel-context-remove map)
-    (bind-key "D" #'gptel-context-remove-all map))
+  (let ((map gptel-prefix))
+    (keymap-set map "d" #'gptel-context-remove)
+    (keymap-set map "D" #'gptel-context-remove-all))
   (setopt
    gptel-backend (gptel-make-gh-copilot "Copilot")
    gptel-model 'gpt-4.1

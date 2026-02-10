@@ -1,0 +1,33 @@
+[
+  ./browsers/brave/default.nix
+  ./browsers/chrome/default.nix
+  ./browsers/firefox/default.nix
+  ./cad/kicad/default.nix
+  ./cad/prusa/default.nix
+  ./development/direnv/default.nix
+  ./development/git/default.nix
+  ./editors/emacs/emacs.nix
+  ./editors/emacs/packages.nix
+  ./languages/json/default.nix
+  ./languages/lsp/default.nix
+  ./languages/python/default.nix
+  ./languages/shell/default.nix
+  ./options.nix
+  ./system/core.nix
+  ./system/fonts.nix
+  ./system/monitor.nix
+  ./system/nix.nix
+  ./system/search.nix
+  ./system/xdg.nix
+  ./temp_packages/default.nix
+  ./terminal/gum/default.nix
+  ./terminal/kitty/default.nix
+  ./terminal/shells/default.nix
+  ./terminal/starship/default.nix
+  ./tools/kanata/default.nix
+  ./tools/ssh/default.nix
+  ./window-manager/general-utils/default.nix
+  ./window-manager/kanshi/default.nix
+  ./window-manager/niri/default.nix
+  ./window-manager/niri/wlr.nix
+]

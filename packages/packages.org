@@ -290,24 +290,24 @@ Pull resource group for named cluster from the az aks list output.
   	path="$HOME/git-clones/$DEVOPS_ORG/$PROJECT/$repo"
   	if [ -d "$path" ]; then
   		function update_repo() {
-  			pushd "$path">/dev/null || return 0
+  			pushd "$path" >/dev/null || return 0
   			spinner "Updating $PROJECT/$repo" -- \
   				- git fetch --prune --prune-tags --tags --force || {
-  				popd>/dev/null || return 0
+  				popd >/dev/null || return 0
   				return 0
   			}
   			branch="$(git remote show origin | awk '/HEAD branch/{print $NF}')"
   			spinner "Updating $PROJECT/$repo" -- \
   				git checkout "$branch" || {
-  				popd>/dev/null || return 0
+  				popd >/dev/null || return 0
   				return 0
   			}
   			spinner "Updating $PROJECT/$repo" -- \
   				git reset --hard "origin/$branch" || {
-  				popd>/dev/null || return 0
+  				popd >/dev/null || return 0
   				return 0
   			}
-  			popd>/dev/null || return 0
+  			popd >/dev/null || return 0
   		}
   		update_repo
   	else

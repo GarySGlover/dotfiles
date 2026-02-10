@@ -1,0 +1,233 @@
+:PROPERTIES:
+:GPTEL_MODEL: gpt-4.1
+:GPTEL_BACKEND: Copilot
+:GPTEL_SYSTEM: You are a large language model living in Emacs and a helpful assistant. Respond concisely.
+:GPTEL_BOUNDS: ((response (534 2284) (2399 3403) (3471 4652) (4914 6968) (7010 7035) (7334 9908)))
+:GPTEL_MAX_TOKENS: 8192
+:END:
+I have this config for handling hotplug monitors. It conflicts sometimes with niri, I think a possible race condition. I want to be able to have a similar concept of monitor profiles, but where I manually run and select when I need them.
+
+You're absolutely right—automatic monitor management (via kanshi or niri) can sometimes race or conflict when monitors hotplug, leading to unexpected behavior.
+
+*Recommended Approach: Manual Profiles*
+
+Instead of kanshi’s automatic profile switching, use a manual/script-based approach:
+
+*** 1. Remove kanshi’s automatic profiles
+
+- Disable kanshi’s auto-hotplug handling.
+- Instead, maintain a set of predefined monitor layouts as executable scripts.
+
+*** 2. Use =wlr-randr= (or =swaymsg=) for manual profiles
+
+- Create shell scripts for each profile, using =wlr-randr= or =swaymsg= to set outputs, positions, modes, etc.
+
+*Example (=office.sh=):*
+#+begin_src sh
+#!/usr/bin/env bash
+
+wlr-randr --output "Dell Inc. DELL P2421 803C773" --mode "1920x1200@59.950Hz" --pos 0,0 --on
+wlr-randr --output "Dell Inc. DELL P2421 5Z2C773" --mode "1920x1200@59.950Hz" --pos 0,1200 --on
+wlr-randr --output "BOE NE160WUM-NX2 Unknown" --off
+wlr-randr --output "Philips Consumer Electronics Company PHL BDM3275 0x00000673" --mode "3840x2160@59.997Hz" --pos 1920,560 --on
+#+end_src
+
+*** 3. How to launch
+
+- Bind a key, or run the desired script from terminal.
+- This guarantees the profile only applies when you explicitly invoke it.
+
+*** 4. Niri-specific notes
+
+- If you’re using =niri= on Wayland, =wlr-randr= is a good bet (=niri= doesn’t have a profile manager).
+- For Sway, use =swaymsg output ...=.
+
+*** 5. Optional: profile menu
+
+- Make a simple menu with =rofi=/=wofi= listing your scripts, to quickly select the desired profile.
+
+---
+
+*Summary:*
+Manual monitor scripts or menu-driven selection avoids profile switch race conditions, and offers fine control. You can re-use your kanshi profile settings—just translate them to =wlr-randr=/=swaymsg= commands.
+
+*** niri has the =niri msg output= command section that can do monitor configuration. Maybe this could be used.
+
+Absolutely! If you’re using niri, you can use =niri msg output= to manually configure monitors—this is the best native approach.
+
+** Steps
+
+*1. Write scripts for each profile.*
+Example (for dual external monitors):
+#+begin_src sh
+niri msg output "Dell Inc. DELL P2421 803C773" on pos 0 0 mode 1920x1200@59.950Hz
+niri msg output "Dell Inc. DELL P2421 5Z2C773" on pos 1920 0 mode 1920x1200@59.950Hz
+niri msg output "BOE NE160WUM-NX2 Unknown" off
+#+end_src
+
+*2. Add scripts for other layouts as needed.*
+
+*3. Run the desired script manually*
+You can call the script whenever you want to change monitor profile.
+Optional: use a menu launcher like =rofi= or =wofi= (or dmenu) for easy profile selection.
+
+*4. Unbind/disable kanshi and automatic features.*
+This avoids race conditions.
+
+---
+
+*Summary:*
+Yes, create scripts with =niri msg output=, and manually run them as needed. This lets you quickly, reliably, and precisely apply monitor layouts—no race conditions or unwanted automatic switching.
+
+*** It can only seemingly do 1 config part per monitor at a time
+
+Correct! The =niri msg output= command currently only accepts one operation per invocation—for example, you must run separate commands to set mode, position, or state (on/off) for each output.
+So for a profile, you'll need to chain multiple commands sequentially in your script.
+
+*Example profile script:*
+#+begin_src sh
+# Turn monitor on and set its mode
+niri msg output "Dell Inc. DELL P2421 803C773" on
+niri msg output "Dell Inc. DELL P2421 803C773" mode 1920x1200@59.950Hz
+niri msg output "Dell Inc. DELL P2421 803C773" pos 0 0
+
+# Do the same for another monitor
+niri msg output "Dell Inc. DELL P2421 5Z2C773" on
+niri msg output "Dell Inc. DELL P2421 5Z2C773" mode 1920x1200@59.950Hz
+niri msg output "Dell Inc. DELL P2421 5Z2C773" pos 1920 0
+
+# Turn laptop screen off
+niri msg output "BOE NE160WUM-NX2 Unknown" off
+#+end_src
+
+*Tips:*
+- Just chain =niri msg output= commands for each monitor and attribute.
+- Use =sleep= between commands if needed (rarely), but usually chaining is fine.
+- You can wrap/all this in a script and launch via keybind or menu.
+
+*Summary:*
+Yes, you have to issue one =niri msg output= command per attribute per output; scripts work well for this!
+
+*** I think I could define these scripts in emacs lisp and use emacs instead of rofi/wofi. My emacs runs as a daemon, so all I would need for the wofi part is to know how open a new frame that does only the completing-read and doesn't show any other buffers.
+
+Absolutely—you can use Emacs as your profile menu! Here’s a concise solution:
+
+*Elisp Implementation Outline*
+
+1. *Define your monitor profile scripts:*
+Store a list associating profile names with shell scripts or niri commands.
+
+2. *Prompt for selection with completing-read:*
+Open a new frame, run completing-read to let you pick a profile.
+
+3. *Run the script/cmd in the background:*
+Invoke shell-command or start-process accordingly.
+
+4. *Handle dedicated UI frame:*
+- Create a new frame with only the completion buffer.
+- Close the frame after selection.
+
+*Sample Implementation*
+#+begin_src emacs-lisp
+(defun my/monitor-profiles ()
+  ;; Alist: (name . script)
+  '(("Office Dual External"
+     . "~/bin/monitor-office.sh")
+    ("Home Laptop + TV"
+     . "~/bin/monitor-home.sh")
+    ("Single Laptop"
+     . "~/bin/monitor-laptop.sh")))
+
+(defun my/select-monitor-profile ()
+  (interactive)
+  (let* ((frame (make-frame '((name . "Monitor Profile Selector")
+                             (width . 50)
+                             (height . 5)
+                             (minibuffer . only))))
+         (profile (completing-read "Select monitor profile: "
+                                  (mapcar #'car (my/monitor-profiles))))
+         (script (cdr (assoc profile (my/monitor-profiles)))))
+    (when script
+      (message "Script"))
+    (delete-frame frame)))
+
+;; Optional: bind to a global key, or run via terminal (emacsclient)
+#+end_src
+
+*How to Use*
+- Call =my/select-monitor-profile= via =emacsclient= or a keybinding.
+- It opens a temporary frame; lets you pick; runs the script; deletes the frame (no buffer clutter).
+
+*Finetuning*
+- You can hide other buffers by setting frame parameters and/or using a dedicated workspace.
+- For more control, ensure only the minibuffer is active in the frame.
+
+*Launching via Emacsclient*
+- From the shell: =emacsclient -c -e '(my/select-monitor-profile)'=
+
+---
+
+*Summary:*
+Yes, you can build a clean, minimal monitor profile launcher in Emacs using a new frame and completing-read. No need for wofi/rofi!
+
+*** This almost works great.
+Triggering my/select-monitor-profile from within emacs will open a new frame with just the minibuffer. I could configure the way it pops up based on the title "Monitor Profile Selector".
+Opening from the terminal with emacsclient opens a new frame first,
+then opens the Monitor Profile Selector frame. I don't want 2 frames
+for this.
+
+Great observation! This happens because =emacsclient -c= (or without a display-specific flag) opens a new frame /first/, which then runs your command and creates another frame for the only-minibuffer profile selector. You end up with two frames—one unused, one for completing-read.
+
+*Solution:*
+- Tell =emacsclient= to /not/ create an initial frame, and let your function create the /only/ one needed.
+
+*Ways to achieve this:*
+
+*** 1. Use =emacsclient= without =-c=, but with =--eval=
+If your Emacs server is already running, from the terminal:
+#+begin_src sh
+emacsclient --eval '(my/select-monitor-profile)'
+#+end_src
+This will NOT open a new frame, just runs the code. Your code creates the selector frame.
+
+If you want it to show up on your desktop (not just in the Emacs running in a TTY), make sure your daemon is running under GUI (X11/Wayland), or set up =server-window= correctly.
+
+*** 2. Hide the initial client frame, or reuse it
+
+You can slightly adapt your code to /reuse/ the current frame (if pop-up):
+If called from a GUI client, use the current frame as the input frame. If in terminal or via emacsclient without frame, make a new one.
+
+You could conditionally use =selected-frame= if it's not a TTY and doesn't already have a minibuffer:
+#+begin_src elisp
+(defun my/select-monitor-profile ()
+  (interactive)
+  (let* ((existing-frame (and (display-graphic-p) (not (window-minibuffer-p (selected-window))) (selected-frame)))
+         (frame (or existing-frame
+                    (make-frame '((name . "Monitor Profile Selector")
+                                  (width . 50)
+                                  (height . 5)
+                                  (minibuffer . only)))))
+         (profile (completing-read "Select monitor profile: "
+                                   (mapcar #'car (my/monitor-profiles))))
+         (script (cdr (assoc profile (my/monitor-profiles)))))
+    (when script
+      (start-process-shell-command "monitor-profile" nil script))
+    (unless existing-frame (delete-frame frame))))
+#+end_src
+This reuses a frame if possible, otherwise creates/deletes one as needed.
+
+*** 3. If you really need a new frame from the terminal only
+Write a small shell wrapper:
+#+begin_src sh
+emacsclient --eval '(my/select-monitor-profile)'
+#+end_src
+Or, create a client script to invoke this (don't use =-c=).
+
+---
+
+*Summary:*
+Do *not* use =-c= with =emacsclient= for this, just =--eval=.
+Your code will create only the selector frame (no duplicate frames).
+You can lock appearance/placement by matching the frame title, as you noted.
+
+***

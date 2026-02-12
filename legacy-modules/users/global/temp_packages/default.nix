@@ -3,6 +3,7 @@ let
   myPackages = with pkgs; [
     onlykey
     onlykey-cli
+    tree
   ];
 in
 {

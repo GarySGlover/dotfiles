@@ -17,6 +17,9 @@
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    import-tree = {
+      url = "github:vic/import-tree";
+    };
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -60,144 +63,103 @@
   };
 
   outputs =
-    { self, ... }@inputs:
-    let
-      system = if builtins ? currentSystem then builtins.currentSystem else "x86_64-linux";
-      lib = pkgs.lib;
-      pkgs = import inputs.nixpkgs {
-        inherit system;
-        config = import ./config.nix { inherit lib; };
-        overlays =
+    inputs@{
+      flake-parts,
+      ...
+    }:
+    flake-parts.lib.mkFlake { inherit inputs; } (
+      top@{
+        config,
+        withSystem,
+        moduleWithSystem,
+        ...
+      }:
+      {
+        imports = [ (inputs.import-tree ./modules) ];
+        flake =
           let
-            overlayFiles = builtins.filter (file: builtins.match ".*\\.nix$" file != null) (
-              builtins.attrNames (builtins.readDir ./legacy-modules/overlays)
-            );
-            importedOverlays = map (file: import (./legacy-modules/overlays + "/${file}") inputs) overlayFiles;
+            system = if builtins ? currentSystem then builtins.currentSystem else "x86_64-linux";
+            lib = pkgs.lib;
+            pkgs = import inputs.nixpkgs {
+              inherit system;
+              config = import ./config.nix { inherit lib; };
+              overlays =
+                let
+                  overlayFiles = builtins.filter (file: builtins.match ".*\\.nix$" file != null) (
+                    builtins.attrNames (builtins.readDir ./legacy-modules/overlays)
+                  );
+                  importedOverlays = map (file: import (./legacy-modules/overlays + "/${file}") inputs) overlayFiles;
+                in
+                importedOverlays;
+            };
+
+            extraSpecialArgs = {
+              inherit pkgs inputs;
+              self = inputs.self;
+            };
+
           in
-          importedOverlays;
-      };
-
-      extraSpecialArgs = {
-        inherit pkgs self inputs;
-      };
-
-    in
-    {
-      nixosConfigurations = {
-        belisarius = inputs.nixpkgs.lib.nixosSystem {
-          inherit system pkgs;
-          specialArgs = {
-            host = "belisarius";
-            users = [ "clover" ];
-            self = self;
-            inputs = inputs;
-          };
-          modules = [
-            inputs.sops-nix.nixosModules.sops
-            inputs.home-manager.nixosModules.home-manager
-            {
-              home-manager = {
-                extraSpecialArgs = extraSpecialArgs;
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                backupFileExtension = "hm-backup";
-                users.clover = {
-                  home.username = "clover";
-                  home.homeDirectory = "/home/clover";
-                  wolf.secretsPath = ./secrets;
-                  imports = import ./legacy-modules/users/clover;
-                };
-                sharedModules = (import ./legacy-modules/users/global);
+          {
+            homeConfigurations = {
+              "clover@MW-RSY-GPRG8C3" = inputs.home-manager.lib.homeManagerConfiguration {
+                inherit pkgs extraSpecialArgs;
+                modules = [
+                  (
+                    { ... }:
+                    {
+                      home.username = "clover";
+                      home.homeDirectory = "/home/clover";
+                      wolf.secretsPath = ./secrets;
+                    }
+                  )
+                ]
+                ++ (import ./legacy-modules/users/global)
+                ++ (import ./legacy-modules/users/clover);
               };
-            }
-          ]
-          ++ (import ./legacy-modules/hosts/global)
-          ++ (import ./legacy-modules/hosts/belisarius);
-        };
+            };
 
-        cornaith = inputs.nixpkgs.lib.nixosSystem {
-          inherit system pkgs;
-          specialArgs = {
-            host = "cornaith";
-            users = [ "clover" ];
-            self = self;
-            inputs = inputs;
+            devShells.${system}.default = pkgs.mkShell {
+              packages = with pkgs; [
+
+                # Pre-commit
+                (pre-commit.overrideAttrs (oldAttrs: {
+                  makeWrapperArgs = ''
+                    		--set PYTHONPATH $PYTHONPATH
+                                  --suffix PYTHONPATH : ${
+                                    python3.withPackages (ps: [
+                                      ps.gitpython
+                                      ps.click
+                                    ])
+                                  }/lib/python3.13/site-packages
+                  '';
+                }))
+                yamlfmt
+                yamllint
+
+                # Shell
+                shfmt
+                argbash
+
+                # Nix
+                nixfmt-rfc-style
+                nixd
+                nix
+
+                # Formatter for various languages
+                nodePackages.prettier
+
+                # Emacs init development
+                glib
+              ];
+            };
           };
-          modules = [
-            inputs.sops-nix.nixosModules.sops
-            inputs.home-manager.nixosModules.home-manager
-            {
-              home-manager = {
-                extraSpecialArgs = extraSpecialArgs;
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                backupFileExtension = "hm-backup";
-                users.clover = {
-                  home.username = "clover";
-                  home.homeDirectory = "/home/clover";
-                  wolf.secretsPath = ./secrets;
-                  imports = import ./legacy-modules/users/clover;
-                };
-                sharedModules = (import ./legacy-modules/users/global);
-              };
-            }
-          ]
-          ++ (import ./legacy-modules/hosts/global)
-          ++ (import ./legacy-modules/hosts/cornaith);
-        };
-      };
-
-      homeConfigurations = {
-        "clover@MW-RSY-GPRG8C3" = inputs.home-manager.lib.homeManagerConfiguration {
-          inherit pkgs extraSpecialArgs;
-          modules = [
-            (
-              { ... }:
-              {
-                home.username = "clover";
-                home.homeDirectory = "/home/clover";
-                wolf.secretsPath = ./secrets;
-              }
-            )
-          ]
-          ++ (import ./legacy-modules/users/global)
-          ++ (import ./legacy-modules/users/clover);
-        };
-      };
-
-      devShells.${system}.default = pkgs.mkShell {
-        packages = with pkgs; [
-
-          # Pre-commit
-          (pre-commit.overrideAttrs (oldAttrs: {
-            makeWrapperArgs = ''
-              		--set PYTHONPATH $PYTHONPATH
-                            --suffix PYTHONPATH : ${
-                              python3.withPackages (ps: [
-                                ps.gitpython
-                                ps.click
-                              ])
-                            }/lib/python3.13/site-packages
-            '';
-          }))
-          yamlfmt
-          yamllint
-
-          # Shell
-          shfmt
-          argbash
-
-          # Nix
-          nixfmt-rfc-style
-          nixd
-          nix
-
-          # Formatter for various languages
-          nodePackages.prettier
-
-          # Emacs init development
-          glib
+        systems = [
+          "x86_64-linux"
         ];
-      };
-    };
+        perSystem =
+          { config, pkgs, ... }:
+          {
+          };
+      }
+    );
 }

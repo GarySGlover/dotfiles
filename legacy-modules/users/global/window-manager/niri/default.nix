@@ -49,6 +49,7 @@ let
 in
 {
   config = {
+    services.mako.enable = true;
     systemd.user.services.swayosd-server = {
       Unit = {
         Description = "Sway OSD Server";

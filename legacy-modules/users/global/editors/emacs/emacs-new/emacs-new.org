@@ -381,6 +381,14 @@ performing editing operations.
 #+begin_src emacs-lisp
   (add-hook 'after-init-hook (lambda () (delete-selection-mode 1)))
 #+end_src
+
+Tabs. Sometimes a programming language might use tabs, better to turn
+on for those languages specifically as otherwise it'll screw up most
+others.
+#+begin_src emacs-lisp
+  (setq-default indent-tabs-mode nil)
+#+end_src
+
 * cnit Functions
 :PROPERTIES:
 :header-args:emacs-lisp+: :tangle cnit-functions.el

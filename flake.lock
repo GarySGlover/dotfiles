@@ -32,6 +32,21 @@
         "type": "github"
       }
     },
+    "flake-aspects": {
+      "locked": {
+        "lastModified": 1769723924,
+        "narHash": "sha256-U15OaMr9AcJiB1wW2uCFzFO+DnQ3jJSvln+ZR/+Q0vE=",
+        "owner": "vic",
+        "repo": "flake-aspects",
+        "rev": "61524836788ef6991a82e7d34ebb0ccc05d374ed",
+        "type": "github"
+      },
+      "original": {
+        "owner": "vic",
+        "repo": "flake-aspects",
+        "type": "github"
+      }
+    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": "nixpkgs-lib"
@@ -164,6 +179,22 @@
         "type": "github"
       }
     },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1764667669,
+        "narHash": "sha256-7WUCZfmqLAssbDqwg9cUDAXrSoXN79eEEq17qhTNM/Y=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "418468ac9527e799809c900eda37cbff999199b6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "org-menu": {
       "flake": false,
       "locked": {
@@ -184,6 +215,7 @@
       "inputs": {
         "azure-devops-mcp": "azure-devops-mcp",
         "eglot-booster": "eglot-booster",
+        "flake-aspects": "flake-aspects",
         "flake-parts": "flake-parts",
         "gptel-quick": "gptel-quick",
         "home-manager": "home-manager",
@@ -194,6 +226,7 @@
         "org-menu": "org-menu",
         "sops-nix": "sops-nix",
         "transient-compile": "transient-compile",
+        "wrappers": "wrappers",
         "ws-butler": "ws-butler"
       }
     },
@@ -230,6 +263,24 @@
       "original": {
         "owner": "gavv",
         "repo": "transient-compile",
+        "type": "github"
+      }
+    },
+    "wrappers": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 1770971207,
+        "narHash": "sha256-Q56BaqKZhfMlrloGLq4+Hs1vwOgs7eVkA7TKM3pBITU=",
+        "owner": "lassulus",
+        "repo": "wrappers",
+        "rev": "f77698efc5b81c3c452ed7a02a30c78e5b47bb5e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lassulus",
+        "repo": "wrappers",
         "type": "github"
       }
     },

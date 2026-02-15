@@ -192,6 +192,13 @@
 ;; performing editing operations.
 
 (add-hook 'after-init-hook (lambda () (delete-selection-mode 1)))
+
+
+;; Tabs. Sometimes a programming language might use tabs, better to turn
+;; on for those languages specifically as otherwise it'll screw up most
+;; others.
+
+(setq-default indent-tabs-mode nil)
 ;; Theme
 
 (advice-add

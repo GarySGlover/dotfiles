@@ -28,7 +28,13 @@
             home.username = "clover";
             home.homeDirectory = "/home/clover";
             wolf.secretsPath = ../../secrets;
-            imports = import ../../legacy-modules/users/clover;
+            imports = with inputs.self.modules.homeManager; [
+              azure
+              kubernetes
+              editor
+              options
+              spelling
+            ];
           };
           sharedModules = (import ../../legacy-modules/users/global);
         };

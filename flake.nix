@@ -24,6 +24,10 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    flake-aspects = {
+      url = "github:vic/flake-aspects";
+    };
+    wrappers.url = "github:lassulus/wrappers";
 
     # Emacs Packages
     transient-compile = {
@@ -75,7 +79,10 @@
         ...
       }:
       {
-        imports = [ (inputs.import-tree ./modules) ];
+        imports = [
+          inputs.flake-aspects.flakeModule
+          (inputs.import-tree ./modules)
+        ];
         flake =
           let
             system = if builtins ? currentSystem then builtins.currentSystem else "x86_64-linux";
@@ -156,10 +163,6 @@
         systems = [
           "x86_64-linux"
         ];
-        perSystem =
-          { config, pkgs, ... }:
-          {
-          };
       }
     );
 }

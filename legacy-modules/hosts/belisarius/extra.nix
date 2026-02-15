@@ -3,7 +3,10 @@
 { pkgs, ... }:
 {
   # ASUS Services
-  services.asusd.enable = true;
+  services.asusd = {
+    enable = true;
+    enableUserService = true;
+  };
 
   hardware = {
     graphics = {

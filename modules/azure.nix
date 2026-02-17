@@ -1,3 +1,4 @@
+# [[file:../modules.org::*Azure][Azure:2]]
 {
   inputs,
   lib,
@@ -33,6 +34,7 @@
         }:
         {
           config = {
+            kubernetes.includeKubelogin = true;
             azure-cli.extensions = with pkgs.azure-cli.extensions; [
               azure-devops
             ];
@@ -59,11 +61,12 @@
           package = pkgs.azure-cli;
           preHook = ''
             if [ $# -ge 2 ] && [ "$1" = "account" ] && [ "$2" = "get-access-token" ]; then
-              bkt --ttl=60m --stale=10s --discard-failures -- "$real_program" "$@"
-              exit $?
+            	bkt --ttl=60m --stale=10s --discard-failures -- "$real_program" "$@"
+            	exit $?
             fi
           '';
         };
       };
     };
 }
+# Azure:2 ends here

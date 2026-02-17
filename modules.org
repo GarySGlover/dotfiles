@@ -1,14 +1,52 @@
 :PROPERTIES:
 :header-args+: :results silent :exports code :eval never-export
+:header-args: :mkdirp yes :comments link
 :END:
 #+TITLE: Clover's System Config
 #+STARTUP: folded overview hideblocks
 
+* Audio
 
+#+begin_src nix-ts :tangle modules/audio.nix
+  { inputs, lib, ... }:
+  {
+    flake.aspects =
+      { aspects, ... }:
+      {
+        audio = {
+          homeManager =
+            { pkgs, ... }:
+            {
+              home.packages = with pkgs; [
+                bluetuith
+              ];
+            };
+
+          nixos = {
+            services.pulseaudio.enable = false;
+            services.pipewire = {
+              enable = true;
+              alsa.enable = true;
+              alsa.support32Bit = true;
+              pulse.enable = true;
+            };
+          };
+        };
+      };
+  }
+#+end_src
 
 * Azure
 
-#+begin_src nix-ts :tangle modules/azure.nix
+#+name: bash_azure_cache
+#+begin_src bash :noweb
+  if [ $# -ge 2 ] && [ "$1" = "account" ] && [ "$2" = "get-access-token" ]; then
+  	bkt --ttl=60m --stale=10s --discard-failures -- "$real_program" "$@"
+  	exit $?
+  fi
+#+end_src
+
+#+begin_src nix-ts :tangle modules/azure.nix :noweb yes
   {
     inputs,
     lib,
@@ -44,6 +82,7 @@
           }:
           {
             config = {
+              kubernetes.includeKubelogin = true;
               azure-cli.extensions = with pkgs.azure-cli.extensions; [
                 azure-devops
               ];
@@ -69,11 +108,36 @@
             runtimeInputs = [ pkgs.bkt ];
             package = pkgs.azure-cli;
             preHook = ''
-              if [ $# -ge 2 ] && [ "$1" = "account" ] && [ "$2" = "get-access-token" ]; then
-                bkt --ttl=60m --stale=10s --discard-failures -- "$real_program" "$@"
-                exit $?
-              fi
+              <<bash_azure_cache>>
             '';
+          };
+        };
+      };
+  }
+#+end_src
+
+* GUI
+
+#+begin_src nix-ts :tangle modules/gui.nix
+  { inputs, lib, ... }:
+  {
+    flake.aspects =
+      { aspects, ... }:
+      {
+        gui = {
+          includes = with aspects; [
+            audio
+            video
+          ];
+          nixos = {
+            services = {
+              xserver = {
+                enable = true;
+                xkb.layout = "gb";
+                videoDrivers = [ "modesetting" ];
+              };
+              displayManager.ly.enable = true;
+            };
           };
         };
       };
@@ -84,18 +148,144 @@
 
 #+begin_src nix-ts :tangle modules/kubernetes.nix
   {
-    flake.aspects.kubernetes = {
-      homeManager =
-        { pkgs, ... }:
-        {
-          config = {
-            home.packages = with pkgs; [
-              kubectl
-              kubernetes-helm
-              k9s
+    flake.aspects = {
+      options = {
+        homeManager =
+          { config, lib, ... }:
+          {
+            options.kubernetes.includeKubelogin = lib.mkOption {
+              type = lib.types.bool;
+              default = false;
+              description = "Enable kubelogin for kubectl";
+            };
+          };
+      };
+      kubernetes = {
+        homeManager =
+          {
+            pkgs,
+            config,
+            lib,
+            ...
+          }:
+          {
+            config = lib.mkMerge [
+              {
+                home.packages = with pkgs; [
+                  kubectl
+                  kubernetes-helm
+                  k9s
+                ];
+              }
+              (lib.mkIf config.kubernetes.includeKubelogin {
+                home.packages = with pkgs; [ kubelogin ];
+              })
             ];
           };
-        };
+      };
     };
+  }
+#+end_src
+
+* Tiling Window Manager
+
+#+begin_src nix-ts :tangle modules/tiling-window-manager.nix
+  {
+    inputs,
+    lib,
+    ...
+  }:
+  {
+    flake.aspects =
+      { aspects, ... }:
+      {
+        config = {
+          options = {
+            homeManager =
+              { config, lib, ... }:
+              {
+                options.niri.configfile = lib.mkOption {
+                  type = lib.types.string;
+                  default = "";
+                };
+              };
+          };
+          tiling-window-manager = {
+            includes = with aspects; [ gui ];
+            homeManager.config = {
+              services.mako.enable = true;
+            };
+
+            nixos = {
+              programs.niri.enable = true;
+            };
+          };
+        };
+      };
+  }
+#+end_src
+
+* Video
+
+#+begin_src nix-ts :tangle modules/video.nix
+  {
+    inputs,
+    lib,
+    ...
+  }:
+  {
+    flake.aspects = {
+      video = {
+        nixos =
+          { pkgs, ... }:
+          let
+            v4lctl = lib.getExe' pkgs.v4l-utils "v4l2-ctl";
+          in
+          {
+            # Fix webcam frame rate
+            services.udev.extraRules = ''
+              SUBSYSTEM=="video4linux", KERNEL=="video[0-9]*", ATTR{name}=="*camera*", RUN+="${v4lctl} --device=/dev/%k --set-ctrl=power_line_frequency=1"
+              SUBSYSTEM=="video4linux", KERNEL=="video[0-9]*", ATTR{name}=="*webcam*", RUN+="${v4lctl} --device=/dev/%k --set-ctrl=power_line_frequency=1"
+              SUBSYSTEM=="video4linux", KERNEL=="video[0-9]*", RUN+="${v4lctl} --device=/dev/%k --set-ctrl=power_line_frequency=1"
+            '';
+          };
+      };
+    };
+  }
+#+end_src
+
+* Template
+
+#+begin_src nix-ts
+  {
+    inputs,
+    lib,
+    ...
+  }:
+  {
+    flake.aspects =
+      { aspects, ... }:
+      {
+        config = {
+          options = {
+            homeManager =
+              { config, lib, ... }:
+              {
+                options.template = lib.mkOption {
+                  type = lib.types.string;
+                  default = "";
+                };
+              };
+          };
+          tiling-window-manager = {
+            includes = with aspects; [ ];
+            homeManager.config = {
+            };
+
+            nixos = {
+            };
+          };
+        };
+      };
   }
 #+end_src

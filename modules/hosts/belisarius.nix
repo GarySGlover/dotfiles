@@ -3,6 +3,7 @@
   flake.nixosConfigurations.belisarius = inputs.nixpkgs.lib.nixosSystem {
     system = "x86_64-linux";
     modules = [
+      inputs.self.modules.nixos.tiling-window-manager
       inputs.sops-nix.nixosModules.sops
       # Still using the legacy modules for now:
       (import ../../legacy-modules/hosts/belisarius/extra.nix)
@@ -34,6 +35,7 @@
               editor
               options
               spelling
+              tiling-window-manager
             ];
           };
           sharedModules = (import ../../legacy-modules/users/global);

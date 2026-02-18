@@ -2,13 +2,7 @@
 {
   flake.aspects = {
     audio = {
-      homeManager =
-        { pkgs, ... }:
-        {
-          home.packages = with pkgs; [
-            bluetuith
-          ];
-        };
+      homeManager.programs.bluetuith.enable = true;
 
       nixos = {
         services.pulseaudio.enable = false;

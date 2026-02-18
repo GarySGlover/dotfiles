@@ -23,10 +23,10 @@
         {
           config = lib.mkMerge [
             {
+              programs.k9s.enable = true;
               home.packages = with pkgs; [
                 kubectl
                 kubernetes-helm
-                k9s
               ];
             }
             (lib.mkIf config.kubernetes.includeKubelogin {

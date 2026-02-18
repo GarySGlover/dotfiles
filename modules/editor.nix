@@ -1,7 +1,6 @@
 {
   flake.aspects = {
     config = {
-
       options = {
         homeManager =
           { lib, ... }:

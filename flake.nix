@@ -28,6 +28,10 @@
       url = "github:vic/flake-aspects";
     };
     wrappers.url = "github:lassulus/wrappers";
+    stylix = {
+      url = "github:nix-community/stylix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Emacs Packages
     transient-compile = {

@@ -32,9 +32,8 @@
             imports = with inputs.self.modules.homeManager; [
               azure
               kubernetes
-              editor
               options
-              spelling
+              style
               tiling-window-manager
             ];
           };

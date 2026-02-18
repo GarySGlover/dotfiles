@@ -82,185 +82,189 @@ in
       xwayland-satellite
     ];
 
-    xdg.configFile."niri/config.kdl".text =
-      lib.hm.generators.toKDL { } {
-        prefer-no-csd = [ ];
-        screenshot-path = "null";
-        input = {
-          keyboard.xkb = {
-            layout = "gb";
+    niri.configFiles.legacy = {
+      priority = 1;
+      text =
+        lib.hm.generators.toKDL { } {
+          prefer-no-csd = [ ];
+          screenshot-path = "null";
+          input = {
+            keyboard.xkb = {
+              layout = "gb";
+            };
+            touchpad = {
+              tap = [ ];
+              dwt = [ ];
+              drag = true;
+              tap-button-map = "left-right-middle";
+            };
+            warp-mouse-to-focus = [ ];
+            disable-power-key-handling = [ ];
+            workspace-auto-back-and-forth = [ ];
+            "focus-follows-mouse max-scroll-amount=\"0%\"" = [ ];
           };
-          touchpad = {
-            tap = [ ];
-            dwt = [ ];
-            drag = true;
-            tap-button-map = "left-right-middle";
+          "output \"Nreal XREAL One Pro Unknown\"" = {
+            layout = {
+              center-focused-column = "always";
+              default-column-width.proportion = 0.33;
+              preset-column-widths = {
+                "proportion 0.25" = [ ];
+                "proportion 0.33" = [ ];
+                "proportion 0.5" = [ ];
+                "proportion 1.0" = [ ];
+              };
+            };
           };
-          warp-mouse-to-focus = [ ];
-          disable-power-key-handling = [ ];
-          workspace-auto-back-and-forth = [ ];
-          "focus-follows-mouse max-scroll-amount=\"0%\"" = [ ];
-        };
-        "output \"Nreal XREAL One Pro Unknown\"" = {
+          cursor = {
+            hide-after-inactive-ms = 1000;
+            hide-when-typing = [ ];
+          };
+          hotkey-overlay.skip-at-startup = [ ];
+          gestures.hot-corners.off = [ ];
           layout = {
-            center-focused-column = "always";
+            # Columns
+            always-center-single-column = [ ];
+            center-focused-column = "never";
             default-column-width.proportion = 0.33;
+            default-column-display = "tabbed";
+            tab-indicator = {
+              hide-when-single-tab = [ ];
+            };
             preset-column-widths = {
-              "proportion 0.25" = [ ];
               "proportion 0.33" = [ ];
               "proportion 0.5" = [ ];
               "proportion 1.0" = [ ];
             };
-          };
-        };
-        cursor = {
-          hide-after-inactive-ms = 1000;
-          hide-when-typing = [ ];
-        };
-        hotkey-overlay.skip-at-startup = [ ];
-        gestures.hot-corners.off = [ ];
-        layout = {
-          # Columns
-          always-center-single-column = [ ];
-          center-focused-column = "never";
-          default-column-width.proportion = 1.0;
-          default-column-display = "tabbed";
-          tab-indicator = {
-            hide-when-single-tab = [ ];
-          };
-          preset-column-widths = {
-            "proportion 0.5" = [ ];
-            "proportion 1.0" = [ ];
-          };
 
-          # Window
-          gaps = 4;
-          border.width = 2;
+            # Window
+            gaps = 4;
+            border.width = 2;
 
-          # Workspace
-          empty-workspace-above-first = [ ];
+            # Workspace
+            empty-workspace-above-first = [ ];
 
-          # Rows
-          preset-window-heights = {
-            "proportion 0.33333" = [ ];
-            "proportion 0.5" = [ ];
-            "proportion 0.66667" = [ ];
-            "proportion 1.0" = [ ];
+            # Rows
+            preset-window-heights = {
+              "proportion 0.33333" = [ ];
+              "proportion 0.5" = [ ];
+              "proportion 0.66667" = [ ];
+              "proportion 1.0" = [ ];
+            };
+
+            focus-ring = {
+              active-color = "#7fc8ff";
+              inactive-color = "#7fc8ff";
+            };
           };
 
-          focus-ring = {
-            active-color = "#7fc8ff";
-            inactive-color = "#7fc8ff";
+          environment = {
+            DISPLAY = ":0";
+            XDG_CONFIG_HOME = "${config.xdg.configHome}";
           };
-        };
 
-        environment = {
-          DISPLAY = ":0";
-          XDG_CONFIG_HOME = "${config.xdg.configHome}";
-        };
+          recent-windows = {
+            # Remove default binds as these conflict with some of the
+            # emacs config for binds
+            binds = {
+            };
+          };
 
-        recent-windows = {
-          # Remove default binds as these conflict with some of the
-          # emacs config for binds
+          "spawn-at-startup \"emacs --bg-daemon\"" = [ ];
+
           binds = {
-          };
-        };
+            "Super+C" = {
+              spawn = [
+                "emacsclient"
+                "-e"
+                "(cnit-wm-org-capture)"
+              ];
+            };
 
-        "spawn-at-startup \"emacs --bg-daemon\"" = [ ];
+            "Super+E" = {
+              spawn = [
+                "emacsclient"
+                "-e"
+                "(emacs-everywhere)"
+              ];
+            };
 
-        binds = {
-          "Super+C" = {
-            spawn = [
-              "emacsclient"
-              "-e"
-              "(cnit-wm-org-capture)"
-            ];
-          };
+            "Super+T" = {
+              spawn = [ "kitty" ];
+            };
+            "Ctrl+SemiColon" = {
+              spawn = [
+                "wlr-which-key"
+                "${config.xdg.configHome}/niri/wlr-which-key-config.yaml"
+              ];
+            };
+            "Ctrl+Shift+Period" = {
+              spawn = [
+                "wl-kbptr"
+                "-o"
+                "modes=tile,bisect"
+                "-o"
+                "home_row_keys=isrtneaoghb"
+              ];
+            };
+            XF86AudioRaiseVolume = {
+              _props = {
+                allow-when-locked = true;
+              };
+              spawn = [
+                "swayosd-client"
+                "--output-volume=raise"
+              ];
+            };
+            XF86AudioLowerVolume = {
+              _props = {
+                allow-when-locked = true;
+              };
+              spawn = [
+                "swayosd-client"
+                "--output-volume=lower"
+              ];
+            };
+            XF86AudioMute = {
+              _props = {
+                allow-when-locked = true;
+              };
+              spawn = [
+                "swayosd-client"
+                "--output-volume=mute-toggle"
+              ];
+            };
+            XF86AudioMicMute = {
+              _props = {
+                allow-when-locked = true;
+              };
+              spawn = [
+                "swayosd-client"
+                "--input-volume=mute-toggle"
+              ];
+            };
+            "XF86MonBrightnessUp" = {
+              _props = {
+                allow-when-locked = true;
+              };
+              spawn = [
+                "swayosd-client"
+                "--brigtness=raise"
+              ];
+            };
+            "XF86MonBrightnessDown" = {
+              _props = {
+                allow-when-locked = true;
+              };
+              spawn = [
+                "swayosd-client"
+                "--brigtness=lower"
+              ];
+            };
 
-          "Super+E" = {
-            spawn = [
-              "emacsclient"
-              "-e"
-              "(emacs-everywhere)"
-            ];
           };
-
-          "Super+T" = {
-            spawn = [ "kitty" ];
-          };
-          "Ctrl+SemiColon" = {
-            spawn = [
-              "wlr-which-key"
-              "${config.xdg.configHome}/niri/wlr-which-key-config.yaml"
-            ];
-          };
-          "Ctrl+Shift+Period" = {
-            spawn = [
-              "wl-kbptr"
-              "-o"
-              "modes=tile,bisect"
-              "-o"
-              "home_row_keys=isrtneaoghb"
-            ];
-          };
-          XF86AudioRaiseVolume = {
-            _props = {
-              allow-when-locked = true;
-            };
-            spawn = [
-              "swayosd-client"
-              "--output-volume=raise"
-            ];
-          };
-          XF86AudioLowerVolume = {
-            _props = {
-              allow-when-locked = true;
-            };
-            spawn = [
-              "swayosd-client"
-              "--output-volume=lower"
-            ];
-          };
-          XF86AudioMute = {
-            _props = {
-              allow-when-locked = true;
-            };
-            spawn = [
-              "swayosd-client"
-              "--output-volume=mute-toggle"
-            ];
-          };
-          XF86AudioMicMute = {
-            _props = {
-              allow-when-locked = true;
-            };
-            spawn = [
-              "swayosd-client"
-              "--input-volume=mute-toggle"
-            ];
-          };
-          "XF86MonBrightnessUp" = {
-            _props = {
-              allow-when-locked = true;
-            };
-            spawn = [
-              "swayosd-client"
-              "--brigtness=raise"
-            ];
-          };
-          "XF86MonBrightnessDown" = {
-            _props = {
-              allow-when-locked = true;
-            };
-            spawn = [
-              "swayosd-client"
-              "--brigtness=lower"
-            ];
-          };
-
-        };
-      }
-      + "\n"
-      + renderedWindowRules;
+        }
+        + "\n"
+        + renderedWindowRules;
+    };
   };
 }

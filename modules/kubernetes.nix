@@ -27,6 +27,7 @@
               home.packages = with pkgs; [
                 kubectl
                 kubernetes-helm
+                helm-dashboard
               ];
             }
             (lib.mkIf config.kubernetes.includeKubelogin {

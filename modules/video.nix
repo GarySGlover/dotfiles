@@ -1,9 +1,5 @@
 # [[file:../modules.org::*Video][Video:1]]
-{
-  inputs,
-  lib,
-  ...
-}:
+{ lib, ... }:
 {
   flake.aspects = {
     video = {

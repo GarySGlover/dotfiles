@@ -3,7 +3,7 @@
   flake.aspects = {
     options = {
       homeManager =
-        { config, lib, ... }:
+        { lib, ... }:
         {
           options.kubernetes.includeKubelogin = lib.mkOption {
             type = lib.types.bool;

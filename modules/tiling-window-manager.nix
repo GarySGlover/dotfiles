@@ -1,7 +1,5 @@
 # [[file:../modules.org::*Tiling Window Manager][Tiling Window Manager:1]]
 {
-  inputs,
-  lib,
   ...
 }:
 {
@@ -11,7 +9,7 @@
       config = {
         options = {
           homeManager =
-            { config, lib, ... }:
+            { lib, ... }:
             {
               options.niri.configfile = lib.mkOption {
                 type = lib.types.string;

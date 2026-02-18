@@ -1,14 +1,13 @@
 # [[file:../modules.org::*Azure][Azure:2]]
 {
   inputs,
-  lib,
   ...
 }:
 {
   flake.aspects = {
     options = {
       homeManager =
-        { config, lib, ... }:
+        { lib, ... }:
         {
           options.azure-cli.extensions = lib.mkOption {
             type = lib.types.listOf lib.types.package // {

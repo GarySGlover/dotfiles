@@ -1,5 +1,4 @@
 # [[file:../modules.org::*GUI][GUI:1]]
-{ inputs, lib, ... }:
 {
   flake.aspects =
     { aspects, ... }:

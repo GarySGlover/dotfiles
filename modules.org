@@ -8,31 +8,28 @@
 * Audio
 
 #+begin_src nix-ts :tangle modules/audio.nix
-  { inputs, lib, ... }:
   {
-    flake.aspects =
-      { aspects, ... }:
-      {
-        audio = {
-          homeManager =
-            { pkgs, ... }:
-            {
-              home.packages = with pkgs; [
-                bluetuith
-              ];
-            };
+    flake.aspects = {
+      audio = {
+        homeManager =
+          { pkgs, ... }:
+          {
+            home.packages = with pkgs; [
+              bluetuith
+            ];
+          };
 
-          nixos = {
-            services.pulseaudio.enable = false;
-            services.pipewire = {
-              enable = true;
-              alsa.enable = true;
-              alsa.support32Bit = true;
-              pulse.enable = true;
-            };
+        nixos = {
+          services.pulseaudio.enable = false;
+          services.pipewire = {
+            enable = true;
+            alsa.enable = true;
+            alsa.support32Bit = true;
+            pulse.enable = true;
           };
         };
       };
+    };
   }
 #+end_src
 
@@ -49,14 +46,13 @@
 #+begin_src nix-ts :tangle modules/azure.nix :noweb yes
   {
     inputs,
-    lib,
     ...
   }:
   {
     flake.aspects = {
       options = {
         homeManager =
-          { config, lib, ... }:
+          { lib, ... }:
           {
             options.azure-cli.extensions = lib.mkOption {
               type = lib.types.listOf lib.types.package // {
@@ -119,7 +115,6 @@
 * GUI
 
 #+begin_src nix-ts :tangle modules/gui.nix
-  { inputs, lib, ... }:
   {
     flake.aspects =
       { aspects, ... }:
@@ -151,7 +146,7 @@
     flake.aspects = {
       options = {
         homeManager =
-          { config, lib, ... }:
+          { lib, ... }:
           {
             options.kubernetes.includeKubelogin = lib.mkOption {
               type = lib.types.bool;
@@ -191,8 +186,6 @@
 
 #+begin_src nix-ts :tangle modules/tiling-window-manager.nix
   {
-    inputs,
-    lib,
     ...
   }:
   {
@@ -202,7 +195,7 @@
         config = {
           options = {
             homeManager =
-              { config, lib, ... }:
+              { lib, ... }:
               {
                 options.niri.configfile = lib.mkOption {
                   type = lib.types.string;
@@ -228,11 +221,7 @@
 * Video
 
 #+begin_src nix-ts :tangle modules/video.nix
-  {
-    inputs,
-    lib,
-    ...
-  }:
+  { lib, ... }:
   {
     flake.aspects = {
       video = {

@@ -61,7 +61,6 @@ in
         };
         version = "unstable-local";
       }))
-      xwayland-satellite
     ];
 
     niri.configFiles.legacy = {
@@ -107,40 +106,40 @@ in
           "spawn-at-startup \"emacs --bg-daemon\"" = [ ];
 
           binds = {
-            "Super+C" = {
-              spawn = [
-                "emacsclient"
-                "-e"
-                "(cnit-wm-org-capture)"
-              ];
-            };
+            # "Super+C" = {
+            #   spawn = [
+            #     "emacsclient"
+            #     "-e"
+            #     "(cnit-wm-org-capture)"
+            #   ];
+            # };
 
-            "Super+E" = {
-              spawn = [
-                "emacsclient"
-                "-e"
-                "(emacs-everywhere)"
-              ];
-            };
+            # "Super+E" = {
+            #   spawn = [
+            #     "emacsclient"
+            #     "-e"
+            #     "(emacs-everywhere)"
+            #   ];
+            # };
 
-            "Super+T" = {
-              spawn = [ "kitty" ];
-            };
+            # "Super+T" = {
+            #   spawn = [ "kitty" ];
+            # };
             "Ctrl+SemiColon" = {
               spawn = [
                 "wlr-which-key"
                 "${config.xdg.configHome}/niri/wlr-which-key-config.yaml"
               ];
             };
-            "Ctrl+Shift+Period" = {
-              spawn = [
-                "wl-kbptr"
-                "-o"
-                "modes=tile,bisect"
-                "-o"
-                "home_row_keys=isrtneaoghb"
-              ];
-            };
+            # "Ctrl+Shift+Period" = {
+            #   spawn = [
+            #     "wl-kbptr"
+            #     "-o"
+            #     "modes=tile,bisect"
+            #     "-o"
+            #     "home_row_keys=isrtneaoghb"
+            #   ];
+            # };
             "XF86MonBrightnessUp" = {
               _props = {
                 allow-when-locked = true;

@@ -83,6 +83,7 @@
 
           nixos = {
             programs.niri.enable = true;
+            environment.systemPackages = [ xwayland-satellite ];
           };
         };
       };

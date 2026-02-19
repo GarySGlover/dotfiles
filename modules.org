@@ -7,11 +7,17 @@
 
 * Audio
 
-#+begin_src nix-ts :tangle modules/audio.nix
+#+begin_src nix-ts :tangle modules/audio.nix :noweb yes
   {
     flake.aspects = {
       audio = {
-        homeManager.programs.bluetuith.enable = true;
+        homeManager = {
+          programs.bluetuith.enable = true;
+          niri.configFiles.audio_binds.text = ''
+            <<kdl_audio_binds>>
+          '';
+          services.swayosd.enable = true;
+        };
 
         nixos = {
           services.pulseaudio.enable = false;
@@ -27,10 +33,28 @@
   }
 #+end_src
 
+#+name: kdl_audio_binds
+#+begin_src kdl
+  binds {
+  	XF86AudioLowerVolume allow-when-locked=true {
+  		spawn "swayosd-client" "--output-volume=lower"
+  	}
+  	XF86AudioRaiseVolume allow-when-locked=true {
+  		spawn "swayosd-client" "--output-volume=raise"
+  	}
+  	XF86AudioMute allow-when-locked=true {
+  		spawn "swayosd-client" "--output-volume=mute-toggle"
+  	}
+  	XF86AudioMicMute allow-when-locked=true {
+  		spawn "swayosd-client" "--input-volume=mute-toggle"
+  	}
+  }
+#+end_src
+
 * Azure
 
 #+name: bash_azure_cache
-#+begin_src bash :noweb
+#+begin_src bash
   if [ $# -ge 2 ] && [ "$1" = "account" ] && [ "$2" = "get-access-token" ]; then
   	bkt --ttl=60m --stale=10s --discard-failures -- "$real_program" "$@"
   	exit $?
@@ -49,9 +73,7 @@
           { lib, ... }:
           {
             options.azure-cli.extensions = lib.mkOption {
-              type = lib.types.listOf lib.types.package // {
-                merge = loc: defs: lib.concatLists (map (def: def.value) defs);
-              };
+              type = lib.types.listOf lib.types.package;
               default = [ ];
               description = "List of Azure CLI extension packages.";
               example = ''
@@ -104,6 +126,12 @@
         };
       };
   }
+#+end_src
+
+* COMMENT Editor
+
+#+begin_src nix-ts :tangle modules/editor.nix
+
 #+end_src
 
 * GUI
@@ -179,7 +207,7 @@
 
 * Tiling Window Manager
 
-#+begin_src nix-ts :tangle modules/tiling-window-manager.nix
+#+begin_src nix-ts :tangle modules/tiling-window-manager/default.nix
   {
     ...
   }:
@@ -242,7 +270,7 @@
                                 files = lib.attrValues (lib.mapAttrs (name: v: v // { inherit name; }) attrs);
                                 lower = builtins.filter (x: x.priority < 1000) files;
                                 higher = builtins.filter (x: x.priority >= 1000) files;
-                                cmpP = a: b: a.priority - b.priority;
+                                cmpP = a: b: (a.priority - b.priority) > 0;
                               in
                               {
                                 lowerSorted = lib.sort cmpP lower;
@@ -270,6 +298,98 @@
       };
   }
 #+end_src
+
+** Niri binds
+
+#+name: kdl_tiling_window_manager_binds
+#+begin_src kdl
+  hotkey-overlay {
+    hide-not-bound
+  }
+  binds {
+    Mod+Alt+b hotkey-overlay-title="Column back" { move-column-left; }
+    Mod+Alt+f hotkey-overlay-title="Column forward" { move-column-right; }
+    Mod+Ctrl+b hotkey-overlay-title="Previous monitor" { focus-monitor-previous; }
+    Mod+Ctrl+f hotkey-overlay-title="Next monitor" { focus-monitor-next; }
+    Mod+b hotkey-overlay-title="Backwards column" { focus-column-left-or-last; }
+    Mod+c hotkey-overlay-title="Cast window" { set-dynamic-cast-window; }
+    Mod+f hotkey-overlay-title="Forward column" { focus-column-right-or-first; }
+    Mod+m hotkey-overlay-title="Fullscreen" { fullscreen-window; }
+    Mod+n hotkey-overlay-title="Next window" { focus-window-or-workspace-down; }
+    Mod+p hotkey-overlay-title="Previous window" { focus-window-or-workspace-up; }
+    Mod+s hotkey-overlay-title="Screenshot" { screenshot show-pointer=false; }
+    Mod+x hotkey-overlay-title="Next width" { switch-preset-window-width; }
+    Mod+Shift+c hotkey-overlay-title="Cast clear" { clear-dynamic-cast-target; }
+    Mod+Shift+m hotkey-overlay-title="Fullscreen alt" { toggle-windowed-fullscreen; }
+    Mod+Shift+x hotkey-overlay-title="Previous width" { switch-preset-window-width-back; }
+    Mod+Shift+slash hotkey-overlay-title=null { show-hotkey-overlay; }
+  }
+#+end_src
+
+#+begin_src nix-ts :tangle modules/tiling-window-manager/binds.nix :noweb yes
+  {
+    flake.aspects.tiling-window-manager.homeManager = {
+      niri.configFiles.binds.text = ''
+        <<kdl_tiling_window_manager_binds>>
+      '';
+    };
+  }
+#+end_src
+
+** Niri base config
+
+#+name: kdl_tiling_window_manager_base
+#+begin_src kdl
+  cursor {
+    hide-after-inactive-ms 1000
+    hide-when-typing
+  }
+  environment {
+    DISPLAY ":0"
+    XDG_CONFIG_HOME "/home/clover/.config"
+  }
+  gestures {
+    hot-corners {
+      off
+    }
+  }
+  input {
+    disable-power-key-handling
+    focus-follows-mouse max-scroll-amount="0%"
+    warp-mouse-to-focus mode="center-xy-always"
+    workspace-auto-back-and-forth
+    keyboard {
+      xkb {
+        layout "gb"
+      }
+    }
+    touchpad {
+      drag true
+      dwt
+      tap-button-map "left-right-middle"
+    }
+  }
+  prefer-no-csd
+  recent-windows {
+    off
+  }
+  screenshot-path "null"
+#+end_src
+
+#+begin_src nix-ts :tangle modules/tiling-window-manager/base.nix :noweb yes
+  {
+    flake.aspects.tiling-window-manager.homeManager = {
+      niri.configFiles.base = {
+        # priority = 990;
+        text = ''
+          <<kdl_tiling_window_manager_base>>
+        '';
+      };
+    };
+  }
+#+end_src
+
+** Niri base style
 
 * Video
 

@@ -1,4 +1,4 @@
-# [[file:../modules.org::*Tiling Window Manager][Tiling Window Manager:1]]
+# [[file:../../modules.org::*Tiling Window Manager][Tiling Window Manager:1]]
 {
   ...
 }:
@@ -61,7 +61,7 @@
                               files = lib.attrValues (lib.mapAttrs (name: v: v // { inherit name; }) attrs);
                               lower = builtins.filter (x: x.priority < 1000) files;
                               higher = builtins.filter (x: x.priority >= 1000) files;
-                              cmpP = a: b: a.priority - b.priority;
+                              cmpP = a: b: (a.priority - b.priority) > 0;
                             in
                             {
                               lowerSorted = lib.sort cmpP lower;

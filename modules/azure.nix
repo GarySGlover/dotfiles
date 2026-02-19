@@ -10,9 +10,7 @@
         { lib, ... }:
         {
           options.azure-cli.extensions = lib.mkOption {
-            type = lib.types.listOf lib.types.package // {
-              merge = loc: defs: lib.concatLists (map (def: def.value) defs);
-            };
+            type = lib.types.listOf lib.types.package;
             default = [ ];
             description = "List of Azure CLI extension packages.";
             example = ''

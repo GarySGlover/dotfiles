@@ -31,6 +31,7 @@
             wolf.secretsPath = ../../secrets;
             imports = with inputs.self.modules.homeManager; [
               azure
+              editor
               kubernetes
               options
               style

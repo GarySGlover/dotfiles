@@ -35,6 +35,7 @@
                   Config files for niri, keyed by arbitrary name.
                   Duplicate keys are forbidden.
                 '';
+                default = { };
               };
             };
         };
@@ -55,25 +56,15 @@
                     {
                       "niri/config.kdl".text =
                         let
-                          splitConfigFiles =
-                            attrs:
-                            let
-                              files = lib.attrValues (lib.mapAttrs (name: v: v // { inherit name; }) attrs);
-                              lower = builtins.filter (x: x.priority < 1000) files;
-                              higher = builtins.filter (x: x.priority >= 1000) files;
-                              cmpP = a: b: (a.priority - b.priority) > 0;
-                            in
-                            {
-                              lowerSorted = lib.sort cmpP lower;
-                              higherSorted = lib.sort cmpP higher;
-                            };
-                          groups = splitConfigFiles config.niri.configFiles;
+                          files = lib.attrValues (lib.mapAttrs (name: v: v // { inherit name; }) config.niri.configFiles);
+                          sorted = lib.sort cmpP files;
+                          cmpP = a: b: (a.priority - b.priority) < 0;
                           mkIncludes = files: lib.concatMapStringsSep "\n" (x: ''include "${x.name}.kdl"'') files;
                         in
                         lib.concatStringsSep "\n" [
-                          (mkIncludes groups.lowerSorted)
+                          (mkIncludes (builtins.filter (x: x.priority < 1000) sorted))
                           config.niri.defaultConfig
-                          (mkIncludes groups.higherSorted)
+                          (mkIncludes (builtins.filter (x: x.priority >= 1000) sorted))
                         ];
                     }
                   ]
@@ -81,10 +72,13 @@
               };
             };
 
-          nixos = {
-            programs.niri.enable = true;
-            environment.systemPackages = [ xwayland-satellite ];
-          };
+          nixos =
+            { pkgs, ... }:
+            {
+              programs.niri.enable = true;
+              environment.systemPackages = with pkgs; [ xwayland-satellite ];
+              services.displayManager.defaultSession = "niri-session";
+            };
         };
       };
     };

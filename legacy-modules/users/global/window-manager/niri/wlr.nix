@@ -69,7 +69,7 @@ in
                 {
                   key = "e";
                   desc = "Emacs";
-                  cmd = "emacsclient --create-frame -no-wait --alternate-editor 'emacs'";
+                  cmd = "$EDITOR";
                 }
                 {
                   key = "f";
@@ -94,7 +94,7 @@ in
                 {
                   key = "t";
                   desc = "Eshell";
-                  cmd = "emacsclient --eval '(eshell t)' --create-frame -no-wait --alternate-editor 'emacs --eval'";
+                  cmd = "emacsclient --eval '(eshell t)' --create-frame -no-wait";
                 }
 
                 {

@@ -101,23 +101,6 @@
  use-dialog-box nil)
 
 
-;; Load external programs settings
-
-(let ((external-programs
-       (expand-file-name "external-programs.el"
-                         user-emacs-directory)))
-  (when (file-exists-p external-programs)
-    (load external-programs)))
-
-
-;; Load cnit functions
-
-(let ((cnit-functions
-       (expand-file-name "cnit-functions.el" user-emacs-directory)))
-  (when (file-exists-p cnit-functions)
-    (load cnit-functions)))
-
-
 ;; Set early background colour to help reduce startup flash
 
 (when (fboundp 'cnit-with-system-colour)

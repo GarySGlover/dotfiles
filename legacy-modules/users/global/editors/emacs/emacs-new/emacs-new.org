@@ -160,23 +160,6 @@ different environments.
    use-dialog-box nil)
 #+end_src
 
-Load external programs settings
-#+begin_src emacs-lisp
-  (let ((external-programs
-         (expand-file-name "external-programs.el"
-                           user-emacs-directory)))
-    (when (file-exists-p external-programs)
-      (load external-programs)))
-#+end_src
-
-Load cnit functions
-#+begin_src emacs-lisp
-  (let ((cnit-functions
-         (expand-file-name "cnit-functions.el" user-emacs-directory)))
-    (when (file-exists-p cnit-functions)
-      (load cnit-functions)))
-#+end_src
-
 Set early background colour to help reduce startup flash
 #+begin_src emacs-lisp
   (when (fboundp 'cnit-with-system-colour)

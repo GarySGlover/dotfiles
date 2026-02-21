@@ -30,9 +30,8 @@
             home.homeDirectory = "/home/clover";
             wolf.secretsPath = ../../secrets;
             imports = with inputs.self.modules.homeManager; [
-              azure
+              devops
               editor
-              kubernetes
               options
               style
               tiling-window-manager

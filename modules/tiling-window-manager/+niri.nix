@@ -1,4 +1,4 @@
-# [[file:../../modules.org::*Niri binds][Niri binds:2]]
+# [[file:../../modules.org::*Niri][Niri:3]]
 {
   flake.aspects.tiling-window-manager.homeManager = {
     niri.configFiles.binds.text = ''
@@ -26,6 +26,45 @@
         Mod+Shift+slash hotkey-overlay-title=null { show-hotkey-overlay; }
       }
     '';
+    niri.configFiles.base = {
+      priority = 900;
+      text = ''
+        cursor {
+          hide-after-inactive-ms 1000
+          hide-when-typing
+        }
+        environment {
+          DISPLAY ":0"
+          XDG_CONFIG_HOME "/home/clover/.config"
+        }
+        gestures {
+          hot-corners {
+            off
+          }
+        }
+        input {
+          disable-power-key-handling
+          focus-follows-mouse max-scroll-amount="0%"
+          warp-mouse-to-focus mode="center-xy-always"
+          workspace-auto-back-and-forth
+          keyboard {
+            xkb {
+              layout "gb"
+            }
+          }
+          touchpad {
+            drag true
+            dwt
+            tap-button-map "left-right-middle"
+          }
+        }
+        prefer-no-csd
+        recent-windows {
+          off
+        }
+        screenshot-path "null"
+      '';
+    };
   };
 }
-# Niri binds:2 ends here
+# Niri:3 ends here

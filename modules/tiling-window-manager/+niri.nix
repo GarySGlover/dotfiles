@@ -33,10 +33,6 @@
           hide-after-inactive-ms 1000
           hide-when-typing
         }
-        environment {
-          DISPLAY ":0"
-          XDG_CONFIG_HOME "/home/clover/.config"
-        }
         gestures {
           hot-corners {
             off

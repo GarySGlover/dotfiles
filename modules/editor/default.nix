@@ -1,4 +1,4 @@
-# [[file:../modules.org::*Editor][Editor:1]]
+# [[file:../../modules.org::*Editor][Editor:1]]
 {
   inputs,
   lib,

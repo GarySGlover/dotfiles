@@ -7,7 +7,7 @@
 
 * Audio
 
-#+begin_src nix-ts :tangle modules/audio.nix :noweb yes
+#+begin_src nix-ts :tangle modules/audio/default.nix :noweb yes
   {
     flake.aspects = {
       audio = {
@@ -48,6 +48,25 @@
     XF86AudioMicMute allow-when-locked=true {
       spawn "swayosd-client" "--input-volume=mute-toggle"
     }
+  }
+#+end_src
+
+* +niri
+#+name: kdl_audio
+#+begin_src kdl  kdl_audio
+  spawn-sh-at-startup "systemctl --user restart swayosd"
+#+end_src
+
+#+begin_src nix-ts :tangle modules/audio/+niri.nix :noweb yes
+  {
+    flake.aspects.editor.homeManager = {
+      niri.configFiles.audio = {
+        text = ''
+          <<kdl_audio>>
+        '';
+        priority = 2000;
+      };
+    };
   }
 #+end_src
 
@@ -130,7 +149,7 @@
 
 * Editor
 
-#+begin_src nix-ts :tangle modules/editor.nix
+#+begin_src nix-ts :tangle modules/editor/default.nix
   {
     inputs,
     lib,
@@ -254,6 +273,80 @@
           };
         };
       };
+  }
+#+end_src
+
+** +niri
+
+#+name: kdl_editor
+#+begin_src kdl  kdl_editor
+  spawn-sh-at-startup "systemctl --user restart emacs"
+#+end_src
+
+#+begin_src nix-ts :tangle modules/editor/+niri.nix :noweb yes
+  {
+    flake.aspects.editor.homeManager = {
+      niri.configFiles.editor = {
+        text = ''
+          <<kdl_editor>>
+        '';
+        priority = 2000;
+      };
+    };
+  }
+#+end_src
+
+* Environment
+
+** +emacs
+
+#+name: elisp_environment
+#+begin_src emacs-lisp
+  (when (daemonp)
+    (require 'exec-path-from-shell)
+    (dolist (var
+             '("DISPLAY"
+               "NIRI_SOCKET"
+               "WAYLAND_DISPLAY"
+               "XCURSOR_SIZE"
+               "XCURSOR_THEME"
+               "XDG_CONFIG_HOME"
+               "XDG_CURRENT_DESKTOP"
+               "XDG_SESSION_CLASS"
+               "XDG_SESSION_DESKTOP"
+               "XDG_SESSION_TYPE"))
+      (add-to-list 'exec-path-from-shell-variables var))
+    (exec-path-from-shell-initialize))
+#+end_src
+
+#+begin_src nix-ts :tangle modules/environment/+emacs.nix :noweb yes
+  {
+    flake.aspects.environment.homeManager = {
+      programs.emacs.extraPackages = epkgs: with epkgs; [ exec-path-from-shell ];
+      editor.initFiles.environment.text = ''
+        <<elisp_environment>>
+      '';
+    };
+  }
+#+end_src
+
+** +niri
+
+#+name: kdl_environment
+#+begin_src kdl
+  environment {
+    DISPLAY ":0"
+    XDG_CONFIG_HOME "/home/clover/.config"
+  }
+#+end_src
+
+#+begin_src nix-ts :tangle modules/environment/+niri.nix :noweb yes
+  {
+    flake.aspects.environment.homeManager = {
+      niri.configFiles.environment.text = ''
+        <<kdl_environment>>
+      '';
+    };
   }
 #+end_src
 
@@ -540,10 +633,6 @@
   cursor {
     hide-after-inactive-ms 1000
     hide-when-typing
-  }
-  environment {
-    DISPLAY ":0"
-    XDG_CONFIG_HOME "/home/clover/.config"
   }
   gestures {
     hot-corners {

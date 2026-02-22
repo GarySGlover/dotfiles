@@ -32,6 +32,7 @@
             imports = with inputs.self.modules.homeManager; [
               devops
               editor
+              environment
               options
               style
               tiling-window-manager

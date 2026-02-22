@@ -1,4 +1,4 @@
-# [[file:../modules.org::*Audio][Audio:1]]
+# [[file:../../modules.org::*Audio][Audio:1]]
 {
   flake.aspects = {
     audio = {

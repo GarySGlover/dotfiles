@@ -1,6 +1,6 @@
 # [[file:../../modules.org::*Niri][Niri:3]]
 {
-  flake.aspects.tiling-window-manager.homeManager = {
+  flake.aspects.tilingWindowManager.homeManager = {
     niri.configFiles.binds.text = ''
       hotkey-overlay {
         hide-not-bound
@@ -19,11 +19,16 @@
         Mod+p hotkey-overlay-title="Previous window" { focus-window-or-workspace-up; }
         Mod+s hotkey-overlay-title="Screenshot" { screenshot show-pointer=false; }
         Mod+x hotkey-overlay-title="Next width" { switch-preset-window-width; }
+        Mod+Minus { set-column-width "-8.333%"; }
+        Mod+Shift+Equal { set-column-width "+8.333%"; }
         Mod+Shift+c hotkey-overlay-title="Cast clear" { clear-dynamic-cast-target; }
         Mod+Shift+h hotkey-overlay-title="Center visible" { center-visible-columns; }
         Mod+Shift+m hotkey-overlay-title="Fullscreen alt" { toggle-windowed-fullscreen; }
         Mod+Shift+x hotkey-overlay-title="Previous width" { switch-preset-window-width-back; }
         Mod+Shift+slash hotkey-overlay-title=null { show-hotkey-overlay; }
+        Mod+Alt+Minus { set-window-height "-8.333%"; }
+        Mod+Alt+Shift+Equal { set-window-height "+8.333%"; }
+        Mod+Alt+Equal { reset-window-height; }
       }
     '';
     niri.configFiles.base = {

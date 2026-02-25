@@ -39,7 +39,7 @@
               };
             };
         };
-        tiling-window-manager = {
+        tilingWindowManager = {
           includes = with aspects; [ gui ];
           homeManager =
             { lib, config, ... }:

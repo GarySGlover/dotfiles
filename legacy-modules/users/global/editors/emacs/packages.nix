@@ -125,7 +125,6 @@ let
     with pkgs.emacsPackages;
     [
       kdl-mode
-      aidermacs
       avy
       beframe
       benchmark-init
@@ -171,7 +170,6 @@ let
       transient
       treesit-fold
       treesit-grammars.with-all-grammars
-      verb
       vertico
       wgrep
     ]

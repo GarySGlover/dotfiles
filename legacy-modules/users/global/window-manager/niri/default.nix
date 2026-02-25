@@ -131,15 +131,15 @@ in
                 "${config.xdg.configHome}/niri/wlr-which-key-config.yaml"
               ];
             };
-            # "Ctrl+Shift+Period" = {
-            #   spawn = [
-            #     "wl-kbptr"
-            #     "-o"
-            #     "modes=tile,bisect"
-            #     "-o"
-            #     "home_row_keys=isrtneaoghb"
-            #   ];
-            # };
+            "Mod+Period" = {
+              spawn = [
+                "wl-kbptr"
+                "-o"
+                "modes=tile,bisect"
+                "-o"
+                "home_row_keys=isrtneaoghb"
+              ];
+            };
             "XF86MonBrightnessUp" = {
               _props = {
                 allow-when-locked = true;

@@ -705,32 +705,6 @@ This filters `project--list` in place and writes the updated list to disk."
   (bind-key "M-a" #'marginalia-cycle 'minibuffer-mode-map))
 
 
-;; Aider integration. Integration of Aider for project aware LLM work.
-
-;; https://aider.chat/docs/llms/github.html
-;; https://github.com/MatthewZMD/aidermacs
-;; BUG: model is hardcoded to github copilot, however I would like the dynamic models.
-;;      this may get fixed in future aider and aidermacs variants. For now I also need
-;;      to create the file .aider.config.yaml and .aider.model.settings.yml according
-;;      to the to this part of an aider issue:
-;;      https://github.com/Aider-AI/aider/issues/2227#issuecomment-3141551921
-
-(bind-key "C-c a" #'aidermacs-transient-menu)
-;; Copilot config
-(with-eval-after-load 'aidermacs
-  (setopt
-   aidermacs-default-chat-mode 'ask
-   aidermacs-extra-args '("--model" "github_copilot/gpt-4.1" "--no-show-model-warnings")
-   aidermacs-default-model "github_copilot/gpt-4.1"))
-;; Ollama config. Struggles with memory locally
-;; (with-eval-after-load 'aidermacs
-;;   (setopt
-;;    aidermacs-extra-args '("--model" "ollama_chat/codellama:7b")
-;;    aidermacs-default-model "ollama_chat/codellama:7b"
-;;    aidermacs-weak-model "ollama_chat/mistral:7b"
-;;    aidermacs-architect-model "ollama_chat/deepseek-r1:8b"))
-
-
 ;; Gptel
 
 (defvar gptel-prefix

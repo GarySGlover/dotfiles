@@ -359,43 +359,6 @@ This prevents overlapping themes; something I would rarely want."
 ;; precise. Focuses on improving readability, providing structural
 ;; guidance, and automating routine tasks.
 
-;; Automatic formatting of buffers on save. Need to make sure formatter
-;; is available where possible. Should account for org src
-;; buffers, for both save and exit.
-
-(with-eval-after-load 'format-all
-  (defun cnit-format-all-buffer-hook ()
-    (when (and org-src-mode
-               (derived-mode-p 'lisp-data-mode)
-               format-all-mode)
-      (format-all-buffer)))
-  (add-hook 'before-save-hook 'cnit-format-all-buffer-hook)
-  (advice-add
-   'format-all--buffer-from-hook
-   :before
-   (lambda (&rest _r)
-     (format-all-ensure-formatter)
-     t))
-  (advice-add
-   'format-all-buffer
-   :before
-   (lambda (&rest _r)
-     (format-all-ensure-formatter)
-     t))
-  (advice-add
-   'format-all-region
-   :before
-   (lambda (&rest _r)
-     (format-all-ensure-formatter)
-     t))
-  (advice-add
-   'format-all-region-or-buffer
-   :before
-   (lambda (&rest _r)
-     (format-all-ensure-formatter)
-     t)))
-
-
 ;; Highlight unmatched closing delimiters only in the error face
 ;; foreground colour. This will help with editing to highlight any
 ;; incorrectly closed blocks.
@@ -912,7 +875,6 @@ This filters `project--list` in place and writes the updated list to disk."
 (add-hook
  'prog-mode-hook
  (lambda ()
-   (format-all-mode t)
    (rainbow-delimiters-mode t)))
 ;; Emacs Lisp
 ;; Indentation configuration
@@ -928,25 +890,6 @@ This filters `project--list` in place and writes the updated list to disk."
      lisp-indent-offset 2))))
 
 
-;; Automatic formatting of Elisp. Setup formatter for Emacs lisp to be
-;; the default.
-
-(with-eval-after-load 'format-all
-  (define-format-all-formatter
-   elisp-autofmt
-   (:executable)
-   (:install)
-   (:languages "Emacs Lisp")
-   (:features region)
-   (:format
-    (format-all--buffer-native
-     'emacs-lisp-mode
-     (if region
-         (lambda () (elisp-autofmt-region (car region) (cdr region)))
-       #'elisp-autofmt-buffer))))
-  (cnit-update-format-all-formatter "Emacs Lisp" 'elisp-autofmt))
-
-
 ;; Check for balanced parameters prior to allowing save.
 
 (add-hook 'before-save-hook
@@ -957,7 +900,6 @@ This filters `project--list` in place and writes the updated list to disk."
 ;; Nix
 
 (add-to-list 'auto-mode-alist `(,(rx ".nix" string-end) . nix-ts-mode))
-(cnit-update-format-all-formatter "Nix" 'nixfmt)
 (provide 'init)
 
 ;;; init.el ends here

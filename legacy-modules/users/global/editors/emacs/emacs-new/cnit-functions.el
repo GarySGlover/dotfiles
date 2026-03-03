@@ -50,17 +50,6 @@
       (t
        (user-error "Unexpected colour scheme %s"
                    (symbol-name scheme))))))
-
-
-;; Format all default formatter helper
-
-(defun cnit-update-format-all-formatter (mode formatter)
-  "Set FORMATTER for MODE in `format-all-default-formatters'."
-  (require 'format-all)
-  (let ((entry (assoc mode format-all-default-formatters)))
-    (if entry
-        (setcdr entry (list formatter))
-      (push (list mode formatter) format-all-default-formatters))))
 (provide 'init)
 
 ;;; cnit-functions.el ends here

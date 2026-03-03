@@ -138,12 +138,10 @@ let
       denote
       dtrt-indent
       editorconfig
-      elisp-autofmt
       emacs-everywhere
       embark
       embark-consult
       envrc
-      format-all
       git-auto-commit-mode
       git-timemachine
       gptel

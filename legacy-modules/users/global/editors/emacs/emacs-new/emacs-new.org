@@ -421,16 +421,6 @@ Checking if the system is using dark or light mode.
                      (symbol-name scheme))))))
 #+end_src
 
-Format all default formatter helper
-#+begin_src emacs-lisp
-  (defun cnit-update-format-all-formatter (mode formatter)
-    "Set FORMATTER for MODE in `format-all-default-formatters'."
-    (require 'format-all)
-    (let ((entry (assoc mode format-all-default-formatters)))
-      (if entry
-          (setcdr entry (list formatter))
-        (push (list mode formatter) format-all-default-formatters))))
-#+end_src
 * Theme
 #+begin_src emacs-lisp
   (advice-add
@@ -596,43 +586,6 @@ Org babel for evaluating code blocks.
 Tools and enhancements to make editing more efficient and
 precise. Focuses on improving readability, providing structural
 guidance, and automating routine tasks.
-
-Automatic formatting of buffers on save. Need to make sure formatter
-is available where possible. Should account for org src
-buffers, for both save and exit.
-#+begin_src emacs-lisp
-  (with-eval-after-load 'format-all
-    (defun cnit-format-all-buffer-hook ()
-      (when (and org-src-mode
-                 (derived-mode-p 'lisp-data-mode)
-                 format-all-mode)
-        (format-all-buffer)))
-    (add-hook 'before-save-hook 'cnit-format-all-buffer-hook)
-    (advice-add
-     'format-all--buffer-from-hook
-     :before
-     (lambda (&rest _r)
-       (format-all-ensure-formatter)
-       t))
-    (advice-add
-     'format-all-buffer
-     :before
-     (lambda (&rest _r)
-       (format-all-ensure-formatter)
-       t))
-    (advice-add
-     'format-all-region
-     :before
-     (lambda (&rest _r)
-       (format-all-ensure-formatter)
-       t))
-    (advice-add
-     'format-all-region-or-buffer
-     :before
-     (lambda (&rest _r)
-       (format-all-ensure-formatter)
-       t)))
-#+end_src
 
 Highlight unmatched closing delimiters only in the error face
 foreground colour. This will help with editing to highlight any
@@ -1167,7 +1120,6 @@ Enable supportive modes for programming.
   (add-hook
    'prog-mode-hook
    (lambda ()
-     (format-all-mode t)
      (rainbow-delimiters-mode t)))
 #+end_src
 
@@ -1183,25 +1135,6 @@ Indentation configuration
        indent-tabs-mode nil
        lisp-indent-function nil
        lisp-indent-offset 2))))
-#+end_src
-
-Automatic formatting of Elisp. Setup formatter for Emacs lisp to be
-the default.
-#+begin_src emacs-lisp
-  (with-eval-after-load 'format-all
-    (define-format-all-formatter
-     elisp-autofmt
-     (:executable)
-     (:install)
-     (:languages "Emacs Lisp")
-     (:features region)
-     (:format
-      (format-all--buffer-native
-       'emacs-lisp-mode
-       (if region
-           (lambda () (elisp-autofmt-region (car region) (cdr region)))
-         #'elisp-autofmt-buffer))))
-    (cnit-update-format-all-formatter "Emacs Lisp" 'elisp-autofmt))
 #+end_src
 
 Check for balanced parameters prior to allowing save.
@@ -1231,8 +1164,6 @@ Indentation is a pain, but [[https://github.com/nverno/yaml-indent/blob/master/y
 ** Nix
 #+begin_src emacs-lisp
   (add-to-list 'auto-mode-alist `(,(rx ".nix" string-end) . nix-ts-mode))
-  (cnit-update-format-all-formatter "Nix" 'nixfmt)
-
 #+end_src
 
 * footers

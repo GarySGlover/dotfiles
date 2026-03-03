@@ -177,8 +177,6 @@ let
       nix-ts-mode
       terraform-doc
       terraform-mode
-      yaml
-      yaml-pro
       zig-mode
     ];
 

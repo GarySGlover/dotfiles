@@ -6,6 +6,8 @@
       programming = {
         includes = with aspects; [
           go
+          docker
+          yaml
         ];
         homeManager = { };
         nixos = { };

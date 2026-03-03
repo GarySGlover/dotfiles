@@ -525,11 +525,79 @@
         programming = {
           includes = with aspects; [
             go
+            docker
+            yaml
           ];
           homeManager = { };
           nixos = { };
         };
       };
+  }
+#+end_src
+
+** +emacs
+
+#+begin_src nix-ts :tangle modules/programming/+emacs.nix :noweb yes
+  {
+    flake.aspects.programming.homeManager = {
+      programs.emacs.extraPackages =
+        epkgs: with epkgs; [
+          reformatter
+        ];
+    };
+  }
+#+end_src
+
+** YAML
+
+*** +emacs
+
+#+name: elisp_yaml
+#+begin_src emacs-lisp
+
+#+end_src
+
+#+begin_src nix-ts :tangle modules/yaml/+emacs.nix :noweb yes
+  {
+    flake.aspects.yaml.homeManager = {
+      programs.emacs.extraPackages =
+        epkgs: with epkgs; [
+          yaml
+          yaml-pro
+        ];
+      editor.initFiles.yaml.text = ''
+        <<elisp_yaml>>
+      '';
+    };
+  }
+#+end_src
+
+** Docker
+
+#+name: elisp_docker
+#+begin_src emacs-lisp
+  (with-eval-after-load 'org
+    ;; format: off
+    (defvar org-docker-templates
+            '((dockerfile_ & "#+begin_src dockerfile :tangle " (p "no" tangle) n> r> n "#+end_src"
+                           :post (org-edit-special))))
+    ;; format: on
+    (add-hook
+     'org-mode-hook
+     (lambda ()
+       (add-hook 'tempel-template-sources 'org-docker-templates nil 'local)))
+    (add-to-list
+     'org-src-lang-modes '("dockerfile" . dockerfile-ts)))
+#+end_src
+
+
+#+begin_src nix-ts :tangle modules/docker/+emacs.nix :noweb yes
+  {
+    flake.aspects.docker.homeManager = {
+      editor.initFiles.docker.text = ''
+        <<elisp_docker>>
+      '';
+    };
   }
 #+end_src
 
@@ -602,13 +670,6 @@
 #+begin_src nix-ts :tangle modules/go/+emacs.nix :noweb yes
   {
     flake.aspects = {
-      options = {
-        homeManager =
-          { lib, ... }:
-          {
-            options.languages.go.enable = lib.mkEnableOption "Enable go language and standard tools";
-          };
-      };
       go.homeManager = {
         programs.emacs.extraPackages = epkgs: with epkgs; [ ob-go ];
         editor.initFiles.go.text = ''
@@ -642,6 +703,7 @@
     };
   }
 #+end_src
+
 * Template
 
 #+begin_src nix-ts

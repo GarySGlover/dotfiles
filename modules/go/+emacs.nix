@@ -1,13 +1,6 @@
 # [[file:../../modules.org::*+emacs][+emacs:2]]
 {
   flake.aspects = {
-    options = {
-      homeManager =
-        { lib, ... }:
-        {
-          options.languages.go.enable = lib.mkEnableOption "Enable go language and standard tools";
-        };
-    };
     go.homeManager = {
       programs.emacs.extraPackages = epkgs: with epkgs; [ ob-go ];
       editor.initFiles.go.text = ''

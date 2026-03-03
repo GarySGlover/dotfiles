@@ -1,0 +1,14 @@
+# [[file:modules.org::*Taskfile][Taskfile:1]]
+version: '3'
+tasks:
+  nixos:
+    requires:
+      vars:
+      - name: TYPE
+        enum:
+        - switch
+        - boot
+        - test
+    cmds:
+    - sudo nixos-rebuild {{.TYPE}} --flake .#$1
+# Taskfile:1 ends here

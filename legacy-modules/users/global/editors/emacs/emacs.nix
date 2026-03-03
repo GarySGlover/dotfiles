@@ -8,7 +8,6 @@ let
     [
       aks-preview
       azure-devops
-      interactive
       subscription
     ]
   );

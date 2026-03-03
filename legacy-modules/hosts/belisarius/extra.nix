@@ -2,12 +2,6 @@
 # amd gpu crash https://discourse.nixos.org/t/yet-another-gcvm-l2-protection-fault-status-problem/65420
 { pkgs, ... }:
 {
-  # ASUS Services
-  services.asusd = {
-    enable = true;
-    enableUserService = true;
-  };
-
   hardware = {
     graphics = {
       enable = true;

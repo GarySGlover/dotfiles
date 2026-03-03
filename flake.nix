@@ -151,6 +151,9 @@
                 shfmt
                 argbash
 
+                # Task
+                go-task
+
                 # Nix
                 nixfmt-rfc-style
                 nixd

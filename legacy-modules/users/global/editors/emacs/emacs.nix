@@ -15,6 +15,11 @@ let
 in
 {
   config = {
+    editor.initFiles.tempFixes = {
+      text = ''
+        (add-to-list 'safe-local-variable-values '(org-confirm-babel-evaluate . nil))
+      '';
+    };
     editor.earlyInitFiles = {
       external-programs = {
         priority = 5;

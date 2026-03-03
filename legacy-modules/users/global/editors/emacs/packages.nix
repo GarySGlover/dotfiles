@@ -124,6 +124,7 @@ let
   emacsExtraPackages =
     with pkgs.emacsPackages;
     [
+      uuidgen
       kdl-mode
       avy
       beframe

@@ -126,7 +126,6 @@
    `(,cnit-regex-buffers-occur
      occur-mode ,cnit-regex-buffers-helpful helpful-mode))
   (popper-echo-mode 1))
-(add-hook 'after-init-hook (lambda () (popper-mode t)))
 
 (setopt display-buffer-alist nil)
 
@@ -172,26 +171,9 @@
 (setopt split-window-preferred-direction 'longest)
 
 
-;; Window layout history
-
-(add-hook 'after-init-hook (lambda () (winner-mode t)))
-
-
-;; Enable repeat mode. Can help with actions in key sequences that may
-;; need to be repeated.
-
-(add-hook 'after-init-hook (lambda () (repeat-mode t)))
-
-
 ;; Prevent accidental closing of Emacs
 
 (setopt confirm-kill-emacs #'y-or-n-p)
-
-
-;; Delete selection mode for automatically deleting selected region when
-;; performing editing operations.
-
-(add-hook 'after-init-hook (lambda () (delete-selection-mode 1)))
 
 
 ;; Tabs. Sometimes a programming language might use tabs, better to turn
@@ -570,15 +552,6 @@ This filters `project--list` in place and writes the updated list to disk."
     (length project--list)))
 
 
-;; Automatically configure development environment dependencies when
-;; entering a project. Using direnv as the main utility.
-
-(add-hook 'after-init-hook (lambda () (envrc-global-mode t)) 91)
-(with-eval-after-load 'envrc
-  (setopt envrc-show-summary-in-minibuffer nil)
-  (define-key envrc-mode-map (kbd "C-c e") 'envrc-command-map))
-
-
 ;; Allow safe directories list for dir-locals to prevent being asked
 ;; repeatedly.
 
@@ -614,11 +587,6 @@ This filters `project--list` in place and writes the updated list to disk."
 ;; Improve on the inbuilt completions. Display multiple candidates to
 ;; make selections easier.
 
-(add-hook
- 'after-init-hook
- (lambda ()
-   (vertico-mode t)
-   (vertico-multiform-mode t)))
 (with-eval-after-load 'vertico
   (setopt vertico-cycle t)
   (bind-key "C-<return>" #'vertico-exit-input 'vertico-map))
@@ -663,7 +631,6 @@ This filters `project--list` in place and writes the updated list to disk."
 ;; Minibuffer completions annotations. Applies useful extended details
 ;; such as documentation, values, file details etc.
 
-(add-hook 'after-init-hook (lambda () (marginalia-mode)))
 (with-eval-after-load 'marginalia
   (bind-key "M-a" #'marginalia-cycle 'minibuffer-mode-map))
 

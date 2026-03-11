@@ -137,11 +137,9 @@ let
       coterm
       denote
       dtrt-indent
-      editorconfig
       emacs-everywhere
       embark
       embark-consult
-      envrc
       git-auto-commit-mode
       git-timemachine
       gptel
@@ -203,8 +201,6 @@ in
     home.packages = with pkgs; [
       # Dictionaries for use with flyspell
       aspellEnglish
-
-      aider-chat
 
       pandoc
 

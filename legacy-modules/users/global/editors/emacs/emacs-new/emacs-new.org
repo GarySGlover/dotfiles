@@ -297,7 +297,6 @@ to.
      `(,cnit-regex-buffers-occur
        occur-mode ,cnit-regex-buffers-helpful helpful-mode))
     (popper-echo-mode 1))
-  (add-hook 'after-init-hook (lambda () (popper-mode t)))
 
   (setopt display-buffer-alist nil)
 
@@ -343,26 +342,9 @@ display space.
   (setopt split-window-preferred-direction 'longest)
 #+end_src
 
-Window layout history
-#+begin_src emacs-lisp
-  (add-hook 'after-init-hook (lambda () (winner-mode t)))
-#+end_src
-
-Enable repeat mode. Can help with actions in key sequences that may
-need to be repeated.
-#+begin_src emacs-lisp
-  (add-hook 'after-init-hook (lambda () (repeat-mode t)))
-#+end_src
-
 Prevent accidental closing of Emacs
 #+begin_src emacs-lisp
   (setopt confirm-kill-emacs #'y-or-n-p)
-#+end_src
-
-Delete selection mode for automatically deleting selected region when
-performing editing operations.
-#+begin_src emacs-lisp
-  (add-hook 'after-init-hook (lambda () (delete-selection-mode 1)))
 #+end_src
 
 Tabs. Sometimes a programming language might use tabs, better to turn
@@ -800,15 +782,6 @@ pre-commits.
       (length project--list)))
 #+end_src
 
-Automatically configure development environment dependencies when
-entering a project. Using direnv as the main utility.
-#+begin_src emacs-lisp
-  (add-hook 'after-init-hook (lambda () (envrc-global-mode t)) 91)
-  (with-eval-after-load 'envrc
-    (setopt envrc-show-summary-in-minibuffer nil)
-    (define-key envrc-mode-map (kbd "C-c e") 'envrc-command-map))
-#+end_src
-
 Allow safe directories list for dir-locals to prevent being asked
 repeatedly.
 #+begin_src emacs-lisp
@@ -846,11 +819,6 @@ completions.
 Improve on the inbuilt completions. Display multiple candidates to
 make selections easier.
 #+begin_src emacs-lisp
-  (add-hook
-   'after-init-hook
-   (lambda ()
-     (vertico-mode t)
-     (vertico-multiform-mode t)))
   (with-eval-after-load 'vertico
     (setopt vertico-cycle t)
     (bind-key "C-<return>" #'vertico-exit-input 'vertico-map))
@@ -895,7 +863,6 @@ Template package configuration.
 Minibuffer completions annotations. Applies useful extended details
 such as documentation, values, file details etc.
 #+begin_src emacs-lisp
-  (add-hook 'after-init-hook (lambda () (marginalia-mode)))
   (with-eval-after-load 'marginalia
     (bind-key "M-a" #'marginalia-cycle 'minibuffer-mode-map))
 #+end_src

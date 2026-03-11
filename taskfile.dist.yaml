@@ -2,6 +2,8 @@
 version: '3'
 tasks:
   nixos:
+    vars:
+      TYPE: '{{.TYPE | default (.CLI_ARGS | splitList " " | first) }}'
     requires:
       vars:
       - name: TYPE
@@ -10,5 +12,5 @@ tasks:
         - boot
         - test
     cmds:
-    - sudo nixos-rebuild {{.TYPE}} --flake .#$1
+    - sudo nixos-rebuild {{.TYPE}} --flake .#
 # Taskfile:1 ends here

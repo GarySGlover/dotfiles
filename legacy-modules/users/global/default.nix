@@ -4,7 +4,6 @@
   ./browsers/firefox/default.nix
   ./cad/kicad/default.nix
   ./cad/prusa/default.nix
-  ./development/direnv/default.nix
   ./development/git/default.nix
   ./editors/emacs/emacs.nix
   ./editors/emacs/packages.nix

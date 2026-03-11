@@ -5,8 +5,9 @@
     {
       programming = {
         includes = with aspects; [
-          go
+          direnv
           docker
+          go
           yaml
         ];
         homeManager = { };

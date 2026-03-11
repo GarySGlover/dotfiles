@@ -1,9 +1,6 @@
-{ pkgs, self, ... }:
-let
-  local-pkgs = import "${self.outPath}/packages/packages.nix" { inherit pkgs; };
-in
+# [[file:../../modules.org::*Direnv][Direnv:1]]
 {
-  config = {
+  flake.aspects.direnv.homeManager = {
     programs.direnv = {
       enable = true;
       enableBashIntegration = true;
@@ -15,7 +12,6 @@ in
     home.sessionVariables = {
       DIRENV_LOG_FORMAT = "";
     };
-
-    home.packages = with local-pkgs; [ e ];
   };
 }
+# Direnv:1 ends here

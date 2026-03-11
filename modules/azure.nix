@@ -34,6 +34,7 @@
             kubernetes.includeKubelogin = true;
             azure-cli.extensions = with pkgs.azure-cli.extensions; [
               azure-devops
+              quota
             ];
             home.packages = [
               (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.azure-cli.withExtensions

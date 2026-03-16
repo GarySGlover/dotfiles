@@ -3,6 +3,7 @@
   flake.nixosConfigurations.belisarius = inputs.nixpkgs.lib.nixosSystem {
     system = "x86_64-linux";
     modules = [
+      inputs.self.modules.nixos.core
       inputs.self.modules.nixos.tilingWindowManager
       inputs.sops-nix.nixosModules.sops
       # Still using the legacy modules for now:
@@ -30,6 +31,7 @@
             home.homeDirectory = "/home/clover";
             wolf.secretsPath = ../../secrets;
             imports = with inputs.self.modules.homeManager; [
+              core
               devops
               editor
               environment

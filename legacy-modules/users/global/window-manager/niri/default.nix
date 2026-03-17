@@ -52,7 +52,7 @@ in
     home.packages = with pkgs; [
       wbg
       hyprlock
-      (wl-kbptr.overrideAttrs (old: {
+      (wl-kbptr.overrideAttrs (_: {
         src = fetchFromGitHub {
           owner = "moverest";
           repo = "wl-kbptr";

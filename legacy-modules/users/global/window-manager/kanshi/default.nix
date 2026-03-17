@@ -1,10 +1,4 @@
-{
-  config,
-  lib,
-  ...
-}:
 let
-  inherit (lib) mkIf;
   laptopMonitor = "BOE NE160WUM-NX2 Unknown";
   officeDellUpper = "Dell Inc. DELL P2421 803C773";
   officeDellLower = "Dell Inc. DELL P2421 5Z2C773";

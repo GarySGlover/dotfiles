@@ -1,6 +1,5 @@
 # [[file:../../modules.org::*Editor][Editor:1]]
 {
-  inputs,
   lib,
   ...
 }:
@@ -11,7 +10,7 @@
       config = {
         options = {
           homeManager =
-            { config, lib, ... }:
+            { lib, ... }:
             {
               options.editor.earlyInitFiles = lib.mkOption {
                 type = lib.types.attrsOf (
@@ -76,12 +75,18 @@
                 xdg.configFile = lib.mkMerge (
                   (lib.mapAttrsToList (name: cfg: {
                     "emacs/init-${name}.el" = {
-                      text = cfg.text;
+                      text = lib.strings.concatLines [
+                        ";; -*- lexical-binding: t -*-"
+                        cfg.text
+                      ];
                     };
                   }) config.editor.initFiles)
                   ++ (lib.mapAttrsToList (name: cfg: {
                     "emacs/early-init-${name}.el" = {
-                      text = cfg.text;
+                      text = lib.strings.concatLines [
+                        ";; -*- lexical-binding: t -*-"
+                        cfg.text
+                      ];
                     };
                   }) config.editor.earlyInitFiles)
                   ++ [

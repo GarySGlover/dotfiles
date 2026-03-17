@@ -57,5 +57,5 @@ in
 
   programs.fish.enable = true;
 
-  users.users = filterAttrs (n: v: any (i: i == n) users) createUsers;
+  users.users = filterAttrs (n: _: any (i: i == n) users) createUsers;
 }

@@ -67,210 +67,23 @@ is setup.
 :header-args:emacs-lisp+: :tangle early-init.el
 :END:
 
-Ensure loading of latest package version rather than the first
-found. Will ensure doesn't load an older byte compiled version when
-there is a new package version installed.
-#+begin_src emacs-lisp
-  (setopt load-prefer-newer t)
-#+end_src
-
-Temporary set garbage collection to high value and set after-init-hook
-to revert to normal. Improves startup performance whilst maintaining
-resonable memory utilistation during normal operation.
-#+begin_src emacs-lisp
-  (let ((original-gc-cons-threshold gc-cons-threshold))
-    (setopt gc-cons-threshold most-positive-fixnum)
-    (add-hook 'after-init-hook
-              (lambda ()
-                (setopt gc-cons-threshold original-gc-cons-threshold))
-              91))
-#+end_src
-
 Startup time recording and reporting. As Emacs records the variables
 can be called at any time, but for now is configured as an after
 startup hook to report automatically.
 #+begin_src emacs-lisp
-  (defun cnit-display-startup-time ()
+  (defun display-startup-time ()
     "Display a message with the time it took to load Emacs."
     (message "Emacs loaded in %s."
              (format "%.2f seconds"
                      (float-time
                       (time-subtract
                        after-init-time before-init-time)))))
-
-  (add-hook 'emacs-startup-hook #'cnit-display-startup-time)
-#+end_src
-
-Disable package installs
-#+begin_src emacs-lisp
-  (with-eval-after-load 'package
-    (fmakunbound 'package-install)
-    (fmakunbound 'package-install-file)
-    (fmakunbound 'package-install-from-buffer)
-    (fmakunbound 'package-install-from-file)
-    (fmakunbound 'package-install-selected-packages)
-    (fmakunbound 'package-reinstall)
-    (fmakunbound 'package-upgrade)
-    (fmakunbound 'package-upgrade-all)
-    (fmakunbound 'package-vc-install)
-    (fmakunbound 'package-vc-install-from-checkout)
-    (fmakunbound 'package-vc-install-selected-packages)
-    (fmakunbound 'package-vc-upgrade)
-    (fmakunbound 'package-vc-upgrade-all))
-#+end_src
-
-Enable melpa for package searching
-#+begin_src emacs-lisp
-  (with-eval-after-load 'package
-    (add-to-list
-     'package-archives '("melpa" . "https://melpa.org/packages/")
-     t))
-#+end_src
-
-Prevent loading of prog mode for scratch buffer. Should improve
-startup time when adding prog-mode hooks.
-#+begin_src emacs-lisp
-  (setopt initial-major-mode 'fundamental-mode)
-#+end_src
-
-Disable UI elements as using Emacs only with keyboard.
-#+begin_src emacs-lisp
-  (setopt
-   inhibit-startup-screen t
-   inhibit-splash-screen t)
-
-  (when (fboundp 'tool-bar-setup)
-    (advice-add 'tool-bar-setup :override #'ignore))
-  (push '(tool-bar-lines . 0) default-frame-alist)
-
-  (push '(menu-bar-lines . 0) default-frame-alist)
-
-  (push '(vertical-scroll-bars) default-frame-alist)
-  (push '(horizontal-scroll-bars) default-frame-alist)
-
-  (when (bound-and-true-p tooltip-mode)
-    (tooltip-mode -1))
-#+end_src
-
-Disable external UI components as they are not consistent accross
-different environments.
-#+begin_src emacs-lisp
-  (setopt
-   use-file-dialog nil
-   use-dialog-box nil)
-#+end_src
-
-Set early background colour to help reduce startup flash
-#+begin_src emacs-lisp
-  (when (fboundp 'cnit-with-system-colour)
-    (cnit-with-system-colour-scheme
-     (set-face-attribute
-      'default nil
-      :background "#000000"
-      :foreground "#FFFFFF")
-     (set-face-attribute
-      'default nil
-      :background "#FFFFFF"
-      :foreground "#000000")))
 #+end_src
 
 * Basic Emacs Settings
 Load local packages autoloads
 #+begin_src emacs-lisp
   (load "local-packages-autoloads")
-#+end_src
-
-Start emacs server after when there is spare time.
-#+begin_src emacs-lisp
-  (defun cnit-emacs-server ()
-    "Start Emacs server if not already running."
-    (unless (and (fboundp 'server-running-p) (server-running-p))
-      (server-start)))
-  (run-with-idle-timer 5 nil #'cnit-emacs-server)
-#+end_src
-
-Short responses rather than the longer yes/no.
-#+begin_src emacs-lisp
-  (if (boundp 'use-short-answers)
-      (setq use-short-answers t)
-    (advice-add #'yes-or-no-p :override #'y-or-n-p))
-#+end_src
-
-Increase undo limit to help ensure not running out of undo information.
-#+begin_src emacs-lisp
-  (setopt
-   undo-limit (* 13 160000)
-   undo-strong-limit (* 13 240000)
-   undo-outer-limit (* 13 24000000))
-#+end_src
-
-Recursive minibuffers allows minibuffer commands in the minibuffer.
-#+begin_src emacs-lisp
-  (setopt enable-recursive-minibuffers t)
-#+end_src
-
-Disable bell functionality.
-#+begin_src emacs-lisp
-  (setopt
-   visible-bell nil
-   ring-bell-function #'ignore)
-#+end_src
-
-Default command filtering for ~execute-extended-command~. As the
-filtering can be useful for command discovery I have setup key binds
-for all the available filtering options.
-#+begin_src emacs-lisp
-  (setopt read-extended-command-predicate
-          #'command-completion-default-include-p)
-
-  (defun cnit-command-execute-extended-command (prefixarg)
-    "Execute extended command with PREFIXARG w using default completion."
-    (interactive "P")
-    (let ((read-extended-command-predicate nil))
-      (with-no-warnings (execute-extended-command prefixarg))))
-
-  (defun cnit-command-execute-extended-command-using-mode (prefixarg)
-    "Execute extended command with PREFIXARG using modes for completion."
-    (interactive "P")
-    (let ((read-extended-command-predicate
-           #'command-completion-using-modes-p))
-      (with-no-warnings (execute-extended-command prefixarg))))
-
-  (defun cnit-command-execute-extended-command-using-modes-and-keymaps
-      (prefixarg)
-    "Execute extended command with PREFIXARG using modes and keymaps for completion."
-    (interactive "P")
-    (let ((read-extended-command-predicate
-           #'command-completion-using-modes-and-keymaps-p))
-      (with-no-warnings (execute-extended-command prefixarg))))
-
-  (defun cnit-command-execute-extended-command-default (prefixarg)
-    "Execute extended command with PREFIXARG using default completion."
-    (interactive "P")
-    (let ((read-extended-command-predicate
-           #'command-completion-default-include-p))
-      (with-no-warnings (execute-extended-command prefixarg))))
-
-  (bind-key
-   "C-c x m"
-   #'cnit-command-execute-extended-command-using-mode
-   global-map)
-  (bind-key
-   "C-c x k"
-   #'cnit-command-execute-extended-command-using-modes-and-keymaps
-   global-map)
-  (bind-key
-   "C-c x d" #'cnit-command-execute-extended-command-default global-map)
-  (bind-key "C-c x x" #'cnit-command-execute-extended-command global-map)
-#+end_src
-
-Improve the inbuilt help with extra contextual information
-#+begin_src emacs-lisp
-  (bind-key [remap describe-function] #'helpful-callable)
-  (bind-key [remap describe-command] #'helpful-command)
-  (bind-key [remap describe-variable] #'helpful-variable)
-  (bind-key [remap describe-key] #'helpful-key)
-  (bind-key "C-c C-d" #'helpful-at-point 'global-map)
 #+end_src
 
 Buffer display rules to organise new buffers opening where I want them
@@ -333,25 +146,6 @@ to.
    `((derived-mode . magit-mode)
      (display-buffer-reuse-mode-window display-buffer-same-window)
      (inhibit-same-window . nil)))
-#+end_src
-
-Window splitting. Prefer to use the longest dimension for splitting,
-this ensures the splitting uses the direction with the most available
-display space.
-#+begin_src emacs-lisp
-  (setopt split-window-preferred-direction 'longest)
-#+end_src
-
-Prevent accidental closing of Emacs
-#+begin_src emacs-lisp
-  (setopt confirm-kill-emacs #'y-or-n-p)
-#+end_src
-
-Tabs. Sometimes a programming language might use tabs, better to turn
-on for those languages specifically as otherwise it'll screw up most
-others.
-#+begin_src emacs-lisp
-  (setq-default indent-tabs-mode nil)
 #+end_src
 
 * cnit Functions

@@ -1,12 +1,4 @@
 {
-  config,
-  lib,
-  ...
-}:
-let
-  inherit (lib) mkIf;
-in
-{
   config = {
     programs.kitty = {
       enable = true;

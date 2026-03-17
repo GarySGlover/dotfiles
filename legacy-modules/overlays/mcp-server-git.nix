@@ -1,4 +1,4 @@
-inputs: final: prev: {
+inputs: _: prev: {
   mcp-server-git = prev.python3Packages.buildPythonApplication {
     pname = "mcp-server-git";
     version = "latest";

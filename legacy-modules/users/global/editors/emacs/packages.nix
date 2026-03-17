@@ -196,7 +196,7 @@ let
 in
 {
   config = {
-    programs.emacs.extraPackages = epkgs: emacsExtraPackages ++ emacsExtraPackagesLocal;
+    programs.emacs.extraPackages = _: emacsExtraPackages ++ emacsExtraPackagesLocal;
 
     home.packages = with pkgs; [
       # Dictionaries for use with flyspell

@@ -1,12 +1,7 @@
 {
-  config,
   pkgs,
-  lib,
   ...
 }:
-let
-  inherit (lib) mkIf;
-in
 {
   config = {
     # Needed to pickup fonts installed by home manager

@@ -1,5 +1,4 @@
-inputs: final: prev: {
-
+inputs: _: prev: {
   mcp-server-azuredevops = prev.buildNpmPackage rec {
     pname = "mcp-server-azure-devops";
     version = "latest";

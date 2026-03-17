@@ -9,99 +9,6 @@
 (load "local-packages-autoloads")
 
 
-;; Start emacs server after when there is spare time.
-
-(defun cnit-emacs-server ()
-  "Start Emacs server if not already running."
-  (unless (and (fboundp 'server-running-p) (server-running-p))
-    (server-start)))
-(run-with-idle-timer 5 nil #'cnit-emacs-server)
-
-
-;; Short responses rather than the longer yes/no.
-
-(if (boundp 'use-short-answers)
-    (setq use-short-answers t)
-  (advice-add #'yes-or-no-p :override #'y-or-n-p))
-
-
-;; Increase undo limit to help ensure not running out of undo information.
-
-(setopt
- undo-limit (* 13 160000)
- undo-strong-limit (* 13 240000)
- undo-outer-limit (* 13 24000000))
-
-
-;; Recursive minibuffers allows minibuffer commands in the minibuffer.
-
-(setopt enable-recursive-minibuffers t)
-
-
-;; Disable bell functionality.
-
-(setopt
- visible-bell nil
- ring-bell-function #'ignore)
-
-
-;; Default command filtering for ~execute-extended-command~. As the
-;; filtering can be useful for command discovery I have setup key binds
-;; for all the available filtering options.
-
-(setopt read-extended-command-predicate
-        #'command-completion-default-include-p)
-
-(defun cnit-command-execute-extended-command (prefixarg)
-  "Execute extended command with PREFIXARG w using default completion."
-  (interactive "P")
-  (let ((read-extended-command-predicate nil))
-    (with-no-warnings (execute-extended-command prefixarg))))
-
-(defun cnit-command-execute-extended-command-using-mode (prefixarg)
-  "Execute extended command with PREFIXARG using modes for completion."
-  (interactive "P")
-  (let ((read-extended-command-predicate
-         #'command-completion-using-modes-p))
-    (with-no-warnings (execute-extended-command prefixarg))))
-
-(defun cnit-command-execute-extended-command-using-modes-and-keymaps
-    (prefixarg)
-  "Execute extended command with PREFIXARG using modes and keymaps for completion."
-  (interactive "P")
-  (let ((read-extended-command-predicate
-         #'command-completion-using-modes-and-keymaps-p))
-    (with-no-warnings (execute-extended-command prefixarg))))
-
-(defun cnit-command-execute-extended-command-default (prefixarg)
-  "Execute extended command with PREFIXARG using default completion."
-  (interactive "P")
-  (let ((read-extended-command-predicate
-         #'command-completion-default-include-p))
-    (with-no-warnings (execute-extended-command prefixarg))))
-
-(bind-key
- "C-c x m"
- #'cnit-command-execute-extended-command-using-mode
- global-map)
-(bind-key
- "C-c x k"
- #'cnit-command-execute-extended-command-using-modes-and-keymaps
- global-map)
-(bind-key
- "C-c x d" #'cnit-command-execute-extended-command-default global-map)
-(bind-key "C-c x x" #'cnit-command-execute-extended-command global-map)
-
-
-;; Improve the inbuilt help with extra contextual information
-
-(bind-key [remap describe-function] #'helpful-callable)
-(bind-key [remap describe-command] #'helpful-command)
-(bind-key [remap describe-variable] #'helpful-variable)
-(bind-key [remap describe-key] #'helpful-key)
-(bind-key "C-c C-d" #'helpful-at-point 'global-map)
-
-
 ;; Buffer display rules to organise new buffers opening where I want them
 ;; to.
 
@@ -162,25 +69,6 @@
  `((derived-mode . magit-mode)
    (display-buffer-reuse-mode-window display-buffer-same-window)
    (inhibit-same-window . nil)))
-
-
-;; Window splitting. Prefer to use the longest dimension for splitting,
-;; this ensures the splitting uses the direction with the most available
-;; display space.
-
-(setopt split-window-preferred-direction 'longest)
-
-
-;; Prevent accidental closing of Emacs
-
-(setopt confirm-kill-emacs #'y-or-n-p)
-
-
-;; Tabs. Sometimes a programming language might use tabs, better to turn
-;; on for those languages specifically as otherwise it'll screw up most
-;; others.
-
-(setq-default indent-tabs-mode nil)
 ;; Theme
 
 (advice-add

@@ -76,10 +76,11 @@
       ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } (
-      top@{
-        config,
-        withSystem,
-        moduleWithSystem,
+      {
+        # top@{
+        # config,
+        # withSystem,
+        # moduleWithSystem,
         ...
       }:
       {
@@ -133,7 +134,7 @@
               packages = with pkgs; [
 
                 # Pre-commit
-                (pre-commit.overrideAttrs (oldAttrs: {
+                (pre-commit.overrideAttrs (_: {
                   makeWrapperArgs = ''
                     		--set PYTHONPATH $PYTHONPATH
                                   --suffix PYTHONPATH : ${

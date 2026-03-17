@@ -1,7 +1,4 @@
-{ lib, ... }:
-let
-  inherit (lib) elem getName;
-in
+{ ... }:
 {
   # Enable Steam for gaming
   packageOverrides = pkgs: {

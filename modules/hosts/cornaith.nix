@@ -1,4 +1,7 @@
-{ inputs, ... }:
+{
+  # inputs,
+  ...
+}:
 {
   #   flake.nixosConfigurations.cornaith = inputs.nixpkgs.lib.nixosSystem {
   #     system = "x86_64-linux";

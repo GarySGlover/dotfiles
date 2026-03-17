@@ -59,8 +59,8 @@
           package = pkgs.azure-cli;
           preHook = ''
             if [ $# -ge 2 ] && [ "$1" = "account" ] && [ "$2" = "get-access-token" ]; then
-            	bkt --ttl=60m --stale=10s --discard-failures -- "$real_program" "$@"
-            	exit $?
+                bkt --ttl=60m --stale=10s --discard-failures -- "$real_program" "$@"
+                exit $?
             fi
           '';
         };

@@ -1,10 +1,4 @@
 {
-  config,
-  pkgs,
-  lib,
-  ...
-}:
-{
   config = {
     xdg.desktopEntries.emacs-dired = {
       name = "emacs-dired";

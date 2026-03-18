@@ -25,9 +25,11 @@
 (bind-key "M-`" #'popper-cycle)
 (bind-key "C-M-`" #'popper-toggle-type)
 (with-eval-after-load 'popper
+  (with-eval-after-load 'project
+    (setopt
+     popper-group-function #'popper-group-by-project))
   (setopt
    popper-display-control nil
-   popper-group-function #'popper-group-by-project
    popper-mode-line nil
    popper-reference-buffers
    `(,cnit-regex-buffers-occur
@@ -327,56 +329,6 @@ With prefix ARG, preserve color sequences (don't remove them)."
   (advice-add
    'project-mode-line-format
    :override #'cnit-project-mode-line-format))
-
-
-;; Forget zombie projects and import projects in standard project
-;; directories. This should happen automaticaly on a project switch
-;; command.
-
-(defun cnit-project-remember-default-projects ()
-  (interactive)
-  (require 'project)
-  (cnit-project-prompt-dir-advice)
-  (message "Projects updated."))
-(bind-key "C-c p" #'cnit-project-remember-default-projects)
-(with-eval-after-load 'project
-  (require 'dash)
-  (defvar cnit-project-base-directories
-    '("~/feature/"
-      "~/dev/"
-      "~/worktrees"
-      "~/git-clones"
-      "~/dotfiles"
-      "~/nook")
-    "List of directories containing vc controlled subdirectories.")
-  (defun cnit-remember-projects-under-recursive (dir)
-    "Remember projects under DIR recursively.
-End recursion at the first folder that is a project."
-    (if (project--find-in-directory dir)
-        (project-remember-projects-under dir)
-      (-each
-       (-filter
-        #'file-directory-p
-        (directory-files dir
-                         t
-                         (rx
-                          string-start (not ".") (one-or-more any))))
-       #'cnit-remember-projects-under-recursive)))
-  (defun cnit-project-prompt-dir-advice ()
-    "Discover projects in base directories."
-    (let ((inhibit-message t))
-      (-each
-       (-filter
-        #'file-directory-p cnit-project-base-directories)
-       #'cnit-remember-projects-under-recursive))
-    (advice-remove
-     'project-prompt-project-dir #'cnit-project-prompt-dir-advice))
-  (advice-add
-   'project-prompt-project-dir
-   :before #'cnit-project-prompt-dir-advice)
-  (advice-add
-   'project-prompt-project-dir
-   :before #'project-forget-zombie-projects))
 
 
 ;; Basig magit settings.

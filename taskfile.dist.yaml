@@ -1,6 +1,9 @@
 # [[file:modules.org::*Taskfile][Taskfile:1]]
 version: '3'
 tasks:
+  default:
+    cmds:
+    - nix flake check ./ --show-trace --all-systems
   nixos:
     vars:
       TYPE: '{{.TYPE | default (.CLI_ARGS | splitList " " | first) }}'

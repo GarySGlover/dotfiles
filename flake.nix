@@ -15,7 +15,6 @@
     };
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
     import-tree = {
       url = "github:vic/import-tree";
@@ -158,10 +157,6 @@
                 # Nix
                 nixfmt-rfc-style
                 nixd
-                nix
-
-                # Formatter for various languages
-                nodePackages.prettier
 
                 # Emacs init development
                 glib

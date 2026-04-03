@@ -7,7 +7,7 @@
 let
   inherit (builtins) hasAttr;
   inherit (lib) mkIf forEach;
-  secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
+  secrets = import ../../../../../secrets/${config.home.username}-secrets.nix;
 in
 {
   config = {

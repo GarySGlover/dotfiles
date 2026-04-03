@@ -6,7 +6,7 @@
   ...
 }:
 let
-  secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
+  secrets = import ../../../../../secrets/${config.home.username}-secrets.nix;
 
   epkgsl = with pkgs.emacsPackages; {
     magit-worktrees = pkgs.emacsPackages.trivialBuild rec {

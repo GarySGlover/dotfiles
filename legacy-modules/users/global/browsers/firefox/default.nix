@@ -4,7 +4,7 @@
   ...
 }:
 let
-  secrets = import "${config.wolf.secretsPath}/${config.home.username}-secrets.nix";
+  secrets = import ../../../../../secrets/${config.home.username}-secrets.nix;
   sharedSettings =
     import ./fastfox.nix
     // import ./securefox.nix

@@ -8,7 +8,6 @@
   ./editors/emacs/emacs.nix
   ./editors/emacs/packages.nix
   ./languages/json/default.nix
-  ./languages/lsp/default.nix
   ./languages/python/default.nix
   ./languages/shell/default.nix
   ./options.nix

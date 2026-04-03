@@ -4,6 +4,8 @@
     notes.homeManager = {
       editor.initFiles.notes.text = ''
         (with-eval-after-load 'org
+
+          ;; Org template definitions with tempel
           (defvar org-templates
             '((ttl & "#+title: " p n "#+author: " p n "#+language: " p n n)
               (nm & "#+name: " p n)
@@ -24,10 +26,12 @@
               (cptn & "#+caption: ")
               (drwr & ":" p ":" n r ":end:")
               (inlsrc "src_" p "{" q "}")))
-          (add-hook
-           'org-mode-hook
-           (lambda ()
-             (add-hook 'tempel-template-sources 'org-templates nil 'local)))
+          (add-hook 'org-mode-hook (lambda () (add-hook 'tempel-template-sources 'org-templates nil 'local)))
+
+          ;; Whitespace fix for tangled files. Required for noweb blocks with empty lines.
+          (add-hook 'org-babel-post-tangle-hook #'whitespace-cleanup)
+          (add-hook 'org-babel-post-tangle-hook #'save-buffer :append)
+
           (keymap-set org-mode-map "M-o" #'casual-org-tmenu)
           (keymap-set org-table-fedit-map "M-o" #'casual-org-table-fedit-tmenu))
       '';

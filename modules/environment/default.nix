@@ -1,4 +1,4 @@
-# [[file:../../modules.org::*+emacs][+emacs:2]]
+# [[file:../../modules.org::*Environment][Environment:2]]
 {
   flake.aspects.environment.homeManager = {
     programs.emacs.extraPackages = epkgs: with epkgs; [ exec-path-from-shell ];
@@ -21,4 +21,4 @@
     '';
   };
 }
-# +emacs:2 ends here
+# Environment:2 ends here

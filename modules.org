@@ -436,6 +436,10 @@
   ;; on for those languages specifically as otherwise it'll screw up most
   ;; others.
   (setq-default indent-tabs-mode nil)
+
+  ;; Default display buffer action
+  (setopt display-buffer-base-action
+          '((display-buffer-same-window)))
 #+end_src
 
 #+begin_src nix-ts :tangle modules/editor/core.nix :noweb yes
@@ -495,7 +499,6 @@
   }
 #+end_src
 
-
 ** +niri
 
 #+name: kdl_editor
@@ -518,26 +521,6 @@
 
 * Direnv
 
-#+begin_src nix-ts :tangle modules/direnv/default.nix
-  {
-    flake.aspects.direnv.homeManager = {
-      programs.direnv = {
-        enable = true;
-        enableBashIntegration = true;
-        nix-direnv.enable = true;
-      };
-
-      programs.starship.settings.direnv.disabled = false;
-
-      home.sessionVariables = {
-        DIRENV_LOG_FORMAT = "";
-      };
-    };
-  }
-#+end_src
-
-** +emacs
-
 #+name: elisp_direnv
 #+begin_src emacs-lisp
   (add-hook 'after-init-hook (lambda () (envrc-global-mode t)) 91)
@@ -551,9 +534,21 @@
      (allow-no-window . t)))
 #+end_src
 
-#+begin_src nix-ts :tangle modules/direnv/+emacs.nix :noweb yes
+#+begin_src nix-ts :tangle modules/direnv.nix :noweb yes
   {
     flake.aspects.direnv.homeManager = {
+      programs.direnv = {
+        enable = true;
+        enableBashIntegration = true;
+        nix-direnv.enable = true;
+      };
+
+      programs.starship.settings.direnv.disabled = false;
+
+      home.sessionVariables = {
+        DIRENV_LOG_FORMAT = "";
+      };
+
       programs.emacs.extraPackages =
         epkgs: with epkgs; [
           envrc
@@ -566,8 +561,6 @@
 #+end_src
 
 * Environment
-
-** +emacs
 
 #+name: elisp_environment
 #+begin_src emacs-lisp
@@ -588,7 +581,7 @@
     (exec-path-from-shell-initialize))
 #+end_src
 
-#+begin_src nix-ts :tangle modules/environment/+emacs.nix :noweb yes
+#+begin_src nix-ts :tangle modules/environment/default.nix :noweb yes
   {
     flake.aspects.environment.homeManager = {
       programs.emacs.extraPackages = epkgs: with epkgs; [ exec-path-from-shell ];
@@ -646,6 +639,43 @@
   }
 #+end_src
 
+* Help
+
+#+name: elisp_help
+#+begin_src emacs-lisp
+  ;; Embark for Emacs help
+  (setq prefix-help-command #'embark-prefix-help-command)
+  (bind-key "C-h C-h" #'embark-prefix-help-command help-quick-use-map)
+  (bind-key "C-h b" #'embark-bindings)
+
+  ;; Help type buffer display rules
+  (add-to-list 'display-buffer-alist
+               `(,(rx (or
+                       (and "*" (or "H" "h") "elp")
+                       "*info"
+                       "*Man"
+                       "*Summary"
+                       "*Apropos"))
+                 (display-buffer-reuse-window
+                  display-buffer-reuse-mode-window)
+                 (mode apropros-mode help-mode helpful-mode Info-mode Man-mode)
+                 (reusable-frames . nil)))
+  ;; Man will use pop-to-buffer which respects the display-buffer rules
+  (setopt Man-notify-method 'aggressive)
+#+end_src
+
+#+begin_src nix-ts :tangle modules/help.nix :noweb yes
+  {
+    flake.aspects = {
+      notes.homeManager = {
+        editor.initFiles.help.text = ''
+          <<elisp_help>>
+        '';
+      };
+    };
+  }
+#+end_src
+
 * Kubernetes
 
 #+begin_src nix-ts :tangle modules/kubernetes.nix
@@ -692,7 +722,7 @@
 
 * Nginx
 
-#+begin_src nix-ts :tangle modules/nginx/+emacs.nix
+#+begin_src nix-ts :tangle modules/nginx.nix
   {
     flake.aspects.nginx.homeManager = {
       programs.emacs.extraPackages = epkgs: with epkgs; [ nginx-mode ];
@@ -701,7 +731,6 @@
 #+end_src
 
 * Notes
-** +emacs
 
 #+name: elisp_org_mode
 #+begin_src elisp
@@ -734,12 +763,15 @@
     (add-hook 'org-babel-post-tangle-hook #'whitespace-cleanup)
     (add-hook 'org-babel-post-tangle-hook #'save-buffer :append)
 
+    ;; Org source code black display rules
+    (setopt org-src-window-setup 'plain)
+
     (keymap-set org-mode-map "M-o" #'casual-org-tmenu)
     (keymap-set org-table-fedit-map "M-o" #'casual-org-table-fedit-tmenu))
 #+end_src
 
 #+name: nix_org_mode
-#+begin_src nix-ts :tangle modules/notes/+emacs.nix :noweb yes
+#+begin_src nix-ts :tangle modules/notes.nix :noweb yes
   {
     flake.aspects = {
       notes.homeManager = {
@@ -757,7 +789,30 @@
 
 * Programming
 
-#+begin_src nix-ts :tangle modules/roles/programming.nix
+#+name: elisp_prog_mode
+#+begin_src emacs-lisp
+  (with-eval-after-load 'whitespace
+    (setopt whitespace-style
+            '(face
+              tabs
+              spaces
+              trailing
+              lines
+              space-before-tab
+              newline indentation
+              empty space-after-tab
+              newline-mark
+              missing-newline-at-eof
+              )))
+
+  (add-hook 'prog-mode-hook
+            (lambda ()
+              (display-line-numbers-mode t)
+              (indent-bars-mode t)
+              (whitespace-mode t)))
+#+end_src
+
+#+begin_src nix-ts :tangle modules/roles/programming.nix :noweb yes
   {
     flake.aspects =
       { aspects, ... }:
@@ -769,29 +824,24 @@
             go
             yaml
           ];
-          homeManager = { };
+          homeManager = {
+            programs.emacs.extraPackages =
+              epkgs: with epkgs; [
+                reformatter
+              ];
+            editor.initFiles.programming.text = ''
+              <<elisp_prog_mode>>
+            '';
+          };
           nixos = { };
         };
       };
   }
 #+end_src
 
-** +emacs
-
-#+begin_src nix-ts :tangle modules/programming/+emacs.nix :noweb yes
-  {
-    flake.aspects.programming.homeManager = {
-      programs.emacs.extraPackages =
-        epkgs: with epkgs; [
-          reformatter
-        ];
-    };
-  }
-#+end_src
-
 ** YAML
 
-#+begin_src nix-ts :tangle modules/yaml/default.nix
+#+begin_src nix-ts :tangle modules/yaml.nix :noweb yes
   {
     flake.aspects.yaml = {
       homeManager =
@@ -800,12 +850,18 @@
           home.packages = with pkgs; [
             yq
           ];
+          programs.emacs.extraPackages =
+            epkgs: with epkgs; [
+              yaml
+              yaml-pro
+            ];
+          editor.initFiles.yaml.text = ''
+            <<elisp_yaml>>
+          '';
         };
     };
   }
 #+end_src
-
-*** +emacs
 
 #+name: elisp_yaml
 #+begin_src emacs-lisp
@@ -845,7 +901,7 @@
       "Let dtrt-indent guess the indent for this buffer."
       (when (featurep 'dtrt-indent)
         (dtrt-indent-mode 1)
-        (let ((width dtrt-indent-tab-width))
+        (let ((width standard-indent))
           (unless (zerop width)
             width))))
     (defun yaml-get-indent ()
@@ -873,21 +929,6 @@
   ;; TODO Decide on scalar editing (yaml-ts-pro?)
 #+end_src
 
-#+begin_src nix-ts :tangle modules/yaml/+emacs.nix :noweb yes
-  {
-    flake.aspects.yaml.homeManager = {
-      programs.emacs.extraPackages =
-        epkgs: with epkgs; [
-          yaml
-          yaml-pro
-        ];
-      editor.initFiles.yaml.text = ''
-        <<elisp_yaml>>
-      '';
-    };
-  }
-#+end_src
-
 ** Docker
 
 #+name: elisp_docker
@@ -906,8 +947,7 @@
      'org-src-lang-modes '("dockerfile" . dockerfile-ts)))
 #+end_src
 
-
-#+begin_src nix-ts :tangle modules/docker/+emacs.nix :noweb yes
+#+begin_src nix-ts :tangle modules/docker.nix :noweb yes
   {
     flake.aspects.docker.homeManager = {
       editor.initFiles.docker.text = ''
@@ -919,7 +959,6 @@
 
 ** Go
 
-*** +emacs
 #+name: elisp_go
 #+begin_src emacs-lisp
   (with-eval-after-load 'org
@@ -983,7 +1022,7 @@
        (add-hook 'tempel-template-sources 'go-templates nil 'local))))
 #+end_src
 
-#+begin_src nix-ts :tangle modules/go/+emacs.nix :noweb yes
+#+begin_src nix-ts :tangle modules/go.nix :noweb yes
   {
     flake.aspects = {
       go.homeManager = {
@@ -1177,29 +1216,36 @@
     hide-not-bound
   }
   binds {
-    Mod+Alt+b hotkey-overlay-title="Column back" { move-column-left; }
-    Mod+Alt+f hotkey-overlay-title="Column forward" { move-column-right; }
-    Mod+Ctrl+b hotkey-overlay-title="Previous monitor" { focus-monitor-previous; }
-    Mod+Ctrl+f hotkey-overlay-title="Next monitor" { focus-monitor-next; }
-    Mod+b hotkey-overlay-title="Backwards column" { focus-column-left-or-last; }
-    Mod+c hotkey-overlay-title="Cast window" { set-dynamic-cast-window; }
-    Mod+f hotkey-overlay-title="Forward column" { focus-column-right-or-first; }
-    Mod+h hotkey-overlay-title="Center column" { center-column; }
-    Mod+m hotkey-overlay-title="Fullscreen" { fullscreen-window; }
-    Mod+n hotkey-overlay-title="Next window" { focus-window-or-workspace-down; }
-    Mod+p hotkey-overlay-title="Previous window" { focus-window-or-workspace-up; }
-    Mod+s hotkey-overlay-title="Screenshot" { screenshot show-pointer=false; }
-    Mod+x hotkey-overlay-title="Next width" { switch-preset-window-width; }
     Mod+Minus { set-column-width "-8.333%"; }
     Mod+Shift+Equal { set-column-width "+8.333%"; }
-    Mod+Shift+c hotkey-overlay-title="Cast clear" { clear-dynamic-cast-target; }
-    Mod+Shift+h hotkey-overlay-title="Center visible" { center-visible-columns; }
-    Mod+Shift+m hotkey-overlay-title="Fullscreen alt" { toggle-windowed-fullscreen; }
-    Mod+Shift+x hotkey-overlay-title="Previous width" { switch-preset-window-width-back; }
-    Mod+Shift+slash hotkey-overlay-title=null { show-hotkey-overlay; }
+    Mod+Equal { set-column-width "+8.333%"; }
+    Mod+Shift+slash { show-hotkey-overlay; }
+    Mod+slash { show-hotkey-overlay; }
     Mod+Alt+Minus { set-window-height "-8.333%"; }
     Mod+Alt+Shift+Equal { set-window-height "+8.333%"; }
     Mod+Alt+Equal { reset-window-height; }
+    Mod+b  hotkey-overlay-title="Backward column" { focus-column-left-or-last; }
+    Mod+c  hotkey-overlay-title="Cast window" { set-dynamic-cast-window; }
+    Mod+d  hotkey-overlay-title="Move col left" { move-column-left; }
+    Mod+e  hotkey-overlay-title="Move col right" { move-column-right; }
+    Mod+f  hotkey-overlay-title="Forward column" { focus-column-right-or-first; }
+    Mod+g  hotkey-overlay-title="Prev monitor" { focus-monitor-previous; }
+    Mod+h  hotkey-overlay-title="Center column" { center-column; }
+    Mod+j  hotkey-overlay-title="Col to next ws" { move-column-to-workspace-down; }
+    Mod+k  hotkey-overlay-title="Col to prev ws" { move-column-to-workspace-up; }
+    Mod+l  hotkey-overlay-title="Next monitor" { focus-monitor-next; }
+    Mod+m  hotkey-overlay-title="Fullscreen" { toggle-windowed-fullscreen; }
+    Mod+n  hotkey-overlay-title="Next window" { focus-window-or-workspace-down; }
+    Mod+p  hotkey-overlay-title="Prev window" { focus-window-or-workspace-up; }
+    Mod+q  hotkey-overlay-title="Cast clear" { clear-dynamic-cast-target; }
+    Mod+s  hotkey-overlay-title="Screenshot" { screenshot show-pointer=false; }
+    Mod+t  hotkey-overlay-title="Center visible" { center-visible-columns; }
+    Mod+u  hotkey-overlay-title="Move ws up" { move-workspace-up; }
+    Mod+v  hotkey-overlay-title="Move ws down" { move-workspace-down; }
+    Mod+w  hotkey-overlay-title="WS to next mon" { move-workspace-to-monitor-next; }
+    Mod+x  hotkey-overlay-title="Next width" { switch-preset-window-width; }
+    Mod+z  hotkey-overlay-title="Prev width" { switch-preset-window-width-back; }
+    Mod+Shift+m hotkey-overlay-title="Fullscreen alt" { fullscreen-window; }
   }
 #+end_src
 
@@ -1279,9 +1325,8 @@
 #+end_src
 
 * Web Requests
-** +emacs
 
-#+name: elisp_webrequests
+#+name: elisp_webclient
 #+begin_src elisp
   (with-eval-after-load 'org
     (org-babel-do-load-languages
@@ -1289,13 +1334,13 @@
      (add-to-list 'org-babel-load-languages '(verb . t))))
 #+end_src
 
-#+begin_src nix-ts :tangle modules/web-requests/+emacs.nix :noweb yes
+#+begin_src nix-ts :tangle modules/web-client.nix :noweb yes
   {
     flake.aspects = {
       webRequests.homeManager = {
         programs.emacs.extraPackages = epkgs: with epkgs; [ verb ];
         editor.initFiles.web-requests.text = ''
-          <<elisp_webrequests>>
+          <<elisp_webclient>>
         '';
       };
     };

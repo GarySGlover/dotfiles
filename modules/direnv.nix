@@ -1,6 +1,18 @@
-# [[file:../../modules.org::*+emacs][+emacs:2]]
+# [[file:../modules.org::*Direnv][Direnv:2]]
 {
   flake.aspects.direnv.homeManager = {
+    programs.direnv = {
+      enable = true;
+      enableBashIntegration = true;
+      nix-direnv.enable = true;
+    };
+
+    programs.starship.settings.direnv.disabled = false;
+
+    home.sessionVariables = {
+      DIRENV_LOG_FORMAT = "";
+    };
+
     programs.emacs.extraPackages =
       epkgs: with epkgs; [
         envrc
@@ -18,4 +30,4 @@
     '';
   };
 }
-# +emacs:2 ends here
+# Direnv:2 ends here

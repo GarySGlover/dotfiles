@@ -1,4 +1,4 @@
-# [[file:../../modules.org::*+emacs][+emacs:2]]
+# [[file:../modules.org::*Go][Go:2]]
 {
   flake.aspects = {
     go.homeManager = {
@@ -67,4 +67,4 @@
     };
   };
 }
-# +emacs:2 ends here
+# Go:2 ends here

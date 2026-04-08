@@ -7,70 +7,6 @@
 ;; Load local packages autoloads
 
 (load "local-packages-autoloads")
-
-
-;; Buffer display rules to organise new buffers opening where I want them
-;; to.
-
-(defun cnit-fit-window-to-buffer-with-max (window)
-  (let ((fit-window-to-buffer-horizontally t))
-    (fit-window-to-buffer
-     window (floor (frame-height) 3) 0 (floor (frame-width) 3) 0)))
-
-(defconst cnit-regex-buffers-occur (rx "*Occur*"))
-(defconst cnit-regex-buffers-helpful (rx "*helpful" (1+ nonl) "*"))
-(defconst cnit-regex-buffers-info (rx "*info*"))
-
-(bind-key "C-`" #'popper-toggle)
-(bind-key "M-`" #'popper-cycle)
-(bind-key "C-M-`" #'popper-toggle-type)
-(with-eval-after-load 'popper
-  (with-eval-after-load 'project
-    (setopt
-     popper-group-function #'popper-group-by-project))
-  (setopt
-   popper-display-control nil
-   popper-mode-line nil
-   popper-reference-buffers
-   `(,cnit-regex-buffers-occur
-     occur-mode ,cnit-regex-buffers-helpful helpful-mode))
-  (popper-echo-mode 1))
-
-(setopt display-buffer-alist nil)
-
-(add-to-list
- 'display-buffer-alist
- `((or . (,cnit-regex-buffers-occur (derived-mode-p 'occur-mode)))
-   (display-buffer-in-side-window)
-   (window-height . cnit-fit-window-to-buffer-with-max)
-   (side . bottom)
-   (dedicated . t)
-   (body-function . select-window)
-   (window-parameters (no-delete-other-windows . t))))
-
-(add-to-list
- 'display-buffer-alist
- `((or .
-       (,cnit-regex-buffers-helpful
-        (derived-mode-p 'helpful-mode)
-        ,cnit-regex-buffers-info
-        (derived-mode-p 'Info-mode)))
-   (display-buffer-in-side-window)
-   (window-width . cnit-fit-window-to-buffer-with-max)
-   (side . right)
-   (dedicated . t)
-   (body-function . select-window)
-   (window-parameters (no-delete-other-windows . t))))
-
-;; Magit buffers will prefer to reuse an existing window displaying
-;; magit. Will use the current window if magit not showing anywhere.
-(with-eval-after-load 'magit
-  (setopt magit-display-buffer-function #'display-buffer))
-(add-to-list
- 'display-buffer-alist
- `((derived-mode . magit-mode)
-   (display-buffer-reuse-mode-window display-buffer-same-window)
-   (inhibit-same-window . nil)))
 ;; Theme
 
 (advice-add
@@ -107,9 +43,6 @@ This prevents overlapping themes; something I would rarely want."
 
 (bind-key "C-." #'embark-act)
 
-;; Embark based help
-(setq prefix-help-command #'embark-prefix-help-command)
-(bind-key "C-h b" #'embark-bindings)
 (with-eval-after-load 'embark
   (keymap-set embark-general-map "g" #'gptel-add)
   (keymap-set embark-general-map "?" #'gptel-quick))

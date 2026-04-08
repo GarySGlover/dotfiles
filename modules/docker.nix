@@ -1,4 +1,4 @@
-# [[file:../../modules.org::*Docker][Docker:2]]
+# [[file:../modules.org::*Docker][Docker:2]]
 {
   flake.aspects.docker.homeManager = {
     editor.initFiles.docker.text = ''

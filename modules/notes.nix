@@ -1,4 +1,4 @@
-# [[file:../../modules.org::nix_org_mode][nix_org_mode]]
+# [[file:../modules.org::nix_org_mode][nix_org_mode]]
 {
   flake.aspects = {
     notes.homeManager = {
@@ -31,6 +31,9 @@
           ;; Whitespace fix for tangled files. Required for noweb blocks with empty lines.
           (add-hook 'org-babel-post-tangle-hook #'whitespace-cleanup)
           (add-hook 'org-babel-post-tangle-hook #'save-buffer :append)
+
+          ;; Org source code black display rules
+          (setopt org-src-window-setup 'plain)
 
           (keymap-set org-mode-map "M-o" #'casual-org-tmenu)
           (keymap-set org-table-fedit-map "M-o" #'casual-org-table-fedit-tmenu))

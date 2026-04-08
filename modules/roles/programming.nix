@@ -1,4 +1,4 @@
-# [[file:../../modules.org::*Programming][Programming:1]]
+# [[file:../../modules.org::*Programming][Programming:2]]
 {
   flake.aspects =
     { aspects, ... }:
@@ -10,9 +10,35 @@
           go
           yaml
         ];
-        homeManager = { };
+        homeManager = {
+          programs.emacs.extraPackages =
+            epkgs: with epkgs; [
+              reformatter
+            ];
+          editor.initFiles.programming.text = ''
+            (with-eval-after-load 'whitespace
+              (setopt whitespace-style
+                      '(face
+                        tabs
+                        spaces
+                        trailing
+                        lines
+                        space-before-tab
+                        newline indentation
+                        empty space-after-tab
+                        newline-mark
+                        missing-newline-at-eof
+                        )))
+
+            (add-hook 'prog-mode-hook
+                      (lambda ()
+                        (display-line-numbers-mode t)
+                        (indent-bars-mode t)
+                        (whitespace-mode t)))
+          '';
+        };
         nixos = { };
       };
     };
 }
-# Programming:1 ends here
+# Programming:2 ends here

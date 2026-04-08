@@ -1,4 +1,4 @@
-# [[file:../../modules.org::*Nginx][Nginx:1]]
+# [[file:../modules.org::*Nginx][Nginx:1]]
 {
   flake.aspects.nginx.homeManager = {
     programs.emacs.extraPackages = epkgs: with epkgs; [ nginx-mode ];

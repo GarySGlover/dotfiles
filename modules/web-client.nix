@@ -1,4 +1,4 @@
-# [[file:../../modules.org::*+emacs][+emacs:2]]
+# [[file:../modules.org::*Web Requests][Web Requests:2]]
 {
   flake.aspects = {
     webRequests.homeManager = {
@@ -12,4 +12,4 @@
     };
   };
 }
-# +emacs:2 ends here
+# Web Requests:2 ends here

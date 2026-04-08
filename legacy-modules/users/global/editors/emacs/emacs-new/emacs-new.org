@@ -88,7 +88,7 @@ Load local packages autoloads
 
 Buffer display rules to organise new buffers opening where I want them
 to.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (defun cnit-fit-window-to-buffer-with-max (window)
     (let ((fit-window-to-buffer-horizontally t))
       (fit-window-to-buffer
@@ -237,9 +237,6 @@ Embark for acting upon objects.
 #+begin_src emacs-lisp
   (bind-key "C-." #'embark-act)
 
-  ;; Embark based help
-  (setq prefix-help-command #'embark-prefix-help-command)
-  (bind-key "C-h b" #'embark-bindings)
   (with-eval-after-load 'embark
     (keymap-set embark-general-map "g" #'gptel-add)
     (keymap-set embark-general-map "?" #'gptel-quick))

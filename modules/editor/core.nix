@@ -108,6 +108,10 @@
       ;; on for those languages specifically as otherwise it'll screw up most
       ;; others.
       (setq-default indent-tabs-mode nil)
+
+      ;; Default display buffer action
+      (setopt display-buffer-base-action
+              '((display-buffer-same-window)))
     '';
 
   };

@@ -2,11 +2,16 @@
 version: '3'
 tasks:
   default:
+    desc: Check nix flake for all systems
     cmds:
     - nix flake check ./ --show-trace --all-systems
-  nixos:
+  nixos:*:
+    desc: Build nixos
+    aliases:
+    - nixos
     vars:
-      TYPE: '{{.TYPE | default (.CLI_ARGS | splitList " " | first) }}'
+      TYPE: '{{if (gt (len .MATCH) 0)}}{{(index .MATCH 0)}}{{else}}{{.TYPE}}{{end}}'
+      # TYPE: '{{coalesce (index .MATCH 0) .TYPE}}'
     requires:
       vars:
       - name: TYPE

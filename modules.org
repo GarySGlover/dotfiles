@@ -12,11 +12,16 @@
   version: '3'
   tasks:
     default:
+      desc: Check nix flake for all systems
       cmds:
       - nix flake check ./ --show-trace --all-systems
-    nixos:
+    nixos:*:
+      desc: Build nixos
+      aliases:
+      - nixos
       vars:
-        TYPE: '{{.TYPE | default (.CLI_ARGS | splitList " " | first) }}'
+        TYPE: '{{if (gt (len .MATCH) 0)}}{{(index .MATCH 0)}}{{else}}{{.TYPE}}{{end}}'
+        # TYPE: '{{coalesce (index .MATCH 0) .TYPE}}'
       requires:
         vars:
         - name: TYPE
@@ -495,8 +500,14 @@
       editor.initFiles.casual.text = ''
         <<elisp_casual>>
       '';
+      programs.emacs.extraPackages =
+        epkgs: with epkgs; [
+          casual
+        ];
     };
   }
+
+
 #+end_src
 
 ** +niri
@@ -709,6 +720,10 @@
                   kubernetes-helm
                   helm-dashboard
                 ];
+                programs.emacs.extraPackages =
+                  epkgs: with epkgs; [
+                    kubel
+                  ];
               }
               (lib.mkIf config.kubernetes.includeKubelogin {
                 home.packages = with pkgs; [ kubelogin ];
@@ -735,7 +750,6 @@
 #+name: elisp_org_mode
 #+begin_src elisp
   (with-eval-after-load 'org
-
     ;; Org template definitions with tempel
     (defvar org-templates
       '((ttl & "#+title: " p n "#+author: " p n "#+language: " p n n)
@@ -770,17 +784,35 @@
     (keymap-set org-table-fedit-map "M-o" #'casual-org-table-fedit-tmenu))
 #+end_src
 
-#+name: nix_org_mode
+#+name: elisp_denote
+#+begin_src emacs-lisp
+  (add-hook 'dired-mode #'denote-dired-mode)
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "n") #'denote)
+    (define-key map (kbd "r") #'denote-rename-file)
+    (define-key map (kbd "l") #'denote-link-or-create)
+    (define-key map (kbd "b") #'denote-backlinks)
+    (define-key map (kbd "d") #'denote-dired)
+    (define-key map (kbd "g") #'denote-grep)
+    (global-set-key (kbd "C-c n") map))
+  (with-eval-after-load 'denote
+    (setopt denote-directory (expand-file-name "~/nook/notes/"))
+    (denote-rename-buffer-mode 1))
+#+end_src
+
+#+name: nix_notes
 #+begin_src nix-ts :tangle modules/notes.nix :noweb yes
   {
     flake.aspects = {
       notes.homeManager = {
         editor.initFiles.notes.text = ''
           <<elisp_org_mode>>
+          <<elisp_denote>>
         '';
         programs.emacs.extraPackages =
           epkgs: with epkgs; [
             casual
+            denote
           ];
       };
     };
@@ -797,13 +829,12 @@
               tabs
               spaces
               trailing
-              lines
               space-before-tab
-              newline indentation
-              empty space-after-tab
-              newline-mark
-              missing-newline-at-eof
-              )))
+              newline
+              indentation
+              empty
+              space-after-tab
+              missing-newline-at-eof)))
 
   (add-hook 'prog-mode-hook
             (lambda ()
@@ -824,15 +855,23 @@
             go
             yaml
           ];
-          homeManager = {
-            programs.emacs.extraPackages =
-              epkgs: with epkgs; [
-                reformatter
+          homeManager =
+            { pkgs, ...}:
+            {
+              home.packages = with pkgs; [
+                nerd-fonts.iosevka
+                nerd-fonts.iosevka-term
+                nerd-fonts.iosevka-term-slab
               ];
-            editor.initFiles.programming.text = ''
-              <<elisp_prog_mode>>
-            '';
-          };
+              programs.emacs.extraPackages =
+                epkgs: with epkgs; [
+                  reformatter
+                ];
+              editor.initFiles.programming.text = ''
+                <<elisp_prog_mode>>
+              '';
+              fonts.fontconfig.enable = true;
+            };
           nixos = { };
         };
       };

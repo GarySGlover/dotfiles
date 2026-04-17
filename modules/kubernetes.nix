@@ -29,6 +29,10 @@
                 kubernetes-helm
                 helm-dashboard
               ];
+              programs.emacs.extraPackages =
+                epkgs: with epkgs; [
+                  kubel
+                ];
             }
             (lib.mkIf config.kubernetes.includeKubelogin {
               home.packages = with pkgs; [ kubelogin ];

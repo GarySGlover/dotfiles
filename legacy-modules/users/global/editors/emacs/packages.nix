@@ -135,7 +135,6 @@ let
       corfu
       corfu-candidate-overlay
       coterm
-      denote
       dtrt-indent
       emacs-everywhere
       embark

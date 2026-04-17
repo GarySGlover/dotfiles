@@ -1,10 +1,9 @@
-# [[file:../modules.org::nix_org_mode][nix_org_mode]]
+# [[file:../modules.org::nix_notes][nix_notes]]
 {
   flake.aspects = {
     notes.homeManager = {
       editor.initFiles.notes.text = ''
         (with-eval-after-load 'org
-
           ;; Org template definitions with tempel
           (defvar org-templates
             '((ttl & "#+title: " p n "#+author: " p n "#+language: " p n n)
@@ -37,12 +36,25 @@
 
           (keymap-set org-mode-map "M-o" #'casual-org-tmenu)
           (keymap-set org-table-fedit-map "M-o" #'casual-org-table-fedit-tmenu))
+        (add-hook 'dired-mode #'denote-dired-mode)
+        (let ((map (make-sparse-keymap)))
+          (define-key map (kbd "n") #'denote)
+          (define-key map (kbd "r") #'denote-rename-file)
+          (define-key map (kbd "l") #'denote-link-or-create)
+          (define-key map (kbd "b") #'denote-backlinks)
+          (define-key map (kbd "d") #'denote-dired)
+          (define-key map (kbd "g") #'denote-grep)
+          (global-set-key (kbd "C-c n") map))
+        (with-eval-after-load 'denote
+          (setopt denote-directory (expand-file-name "~/nook/notes/"))
+          (denote-rename-buffer-mode 1))
       '';
       programs.emacs.extraPackages =
         epkgs: with epkgs; [
           casual
+          denote
         ];
     };
   };
 }
-# nix_org_mode ends here
+# nix_notes ends here

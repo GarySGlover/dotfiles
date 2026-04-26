@@ -445,6 +445,17 @@
   ;; Default display buffer action
   (setopt display-buffer-base-action
           '((display-buffer-same-window)))
+
+  ;; Change which commands are disabled by default.
+  ;; (pp-eval-expression '(let (result) (mapatoms (lambda (sym) (when (and (commandp sym) (get sym 'disabled)) (push (list sym (get sym 'disabled)) result)))) result))
+  (dolist (command
+           '(narrow-to-region
+             upcase-region
+             downcase-region
+             narrow-to-page
+             erase-buffer))
+    (put command 'disabled nil))
+  (put 'suspend-frame 'disabled t)
 #+end_src
 
 #+begin_src nix-ts :tangle modules/editor/core.nix :noweb yes
@@ -821,7 +832,7 @@
 
 * Programming
 
-#+name: elisp_prog_mode
+#+name: elisp_prog
 #+begin_src emacs-lisp
   (with-eval-after-load 'whitespace
     (setopt whitespace-style
@@ -841,6 +852,8 @@
               (display-line-numbers-mode t)
               (indent-bars-mode t)
               (whitespace-mode t)))
+
+  (global-set-key [remap imenu] #'consult-imenu)
 #+end_src
 
 #+begin_src nix-ts :tangle modules/roles/programming.nix :noweb yes
@@ -855,23 +868,16 @@
             go
             yaml
           ];
-          homeManager =
-            { pkgs, ...}:
-            {
-              home.packages = with pkgs; [
-                nerd-fonts.iosevka
-                nerd-fonts.iosevka-term
-                nerd-fonts.iosevka-term-slab
+          homeManager = {
+            programs.emacs.extraPackages =
+              epkgs: with epkgs; [
+                reformatter
               ];
-              programs.emacs.extraPackages =
-                epkgs: with epkgs; [
-                  reformatter
-                ];
-              editor.initFiles.programming.text = ''
-                <<elisp_prog_mode>>
-              '';
-              fonts.fontconfig.enable = true;
-            };
+            editor.initFiles.programming.text = ''
+              <<elisp_prog>>
+            '';
+            fonts.fontconfig.enable = true;
+          };
           nixos = { };
         };
       };
@@ -1086,11 +1092,10 @@
             deadnix
             manix
             nh
-            nix
             nix-index
             nix-tree
             nixd
-            nixfmt-rfc-style
+            nixfmt
           ];
         };
       nixos = { };
@@ -1098,9 +1103,39 @@
   }
 #+end_src
 
+* Project
+
+#+begin_src nix-ts :tangle modules/project.nix :noweb yes
+  {
+    flake.aspects = {
+      programming = {
+        homeManager = {
+          programs.git.signing.format = null;
+        };
+        nixos = { };
+      };
+    };
+  }
+#+end_src
+
 * Style
 
-#+begin_src nix-ts :tangle modules/style.nix
+#+name: elisp_style
+#+begin_src emacs-lisp
+  (add-to-list 'default-frame-alist '(font . "Monofur Nerd Font-14"))
+  (set-face-attribute 'variable-pitch nil :family "Monofur Nerd Font" :height 140)
+
+  (add-hook 'prog-mode-hook
+            (lambda ()
+              (buffer-face-set '(:family "IosevkaTermSlab Nerd Font" :height 140))))
+
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (custom-set-faces
+               '(org-block ((t (:family "IosevkaTermSlab Nerd Font" :height 140)))))))
+#+end_src
+
+#+begin_src nix-ts :tangle modules/style.nix :noweb yes
   {
     inputs,
     ...
@@ -1113,8 +1148,24 @@
           {
             imports = [ inputs.stylix.homeModules.stylix ];
             config = {
-              stylix.enable = true;
-              stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/one-light.yaml";
+              gtk.gtk4.theme = null;
+              home.packages = with pkgs; [
+                nerd-fonts.monofur
+                nerd-fonts.iosevka
+                nerd-fonts.iosevka-term
+                nerd-fonts.iosevka-term-slab
+              ];
+              editor.initFiles.style.text = ''
+                <<elisp_style>>
+              '';
+              stylix = {
+                enable = true;
+                base16Scheme = "${pkgs.base16-schemes}/share/themes/one-light.yaml";
+                targets.firefox.profileNames = [
+                  "home"
+                  "work"
+                ];
+              };
             };
           };
       };

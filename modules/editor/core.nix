@@ -112,6 +112,17 @@
       ;; Default display buffer action
       (setopt display-buffer-base-action
               '((display-buffer-same-window)))
+
+      ;; Change which commands are disabled by default.
+      ;; (pp-eval-expression '(let (result) (mapatoms (lambda (sym) (when (and (commandp sym) (get sym 'disabled)) (push (list sym (get sym 'disabled)) result)))) result))
+      (dolist (command
+               '(narrow-to-region
+                 upcase-region
+                 downcase-region
+                 narrow-to-page
+                 erase-buffer))
+        (put command 'disabled nil))
+      (put 'suspend-frame 'disabled t)
     '';
 
   };

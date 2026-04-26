@@ -31,8 +31,12 @@ let
       "intl.locale.requested" = "en-GB,en-US";
 
       # Downloads
-      "browser.download.dir" = "/home/clover/tmp/personal";
+      "browser.download.dir" = "/home/clover/Downloads";
+      "browser.download.useDownloadDir" = false;
       "browser.download.folderList" = 2;
+
+      # No resume previous session
+      "browser.sessionstore.max_resumed_crashes" = 0;
 
       # DRM Play Content
       "media.eme.enabled" = true;
@@ -47,14 +51,13 @@ in
       enable = true;
       package = pkgs.firefox-bin;
       languagePacks = [ "en-GB" ];
+      configPath = "${config.xdg.configHome}/mozilla/firefox";
       profiles = {
         home = {
           id = 0;
           name = "home";
           isDefault = true;
           settings = sharedSettings // {
-            "browser.download.dir" = "/home/clover/tmp/personal"; # Download folder
-            "browser.sessionstore.max_resumed_crashes" = 0; # No resume previous session
             "permissions.default.desktop-notification" = 2;
           };
           search = {
@@ -69,8 +72,6 @@ in
           name = "work";
           isDefault = false;
           settings = sharedSettings // {
-            "browser.download.dir" = "/home/clover/tmp/work"; # Download folder
-            "browser.sessionstore.max_resumed_crashes" = 0; # No resume previous session
             "permissions.default.desktop-notification" = 0;
           };
           search = {

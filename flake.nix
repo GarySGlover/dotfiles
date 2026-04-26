@@ -155,7 +155,7 @@
                 go-task
 
                 # Nix
-                nixfmt-rfc-style
+                nixfmt
                 nixd
 
                 # Emacs init development

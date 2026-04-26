@@ -17,7 +17,6 @@
   ./system/nix.nix
   ./system/search.nix
   ./system/xdg.nix
-  ./temp_packages/default.nix
   ./terminal/gum/default.nix
   ./terminal/kitty/default.nix
   ./terminal/shells/default.nix

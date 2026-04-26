@@ -15,7 +15,7 @@
   services.udisks2.enable = true;
 
   # Webdav
-  services.davfs2.enable = true;
+  # services.davfs2.enable = true;
   # https://blog.tiserbox.com/posts/2024-02-23-mounting-webdav-folder-in-nix-os.html
 
   # SSD Trimming

@@ -8,11 +8,10 @@
           deadnix
           manix
           nh
-          nix
           nix-index
           nix-tree
           nixd
-          nixfmt-rfc-style
+          nixfmt
         ];
       };
     nixos = { };

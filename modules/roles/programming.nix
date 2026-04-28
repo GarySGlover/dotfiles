@@ -39,6 +39,18 @@
                         (whitespace-mode t)))
 
             (global-set-key [remap imenu] #'consult-imenu)
+
+            ;; Rebind indentation to use mnemonic movements
+            (let ((km indent-rigidly-map))
+              (define-key km (kbd "<right>") nil)
+              (define-key km (kbd "<left>") nil)
+              (define-key km (kbd "TAB") nil)
+              (define-key km (kbd "S-<left>") nil)
+              (define-key km (kbd "S-<right>") nil)
+              (define-key km (kbd "f") #'indent-rigidly-right)
+              (define-key km (kbd "b") #'indent-rigidly-left)
+              (define-key km (kbd "F") #'indent-rigidly-right-to-tab-stop)
+              (define-key km (kbd "B") #'indent-rigidly-left-to-tab-stop))
           '';
           fonts.fontconfig.enable = true;
         };

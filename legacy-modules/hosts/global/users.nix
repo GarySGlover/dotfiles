@@ -30,7 +30,6 @@ let
           shell = pkgs.fish;
           extraGroups = [
             "realtime"
-            "libvirtd"
             "input"
             "dialout"
             "video"

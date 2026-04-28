@@ -1,8 +1,6 @@
 [
   ./core.nix
-  ./kvm.nix
   ./options.nix
-  ./onlykey.nix
   ./physical/desktop.nix
   ./physical/efi-bootloader.nix
   ./physical/wireless.nix

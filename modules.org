@@ -847,6 +847,9 @@
               space-after-tab
               missing-newline-at-eof)))
 
+  (with-eval-after-load 'indent-bars
+    (setopt indent-bars-treesit-support t))
+
   (add-hook 'prog-mode-hook
             (lambda ()
               (display-line-numbers-mode t)
@@ -1314,6 +1317,7 @@
     Mod+Alt+Minus { set-window-height "-8.333%"; }
     Mod+Alt+Shift+Equal { set-window-height "+8.333%"; }
     Mod+Alt+Equal { reset-window-height; }
+    Mod+a  hotkey-overlay-title="Apps" { spawn "wlr-which-key" "/home/clover/.config/niri/wlr-which-key-config.yaml"; }
     Mod+b  hotkey-overlay-title="Backward column" { focus-column-left-or-last; }
     Mod+c  hotkey-overlay-title="Cast window" { set-dynamic-cast-window; }
     Mod+d  hotkey-overlay-title="Move col left" { move-column-left; }
@@ -1373,19 +1377,80 @@
   screenshot-path "null"
 #+end_src
 
+#+name: wlr_which_key_config
+#+begin_src yaml
+  anchor: center
+  inhibit_compositor_keyboard_shortcuts: true
+  menu:
+  - cmd: swayosd-client --custom-message="$(wpctl inspect @DEFAULT_SINK@ | awk -F'=
+      ' '/node.description/ {gsub(/"/, "", $2); print $2}')"
+    desc: Audio Device
+    key: a
+  - cmd: kitty bluetuith
+    desc: Bluetuith
+    key: b
+  - cmd: DRI_PRIME=1 chromium
+    desc: Chromium
+    key: c
+  - cmd: swayosd-client --custom-message="$(date)"
+    desc: Clock
+    key: d
+  - cmd: $EDITOR
+    desc: Emacs
+    key: e
+  - cmd: firefox --no-remote -P home
+    desc: Firefox
+    key: f
+  - cmd: gamescope -h 1080 --backend headless --adaptive-sync --hdr-enabled --rt --steam
+      -- steam -pipewire-dmabuf -tenfoot
+    desc: Steam
+    key: h
+  - cmd: kitty
+    desc: Terminal
+    key: k
+  - cmd: hyprlock
+    desc: Lock
+    key: l
+  - cmd: google-chrome-stable
+    desc: Work Chrome
+    key: r
+  - cmd: gamescope -h 1080 --adaptive-sync --hdr-enabled --rt --steam -- steam -pipewire-dmabuf
+      -tenfoot
+    desc: Steam
+    key: s
+  - cmd: emacsclient --eval '(eshell t)' --create-frame -no-wait
+    desc: Eshell
+    key: t
+  - cmd: firefox --no-remote -P work
+    desc: Work Browser
+    key: w
+  - cmd: swayosd-client --custom-progress=$(awk '/[0-9]+/ {printf "%.2f\n", $0/100}'
+      /sys/class/power_supply/BAT0/capacity) --custom-progress-text=Battery
+    desc: Battery
+    key: p
+#+end_src
+
 #+begin_src nix-ts :tangle modules/tiling-window-manager/+niri.nix :noweb yes
   {
-    flake.aspects.tilingWindowManager.homeManager = {
-      niri.configFiles.binds.text = ''
-        <<kdl_tiling_window_manager_binds>>
-      '';
-      niri.configFiles.base = {
-        priority = 900;
-        text = ''
-          <<kdl_tiling_window_manager_base>>
+    flake.aspects.tilingWindowManager.homeManager =
+      { pkgs, ... }:
+      {
+        home.packages = with pkgs; [
+          wlr-which-key
+        ];
+        xdg.configFile."niri/wlr-which-key-config.yaml".text = ''
+          <<wlr_which_key_config>>
         '';
+        niri.configFiles.binds.text = ''
+          <<kdl_tiling_window_manager_binds>>
+        '';
+        niri.configFiles.base = {
+          priority = 900;
+          text = ''
+            <<kdl_tiling_window_manager_base>>
+          '';
+        };
       };
-    };
   }
 #+end_src
 

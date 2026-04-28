@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   lib,
   ...
@@ -106,31 +105,6 @@ in
           "spawn-at-startup \"emacs --bg-daemon\"" = [ ];
 
           binds = {
-            # "Super+C" = {
-            #   spawn = [
-            #     "emacsclient"
-            #     "-e"
-            #     "(cnit-wm-org-capture)"
-            #   ];
-            # };
-
-            # "Super+E" = {
-            #   spawn = [
-            #     "emacsclient"
-            #     "-e"
-            #     "(emacs-everywhere)"
-            #   ];
-            # };
-
-            # "Super+T" = {
-            #   spawn = [ "kitty" ];
-            # };
-            "Ctrl+SemiColon" = {
-              spawn = [
-                "wlr-which-key"
-                "${config.xdg.configHome}/niri/wlr-which-key-config.yaml"
-              ];
-            };
             "Mod+Period" = {
               spawn = [
                 "wl-kbptr"

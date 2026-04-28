@@ -26,5 +26,4 @@
   ./window-manager/general-utils/default.nix
   ./window-manager/kanshi/default.nix
   ./window-manager/niri/default.nix
-  ./window-manager/niri/wlr.nix
 ]

@@ -29,6 +29,9 @@
                         space-after-tab
                         missing-newline-at-eof)))
 
+            (with-eval-after-load 'indent-bars
+              (setopt indent-bars-treesit-support t))
+
             (add-hook 'prog-mode-hook
                       (lambda ()
                         (display-line-numbers-mode t)

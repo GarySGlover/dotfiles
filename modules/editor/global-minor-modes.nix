@@ -11,7 +11,8 @@
                   (vertico-mode t)
                   (vertico-multiform-mode t)
                   (marginalia-mode)
-                  (editorconfig-mode t)))
+                  (editorconfig-mode t)
+                  (dtrt-indent-global-mode t)))
     '';
   };
 }

@@ -37,26 +37,10 @@
                       (goto-char (point-min))
                       (when (re-search-forward "\\([0-9]+\\)" nil t)
                         (string-to-number (match-string 1))))))))
-            (defun yaml-indent-from-editorconfig ()
-              "Get indent_size from editorconfig for this buffer."
-              (when (featurep 'editorconfig)
-                (let ((props (editorconfig-core-get-properties-hash (buffer-file-name))))
-                  (when props
-                    (let ((v (gethash 'indent_size props)))
-                      (when (and v (string-match-p "^[0-9]+$" v))
-                        (string-to-number v)))))))
-            (defun yaml-indent-via-dtrt ()
-              "Let dtrt-indent guess the indent for this buffer."
-              (when (featurep 'dtrt-indent)
-                (dtrt-indent-mode 1)
-                (let ((width standard-indent))
-                  (unless (zerop width)
-                    width))))
             (defun yaml-get-indent ()
               "Get the correct YAML indent width via config, editorconfig, or dtrt."
               (or (yamlfmt-indent-from-config (find-yamlfmt-config))
-                  (yaml-indent-from-editorconfig)
-                  (yaml-indent-via-dtrt)
+                  (dtrt-indent-get)
                   2)) ;; 2 as base default
             (defun yamlfmt-args ()
               "Return args for yamlfmt (nil if config sets indent, args if not)."

@@ -20,7 +20,6 @@
               (setopt whitespace-style
                       '(face
                         tabs
-                        spaces
                         trailing
                         space-before-tab
                         newline
@@ -51,6 +50,12 @@
               (define-key km (kbd "b") #'indent-rigidly-left)
               (define-key km (kbd "F") #'indent-rigidly-right-to-tab-stop)
               (define-key km (kbd "B") #'indent-rigidly-left-to-tab-stop))
+
+            (defun dtrt-indent-get ()
+              "Local init function to get the indentation using dtrt-indent lookups."
+              (let ((indent-variable (caddr (dtrt-indent--search-hook-mapping major-mode))))
+                (when indent-variable
+                  (eval indent-variable))))
           '';
           fonts.fontconfig.enable = true;
         };

@@ -150,7 +150,7 @@ to.
      (inhibit-same-window . nil)))
 #+end_src
 
-* cnit Functions
+* COMMENT cnit Functions
 :PROPERTIES:
 :header-args:emacs-lisp+: :tangle cnit-functions.el
 :END:
@@ -199,7 +199,7 @@ Checking if the system is using dark or light mode.
                      (symbol-name scheme))))))
 #+end_src
 
-* Theme
+* COMMENT Theme
 #+begin_src emacs-lisp
   (advice-add
    'load-theme

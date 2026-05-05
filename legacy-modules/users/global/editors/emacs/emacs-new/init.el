@@ -7,25 +7,6 @@
 ;; Load local packages autoloads
 
 (load "local-packages-autoloads")
-;; Theme
-
-(advice-add
- 'load-theme
- :before
- (defun cnit-pre-load-theme (&rest _args)
-   "Disable any loaded themes before enabling a new THEME.
-This prevents overlapping themes; something I would rarely want."
-   (dolist (theme custom-enabled-themes)
-     (disable-theme theme))))
-
-(defun cnit-load-system-theme ()
-  "Load a theme based on the system color scheme."
-  (require 'standard-themes)
-  (when (fboundp 'cnit-with-system-colour-scheme)
-    (cnit-with-system-colour-scheme
-     (load-theme 'standard-dark-tinted t) (load-theme 'standard-light-tinted t))))
-
-(add-hook 'emacs-startup-hook #'cnit-load-system-theme)
 ;; Productivity
 ;; Configuration for tools that enhance productivity, navigation, and
 ;; overall workflow in Emacs.
@@ -36,7 +17,7 @@ This prevents overlapping themes; something I would rarely want."
 (bind-key "M-j" #'avy-isearch isearch-mode-map)
 (with-eval-after-load 'avy
   (setopt avy-style 'at-full
-	  avy-single-candidate-jump nil))
+          avy-single-candidate-jump nil))
 
 
 ;; Embark for acting upon objects.
@@ -369,7 +350,7 @@ This filters `project--list` in place and writes the updated list to disk."
 ;; easier using different methods such as out of order regexps.
 
 (setopt completion-styles '(orderless basic)
-	completion-category-overrides '((file (styles basic partial-completion))))
+        completion-category-overrides '((file (styles basic partial-completion))))
 
 
 ;; Change dabbrev to hippie expand for better completion capabilities.

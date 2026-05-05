@@ -473,6 +473,79 @@
   }
 #+end_src
 
+** Mode/Header line
+
+I want to generate a custom mode line. There will be differences in
+the modeline dependent on whether the window is active or not.
+I will use the left part of the modeline for the shared information
+and the right part for the active only information. If I find that I
+have too much information, I may also use the header line, however I
+would rather save this for other information, such as breadcrumbs.
+
+The shared information I need to convey is as follows:
+- Buffer read only
+  Should be conveyed by a lock icon
+- Buffer name
+  Need to decide on a maximum length of name to display. Where the
+  name has to be shortened to fit, it should be expressed as shortened
+  with triple dots. If possible this should come from the font as a
+  single glyph.
+- Modified status
+  Should only apply to buffers that have
+  an associated file. It can be conveyed by making the buffer name
+  bold when it's modified.
+- Major mode
+  Use of icons from font for language as prefix to name where
+  possible. Might need to create a variable that stores the lookups of
+  major-modes to icons.
+- Git branch
+- envrc status
+
+The active window information will show:
+- Date/Time
+- Battery status
+- Power status
+- Audio volume
+
+#+begin_src emacs-lisp
+  (setq-default mode-line-format
+                '("%e" mode-line-front-space (:propertize ("" mode-line-mule-info mode-line-client mode-line-modified mode-line-remote mode-line-window-dedicated) display (min-width (6.0))) mode-line-frame-identification mode-line-buffer-identification "   " mode-line-position (project-mode-line project-mode-line-format) (vc-mode vc-mode) "  " mode-line-modes mode-line-misc-info mode-line-end-spaces))
+
+  ;; kmacro recording
+  ;; remote
+  ;; modified
+  ;; narrow
+  ;; mode / language
+  ;; treesitter
+
+  (defvar-local my-modeline-narrow
+      '(:eval
+        (when (buffer-narrowed-p)
+          "󰈲")))
+
+  (defun my-modeline-buffer-face ()
+    (cond
+     ((and (buffer-file-name) (buffer-modified-p)
+           '(italic mode-line-buffer-id)))))
+
+  (defun my-modeline--buffer-name ()
+    (format " %s " (buffer-name)))
+
+  (defvar-local my-modeline-buffer-name
+      '(:eval (propertize (my-modeline--buffer-name)
+                          'face (my-modeline-buffer-face))))
+
+  (dolist (construct
+           '(my-modeline-buffer-name
+             my-modeline-narrow))
+    (put construct 'risky-local-variable t))
+
+  (setq-default mode-line-format
+                '("%e"
+                  my-modeline-narrow
+                  my-modeline-buffer-name))
+#+end_src
+
 ** Global Minor Modes
 
 #+name: elisp_global_minor_modes
@@ -486,7 +559,8 @@
               (vertico-mode t)
               (vertico-multiform-mode t)
               (marginalia-mode)
-              (editorconfig-mode t)))
+              (editorconfig-mode t)
+              (dtrt-indent-global-mode t)))
 #+end_src
 
 #+begin_src nix-ts :tangle modules/editor/global-minor-modes.nix :noweb yes
@@ -838,7 +912,6 @@
     (setopt whitespace-style
             '(face
               tabs
-              spaces
               trailing
               space-before-tab
               newline
@@ -869,6 +942,12 @@
     (define-key km (kbd "b") #'indent-rigidly-left)
     (define-key km (kbd "F") #'indent-rigidly-right-to-tab-stop)
     (define-key km (kbd "B") #'indent-rigidly-left-to-tab-stop))
+
+  (defun dtrt-indent-get ()
+    "Local init function to get the indentation using dtrt-indent lookups."
+    (let ((indent-variable (caddr (dtrt-indent--search-hook-mapping major-mode))))
+      (when indent-variable
+        (eval indent-variable))))
 #+end_src
 
 #+begin_src nix-ts :tangle modules/roles/programming.nix :noweb yes
@@ -949,26 +1028,10 @@
               (goto-char (point-min))
               (when (re-search-forward "\\([0-9]+\\)" nil t)
                 (string-to-number (match-string 1))))))))
-    (defun yaml-indent-from-editorconfig ()
-      "Get indent_size from editorconfig for this buffer."
-      (when (featurep 'editorconfig)
-        (let ((props (editorconfig-core-get-properties-hash (buffer-file-name))))
-          (when props
-            (let ((v (gethash 'indent_size props)))
-              (when (and v (string-match-p "^[0-9]+$" v))
-                (string-to-number v)))))))
-    (defun yaml-indent-via-dtrt ()
-      "Let dtrt-indent guess the indent for this buffer."
-      (when (featurep 'dtrt-indent)
-        (dtrt-indent-mode 1)
-        (let ((width standard-indent))
-          (unless (zerop width)
-            width))))
     (defun yaml-get-indent ()
       "Get the correct YAML indent width via config, editorconfig, or dtrt."
       (or (yamlfmt-indent-from-config (find-yamlfmt-config))
-          (yaml-indent-from-editorconfig)
-          (yaml-indent-via-dtrt)
+          (dtrt-indent-get)
           2)) ;; 2 as base default
     (defun yamlfmt-args ()
       "Return args for yamlfmt (nil if config sets indent, args if not)."
@@ -1137,17 +1200,21 @@
 
 #+name: elisp_style
 #+begin_src emacs-lisp
-  (add-to-list 'default-frame-alist '(font . "Monofur Nerd Font-14"))
-  (set-face-attribute 'variable-pitch nil :family "Monofur Nerd Font" :height 140)
+  (add-to-list 'default-frame-alist '(font . "RecMonoCasual Nerd Font-12"))
+  (add-hook 'after-init-hook (lambda ()
+                               (custom-set-faces
+                                '(variable-pitch ((t (:family "RecMonoCasual Nerd Font" :height 120))))
+                                '(font-lock-comment-face ((t (:inherit error :foreground nil))))
+                                )))
 
   (add-hook 'prog-mode-hook
             (lambda ()
-              (buffer-face-set '(:family "IosevkaTermSlab Nerd Font" :height 140))))
+              (buffer-face-set '(:family "IosevkaTerm Nerd Font" :height 140))))
 
   (add-hook 'org-mode-hook
             (lambda ()
               (custom-set-faces
-               '(org-block ((t (:family "IosevkaTermSlab Nerd Font" :height 140)))))))
+               '(org-block ((t (:family "IosevkaTerm Nerd Font" :height 140)))))))
 #+end_src
 
 #+begin_src nix-ts :tangle modules/style.nix :noweb yes
@@ -1159,23 +1226,37 @@
     flake.aspects = {
       style = {
         homeManager =
-          { pkgs, ... }:
+          { pkgs, config, ... }:
           {
             imports = [ inputs.stylix.homeModules.stylix ];
             config = {
+              programs.emacs.extraPackages = epkgs: with epkgs; [ show-font ];
               gtk.gtk4.theme = null;
-              home.packages = with pkgs; [
-                nerd-fonts.monofur
-                nerd-fonts.iosevka
-                nerd-fonts.iosevka-term
-                nerd-fonts.iosevka-term-slab
-              ];
+              home.packages = builtins.filter pkgs.lib.isDerivation (builtins.attrValues pkgs.nerd-fonts);
               editor.initFiles.style.text = ''
                 <<elisp_style>>
               '';
               stylix = {
                 enable = true;
-                base16Scheme = "${pkgs.base16-schemes}/share/themes/one-light.yaml";
+                # base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-latte.yaml";
+                base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
+                fonts = {
+                  serif = config.stylix.fonts.sansSerif;
+                  sansSerif = {
+                    package = pkgs.nerd-fonts.recursive-mono;
+                    name = "RecMonoCasual Nerd Font";
+                  };
+
+                  monospace = {
+                    package = pkgs.nerd-fonts.iosevka-term;
+                    name = "IosevkaTerm Nerd Font";
+                  };
+                  emoji = config.stylix.fonts.monospace;
+                  sizes = {
+                    desktop = 12;
+                    applications = 12;
+                  };
+                };
                 targets.firefox.profileNames = [
                   "home"
                   "work"

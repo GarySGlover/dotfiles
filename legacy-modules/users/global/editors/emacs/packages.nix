@@ -171,7 +171,6 @@ let
     ]
     ++ [
       # Language modes
-      nix-ts-mode
       terraform-doc
       terraform-mode
       zig-mode

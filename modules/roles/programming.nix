@@ -37,6 +37,12 @@
                         (indent-bars-mode t)
                         (whitespace-mode t)))
 
+            (add-hook 'yaml-ts-mode-hook
+                      (lambda ()
+                        (display-line-numbers-mode t)
+                        (indent-bars-mode t)
+                        (whitespace-mode t)))
+
             (global-set-key [remap imenu] #'consult-imenu)
 
             ;; Rebind indentation to use mnemonic movements

@@ -26,10 +26,14 @@
     flake-aspects = {
       url = "github:vic/flake-aspects";
     };
-    wrappers.url = "github:lassulus/wrappers";
+    wrappers = {
+      url = "github:lassulus/wrappers";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     stylix = {
       url = "github:nix-community/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "flake-parts";
     };
 
     # Emacs Packages

@@ -49,8 +49,6 @@ in
 {
   config = {
     home.packages = with pkgs; [
-      wbg
-      hyprlock
       (wl-kbptr.overrideAttrs (_: {
         src = fetchFromGitHub {
           owner = "moverest";

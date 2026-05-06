@@ -17,7 +17,6 @@
             (require 'reformatter)
             (require 'editorconfig)
             (require 'dtrt-indent)
-            (require 'yaml-ts-mode)
             (defun find-yamlfmt-config ()
               "Return the path to the nearest yamlfmt config file, or nil."
               (let ((base (or (locate-dominating-file default-directory ".yamlfmt")

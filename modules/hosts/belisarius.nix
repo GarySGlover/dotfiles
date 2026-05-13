@@ -5,6 +5,7 @@
     modules = [
       inputs.self.modules.nixos.core
       inputs.self.modules.nixos.tilingWindowManager
+      inputs.self.modules.nixos.guix
       inputs.sops-nix.nixosModules.sops
       # Still using the legacy modules for now:
       (import ../../legacy-modules/hosts/belisarius/extra.nix)

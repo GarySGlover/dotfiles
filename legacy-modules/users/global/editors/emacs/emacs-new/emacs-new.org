@@ -259,12 +259,6 @@ Embark for acting upon objects.
 Most packages won't get there own section. However org mode and it's
 various extensions are a significant part of the Emacs experience.
 
-Apply automatic line breaking when inserting a space at a column.
-#+begin_src emacs-lisp
-  (with-eval-after-load 'org
-    (add-hook 'org-mode-hook #'auto-fill-mode))
-#+end_src
-
 Automatically tangle files on save, this helps with literate
 code/configs to generate the resulting files.
 #+begin_src emacs-lisp
@@ -577,16 +571,6 @@ easier using different methods such as out of order regexps.
 Change dabbrev to hippie expand for better completion capabilities.
 #+begin_src emacs-lisp
   (global-set-key [remap dabbrev-expand] 'hippie-expand)
-#+end_src
-
-Completion in region enhancements. Show in popup by point and allow
-for selection using standard movement keys.
-#+begin_src emacs-lisp
-  (autoload #'corfu--in-region "corfu")
-  (setopt completion-in-region-function 'corfu--in-region)
-  (with-eval-after-load 'corfu
-    (setopt
-     corfu-cycle t))
 #+end_src
 
 Template package configuration.

@@ -44,12 +44,6 @@
 ;; Most packages won't get there own section. However org mode and it's
 ;; various extensions are a significant part of the Emacs experience.
 
-;; Apply automatic line breaking when inserting a space at a column.
-
-(with-eval-after-load 'org
-  (add-hook 'org-mode-hook #'auto-fill-mode))
-
-
 ;; Automatically tangle files on save, this helps with literate
 ;; code/configs to generate the resulting files.
 
@@ -356,16 +350,6 @@ This filters `project--list` in place and writes the updated list to disk."
 ;; Change dabbrev to hippie expand for better completion capabilities.
 
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
-
-
-;; Completion in region enhancements. Show in popup by point and allow
-;; for selection using standard movement keys.
-
-(autoload #'corfu--in-region "corfu")
-(setopt completion-in-region-function 'corfu--in-region)
-(with-eval-after-load 'corfu
-  (setopt
-   corfu-cycle t))
 
 
 ;; Template package configuration.

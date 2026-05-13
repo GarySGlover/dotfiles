@@ -3,7 +3,6 @@
 :header-args: :mkdirp yes :comments link
 :END:
 #+TITLE: Clover's System Config
-#+STARTUP: folded overview hideblocks
 
 * _Root
 ** Taskfile
@@ -949,6 +948,15 @@ The active window information will show:
     ;; Org source code black display rules
     (setopt org-src-window-setup 'plain)
 
+    ;; Visual word wrap
+    (add-hook 'org-mode-hook #'visual-line-mode)
+    (add-hook 'visual-line-mode-hook #'visual-fill-column-for-vline)
+    (add-hook 'visual-line-mode-hook #'visual-wrap-prefix-mode)
+    (with-eval-after-load 'visual-fill-column
+      (setopt
+       visual-fill-column-center-text t
+       fill-column 120))
+
     (keymap-set org-mode-map "M-o" #'casual-org-tmenu)
     (keymap-set org-table-fedit-map "M-o" #'casual-org-table-fedit-tmenu))
 #+end_src
@@ -982,6 +990,7 @@ The active window information will show:
           epkgs: with epkgs; [
             casual
             denote
+            visual-fill-column
           ];
       };
     };
@@ -1006,6 +1015,14 @@ The active window information will show:
 
   (with-eval-after-load 'indent-bars
     (setopt indent-bars-treesit-support t))
+
+  (autoload #'corfu--in-region "corfu")
+  (setopt completion-in-region-function 'corfu--in-region)
+  (with-eval-after-load 'corfu
+    (corfu-candidate-overlay-mode t)
+    (setopt
+     corfu-cycle t
+     corfu-auto nil))
 
   (add-hook 'prog-mode-hook
             (lambda ()
@@ -1051,11 +1068,15 @@ The active window information will show:
             docker
             go
             yaml
+            common-lisp
+            guix
           ];
           homeManager = {
             programs.emacs.extraPackages =
               epkgs: with epkgs; [
                 reformatter
+                corfu
+                corfu-candidate-overlay
               ];
             editor.initFiles.programming.text = ''
               <<elisp_prog>>
@@ -1288,6 +1309,69 @@ The active window information will show:
     (defun nix-ts-mode-setup ()
       (nix-format-on-save-mode 1))
     (add-hook 'nix-ts-mode-hook #'nix-ts-mode-setup))
+#+end_src
+
+** Common Lisp
+
+#+begin_src nix-ts :tangle modules/common-lisp.nix :noweb yes
+  {
+    flake.aspects.common-lisp = {
+      homeManager =
+        { pkgs, ... }:
+        {
+          home.packages = with pkgs; [
+          ];
+          programs.emacs.extraPackages =
+            epkgs: with epkgs; [
+              sly
+            ];
+          editor.initFiles.common-lisp.text = ''
+            <<elisp_common_lisp>>
+          '';
+        };
+      nixos = { };
+    };
+  }
+#+end_src
+
+#+NAME: elisp_common_lisp
+#+begin_src emacs-lisp
+  (with-eval-after-load 'sly
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     (add-to-list 'org-babel-load-languages '(lisp . t)))
+    (setopt
+     inferior-lisp-program "sbcl"
+     org-babel-lisp-eval-fn 'sly-eval))
+#+end_src
+
+** Guix
+
+#+begin_src nix-ts :tangle modules/guix.nix :noweb yes
+  {
+    flake.aspects.guix = {
+      homeManager =
+        { pkgs, ... }:
+        {
+          home.packages = with pkgs; [
+            guix
+          ];
+        };
+      nixos = {
+        services.guix = {
+          enable = true;
+          gc = {
+            enable = true;
+            dates = "weekly";
+            extraArgs = [
+              "--delete-generations=1m"
+              "--vacuum-database"
+            ];
+          };
+        };
+      };
+    };
+  }
 #+end_src
 
 * Project

@@ -9,11 +9,15 @@
           docker
           go
           yaml
+          common-lisp
+          guix
         ];
         homeManager = {
           programs.emacs.extraPackages =
             epkgs: with epkgs; [
               reformatter
+              corfu
+              corfu-candidate-overlay
             ];
           editor.initFiles.programming.text = ''
             (with-eval-after-load 'whitespace
@@ -30,6 +34,14 @@
 
             (with-eval-after-load 'indent-bars
               (setopt indent-bars-treesit-support t))
+
+            (autoload #'corfu--in-region "corfu")
+            (setopt completion-in-region-function 'corfu--in-region)
+            (with-eval-after-load 'corfu
+              (corfu-candidate-overlay-mode t)
+              (setopt
+               corfu-cycle t
+               corfu-auto nil))
 
             (add-hook 'prog-mode-hook
                       (lambda ()

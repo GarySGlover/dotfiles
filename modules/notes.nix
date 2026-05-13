@@ -34,6 +34,15 @@
           ;; Org source code black display rules
           (setopt org-src-window-setup 'plain)
 
+          ;; Visual word wrap
+          (add-hook 'org-mode-hook #'visual-line-mode)
+          (add-hook 'visual-line-mode-hook #'visual-fill-column-for-vline)
+          (add-hook 'visual-line-mode-hook #'visual-wrap-prefix-mode)
+          (with-eval-after-load 'visual-fill-column
+            (setopt
+             visual-fill-column-center-text t
+             fill-column 120))
+
           (keymap-set org-mode-map "M-o" #'casual-org-tmenu)
           (keymap-set org-table-fedit-map "M-o" #'casual-org-table-fedit-tmenu))
         (add-hook 'dired-mode #'denote-dired-mode)
@@ -53,6 +62,7 @@
         epkgs: with epkgs; [
           casual
           denote
+          visual-fill-column
         ];
     };
   };

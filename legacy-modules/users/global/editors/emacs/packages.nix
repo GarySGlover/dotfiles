@@ -132,8 +132,6 @@ let
       cape
       consult
       consult-yasnippet
-      corfu
-      corfu-candidate-overlay
       coterm
       dtrt-indent
       emacs-everywhere

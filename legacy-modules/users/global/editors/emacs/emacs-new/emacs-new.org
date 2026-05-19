@@ -428,36 +428,6 @@ as I don't use other vc systems.
      project-mode-line nil))
 #+end_src
 
-Project memoization performance fix for the project modeline when the
-file is not in a project. Refer to Emacs bug for the reason I have
-this here
-https://lists.gnu.org/archive/html/bug-gnu-emacs/2025-05/msg01039.html.
-#+begin_src emacs-lisp
-  (with-eval-after-load 'project
-    (defun cnit-memoize-project-current
-        (orig &optional prompt directory)
-      (if (boundp 'memoize-project-current--cache)
-          memoize-project-current--cache
-        (set
-         (make-local-variable 'memoize-project-current--cache)
-         (funcall orig prompt directory))))
-    (defun cnit-project-mode-line-format ()
-      "Memoize 'project-current' for mode line performance."
-      (let ((original-project-current
-             (symbol-function 'project-current)))
-        (unwind-protect
-            (progn
-              (fset 'project-current
-                    (lambda (&optional prompt directory)
-                      (cnit-memoize-project-current
-                       original-project-current prompt directory)))
-              (project-mode-line-format))
-          (fset 'project-current original-project-current))))
-    (advice-add
-     'project-mode-line-format
-     :override #'cnit-project-mode-line-format))
-#+end_src
-
 Basig magit settings.
 #+begin_src emacs-lisp
   (with-eval-after-load 'magit

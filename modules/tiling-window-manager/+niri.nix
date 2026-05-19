@@ -1,7 +1,7 @@
 # [[file:../../modules.org::*Niri][Niri:4]]
 {
   flake.aspects.tilingWindowManager.homeManager =
-    { pkgs, ... }:
+    { pkgs, config, ... }:
     {
       home.packages = with pkgs; [
         wlr-which-key
@@ -70,7 +70,7 @@
           Mod+Alt+Minus { set-window-height "-8.333%"; }
           Mod+Alt+Shift+Equal { set-window-height "+8.333%"; }
           Mod+Alt+Equal { reset-window-height; }
-          Mod+a  hotkey-overlay-title="Apps" { spawn "wlr-which-key" "/home/clover/.config/niri/wlr-which-key-config.yaml"; }
+          Mod+a  hotkey-overlay-title="Apps" { spawn "wlr-which-key" "${config.xdg.configHome}/niri/wlr-which-key-config.yaml"; }
           Mod+b  hotkey-overlay-title="Backward column" { focus-column-left-or-last; }
           Mod+c  hotkey-overlay-title="Cast window" { set-dynamic-cast-window; }
           Mod+d  hotkey-overlay-title="Move col left" { move-column-left; }

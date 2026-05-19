@@ -40,6 +40,7 @@
               options
               programming
               style
+              terminal
               tilingWindowManager
               webRequests
             ];

@@ -6,33 +6,35 @@
     graphics = {
       enable = true;
       enable32Bit = true;
-      extraPackages = with pkgs; [ rocmPackages.clr.icd ];
+      extraPackages = with pkgs; [
+        # rocmPackages.clr.icd
+      ];
     };
   };
 
   services.lact.enable = true;
 
-  systemd.tmpfiles.rules =
-    let
-      rocmEnv = pkgs.symlinkJoin {
-        name = "opt-rocm";
-        paths = with pkgs.rocmPackages; [
-          rocblas
-          hipblas
-          clr
-        ];
-      };
-    in
-    [
-      "L+    /opt/rocm   -    -    -     -    ${rocmEnv}"
-    ];
+  # systemd.tmpfiles.rules =
+  #   let
+  #     rocmEnv = pkgs.symlinkJoin {
+  #       name = "opt-rocm";
+  #       paths = with pkgs.rocmPackages; [
+  #         rocblas
+  #         hipblas
+  #         clr
+  #       ];
+  #     };
+  #   in
+  #   [
+  #     "L+    /opt/rocm   -    -    -     -    ${rocmEnv}"
+  #   ];
 
   environment.systemPackages = with pkgs; [
     clinfo
     mesa-demos
     vulkan-tools
     amdgpu_top
-    rocmPackages.rocm-smi
+    # rocmPackages.rocm-smi
   ];
 
   users.groups.realtime = { };

@@ -1,0 +1,1 @@
+/home/clover/dotfiles/secrets/clover-secrets.nix

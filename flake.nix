@@ -116,14 +116,14 @@
           in
           {
             homeConfigurations = {
-              "clover@MW-RSY-GPRG8C3" = inputs.home-manager.lib.homeManagerConfiguration {
+              "gary_glover@next.co.uk" = inputs.home-manager.lib.homeManagerConfiguration {
                 inherit pkgs extraSpecialArgs;
                 modules = [
                   (
                     { ... }:
                     {
-                      home.username = "clover";
-                      home.homeDirectory = "/home/clover";
+                      home.username = "gary_glover";
+                      home.homeDirectory = "/home/gary_glover";
                       wolf.secretsPath = ./secrets;
                     }
                   )

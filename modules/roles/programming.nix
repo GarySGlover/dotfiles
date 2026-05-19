@@ -1,4 +1,4 @@
-# [[file:../../modules.org::*Programming][Programming:2]]
+# [[file:../../modules.org::*Programming][Programming:1]]
 {
   flake.aspects =
     { aspects, ... }:
@@ -74,6 +74,33 @@
               (let ((indent-variable (caddr (dtrt-indent--search-hook-mapping major-mode))))
                 (when indent-variable
                   (eval indent-variable))))
+            (bind-key "C-c a" #'transient-compile)
+            (with-eval-after-load 'transient-compile
+              (setopt transient-compile-interactive t)
+
+              (defmacro my-with-temp-process-buffer (&rest body)
+                "Like `with-temp-buffer', but always propagate `process-environment'.
+            When that var is buffer-local in the calling buffer, it is not
+            propagated by `with-temp-buffer', so we explicitly ensure that
+            happens, so that processes will be invoked consistently.  BODY is
+            as for that macro."
+                (declare (indent 0) (debug (body)))
+                (let ((p (cl-gensym)))
+                  `(let ((,p process-environment))
+                     (with-temp-buffer
+                       (setq-local process-environment ,p)
+                       ,@body))))
+
+              (defun transient-compile--shell-run (command)
+                "Run shell command and return stdout as string."
+                (transient-compile--log "Running command: %s" command)
+                (my-with-temp-process-buffer
+                 (let* ((process-environment
+                         (cons "LC_ALL=C" process-environment))
+                        (exit-code
+                         (process-file-shell-command command nil (current-buffer) nil)))
+                   (transient-compile--log "Command finished with status %s" exit-code)
+                   (buffer-string)))))
           '';
           fonts.fontconfig.enable = true;
         };
@@ -81,4 +108,4 @@
       };
     };
 }
-# Programming:2 ends here
+# Programming:1 ends here

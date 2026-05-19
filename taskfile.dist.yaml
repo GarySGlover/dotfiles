@@ -1,10 +1,26 @@
 # [[file:modules.org::*Taskfile][Taskfile:1]]
 version: '3'
 tasks:
-  default:
+  check:
     desc: Check nix flake for all systems
     cmds:
     - nix flake check ./ --show-trace --all-systems
+  update:
+    desc: Ensure all repository components are up-to-date
+    cmds:
+    - task: update-precommit
+    - task: update-nix
+    - task: check
+    - nix develop --build
+    - pre-commit run --all-files
+  update-precommit:
+    desc: Update pre-commit hooks to their latest versions
+    cmds:
+    - pre-commit autoupdate
+  update-nix:
+    desc: Refresh Nix flake inputs to the latest available versions
+    cmds:
+    - nix flake update
   nixos:*:
     desc: Build nixos
     aliases:

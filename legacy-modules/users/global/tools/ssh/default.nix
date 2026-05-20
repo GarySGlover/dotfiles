@@ -29,14 +29,6 @@ in
           compression = true;
           forwardAgent = true;
         };
-        "ssh.dev.azure.com" = {
-          hostname = "ssh.dev.azure.com";
-          identityFile = "${homeDir}/.ssh/id_rsa_dev.azure.com";
-        };
-        "github.com" = {
-          hostname = "github.com";
-          identityFile = "${homeDir}/.ssh/id_ed25519_github.com";
-        };
         "192.168.*.*".extraOptions = {
           StrictHostKeyChecking = "no";
           UserKnownHostsFile = "/dev/null";

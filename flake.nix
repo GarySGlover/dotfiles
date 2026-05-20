@@ -35,6 +35,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
     };
+    nixgl = {
+      url = "github:nix-community/nixGL";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Emacs Packages
     transient-compile = {
@@ -105,7 +109,7 @@
                   );
                   importedOverlays = map (file: import (./legacy-modules/overlays + "/${file}") inputs) overlayFiles;
                 in
-                importedOverlays;
+                importedOverlays ++ [ inputs.nixgl.overlay ];
             };
 
             extraSpecialArgs = {
@@ -116,7 +120,7 @@
           in
           {
             homeConfigurations = {
-              "gary_glover@next.co.uk" = inputs.home-manager.lib.homeManagerConfiguration {
+              "gary_glover" = inputs.home-manager.lib.homeManagerConfiguration {
                 inherit pkgs extraSpecialArgs;
                 modules = [
                   (
@@ -125,11 +129,24 @@
                       home.username = "gary_glover";
                       home.homeDirectory = "/home/gary_glover";
                       wolf.secretsPath = ./secrets;
+                      imports = with inputs.self.modules.homeManager; [
+                        nonNix
+                        core
+                        # devops
+                        editor
+                        environment
+                        notes
+                        options
+                        programming
+                        style
+                        terminal
+                        tilingWindowManager
+                        webRequests
+                      ];
                     }
                   )
                 ]
-                ++ (import ./legacy-modules/users/global)
-                ++ (import ./legacy-modules/users/clover);
+                ++ (import ./legacy-modules/users/global);
               };
             };
 

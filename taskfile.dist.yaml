@@ -37,4 +37,8 @@ tasks:
         - test
     cmds:
     - sudo nixos-rebuild {{.TYPE}} --flake .#
+  home:
+    cmds:
+    - nix build .#homeConfigurations."gary_glover".activationPackage --extra-experimental-features nix-command --extra-experimental-features flakes --show-trace
+    - ./result/activate
 # Taskfile:1 ends here

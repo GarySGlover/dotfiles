@@ -47,6 +47,10 @@
           - test
       cmds:
       - sudo nixos-rebuild {{.TYPE}} --flake .#
+    home:
+      cmds:
+      - nix build .#homeConfigurations."gary_glover".activationPackage --extra-experimental-features nix-command --extra-experimental-features flakes --show-trace
+      - ./result/activate
 #+end_src
 
 * Audio
@@ -2179,6 +2183,31 @@ Add magit section hooks to display extra useful informat in the magit-status buf
           <<elisp_webclient>>
         '';
       };
+    };
+  }
+#+end_src
+
+* Non-nix
+
+#+begin_src nix-ts :tangle modules/non-nix.nix :noweb yes
+  {
+    flake.aspects = {
+      nonNix.homeManager =
+        { pkgs, ... }:
+        {
+          nix = {
+            package = pkgs.nix;
+            extraOptions = ''
+              experimental-features = nix-command flakes
+            '';
+          };
+          home.packages = with pkgs; [
+            # Might need to install nscnd with apt for some stuff to work
+            nixgl.nixGLIntel
+            niri
+            physlock
+          ];
+        };
     };
   }
 #+end_src

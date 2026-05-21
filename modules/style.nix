@@ -56,8 +56,8 @@
             '';
             stylix = {
               enable = true;
-              # base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-latte.yaml";
-              base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
+              base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-latte.yaml";
+              # base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
               fonts = {
                 serif = config.stylix.fonts.sansSerif;
                 sansSerif = {

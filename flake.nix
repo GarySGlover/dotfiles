@@ -132,7 +132,7 @@
                       imports = with inputs.self.modules.homeManager; [
                         nonNix
                         core
-                        # devops
+                        devops
                         editor
                         environment
                         notes

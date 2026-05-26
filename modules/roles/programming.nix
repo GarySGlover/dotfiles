@@ -76,8 +76,8 @@
                   (eval indent-variable))))
             (bind-key "C-c a" #'transient-compile)
             (with-eval-after-load 'transient-compile
-              (setopt transient-compile-interactive t)
-
+              (setopt transient-compile-interactive t
+                      transient-compile-group-function #'transient-compile-enhanced-group-function)
               (defmacro my-with-temp-process-buffer (&rest body)
                 "Like `with-temp-buffer', but always propagate `process-environment'.
             When that var is buffer-local in the calling buffer, it is not
@@ -95,12 +95,32 @@
                 "Run shell command and return stdout as string."
                 (transient-compile--log "Running command: %s" command)
                 (my-with-temp-process-buffer
-                 (let* ((process-environment
-                         (cons "LC_ALL=C" process-environment))
-                        (exit-code
-                         (process-file-shell-command command nil (current-buffer) nil)))
-                   (transient-compile--log "Command finished with status %s" exit-code)
-                   (buffer-string)))))
+                  (let* ((process-environment
+                          (cons "LC_ALL=C" process-environment))
+                         (exit-code
+                          (process-file-shell-command command nil (current-buffer) nil)))
+                    (transient-compile--log "Command finished with status %s" exit-code)
+                    (buffer-string))))
+
+              (defun transient-compile-taskfile-targets (directory)
+                "Get list of targets from a taskfile."
+                (when-let* ((executable (transient-compile--tool-property 'task :exe))
+                            (command (transient-compile--shell-join
+                                      executable
+                                      (unless (transient-compile--tool-property 'task :chdir)
+                                        `("-d" , directory))
+                                      "--json"
+                                      "-l"))
+                            (output (transient-compile--shell-run command))
+                            (json (json-read-from-string output)))
+                  (seq-map (lambda (task)
+                             (cdr (assoc 'name task)))
+                           (cdr (assoc 'tasks json)))))
+
+              (defun transient-compile-enhanced-group-function (target)
+                (if (string-match "^\\(.*?\\):\\(.*\\)$" target)
+                    (match-string 1 target)
+                  (transient-compile-default-group-function target))))
           '';
           fonts.fontconfig.enable = true;
         };

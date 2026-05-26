@@ -1145,13 +1145,13 @@ Add support for transient compile with direnv integration.
 - [X] Run interactive so can update command
 - [X] Need to allow the shell to be interactive
   Use =C-c C-j= with ghostel to enter interactive on demand.
-- [ ] Configure binding
+- [X] Configure binding
 #+name: elisp_prog_transient
 #+begin_src emacs-lisp
   (bind-key "C-c a" #'transient-compile)
   (with-eval-after-load 'transient-compile
-    (setopt transient-compile-interactive t)
-
+    (setopt transient-compile-interactive t
+            transient-compile-group-function #'transient-compile-enhanced-group-function)
     (defmacro my-with-temp-process-buffer (&rest body)
       "Like `with-temp-buffer', but always propagate `process-environment'.
   When that var is buffer-local in the calling buffer, it is not
@@ -1169,15 +1169,33 @@ Add support for transient compile with direnv integration.
       "Run shell command and return stdout as string."
       (transient-compile--log "Running command: %s" command)
       (my-with-temp-process-buffer
-       (let* ((process-environment
-               (cons "LC_ALL=C" process-environment))
-              (exit-code
-               (process-file-shell-command command nil (current-buffer) nil)))
-         (transient-compile--log "Command finished with status %s" exit-code)
-         (buffer-string)))))
+        (let* ((process-environment
+                (cons "LC_ALL=C" process-environment))
+               (exit-code
+                (process-file-shell-command command nil (current-buffer) nil)))
+          (transient-compile--log "Command finished with status %s" exit-code)
+          (buffer-string))))
+
+    (defun transient-compile-taskfile-targets (directory)
+      "Get list of targets from a taskfile."
+      (when-let* ((executable (transient-compile--tool-property 'task :exe))
+                  (command (transient-compile--shell-join
+                            executable
+                            (unless (transient-compile--tool-property 'task :chdir)
+                              `("-d" , directory))
+                            "--json"
+                            "-l"))
+                  (output (transient-compile--shell-run command))
+                  (json (json-read-from-string output)))
+        (seq-map (lambda (task)
+                   (cdr (assoc 'name task)))
+                 (cdr (assoc 'tasks json)))))
+
+    (defun transient-compile-enhanced-group-function (target)
+      (if (string-match "^\\(.*?\\):\\(.*\\)$" target)
+          (match-string 1 target)
+        (transient-compile-default-group-function target))))
 #+end_src
-
-
 
 ** YAML
 
@@ -1472,11 +1490,27 @@ Add support for transient compile with direnv integration.
       programming = {
         homeManager = {
           programs.git.signing.format = null;
+          editor.initFiles.style.text = ''
+            <<elisp_magit>>
+          '';
         };
         nixos = { };
       };
     };
   }
+#+end_src
+
+Add magit section hooks to display extra useful informat in the magit-status buffer.
+#+name: elisp_magit
+#+begin_src emacs-lisp
+  (magit-add-section-hook 'magit-status-sections-hook
+                          'magit-insert-worktrees nil t)
+  (magit-add-section-hook 'magit-status-sections-hook
+                          'magit-insert-modules nil t)
+  (magit-add-section-hook 'magit-status-sections-hook
+                          'magit-insert-local-branches nil t)
+  (magit-add-section-hook 'magit-status-sections-hook
+                          'magit-insert-remote-branches nil t)
 #+end_src
 
 * Style
@@ -1485,10 +1519,14 @@ Add support for transient compile with direnv integration.
 #+begin_src emacs-lisp
   (add-to-list 'default-frame-alist '(font . "RecMonoCasual Nerd Font-12"))
   (add-hook 'after-init-hook (lambda ()
+                               (setq-default truncate-lines t)
                                (custom-set-faces
                                 '(variable-pitch ((t (:family "RecMonoCasual Nerd Font" :height 120))))
                                 '(font-lock-comment-face ((t (:inherit error :foreground nil))))
-                                )))
+                                '(mode-line ((t (:background nil))))
+                                '(mode-line-inactive ((t (:background nil))))
+                                '(fringe ((t (:background nil))))
+                                '(line-number ((t (:background nil)))))))
 
   (add-hook 'prog-mode-hook
             (lambda ()
@@ -1499,6 +1537,19 @@ Add support for transient compile with direnv integration.
               (custom-set-faces
                '(org-block ((t (:family "IosevkaTerm Nerd Font" :height 140)))))))
 #+end_src
+
+#+name: kdl_style
+#+begin_src kdl
+  layout {
+    background-color "${config.lib.stylix.colors.withHashtag.base00}"
+    border {
+      active-color "${config.lib.stylix.colors.withHashtag.base00}"
+      inactive-color "${config.lib.stylix.colors.withHashtag.base00}"
+      urgent-color "${config.lib.stylix.colors.withHashtag.base00}"
+    }
+  }
+#+end_src
+
 
 #+begin_src nix-ts :tangle modules/style.nix :noweb yes
   {
@@ -1518,6 +1569,9 @@ Add support for transient compile with direnv integration.
               home.packages = builtins.filter pkgs.lib.isDerivation (builtins.attrValues pkgs.nerd-fonts);
               editor.initFiles.style.text = ''
                 <<elisp_style>>
+              '';
+              niri.configFiles.style.text = ''
+                <<kdl_style>>
               '';
               stylix = {
                 enable = true;
@@ -1604,12 +1658,34 @@ Add support for transient compile with direnv integration.
 
 #+begin_src nix-ts :tangle modules/terminal.nix :noweb yes
   {
-    flake.aspects.terminal.homeManager = {
-      programs.emacs.extraPackages = epkgs: with epkgs; [ ghostel ];
-      editor.initFiles.terminal.text = ''
-        <<elisp_terminal>>
-      '';
+    flake.aspects = {
+      terminal.homeManager =
+        { pkgs, inputs, ... }:
+        {
+          home.packages = [ (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.az-tui) ];
+          programs.emacs.extraPackages = epkgs: with epkgs; [ ghostel ];
+          editor.initFiles.terminal.text = ''
+            <<elisp_terminal>>
+          '';
+        };
     };
+    perSystem =
+      { pkgs, ... }:
+      {
+        packages.az-tui = pkgs.buildGoModule (finalAttrs: {
+          pname = "az-tui";
+          version = "0.4.0";
+
+          src = pkgs.fetchFromGitHub {
+            owner = "IAL32";
+            repo = "az-tui";
+            tag = "v${finalAttrs.version}";
+            hash = "sha256-yWnduwyEwlRkU/aBoLWbqFVd3J/PvQV1XkBDAeX3/+s=";
+          };
+
+          vendorHash = "sha256-TkabA+dH00r00m4Ud/MCi5g75VTArl5fNSAasKRfceA=";
+        });
+      };
   }
 #+end_src
 
@@ -1769,6 +1845,23 @@ Add support for transient compile with direnv integration.
       drag true
       dwt
       tap-button-map "left-right-middle"
+    }
+  }
+  layout {
+    border {
+      off
+    }
+    focus-ring {
+      off
+    }
+    gaps 0
+  }
+  window-rule {
+    match is-active=false
+    opacity 0.5
+    border {
+      on
+      width 16
     }
   }
   prefer-no-csd

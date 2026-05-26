@@ -107,10 +107,6 @@ package manager.
   (unbind-key "C-z" 'global-map)
 #+end_src
 
-** Truncate lines
-#+begin_src emacs-lisp :tangle yes
-  (setopt truncate-lines t)
-#+end_src
 
 * Language Support Variables
 Centralised these here so that adding a language can be done from one central place in the future.

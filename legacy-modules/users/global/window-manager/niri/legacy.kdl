@@ -1,0 +1,63 @@
+binds {
+	Mod+Period {
+		spawn "wl-kbptr" "-o" "modes=tile,bisect" "-o" "home_row_keys=isrtneaoghb"
+	}
+	XF86MonBrightnessDown allow-when-locked=true {
+		spawn "swayosd-client" "--brigtness=lower"
+	}
+	XF86MonBrightnessUp allow-when-locked=true {
+		spawn "swayosd-client" "--brigtness=raise"
+	}
+}
+layout {
+	always-center-single-column
+	center-focused-column "never"
+	default-column-display "tabbed"
+	default-column-width {
+		proportion 0.330000
+	}
+	empty-workspace-above-first
+	preset-column-widths {
+		proportion 0.33
+		proportion 0.5
+		proportion 1.0
+	}
+	preset-window-heights {
+		proportion 0.33333
+		proportion 0.5
+		proportion 0.66667
+		proportion 1.0
+	}
+	tab-indicator {
+		hide-when-single-tab
+	}
+}
+
+// window-rule {
+// 	border {
+// 		active-color "#f38ba8"
+// 		inactive-color "#f38ba8"
+// 	}
+// 	match is-window-cast-target=true
+// }
+
+window-rule {
+	default-column-width {
+		proportion 0.500000
+	}
+	default-floating-position x=30 y=30 relative-to="top-right"
+	default-window-height {
+		proportion 0.500000
+	}
+	match title="Emacs Everywhere" app-id="emacs"
+	match title="Org Capture" app-id="emacs"
+	open-floating true
+	open-focused true
+	open-fullscreen false
+}
+
+window-rule {
+	match app-id="gamescope"
+	open-focused true
+	open-fullscreen true
+}

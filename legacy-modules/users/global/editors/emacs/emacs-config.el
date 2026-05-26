@@ -61,8 +61,6 @@
 (unbind-key "C-x C-z" 'global-map)
 (unbind-key "C-z" 'global-map)
 
-(setopt truncate-lines t)
-
 ;; Remapping modes to new treesitter modes.
 (setq major-mode-remap-alist
   '((sh-mode . bash-ts-mode)

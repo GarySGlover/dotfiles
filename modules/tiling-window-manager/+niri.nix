@@ -123,6 +123,23 @@
               tap-button-map "left-right-middle"
             }
           }
+          layout {
+            border {
+              off
+            }
+            focus-ring {
+              off
+            }
+            gaps 0
+          }
+          window-rule {
+            match is-active=false
+            opacity 0.5
+            border {
+              on
+              width 16
+            }
+          }
           prefer-no-csd
           recent-windows {
             off

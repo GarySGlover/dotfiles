@@ -1,4 +1,4 @@
-# [[file:../modules.org::*Style][Style:2]]
+# [[file:../modules.org::*Style][Style:3]]
 {
   inputs,
   ...
@@ -17,10 +17,14 @@
             editor.initFiles.style.text = ''
               (add-to-list 'default-frame-alist '(font . "RecMonoCasual Nerd Font-12"))
               (add-hook 'after-init-hook (lambda ()
+                                           (setq-default truncate-lines t)
                                            (custom-set-faces
                                             '(variable-pitch ((t (:family "RecMonoCasual Nerd Font" :height 120))))
                                             '(font-lock-comment-face ((t (:inherit error :foreground nil))))
-                                            )))
+                                            '(mode-line ((t (:background nil))))
+                                            '(mode-line-inactive ((t (:background nil))))
+                                            '(fringe ((t (:background nil))))
+                                            '(line-number ((t (:background nil)))))))
 
               (add-hook 'prog-mode-hook
                         (lambda ()
@@ -30,6 +34,16 @@
                         (lambda ()
                           (custom-set-faces
                            '(org-block ((t (:family "IosevkaTerm Nerd Font" :height 140)))))))
+            '';
+            niri.configFiles.style.text = ''
+              layout {
+                background-color "${config.lib.stylix.colors.withHashtag.base00}"
+                border {
+                  active-color "${config.lib.stylix.colors.withHashtag.base00}"
+                  inactive-color "${config.lib.stylix.colors.withHashtag.base00}"
+                  urgent-color "${config.lib.stylix.colors.withHashtag.base00}"
+                }
+              }
             '';
             stylix = {
               enable = true;
@@ -62,4 +76,4 @@
     };
   };
 }
-# Style:2 ends here
+# Style:3 ends here

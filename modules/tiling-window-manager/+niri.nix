@@ -125,7 +125,8 @@
           }
           layout {
             border {
-              off
+              on
+              width 1
             }
             focus-ring {
               off
@@ -134,11 +135,7 @@
           }
           window-rule {
             match is-active=false
-            opacity 0.5
-            border {
-              on
-              width 16
-            }
+            opacity 0.8
           }
           prefer-no-csd
           recent-windows {

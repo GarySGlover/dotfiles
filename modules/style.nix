@@ -15,18 +15,22 @@
             gtk.gtk4.theme = null;
             home.packages = builtins.filter pkgs.lib.isDerivation (builtins.attrValues pkgs.nerd-fonts);
             editor.initFiles.style.text = ''
-              (add-to-list 'default-frame-alist '(font . "RecMonoCasual Nerd Font-12"))
+              (add-to-list 'default-frame-alist '(font . "IosevkaTerm Nerd Font-14"))
               (add-hook 'after-init-hook (lambda ()
                                            (setq-default truncate-lines t)
                                            (custom-set-faces
-                                            '(variable-pitch ((t (:family "RecMonoCasual Nerd Font" :height 120))))
+                                            '(variable-pitch ((t (:family "RecMonoCasual Nerd Font" :height 140))))
                                             '(font-lock-comment-face ((t (:inherit error :foreground nil))))
                                             '(mode-line ((t (:background nil))))
                                             '(mode-line-inactive ((t (:background nil))))
                                             '(fringe ((t (:background nil))))
                                             '(line-number ((t (:background nil)))))))
 
-              (add-hook 'prog-mode-hook
+              (add-hook 'text-mode-hook
+                        (lambda ()
+                          (buffer-face-set '(:family "RecMonoCasual Nerd Font" :height 140))))
+
+              (add-hook 'yaml-mode-hook
                         (lambda ()
                           (buffer-face-set '(:family "IosevkaTerm Nerd Font" :height 140))))
 
@@ -39,9 +43,9 @@
               layout {
                 background-color "${config.lib.stylix.colors.withHashtag.base00}"
                 border {
-                  active-color "${config.lib.stylix.colors.withHashtag.base00}"
-                  inactive-color "${config.lib.stylix.colors.withHashtag.base00}"
-                  urgent-color "${config.lib.stylix.colors.withHashtag.base00}"
+                  active-color "${config.lib.stylix.colors.withHashtag.base01}"
+                  inactive-color "${config.lib.stylix.colors.withHashtag.base01}"
+                  urgent-color "${config.lib.stylix.colors.withHashtag.base01}"
                 }
               }
             '';

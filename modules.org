@@ -1490,7 +1490,7 @@ Add support for transient compile with direnv integration.
       programming = {
         homeManager = {
           programs.git.signing.format = null;
-          editor.initFiles.style.text = ''
+          editor.initFiles.project.text = ''
             <<elisp_magit>>
           '';
         };
@@ -1503,32 +1503,37 @@ Add support for transient compile with direnv integration.
 Add magit section hooks to display extra useful informat in the magit-status buffer.
 #+name: elisp_magit
 #+begin_src emacs-lisp
-  (magit-add-section-hook 'magit-status-sections-hook
-                          'magit-insert-worktrees nil t)
-  (magit-add-section-hook 'magit-status-sections-hook
-                          'magit-insert-modules nil t)
-  (magit-add-section-hook 'magit-status-sections-hook
-                          'magit-insert-local-branches nil t)
-  (magit-add-section-hook 'magit-status-sections-hook
-                          'magit-insert-remote-branches nil t)
+  (with-eval-after-load 'magit
+    (magit-add-section-hook 'magit-status-sections-hook
+                            'magit-insert-worktrees nil t)
+    (magit-add-section-hook 'magit-status-sections-hook
+                            'magit-insert-modules nil t)
+    (magit-add-section-hook 'magit-status-sections-hook
+                            'magit-insert-local-branches nil t)
+    (magit-add-section-hook 'magit-status-sections-hook
+                            'magit-insert-remote-branches nil t))
 #+end_src
 
 * Style
 
 #+name: elisp_style
 #+begin_src emacs-lisp
-  (add-to-list 'default-frame-alist '(font . "RecMonoCasual Nerd Font-12"))
+  (add-to-list 'default-frame-alist '(font . "IosevkaTerm Nerd Font-14"))
   (add-hook 'after-init-hook (lambda ()
                                (setq-default truncate-lines t)
                                (custom-set-faces
-                                '(variable-pitch ((t (:family "RecMonoCasual Nerd Font" :height 120))))
+                                '(variable-pitch ((t (:family "RecMonoCasual Nerd Font" :height 140))))
                                 '(font-lock-comment-face ((t (:inherit error :foreground nil))))
                                 '(mode-line ((t (:background nil))))
                                 '(mode-line-inactive ((t (:background nil))))
                                 '(fringe ((t (:background nil))))
                                 '(line-number ((t (:background nil)))))))
 
-  (add-hook 'prog-mode-hook
+  (add-hook 'text-mode-hook
+            (lambda ()
+              (buffer-face-set '(:family "RecMonoCasual Nerd Font" :height 140))))
+
+  (add-hook 'yaml-mode-hook
             (lambda ()
               (buffer-face-set '(:family "IosevkaTerm Nerd Font" :height 140))))
 
@@ -1543,9 +1548,9 @@ Add magit section hooks to display extra useful informat in the magit-status buf
   layout {
     background-color "${config.lib.stylix.colors.withHashtag.base00}"
     border {
-      active-color "${config.lib.stylix.colors.withHashtag.base00}"
-      inactive-color "${config.lib.stylix.colors.withHashtag.base00}"
-      urgent-color "${config.lib.stylix.colors.withHashtag.base00}"
+      active-color "${config.lib.stylix.colors.withHashtag.base01}"
+      inactive-color "${config.lib.stylix.colors.withHashtag.base01}"
+      urgent-color "${config.lib.stylix.colors.withHashtag.base01}"
     }
   }
 #+end_src
@@ -1849,7 +1854,8 @@ Add magit section hooks to display extra useful informat in the magit-status buf
   }
   layout {
     border {
-      off
+      on
+      width 1
     }
     focus-ring {
       off
@@ -1858,11 +1864,7 @@ Add magit section hooks to display extra useful informat in the magit-status buf
   }
   window-rule {
     match is-active=false
-    opacity 0.5
-    border {
-      on
-      width 16
-    }
+    opacity 0.8
   }
   prefer-no-csd
   recent-windows {

@@ -6,8 +6,10 @@
       devops = {
         includes = with aspects; [
           azure
-          nginx
+          docker
           kubernetes
+          terraform
+          nginx
         ];
         homeManager = { };
         nixos = { };

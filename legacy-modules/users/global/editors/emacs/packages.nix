@@ -169,8 +169,6 @@ let
     ]
     ++ [
       # Language modes
-      terraform-doc
-      terraform-mode
       zig-mode
     ];
 

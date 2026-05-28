@@ -6,7 +6,6 @@
       programming = {
         includes = with aspects; [
           direnv
-          docker
           go
           yaml
           common-lisp

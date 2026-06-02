@@ -111,7 +111,10 @@
 
       ;; Default display buffer action
       (setopt display-buffer-base-action
-              '((display-buffer-same-window)))
+              '((display-buffer-same-window
+                 display-buffer-reuse-window
+                 display-buffer-use-some-window
+                 display-buffer-use-least-recent-window)))
 
       ;; Change which commands are disabled by default.
       ;; (pp-eval-expression '(let (result) (mapatoms (lambda (sym) (when (and (commandp sym) (get sym 'disabled)) (push (list sym (get sym 'disabled)) result)))) result))

@@ -20,11 +20,11 @@
                                            (setq-default truncate-lines t)
                                            (custom-set-faces
                                             '(variable-pitch ((t (:family "RecMonoCasual Nerd Font" :height 140))))
-                                            '(font-lock-comment-face ((t (:inherit error :foreground nil))))
-                                            '(mode-line ((t (:background nil))))
-                                            '(mode-line-inactive ((t (:background nil))))
-                                            '(fringe ((t (:background nil))))
-                                            '(line-number ((t (:background nil)))))))
+                                            '(font-lock-comment-face ((t (:inherit error :foreground unspecified))))
+                                            '(mode-line ((t (:background unspecified))))
+                                            '(mode-line-inactive ((t (:background unspecified))))
+                                            '(fringe ((t (:background unspecified))))
+                                            '(line-number ((t (:background unspecified)))))))
 
               (add-hook 'text-mode-hook
                         (lambda ()

@@ -75,8 +75,6 @@
                   (eval indent-variable))))
             (bind-key "C-c a" #'transient-compile)
             (with-eval-after-load 'transient-compile
-              (setopt transient-compile-interactive t
-                      transient-compile-group-function #'transient-compile-enhanced-group-function)
               (defmacro my-with-temp-process-buffer (&rest body)
                 "Like `with-temp-buffer', but always propagate `process-environment'.
             When that var is buffer-local in the calling buffer, it is not
@@ -119,7 +117,10 @@
               (defun transient-compile-enhanced-group-function (target)
                 (if (string-match "^\\(.*?\\):\\(.*\\)$" target)
                     (match-string 1 target)
-                  (transient-compile-default-group-function target))))
+                  (transient-compile-default-group-function target)))
+
+              (setopt transient-compile-interactive t
+                      transient-compile-group-function #'transient-compile-enhanced-group-function))
           '';
           fonts.fontconfig.enable = true;
         };

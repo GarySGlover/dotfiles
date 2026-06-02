@@ -461,7 +461,10 @@
 
   ;; Default display buffer action
   (setopt display-buffer-base-action
-          '((display-buffer-same-window)))
+          '((display-buffer-same-window
+             display-buffer-reuse-window
+             display-buffer-use-some-window
+             display-buffer-use-least-recent-window)))
 
   ;; Change which commands are disabled by default.
   ;; (pp-eval-expression '(let (result) (mapatoms (lambda (sym) (when (and (commandp sym) (get sym 'disabled)) (push (list sym (get sym 'disabled)) result)))) result))
@@ -492,108 +495,35 @@
 
 ** Mode/Header line
 
-I want to generate a custom mode line. There will be differences in
-the modeline dependent on whether the window is active or not.
-I will use the left part of the modeline for the shared information
-and the right part for the active only information. If I find that I
-have too much information, I may also use the header line, however I
-would rather save this for other information, such as breadcrumbs.
-
-The shared information I need to convey is as follows:
-- Buffer read only
-  Should be conveyed by a lock icon
-- Buffer name
-  Need to decide on a maximum length of name to display. Where the
-  name has to be shortened to fit, it should be expressed as shortened
-  with triple dots. If possible this should come from the font as a
-  single glyph.
-- Modified status
-  Should only apply to buffers that have
-  an associated file. It can be conveyed by making the buffer name
-  bold when it's modified.
-- Major mode
-  Use of icons from font for language as prefix to name where
-  possible. Might need to create a variable that stores the lookups of
-  major-modes to icons.
-- Git branch
-- envrc status
-
-The active window information will show:
-- Date/Time
-- Battery status
-- Power status
-- Audio volume
-
+#+name: elisp_modeline
 #+begin_src emacs-lisp
-  ;; (setq-default mode-line-format
-  ;;               '("%e" mode-line-front-space (:propertize ("" mode-line-mule-info mode-line-client mode-line-modified mode-line-remote mode-line-window-dedicated) display (min-width (6.0))) mode-line-frame-identification mode-line-buffer-identification "   " mode-line-position (project-mode-line project-mode-line-format) (vc-mode vc-mode) "  " mode-line-modes mode-line-misc-info mode-line-end-spaces))
-
-  ;; kmacro recording
-  ;; remote
-  ;; modified
-  ;; treesitter
-  ;; eglot
-  ;; flymake
-  ;; compilation
-
-  (defvar-local my-modeline-narrow
-      '(:eval
-        (when (buffer-narrowed-p)
-          "󰈲")))
-
-  (defun my-modeline-buffer-face ()
-    (cond
-     ((and (buffer-file-name) (buffer-modified-p)
-           '(italic mode-line-buffer-id)))))
-
-  (defun my-modeline--buffer-name ()
-    (format " %s " (buffer-name)))
-
-  (defvar-local my-modeline-buffer-name
-      '(:eval (propertize (my-modeline--buffer-name)
-                          'face (my-modeline-buffer-face))))
-
-  (defvar my-icons
-    '((emacs-lisp-mode "")
-      (t "")))
-
-  (defun my-modeline--major-mode-icon ()
-    (car (or (alist-get major-mode my-icons) (alist-get 't my-icons))))
-
-  (defun my-modeline--major-mode-name ()
-    (capitalize (string-replace "-mode" "" (symbol-name major-mode))))
-
-  (defvar-local my-modeline-major-mode
-       '(:eval (concat (my-modeline--major-mode-icon) (my-modeline--major-mode-name))))
-
-  (dolist (construct
-           '(my-modeline-buffer-name
-             my-modeline-narrow
-             my-modeline-major-mode))
-    (put construct 'risky-local-variable t))
-
-  ;; ("%e" mode-line-front-space
-  ;;  (:propertize ("" mode-line-mule-info mode-line-client mode-line-modified mode-line-remote mode-line-window-dedicated)
-  ;;               display (min-width (6.0)))
-  ;;  mode-line-frame-identification mode-line-buffer-identification "   " mode-line-position
-  ;;  (project-mode-line project-mode-line-format) (vc-mode vc-mode) "  " mode-line-modes mode-line-misc-info
-  ;;  mode-line-end-spaces)
-
   (setq-default mode-line-format
                 '("%e"
-                  my-modeline-narrow
-                  my-modeline-buffer-name
+                  mode-line-front-space
+                  mode-line-buffer-identification
+                  (mode-line-process mode-line-process)
                   (vc-mode vc-mode)
-                mode-line-modes mode-line-misc-info mode-line-end-spaces))
-
-  (setq-default mode-line-format
-                '("%e"
-                  my-modeline-narrow
-                  my-modeline-buffer-name
-                  "  "
-                  my-modeline-major-mode
-                  "  "))
+                  (:eval (envrc--lighter))
+                  (flymake-mode flymake-mode-line-format)
+                  mode-line-format-right-align
+                  (display-time-mode display-time-string)
+                  mode-line-end-spaces))
+  (setopt
+   display-time-format "%H:%M"
+   display-time-default-load-average nil)
+  (display-time-mode)
 #+end_src
+
+#+begin_src nix-ts :tangle modules/editor/modeline.nix :noweb yes
+  {
+    flake.aspects.editor.homeManager = {
+      editor.initFiles.modeline.text = ''
+        <<elisp_modeline>>
+      '';
+    };
+  }
+#+end_src
+
 
 ** Global Minor Modes
 
@@ -756,6 +686,24 @@ The active window information will show:
           <<kdl_environment>>
         '';
       };
+  }
+#+end_src
+
+* Entertainment
+
+** Xreal one pro update
+
+#+begin_src nix-ts :tangle modules/entertainment.nix :noweb yes
+  {
+    flake.aspects.entertainment.nixos = {
+      # https://github.com/ianepreston/nixos/blob/979c358a70f64985dd122364588651981213e132/modules/hardware/xreal-headset.nix#L9
+      services.udev.extraRules = ''
+        SUBSYSTEM=="usb", ATTR{idVendor}=="3318", MODE="0666", TAG+="uaccess"
+        KERNEL=="hidraw*", ATTRS{idVendor}=="3318", MODE="0666", TAG+="uaccess"
+        KERNEL=="ttyUSB[0-9]*", ATTRS{idVendor}=="3318", MODE="0666", TAG+="uaccess"
+        KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="3318", MODE="0666", TAG+="uaccess"
+      '';
+    };
   }
 #+end_src
 
@@ -1151,8 +1099,6 @@ Add support for transient compile with direnv integration.
 #+begin_src emacs-lisp
   (bind-key "C-c a" #'transient-compile)
   (with-eval-after-load 'transient-compile
-    (setopt transient-compile-interactive t
-            transient-compile-group-function #'transient-compile-enhanced-group-function)
     (defmacro my-with-temp-process-buffer (&rest body)
       "Like `with-temp-buffer', but always propagate `process-environment'.
   When that var is buffer-local in the calling buffer, it is not
@@ -1195,7 +1141,10 @@ Add support for transient compile with direnv integration.
     (defun transient-compile-enhanced-group-function (target)
       (if (string-match "^\\(.*?\\):\\(.*\\)$" target)
           (match-string 1 target)
-        (transient-compile-default-group-function target))))
+        (transient-compile-default-group-function target)))
+
+    (setopt transient-compile-interactive t
+            transient-compile-group-function #'transient-compile-enhanced-group-function))
 #+end_src
 
 ** YAML
@@ -1485,9 +1434,17 @@ Add support for transient compile with direnv integration.
 
 ** Terraform
 
+#+name: kdl_terraform
+#+begin_src kdl
+  environment {
+    TF_CLI_CONFIG_FILE "${config.xdg.configHome}/terraform/.terraformrc"
+  }
+#+end_src
+
 #+name: elisp_terraform
 #+begin_src elisp
   (with-eval-after-load 'terraform-mode
+    (setenv "TF_CLI_CONFIG_FILE" (file-name-concat "${config.xdg.configHome}" "terraform/.terraformrc"))
     (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode))
 #+end_src
 
@@ -1495,7 +1452,12 @@ Add support for transient compile with direnv integration.
   {
     flake.aspects.terraform = {
       homeManager =
-        { pkgs, ... }:
+        {
+          pkgs,
+          config,
+          lib,
+          ...
+        }:
         {
           home.packages = with pkgs; [
           ];
@@ -1506,12 +1468,20 @@ Add support for transient compile with direnv integration.
           editor.initFiles.terraform.text = ''
             <<elisp_terraform>>
           '';
+          niri.configFiles.terraform.text = ''
+            <<kdl_terraform>>
+          '';
+          xdg.configFile."terraform/.terraformrc".text = ''
+            plugin_cache_dir = "${config.home.homeDirectory}/.terraform.d/plugin-cache"
+          '';
+          home.activation.createTerraformPluginCacheDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            mkdir -p "${config.home.homeDirectory}/.terraform.d/plugin-cache"
+          '';
         };
       nixos = { };
     };
   }
 #+end_src
-
 
 * Project
 
@@ -1554,11 +1524,11 @@ Add magit section hooks to display extra useful informat in the magit-status buf
                                (setq-default truncate-lines t)
                                (custom-set-faces
                                 '(variable-pitch ((t (:family "RecMonoCasual Nerd Font" :height 140))))
-                                '(font-lock-comment-face ((t (:inherit error :foreground nil))))
-                                '(mode-line ((t (:background nil))))
-                                '(mode-line-inactive ((t (:background nil))))
-                                '(fringe ((t (:background nil))))
-                                '(line-number ((t (:background nil)))))))
+                                '(font-lock-comment-face ((t (:inherit error :foreground unspecified))))
+                                '(mode-line ((t (:background unspecified))))
+                                '(mode-line-inactive ((t (:background unspecified))))
+                                '(fringe ((t (:background unspecified))))
+                                '(line-number ((t (:background unspecified)))))))
 
   (add-hook 'text-mode-hook
             (lambda ()

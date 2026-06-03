@@ -16,6 +16,18 @@
           xdg-desktop-portal
           xdg-desktop-portal-gtk
         ];
+        stylix = {
+          autoEnable = false;
+          targets = {
+            btop.enable = true;
+            emacs.enable = true;
+            fish.enable = true;
+            ghostty.enable = true;
+            k9s.enable = true;
+            kitty.enable = true;
+            starship.enable = true;
+          };
+        };
         editor.initFiles.non-nix = {
           text = ''
             (when (daemonp)

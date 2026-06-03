@@ -2239,6 +2239,10 @@ https://gofranz.com/blog/screen-sharing-on-niri-wayland-with-guix/
             xdg-desktop-portal
             xdg-desktop-portal-gtk
           ];
+          stylix.targets = {
+            gtk.enable = false;
+            gnome.enable = false;
+          };
           editor.initFiles.non-nix = {
             text = ''
               <<elisp_non-nix>>

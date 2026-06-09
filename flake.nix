@@ -139,13 +139,13 @@
                 # Pre-commit
                 (pre-commit.overrideAttrs (_: {
                   makeWrapperArgs = ''
-                    		--set PYTHONPATH $PYTHONPATH
-                                  --suffix PYTHONPATH : ${
-                                    python3.withPackages (ps: [
-                                      ps.gitpython
-                                      ps.click
-                                    ])
-                                  }/lib/python3.13/site-packages
+                    --set PYTHONPATH $PYTHONPATH
+                    --suffix PYTHONPATH : ${
+                      python3.withPackages (ps: [
+                        ps.gitpython
+                        ps.click
+                      ])
+                    }/lib/python3.13/site-packages
                   '';
                 }))
                 yamlfmt

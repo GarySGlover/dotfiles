@@ -36,7 +36,7 @@
         - cmd: kitty
           desc: Terminal
           key: k
-        - cmd: hyprlock
+        - cmd: physlock
           desc: Lock
           key: l
         - cmd: google-chrome-stable
@@ -115,6 +115,7 @@
             keyboard {
               xkb {
                 layout "gb"
+                options "lv3:ralt_alt"
               }
             }
             touchpad {

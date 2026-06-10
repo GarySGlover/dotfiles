@@ -2225,7 +2225,7 @@ https://gofranz.com/blog/screen-sharing-on-niri-wayland-with-guix/
   {
     flake.aspects = {
       nonNix.homeManager =
-        { pkgs, ... }:
+        { pkgs, config, ... }:
         {
           nix = {
             package = pkgs.nix;
@@ -2239,9 +2239,17 @@ https://gofranz.com/blog/screen-sharing-on-niri-wayland-with-guix/
             xdg-desktop-portal
             xdg-desktop-portal-gtk
           ];
-          stylix.targets = {
-            gtk.enable = false;
-            gnome.enable = false;
+          stylix = {
+            autoEnable = false;
+            targets = {
+              btop.enable = true;
+              emacs.enable = true;
+              fish.enable = true;
+              ghostty.enable = true;
+              k9s.enable = true;
+              kitty.enable = true;
+              starship.enable = true;
+            };
           };
           editor.initFiles.non-nix = {
             text = ''
@@ -2257,6 +2265,7 @@ https://gofranz.com/blog/screen-sharing-on-niri-wayland-with-guix/
           };
           programs.bash.bashrcExtra = ''
             export GIT_LOCATION=work
+            export XDG_CONFIG_HOME="${config.xdg.configHome}"
           '';
           xdg.configFile."xdg-desktop-portal.portals.conf".text = ''
             [preferred]

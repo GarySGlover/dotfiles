@@ -2,7 +2,7 @@
 {
   flake.aspects = {
     nonNix.homeManager =
-      { pkgs, ... }:
+      { pkgs, config, ... }:
       {
         nix = {
           package = pkgs.nix;
@@ -55,6 +55,7 @@
         };
         programs.bash.bashrcExtra = ''
           export GIT_LOCATION=work
+          export XDG_CONFIG_HOME="${config.xdg.configHome}"
         '';
         xdg.configFile."xdg-desktop-portal.portals.conf".text = ''
           [preferred]

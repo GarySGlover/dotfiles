@@ -1,6 +1,7 @@
 :PROPERTIES:
 :header-args+: :results silent :exports code :eval never-export
 :header-args: :mkdirp yes :comments link
+:header-args:elisp: :lexical t
 :END:
 #+TITLE: Clover's System Config
 
@@ -570,8 +571,19 @@
         ];
     };
   }
+#+end_src
 
+** Presentation
 
+#+begin_src nix-ts :tangle modules/editor/presentation.nix :noweb yes
+  {
+    flake.aspects.editor.homeManager = {
+      programs.emacs.extraPackages =
+        epkgs: with epkgs; [
+          org-tree-slide
+        ];
+    };
+  }
 #+end_src
 
 ** +niri
@@ -1489,26 +1501,39 @@ Add magit section hooks to display extra useful informat in the magit-status buf
               (insert-file-contents filename)
               (read (current-buffer)))))
 
-    (when (file-exists-p gitr-db-file)
-      (gitr-db-load gitr-db-file))
+    (defun gitr-make-repo (platform name location type)
+      `(:platform ,platform :name ,name :location ,location :type ,type))
 
-    ;; (push '(:platform azure :name "Next-Technology/Ecom.Infrastructure/Ecom.Account" :location home :type code) my-git-repo-database)
-    ;; (my-git-repo-database-save-db my-git-repo-database-store)
+    (defun gitr-add-record (repo)
+      (push repo gitr-db))
 
-    (let ((repo '(azure "Next-Technology/Ecom.Infrastructure/Ecom.Account" home code)))
-      (cl-destructuring-bind (platform name location type) repo
-        (when-let* ((url
-                     (pcase (car repo)
-                       ('azure (my-get-azure-url name))
-                       ('github (my-get-github-url name))
-                       ('codeburg (my-get-codeburg name))))
+    (defun gitr-add-record (repo)
+      (unless (member repo gitr-db)
+        (push repo gitr-db)))
+
+    (defun gitr-think-of-name1 (db locations)
+      (-non-nil
+       (-map (lambda (repo)
+        (when-let* ((location (seq-contains locations (plist-get repo :location)))
+                    (name (plist-get repo :name))
+                    (url (pcase (plist-get repo :platform)
+                           ('azure (gitr-azure-url name))
+                           ('github (gitr-github-url name))
+                           ('codeberg (gitr-codeberg-url name))))
                     (dir (file-name-concat
                           (expand-file-name "~/src")
                           (concat
                            (string-replace "/" "--" name)
                            "__" (symbol-name location)
-                           "__" (symbol-name type)))))
-          (magit-clone-bare url dir nil)))))
+                           "__" (symbol-name (plist-get repo :type))))))
+          `(,url ,dir))) db)))
+
+    (when nil
+      (when (file-exists-p gitr-db-file)
+        (gitr-db-load gitr-db-file))
+
+      (-filter (lambda (x) (not (file-exists-p (cadr x))))
+                       (gitr-think-of-name1 gitr-db '(home))) ))
 #+end_src
 
 * Style

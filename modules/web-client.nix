@@ -1,4 +1,4 @@
-# [[file:../modules.org::*Web Requests][Web Requests:2]]
+# [[file:../modules.org::*Client][Client:2]]
 {
   flake.aspects = {
     webRequests.homeManager = {
@@ -12,4 +12,4 @@
     };
   };
 }
-# Web Requests:2 ends here
+# Client:2 ends here

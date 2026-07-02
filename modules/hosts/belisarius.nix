@@ -33,6 +33,7 @@
             home.homeDirectory = "/home/clover";
             wolf.secretsPath = ../../secrets;
             imports = with inputs.self.modules.homeManager; [
+              browser
               core
               devops
               editor

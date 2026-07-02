@@ -7,19 +7,24 @@
   flake.aspects = {
     style = {
       homeManager =
-        { pkgs, config, ... }:
+        {
+          pkgs,
+          config,
+          lib,
+          ...
+        }:
         {
           imports = [ inputs.stylix.homeModules.stylix ];
           config = {
             programs.emacs.extraPackages = epkgs: with epkgs; [ show-font ];
-            gtk.gtk4.theme = null;
+            gtk.gtk4.theme = lib.mkOverride 999 null;
             home.packages = builtins.filter pkgs.lib.isDerivation (builtins.attrValues pkgs.nerd-fonts);
             editor.initFiles.style.text = ''
               (add-to-list 'default-frame-alist '(font . "IosevkaTerm Nerd Font-14"))
               (add-hook 'after-init-hook (lambda ()
                                            (setq-default truncate-lines t)
                                            (custom-set-faces
-                                            '(variable-pitch ((t (:family "RecMonoCasual Nerd Font" :height 140))))
+                                            '(variable-pitch ((t (:family "RecMonoCasual Nerd Font"))))
                                             '(font-lock-comment-face ((t (:inherit error :foreground unspecified))))
                                             '(mode-line ((t (:background unspecified))))
                                             '(mode-line-inactive ((t (:background unspecified))))
@@ -28,16 +33,16 @@
 
               (add-hook 'text-mode-hook
                         (lambda ()
-                          (buffer-face-set '(:family "RecMonoCasual Nerd Font" :height 140))))
+                          (buffer-face-set '(:family "RecMonoCasual Nerd Font"))))
 
               (add-hook 'yaml-mode-hook
                         (lambda ()
-                          (buffer-face-set '(:family "IosevkaTerm Nerd Font" :height 140))))
+                          (buffer-face-set '(:family "IosevkaTerm Nerd Font"))))
 
               (add-hook 'org-mode-hook
                         (lambda ()
                           (custom-set-faces
-                           '(org-block ((t (:family "IosevkaTerm Nerd Font" :height 140)))))))
+                           '(org-block ((t (:family "IosevkaTerm Nerd Font")))))))
             '';
             niri.configFiles.style.text = ''
               layout {

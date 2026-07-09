@@ -115,7 +115,7 @@
             keyboard {
               xkb {
                 layout "gb"
-                options "lv3:ralt_alt"
+                options "lv3:ralt_alt,ctrl:nocaps"
               }
             }
             touchpad {

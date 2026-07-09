@@ -18,6 +18,10 @@
        display-time-default-load-average nil)
       (display-time-mode)
     '';
+    programs.emacs.extraPackages =
+      epkgs: with epkgs; [
+        breadcrumb
+      ];
   };
 }
 # Mode/Header line:2 ends here

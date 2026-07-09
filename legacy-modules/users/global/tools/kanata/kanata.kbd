@@ -3,18 +3,29 @@
 
 ;;; Code:
 (defcfg
- process-unmapped-keys
- yes
- linux-dev
- /dev/input/by-path/platform-i8042-serio-0-event-kbd:/dev/input/by-id/usb-SONiX_Calibur_V2_PRO-event-kbd)
+ process-unmapped-keys yes)
 
 (defsrc)
 
-(deflayermap
- base
- caps
- (tap-hold 200 200 esc lctl)
- spc
- (tap-hold 200 200 spc lalt))
+(deftemplate ctrl-fork-u (orig new)
+             $orig (fork $orig (multi (unmod (lctrl rctrl) nop0) $new) (lctrl rctrl)))
+(deftemplate ctrl-fork (orig new)
+             $orig (fork $orig $new (lctrl rctrl)))
+(deftemplate layer-switch (layer)
+             l (switch
+                ((and (or (input real lctrl) (input real rctrl)) (or (input real lmeta) (input real rmeta)))) (layer-switch $layer) break
+                () l break))
+
+(deflayermap base
+             (t! layer-switch emacs-emulation)
+             )
+
+(deflayermap emacs-emulation
+             (t! layer-switch base)
+             (t! ctrl-fork-u p ArrowUp)
+             (t! ctrl-fork-u n ArrowDown)
+             (t! ctrl-fork-u b ArrowLeft)
+             (t! ctrl-fork-u f ArrowRight)
+             (t! ctrl-fork s f))
 
 ;;; kanata.kbd ends here

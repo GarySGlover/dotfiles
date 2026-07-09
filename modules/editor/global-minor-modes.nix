@@ -4,15 +4,17 @@
     editor.initFiles.global-minor-modes.text = ''
       (add-hook 'after-init-hook
                 (lambda ()
-                  (popper-mode t)
-                  (winner-mode t)
-                  (repeat-mode t)
-                  (delete-selection-mode 1)
-                  (vertico-mode t)
-                  (vertico-multiform-mode t)
-                  (marginalia-mode)
-                  (editorconfig-mode t)
-                  (dtrt-indent-global-mode t)))
+                  (when (fboundp 'popper-mode) (popper-mode t))
+                  (when (fboundp 'winner-mode) (winner-mode t))
+                  (when (fboundp 'repeat-mode) (repeat-mode t))
+                  (when (fboundp 'delete-selection-mode) (delete-selection-mode 1))
+                  (when (fboundp 'vertico-mode) (vertico-mode t))
+                  (when (fboundp 'vertico-multiform-mode) (vertico-multiform-mode t))
+                  (when (fboundp 'marginalia-mode) (marginalia-mode))
+                  (when (fboundp 'editorconfig-mode) (editorconfig-mode t))
+                  (when (fboundp 'dtrt-indent-global-mode) (dtrt-indent-global-mode t))
+                  (when (fboundp 'selected-global-mode) (selected-global-mode t))
+                  (when (fboundp 'breadcrumb-mode) (breadcrumb-mode t))))
     '';
   };
 }

@@ -11,7 +11,6 @@
   ./options.nix
   ./system/core.nix
   ./system/fonts.nix
-  ./system/monitor.nix
   ./system/nix.nix
   ./system/search.nix
   ./system/xdg.nix

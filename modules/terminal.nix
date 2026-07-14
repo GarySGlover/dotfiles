@@ -4,7 +4,16 @@
     terminal.homeManager =
       { pkgs, inputs, ... }:
       {
-        home.packages = [ (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.az-tui) ];
+        programs.btop = {
+          enable = true;
+          settings = {
+            force_tty = true;
+          };
+        };
+        home.packages = [
+          (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.az-tui)
+          lm_sensors
+        ];
         programs.emacs.extraPackages = epkgs: with epkgs; [ ghostel ];
         editor.initFiles.terminal.text = ''
           (defmacro ghostel-make-exec (app)
@@ -19,6 +28,9 @@
                    (with-current-buffer (generate-new-buffer ,bname)
                      (ghostel-exec (current-buffer) ,appstr)
                      (switch-to-buffer (current-buffer)))))))
+
+          (add-hook 'after-init-hook
+                    (lambda () (ghostel-make-exec btop)))
 
           (with-eval-after-load 'ghostel
             (with-eval-after-load 'project

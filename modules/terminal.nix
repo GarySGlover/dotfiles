@@ -7,6 +7,19 @@
         home.packages = [ (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.az-tui) ];
         programs.emacs.extraPackages = epkgs: with epkgs; [ ghostel ];
         editor.initFiles.terminal.text = ''
+          (defmacro ghostel-make-exec (app)
+            "Define ghostel-exec-APP function to run APP in a new buffer."
+            (let ((fname (intern (format "ghostel-exec-%s" app)))
+                  (bname (format "*%s*" app))
+                  (appstr (if (symbolp app) (symbol-name app) app)))
+              `(defun ,fname ()
+                 (interactive)
+                 (require 'ghostel)
+                 (when (fboundp 'ghostel-exec)
+                   (with-current-buffer (generate-new-buffer ,bname)
+                     (ghostel-exec (current-buffer) ,appstr)
+                     (switch-to-buffer (current-buffer)))))))
+
           (with-eval-after-load 'ghostel
             (with-eval-after-load 'project
               (bind-key "t" #'ghostel-project 'project-prefix-map)

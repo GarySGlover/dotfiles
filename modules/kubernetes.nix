@@ -1,4 +1,4 @@
-# [[file:../modules.org::*Kubernetes][Kubernetes:1]]
+# [[file:../modules.org::*Kubernetes][Kubernetes:2]]
 {
   flake.aspects = {
     options = {
@@ -29,6 +29,12 @@
                 kubernetes-helm
                 helm-dashboard
               ];
+              editor.initFiles.kubernetes.text = ''
+                (add-hook
+                 'after-init-hook
+                 (lambda ()
+                   (ghostel-make-exec k9s)))
+              '';
               programs.emacs.extraPackages =
                 epkgs: with epkgs; [
                   kubel
@@ -42,4 +48,4 @@
     };
   };
 }
-# Kubernetes:1 ends here
+# Kubernetes:2 ends here

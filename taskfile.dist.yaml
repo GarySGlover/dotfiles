@@ -22,12 +22,12 @@ tasks:
     cmds:
     - nix flake update
   nixos:*:
+    internal: true
     desc: Build nixos
     aliases:
     - nixos
     vars:
       TYPE: '{{if (gt (len .MATCH) 0)}}{{(index .MATCH 0)}}{{else}}{{.TYPE}}{{end}}'
-      # TYPE: '{{coalesce (index .MATCH 0) .TYPE}}'
     requires:
       vars:
       - name: TYPE
@@ -37,4 +37,16 @@ tasks:
         - test
     cmds:
     - sudo nixos-rebuild {{.TYPE}} --flake .#
+  nixos-test:
+    desc: Build and test nixos
+    cmds:
+    - task: nixos:test
+  nixos-switch:
+    desc: Build and switch nixos
+    cmds:
+    - task: nixos:switch
+  nixos-boot:
+    desc: Build and boot nixos
+    cmds:
+    - task: nixos:boot
 # Taskfile:1 ends here

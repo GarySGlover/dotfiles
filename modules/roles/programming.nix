@@ -99,21 +99,6 @@
                     (transient-compile--log "Command finished with status %s" exit-code)
                     (buffer-string))))
 
-              (defun transient-compile-taskfile-targets (directory)
-                "Get list of targets from a taskfile."
-                (when-let* ((executable (transient-compile--tool-property 'task :exe))
-                            (command (transient-compile--shell-join
-                                      executable
-                                      (unless (transient-compile--tool-property 'task :chdir)
-                                        `("-d" , directory))
-                                      "--json"
-                                      "-l"))
-                            (output (transient-compile--shell-run command))
-                            (json (json-read-from-string output)))
-                  (seq-map (lambda (task)
-                             (cdr (assoc 'name task)))
-                           (cdr (assoc 'tasks json)))))
-
               (defun transient-compile-enhanced-group-function (target)
                 (if (string-match "^\\(.*?\\):\\(.*\\)$" target)
                     (match-string 1 target)

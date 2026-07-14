@@ -32,12 +32,12 @@
       cmds:
       - nix flake update
     nixos:*:
+      internal: true
       desc: Build nixos
       aliases:
       - nixos
       vars:
         TYPE: '{{if (gt (len .MATCH) 0)}}{{(index .MATCH 0)}}{{else}}{{.TYPE}}{{end}}'
-        # TYPE: '{{coalesce (index .MATCH 0) .TYPE}}'
       requires:
         vars:
         - name: TYPE
@@ -47,6 +47,18 @@
           - test
       cmds:
       - sudo nixos-rebuild {{.TYPE}} --flake .#
+    nixos-test:
+      desc: Build and test nixos
+      cmds:
+      - task: nixos:test
+    nixos-switch:
+      desc: Build and switch nixos
+      cmds:
+      - task: nixos:switch
+    nixos-boot:
+      desc: Build and boot nixos
+      cmds:
+      - task: nixos:boot
 #+end_src
 
 * Audio
@@ -1126,21 +1138,6 @@ Add support for transient compile with direnv integration.
           (transient-compile--log "Command finished with status %s" exit-code)
           (buffer-string))))
 
-    (defun transient-compile-taskfile-targets (directory)
-      "Get list of targets from a taskfile."
-      (when-let* ((executable (transient-compile--tool-property 'task :exe))
-                  (command (transient-compile--shell-join
-                            executable
-                            (unless (transient-compile--tool-property 'task :chdir)
-                              `("-d" , directory))
-                            "--json"
-                            "-l"))
-                  (output (transient-compile--shell-run command))
-                  (json (json-read-from-string output)))
-        (seq-map (lambda (task)
-                   (cdr (assoc 'name task)))
-                 (cdr (assoc 'tasks json)))))
-
     (defun transient-compile-enhanced-group-function (target)
       (if (string-match "^\\(.*?\\):\\(.*\\)$" target)
           (match-string 1 target)
@@ -2128,6 +2125,13 @@ Add magit section hooks to display extra useful informat in the magit-status buf
   {
     flake.aspects = {
       video = {
+        homeManager = { pkgs, ... }: {
+          home.packages = with pkgs; [
+            obs-studio
+            shotcut
+            haruna
+          ];
+        };
         nixos =
           { pkgs, ... }:
           let

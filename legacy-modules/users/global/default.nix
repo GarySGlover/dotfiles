@@ -2,8 +2,6 @@
   ./browsers/brave/default.nix
   ./browsers/chrome/default.nix
   ./browsers/firefox/default.nix
-  ./cad/kicad/default.nix
-  ./cad/prusa/default.nix
   ./development/git/default.nix
   ./editors/emacs/emacs.nix
   ./editors/emacs/packages.nix

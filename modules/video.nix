@@ -3,6 +3,13 @@
 {
   flake.aspects = {
     video = {
+      homeManager = { pkgs, ... }: {
+        home.packages = with pkgs; [
+          obs-studio
+          shotcut
+          haruna
+        ];
+      };
       nixos =
         { pkgs, ... }:
         let

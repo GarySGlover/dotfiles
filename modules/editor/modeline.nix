@@ -10,6 +10,8 @@
                       (vc-mode vc-mode)
                       (:eval (envrc--lighter))
                       (flymake-mode flymake-mode-line-format)
+                      (eglot--managed-mode " ")
+                      (eglot--managed-mode eglot--mode-line-forxmat)
                       mode-line-format-right-align
                       (display-time-mode display-time-string)
                       mode-line-end-spaces))

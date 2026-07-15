@@ -22,6 +22,7 @@
             (require 'reformatter)
             (require 'editorconfig)
             (require 'dtrt-indent)
+            (add-hook 'nix-ts-mode-hook #'eglot-ensure)
             (reformatter-define nix-format
               :program "nixfmt")
             (defun nix-ts-mode-setup ()

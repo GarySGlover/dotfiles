@@ -6,6 +6,7 @@
       {
         home.packages = with pkgs; [
           yq
+          yaml-language-server
         ];
         programs.emacs.extraPackages =
           epkgs: with epkgs; [
@@ -17,6 +18,7 @@
             (require 'reformatter)
             (require 'editorconfig)
             (require 'dtrt-indent)
+            (add-hook 'yaml-ts-mode-hook #'eglot-ensure)
             (defun find-yamlfmt-config ()
               "Return the path to the nearest yamlfmt config file, or nil."
               (let ((base (or (locate-dominating-file default-directory ".yamlfmt")

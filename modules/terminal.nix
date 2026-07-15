@@ -10,7 +10,7 @@
             force_tty = true;
           };
         };
-        home.packages = [
+        home.packages = with pkgs; [
           (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.az-tui)
           lm_sensors
         ];

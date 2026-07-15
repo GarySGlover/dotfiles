@@ -1,7 +1,12 @@
 # [[file:../modules.org::*Docker][Docker:2]]
 {
-  flake.aspects.docker.homeManager = {
+  flake.aspects.docker.homeManager = { pkgs, ... }: {
+    home.packages = with pkgs; [
+      docker-language-server
+    ];
     editor.initFiles.docker.text = ''
+      (with-eval-after-load 'dockerfile-ts-mode
+          (add-hook 'dockerfile-ts-mode-hook #'eglot-ensure))
       (with-eval-after-load 'org
         ;; format: off
         (defvar org-docker-templates

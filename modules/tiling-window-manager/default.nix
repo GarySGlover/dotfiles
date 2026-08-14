@@ -73,10 +73,39 @@
             };
 
           nixos =
-            { pkgs, ... }:
+            { pkgs, config, ... }:
             {
               programs.niri.enable = true;
-              environment.systemPackages = with pkgs; [ xwayland-satellite ];
+              environment.systemPackages = with pkgs; [
+                xwayland-satellite
+                displaylink
+              ];
+              services.xserver.videoDrivers = [
+                "displaylink"
+                "modesetting"
+              ];
+              boot = {
+                extraModulePackages = [ config.boot.kernelPackages.evdi ];
+                initrd = {
+                  kernelModules = [
+                    "evdi"
+                  ];
+                };
+              };
+              systemd.services.displaylink-server = {
+                enable = true;
+                requires = [ "systemd-udevd.service" ];
+                after = [ "systemd-udevd.service" ];
+                wantedBy = [ "multi-user.target" ];
+                serviceConfig = {
+                  Type = "simple";
+                  ExecStart = "${pkgs.displaylink}/bin/DisplayLinkManager";
+                  User = "root";
+                  Group = "root";
+                  Restart = "on-failure";
+                  RestartSec = 5; # Wait 5 seconds before restarting
+                };
+              };
               services.displayManager.defaultSession = "niri";
             };
         };

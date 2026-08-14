@@ -161,7 +161,7 @@
 
             (gitr-pull-or-remember
              (gitr-map-repos-to-url-dirs
-              (gitr-filter-repos-by-location gitr-db '(home)))))
+              (gitr-filter-repos-by-location gitr-db '(home work)))))
         '';
       };
       nixos = { };

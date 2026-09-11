@@ -13,6 +13,7 @@
         home.packages = with pkgs; [
           (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.az-tui)
           lm_sensors
+          radeontop
         ];
         programs.emacs.extraPackages = epkgs: with epkgs; [ ghostel ];
         editor.initFiles.terminal.text = ''

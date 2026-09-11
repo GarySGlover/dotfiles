@@ -133,37 +133,50 @@
               };
             };
 
-            devShells.${system}.default = pkgs.mkShell {
-              packages = with pkgs; [
+            devShells.${system} = {
+              default = pkgs.mkShell {
+                packages = with pkgs; [
 
-                # Pre-commit
-                (pre-commit.overrideAttrs (_: {
-                  makeWrapperArgs = ''
-                    --set PYTHONPATH $PYTHONPATH
-                    --suffix PYTHONPATH : ${
-                      python3.withPackages (ps: [
-                        ps.gitpython
-                        ps.click
-                      ])
-                    }/lib/python3.13/site-packages
-                  '';
-                }))
+                  # Pre-commit
+                  pre-commit
+                  yamlfmt
+                  yamllint
+
+                  # Shell
+                  shfmt
+                  argbash
+
+                  # Task
+                  go-task
+
+                  # Nix
+                  nixfmt
+                  nixd
+
+                  # Emacs init development
+                  glib
+                ];
+              };
+            };
+            azureDevops = pkgs.mkShell {
+              packages = with pkgs; [
+                azure-cli
+                checkov
+                go-task
+                kubectl
+                kubelogin
+                nixd
+                nixfmt-rfc-style
+                pre-commit
+                shellcheck
+                shfmt
+                terraform
+                terraform-docs
+                terraform-ls
+                tflint
                 yamlfmt
                 yamllint
-
-                # Shell
-                shfmt
-                argbash
-
-                # Task
-                go-task
-
-                # Nix
-                nixfmt
-                nixd
-
-                # Emacs init development
-                glib
+                jq
               ];
             };
           };

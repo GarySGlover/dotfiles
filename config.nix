@@ -25,6 +25,7 @@
   permittedInsecurePackages = [
     "openssl-1.1.1w" # Temporary for AZ
     "python3.13-ecdsa-0.19.1"
+    "python3.14-ecdsa-0.19.2"
   ];
 
   rocmSupport = true; # AMD Cuda suppor

@@ -126,7 +126,6 @@ let
     [
       uuidgen
       kdl-mode
-      avy
       beframe
       benchmark-init
       cape

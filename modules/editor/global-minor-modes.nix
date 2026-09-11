@@ -14,7 +14,8 @@
                   (when (fboundp 'editorconfig-mode) (editorconfig-mode t))
                   (when (fboundp 'dtrt-indent-global-mode) (dtrt-indent-global-mode t))
                   (when (fboundp 'selected-global-mode) (selected-global-mode t))
-                  (when (fboundp 'breadcrumb-mode) (breadcrumb-mode t))))
+                  (when (fboundp 'breadcrumb-mode) (breadcrumb-mode t)))
+                  (when (fboundp 'single-window-mode) (single-window-mode t)))
     '';
   };
 }

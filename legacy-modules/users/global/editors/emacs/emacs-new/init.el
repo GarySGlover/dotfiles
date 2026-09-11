@@ -11,15 +11,6 @@
 ;; Configuration for tools that enhance productivity, navigation, and
 ;; overall workflow in Emacs.
 
-;; Navigate quickly around the visiable frames.
-
-(bind-key "M-j" #'avy-goto-char-timer)
-(bind-key "M-j" #'avy-isearch isearch-mode-map)
-(with-eval-after-load 'avy
-  (setopt avy-style 'at-full
-          avy-single-candidate-jump nil))
-
-
 ;; Embark for acting upon objects.
 
 (bind-key "C-." #'embark-act)

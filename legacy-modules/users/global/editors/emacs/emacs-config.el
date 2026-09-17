@@ -78,7 +78,6 @@
      (ruby-mode . ruby-ts-mode)
      (conf-toml-mode . toml-ts-mode)
      (html-mode . html-ts-mode)
-     (markdown-mode . markdown-ts-mode)
      (mhtml-mode . mhtml-ts-mode)))
 
 ;; Associating filename regex lookups to major modes.

@@ -155,13 +155,42 @@
               (gitr-remember-projects (mapcar #'cadr todo)))
             (gitr-pull-missing-repos repos))
 
-          (when nil
+          (defun gitr-sync ()
+            (interactive)
+            "Loads db and downloads repos."
+            (when (file-exists-p gitr-db-file) (gitr-db-load gitr-db-file))
+            (let ((repos (gitr-filter-repos-by-location gitr-db '(home work))))
+              (gitr-pull-or-remember (gitr-map-repos-to-url-dirs repos))))
+
+          (defvar azdevops-org-url nil)
+
+          (defun azdevops-get-projects (&optional org-url)
+            "Get a list of azure devops projects.
+          ORG-URL should be the URI of your Azure DevOps organization, for example: https://dev.azure.com/MyOrganization/"
+            (let ((buf (get-buffer-create "*az:devops:projects*"))
+                  (org (or org-url azdevops-org-url)))
+              (when (= (buffer-size buf) 0)
+                (if org
+                    (azure-shell buf "devops" "project" "list" "--organization" (or org-url azdevops-org-url))
+                (azure-shell buf "devops" "project" "list")))
+              buf))
+
+          ;; (azdevops-get-projects)
+          ;; (let ((azdevops-org-url "https://dev.azure.com/Next-Technology/"))
+          ;;   (azdevops-get-projects))
+          ;; (azdevops-get-projects "https://dev.azure.com/Next-Technology/")
+
+          (defun gitr-add-azure-repo ()
+            (interactive)
             (when (file-exists-p gitr-db-file)
               (gitr-db-load gitr-db-file))
-
-            (gitr-pull-or-remember
-             (gitr-map-repos-to-url-dirs
-              (gitr-filter-repos-by-location gitr-db '(home work)))))
+            (azure-shell
+            ;; Get and select devops projects
+            ;; Get and select projects repo
+            ;; Convert repo to record style repo
+            ;; add record
+            ;; save db
+            ))
         '';
       };
       nixos = { };

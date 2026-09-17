@@ -1683,12 +1683,6 @@ Config options to reduce the logging and improve the performance.
        (eglot-format-buffer)
        (indent-bars-mode t)))))
 #+end_src
-*** Markdown
-#+begin_src emacs-lisp :tangle yes
-  (use-package
-   markdown-mode
-   :defer t)
-#+end_src
 *** Nim
 #+begin_src emacs-lisp :tangle yes
   (use-package

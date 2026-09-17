@@ -102,7 +102,10 @@
                               x: ''(load (expand-file-name "init-${x.name}.el" user-emacs-directory))''
                             ) files;
                         in
-                        mkIncludes sorted;
+                        lib.strings.concatLines [
+                          ";; -*- lexical-binding: t -*-"
+                          (mkIncludes sorted)
+                        ];
                     }
                     {
                       "emacs/early-init.el".text =
@@ -118,7 +121,10 @@
                               x: ''(load (expand-file-name "early-init-${x.name}.el" user-emacs-directory))''
                             ) files;
                         in
-                        mkIncludes sorted;
+                        lib.strings.concatLines [
+                          ";; -*- lexical-binding: t -*-"
+                          (mkIncludes sorted)
+                        ];
                     }
                   ]
                 );

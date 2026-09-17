@@ -21,7 +21,10 @@
       (add-hook 'after-init-hook (lambda () (envrc-global-mode t)) 91)
       (with-eval-after-load 'envrc
         (setopt envrc-show-summary-in-minibuffer nil)
-        (define-key envrc-mode-map (kbd "C-c e") 'envrc-command-map))
+        (define-key envrc-mode-map (kbd "C-c e") 'envrc-command-map)
+        (defun envrc-precompile ()
+          (interactive)
+          ))
       (add-to-list
        'display-buffer-alist
        `(,(rx "*envrc*")

@@ -305,7 +305,7 @@ This filters `project--list` in place and writes the updated list to disk."
 ;; easier using different methods such as out of order regexps.
 
 (setopt completion-styles '(orderless basic)
-        completion-category-overrides '((file (styles basic partial-completion))))
+  completion-category-overrides '((file (styles basic partial-completion))))
 
 
 ;; Change dabbrev to hippie expand for better completion capabilities.

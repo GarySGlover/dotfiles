@@ -145,7 +145,6 @@ let
       kele
       magit
       marginalia
-      markdown-mode
       mcp
       meow
       ob-async

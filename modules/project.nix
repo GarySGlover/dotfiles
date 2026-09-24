@@ -164,6 +164,19 @@
 
           (defvar azdevops-org-url nil)
 
+          (defun azure-shell (output-buffer &rest args)
+            "Run azure shell synchronously, logging command to *az:log*."
+            (let* ((log-buffer (get-buffer-create "*az:log*"))
+                   (cmdargs
+                    (string-join (append args '("--output" "json")) " "))
+                   (cmdstr (format "az %s" cmdargs)))
+              (with-current-buffer log-buffer
+                (goto-char (point-max))
+                (insert (format "\n$ %s\n" cmdstr)))
+              (save-window-excursion
+                (shell-command (format "%s %s" azure-executable cmdargs)
+                               output-buffer log-buffer))))
+
           (defun azdevops-get-projects (&optional org-url)
             "Get a list of azure devops projects.
           ORG-URL should be the URI of your Azure DevOps organization, for example: https://dev.azure.com/MyOrganization/"

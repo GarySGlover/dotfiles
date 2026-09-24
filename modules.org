@@ -91,11 +91,26 @@ https://eca.dev/
 
 #+end_src
 
+#+name: json_eca
+#+begin_src json
+  {
+    "providers": {
+      "github-copilot": {
+        "url": "api.enterprise.githubcopilot.com",
+        "auth": {
+          "url": "https://next-plc.ghe.com"
+        }
+      }
+    }
+  }
+
+#+end_src
+
 #+begin_src nix-ts :tangle modules/eca.nix :noweb yes
   {
-    flake.aspects.editor.homeManager = { pkgs, ... }: {
-      home.packages = with pkgs; [
-        eca
+    flake.aspects.editor.homeManager = { pkgs, inputs, ... }: {
+      home.packages = [
+        (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.eca)
       ];
       programs.emacs.extraPackages =
         epkgs: with epkgs; [
@@ -104,7 +119,70 @@ https://eca.dev/
       editor.initFiles.eca.text = ''
         <<elisp_eca>>
       '';
+      xdg.configFile."eca/config.json".text = ''
+        <<json_eca>>
+      '';
     };
+    perSystem =
+      { pkgs, lib, ... }:
+      {
+        packages.eca = pkgs.buildGraalvmNativeImage (finalAttrs: {
+          pname = "eca";
+          version = "0.161.1";
+
+          src = pkgs.fetchurl {
+            url = "https://github.com/editor-code-assistant/eca/releases/download/${finalAttrs.version}/eca.jar";
+            hash = "sha256-UaSdkBc1Nw+jPJ03EpEc7fh57E0oi247j8jb2ElKhQM=";
+          };
+
+          extraNativeImageBuildArgs = [
+            # These build args mirror the build.clj upstream
+            # ref: https://github.com/editor-code-assistant/eca/blob/0.93.2/build.clj#L84-L86
+            "--no-fallback"
+            "--native-image-info"
+            "--features=clj_easy.graal_build_time.InitClojureClasses"
+          ];
+
+          doInstallCheck = true;
+          nativeInstallCheckInputs = [
+            pkgs.writableTmpDirAsHomeHook
+            pkgs.versionCheckHook
+          ];
+
+          passthru.updateScript = pkgs.writeScript "update-eca" ''
+            #!/usr/bin/env nix-shell
+            #!nix-shell -i bash -p curl common-updater-scripts gnused jq
+
+            set -eu -o pipefail
+
+            old_version="$(nix-instantiate --strict --json --eval -A eca.version | jq -r .)"
+            latest_version="$(curl -s https://api.github.com/repos/editor-code-assistant/eca/releases/latest | jq -r .tag_name)"
+
+            if [[ $latest_version == $old_version ]]; then
+              echo "Already at latest version $old_version"
+              exit 0
+            fi
+
+            old_jar_hash="$(nix-instantiate --strict --json --eval -A eca.jar.drvAttrs.outputHash | jq -r .)"
+
+            curl -o eca.jar -sL "https://github.com/editor-code-assistant/eca/releases/download/$latest_version/eca.jar"
+            new_jar_hash="$(nix-hash --flat --type sha256 eca.jar | xargs -n1 nix --extra-experimental-features nix-command hash convert --hash-algo sha256)"
+
+            rm -f eca.jar
+
+            update-source-version eca "$latest_version" "$new_jar_hash"
+          '';
+
+          meta = {
+            description = "AI pair programming capabilities agnostic of editor";
+            homepage = "https://eca.dev";
+            license = lib.licenses.asl20;
+            maintainers = with lib.maintainers; [ crimeminister ];
+            platforms = lib.platforms.unix;
+            mainProgram = "eca";
+          };
+        });
+      };
   }
 #+end_src
 
@@ -1252,6 +1330,64 @@ Add support for transient compile with direnv integration.
             transient-compile-group-function #'transient-compile-enhanced-group-function))
 #+end_src
 
+** JSON
+
+#+begin_src nix-ts :tangle modules/json.nix :noweb yes
+  {
+    flake.aspects.yaml = {
+      homeManager =
+        { pkgs, ... }:
+        {
+          home.packages = with pkgs; [ ];
+          programs.emacs.extraPackages =
+            epkgs: with epkgs; [
+              json-snatcher
+            ];
+          editor.initFiles.json.text = ''
+            <<elisp_json>>
+          '';
+        };
+    };
+  }
+#+end_src
+
+#+name: elisp_json
+#+begin_src emacs-lisp
+  (defun json-parse-whole-buffer (buffer)
+    "Parse JSON from start of the buffer."
+    (with-current-buffer buffer
+      (goto-char (point-min))
+      (json-parse-buffer
+       :object-type 'plist
+       :array-type 'list)))
+#+end_src
+
+** Markdown
+
+#+begin_src nix-ts :tangle modules/markdown.nix :noweb yes
+  {
+    flake.aspects.yaml = {
+      homeManager =
+        { pkgs, ... }:
+        {
+          home.packages = with pkgs; [
+          ];
+          programs.emacs.extraPackages =
+            epkgs: with epkgs; [
+            ];
+          editor.initFiles.markdown.text = ''
+            <<elisp_markdown>>
+          '';
+        };
+    };
+  }
+#+end_src
+
+#+name: elisp_markdown
+#+begin_src emacs-lisp
+  (require 'markdown-ts-mode)
+#+end_src
+
 ** YAML
 
 #+begin_src nix-ts :tangle modules/yaml.nix :noweb yes
@@ -1781,6 +1917,19 @@ Add magit section hooks to display extra useful informat in the magit-status buf
       (gitr-pull-or-remember (gitr-map-repos-to-url-dirs repos))))
 
   (defvar azdevops-org-url nil)
+
+  (defun azure-shell (output-buffer &rest args)
+    "Run azure shell synchronously, logging command to *az:log*."
+    (let* ((log-buffer (get-buffer-create "*az:log*"))
+           (cmdargs
+            (string-join (append args '("--output" "json")) " "))
+           (cmdstr (format "az %s" cmdargs)))
+      (with-current-buffer log-buffer
+        (goto-char (point-max))
+        (insert (format "\n$ %s\n" cmdstr)))
+      (save-window-excursion
+        (shell-command (format "%s %s" azure-executable cmdargs)
+                       output-buffer log-buffer))))
 
   (defun azdevops-get-projects (&optional org-url)
     "Get a list of azure devops projects.

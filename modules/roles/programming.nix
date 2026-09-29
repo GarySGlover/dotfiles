@@ -5,11 +5,14 @@
     {
       programming = {
         includes = with aspects; [
+          common-lisp
           direnv
           go
-          yaml
-          common-lisp
           guix
+          json
+          markdown
+          mermaid
+          yaml
         ];
         homeManager = {
           programs.emacs.extraPackages =

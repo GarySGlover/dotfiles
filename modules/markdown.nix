@@ -1,6 +1,6 @@
 # [[file:../modules.org::*Markdown][Markdown:1]]
 {
-  flake.aspects.yaml = {
+  flake.aspects.markdown = {
     homeManager =
       { pkgs, ... }:
       {

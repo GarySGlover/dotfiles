@@ -1,6 +1,6 @@
 # [[file:../modules.org::*JSON][JSON:1]]
 {
-  flake.aspects.yaml = {
+  flake.aspects.json = {
     homeManager =
       { pkgs, ... }:
       {

@@ -1247,11 +1247,14 @@ https://eca.dev/
       {
         programming = {
           includes = with aspects; [
+            common-lisp
             direnv
             go
-            yaml
-            common-lisp
             guix
+            json
+            markdown
+            mermaid
+            yaml
           ];
           homeManager = {
             programs.emacs.extraPackages =
@@ -1555,7 +1558,7 @@ Add support for transient compile with direnv integration.
 
 #+begin_src nix-ts :tangle modules/json.nix :noweb yes
   {
-    flake.aspects.yaml = {
+    flake.aspects.json = {
       homeManager =
         { pkgs, ... }:
         {
@@ -1587,7 +1590,7 @@ Add support for transient compile with direnv integration.
 
 #+begin_src nix-ts :tangle modules/markdown.nix :noweb yes
   {
-    flake.aspects.yaml = {
+    flake.aspects.markdown = {
       homeManager =
         { pkgs, ... }:
         {
@@ -1607,6 +1610,35 @@ Add support for transient compile with direnv integration.
 #+name: elisp_markdown
 #+begin_src emacs-lisp
   (require 'markdown-ts-mode)
+#+end_src
+
+** Mermaid
+
+#+begin_src nix-ts :tangle modules/mermaid.nix :noweb yes
+  {
+    flake.aspects.mermaid = {
+      homeManager =
+        { pkgs, ... }:
+        {
+          home.packages = with pkgs; [
+            mermaid-cli
+          ];
+          programs.emacs.extraPackages =
+            epkgs: with epkgs; [
+              mermaid-mode
+              ob-mermaid
+            ];
+          editor.initFiles.mermaid.text = ''
+            <<elisp_mermaid>>
+          '';
+        };
+    };
+  }
+#+end_src
+
+#+name: elisp_mermaid
+#+begin_src emacs-lisp
+
 #+end_src
 
 ** Nix

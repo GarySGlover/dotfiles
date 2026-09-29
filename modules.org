@@ -1373,43 +1373,11 @@ Add support for transient compile with direnv integration.
             transient-compile-group-function #'transient-compile-enhanced-group-function))
 #+end_src
 
-** JSON
+** Common Lisp
 
-#+begin_src nix-ts :tangle modules/json.nix :noweb yes
+#+begin_src nix-ts :tangle modules/common-lisp.nix :noweb yes
   {
-    flake.aspects.yaml = {
-      homeManager =
-        { pkgs, ... }:
-        {
-          home.packages = with pkgs; [ ];
-          programs.emacs.extraPackages =
-            epkgs: with epkgs; [
-              json-snatcher
-            ];
-          editor.initFiles.json.text = ''
-            <<elisp_json>>
-          '';
-        };
-    };
-  }
-#+end_src
-
-#+name: elisp_json
-#+begin_src emacs-lisp
-  (defun json-parse-whole-buffer (buffer)
-    "Parse JSON from start of the buffer."
-    (with-current-buffer buffer
-      (goto-char (point-min))
-      (json-parse-buffer
-       :object-type 'plist
-       :array-type 'list)))
-#+end_src
-
-** Markdown
-
-#+begin_src nix-ts :tangle modules/markdown.nix :noweb yes
-  {
-    flake.aspects.yaml = {
+    flake.aspects.common-lisp = {
       homeManager =
         { pkgs, ... }:
         {
@@ -1417,93 +1385,26 @@ Add support for transient compile with direnv integration.
           ];
           programs.emacs.extraPackages =
             epkgs: with epkgs; [
+              sly
             ];
-          editor.initFiles.markdown.text = ''
-            <<elisp_markdown>>
+          editor.initFiles.common-lisp.text = ''
+            <<elisp_common_lisp>>
           '';
         };
+      nixos = { };
     };
   }
 #+end_src
 
-#+name: elisp_markdown
+#+NAME: elisp_common_lisp
 #+begin_src emacs-lisp
-  (require 'markdown-ts-mode)
-#+end_src
-
-** YAML
-
-#+begin_src nix-ts :tangle modules/yaml.nix :noweb yes
-  {
-    flake.aspects.yaml = {
-      homeManager =
-        { pkgs, ... }:
-        {
-          home.packages = with pkgs; [
-            yq
-            yaml-language-server
-          ];
-          programs.emacs.extraPackages =
-            epkgs: with epkgs; [
-              yaml
-              yaml-pro
-            ];
-          editor.initFiles.yaml.text = ''
-            <<elisp_yaml>>
-          '';
-        };
-    };
-  }
-#+end_src
-
-#+name: elisp_yaml
-#+begin_src emacs-lisp
-  (with-eval-after-load 'yaml-ts-mode
-    (require 'reformatter)
-    (require 'editorconfig)
-    (require 'dtrt-indent)
-    (add-hook 'yaml-ts-mode-hook #'eglot-ensure)
-    (defun find-yamlfmt-config ()
-      "Return the path to the nearest yamlfmt config file, or nil."
-      (let ((base (or (locate-dominating-file default-directory ".yamlfmt")
-                      (locate-dominating-file default-directory ".yamlfmt.yaml")
-                      (locate-dominating-file default-directory ".yamlfmt.yml"))))
-        (when base
-          (cl-loop for f in '(".yamlfmt" ".yamlfmt.yaml" ".yamlfmt.yml")
-                   for path = (expand-file-name f base)
-                   when (file-exists-p path) return path))))
-    (defun yamlfmt-indent-from-config (config-file)
-      "Return the indent specified in yamlfmt CONFIG-FILE, or nil."
-      (when (and config-file (executable-find "yq"))
-        (with-temp-buffer
-          (let ((exit (call-process
-                       "yq" nil t nil "-r" "-e" ".formatter.indent" config-file)))
-            (when (eq exit 0)
-              (goto-char (point-min))
-              (when (re-search-forward "\\([0-9]+\\)" nil t)
-                (string-to-number (match-string 1))))))))
-    (defun yaml-get-indent ()
-      "Get the correct YAML indent width via config, editorconfig, or dtrt."
-      (or (yamlfmt-indent-from-config (find-yamlfmt-config))
-          (dtrt-indent-get)
-          2)) ;; 2 as base default
-    (defun yamlfmt-args ()
-      "Return args for yamlfmt (nil if config sets indent, args if not)."
-      (let* ((config (find-yamlfmt-config))
-             (indent-arg (unless (and config (yamlfmt-indent-from-config config))
-                           (list "--indent" (number-to-string (yaml-get-indent))))))
-        (append indent-arg '("/dev/stdin"))))
-    (reformatter-define yaml-format
-      :program "yamlfmt"
-      :args (yamlfmt-args))
-    (defun yaml-mode-setup ()
-      (let ((indent (yaml-get-indent)))
-        (setq-local tab-width indent)
-        (setq-local indent-line-function #'indent-relative)
-        (setq-local indent-tabs-mode nil)
-        (yaml-format-on-save-mode 1)))
-    (add-hook 'yaml-ts-mode-hook #'yaml-mode-setup))
-  ;; TODO Decide on scalar editing (yaml-ts-pro?)
+  (with-eval-after-load 'sly
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     (add-to-list 'org-babel-load-languages '(lisp . t)))
+    (setopt
+     inferior-lisp-program "sbcl"
+     org-babel-lisp-eval-fn 'sly-eval))
 #+end_src
 
 ** Docker
@@ -1621,6 +1522,93 @@ Add support for transient compile with direnv integration.
   }
 #+end_src
 
+** Guix
+
+#+begin_src nix-ts :tangle modules/guix.nix :noweb yes
+  {
+    flake.aspects.guix = {
+      homeManager =
+        { pkgs, ... }:
+        {
+          home.packages = with pkgs; [
+            guix
+          ];
+        };
+      nixos = {
+        services.guix = {
+          enable = true;
+          gc = {
+            enable = true;
+            dates = "weekly";
+            extraArgs = [
+              "--delete-generations=1m"
+              "--vacuum-database"
+            ];
+          };
+        };
+      };
+    };
+  }
+#+end_src
+
+** JSON
+
+#+begin_src nix-ts :tangle modules/json.nix :noweb yes
+  {
+    flake.aspects.yaml = {
+      homeManager =
+        { pkgs, ... }:
+        {
+          home.packages = with pkgs; [ ];
+          programs.emacs.extraPackages =
+            epkgs: with epkgs; [
+              json-snatcher
+            ];
+          editor.initFiles.json.text = ''
+            <<elisp_json>>
+          '';
+        };
+    };
+  }
+#+end_src
+
+#+name: elisp_json
+#+begin_src emacs-lisp
+  (defun json-parse-whole-buffer (buffer)
+    "Parse JSON from start of the buffer."
+    (with-current-buffer buffer
+      (goto-char (point-min))
+      (json-parse-buffer
+       :object-type 'plist
+       :array-type 'list)))
+#+end_src
+
+** Markdown
+
+#+begin_src nix-ts :tangle modules/markdown.nix :noweb yes
+  {
+    flake.aspects.yaml = {
+      homeManager =
+        { pkgs, ... }:
+        {
+          home.packages = with pkgs; [
+          ];
+          programs.emacs.extraPackages =
+            epkgs: with epkgs; [
+            ];
+          editor.initFiles.markdown.text = ''
+            <<elisp_markdown>>
+          '';
+        };
+    };
+  }
+#+end_src
+
+#+name: elisp_markdown
+#+begin_src emacs-lisp
+  (require 'markdown-ts-mode)
+#+end_src
+
 ** Nix
 
 #+begin_src nix-ts :tangle modules/core/nix.nix :noweb yes
@@ -1663,69 +1651,6 @@ Add support for transient compile with direnv integration.
     (defun nix-ts-mode-setup ()
       (nix-format-on-save-mode 1))
     (add-hook 'nix-ts-mode-hook #'nix-ts-mode-setup))
-#+end_src
-
-** Common Lisp
-
-#+begin_src nix-ts :tangle modules/common-lisp.nix :noweb yes
-  {
-    flake.aspects.common-lisp = {
-      homeManager =
-        { pkgs, ... }:
-        {
-          home.packages = with pkgs; [
-          ];
-          programs.emacs.extraPackages =
-            epkgs: with epkgs; [
-              sly
-            ];
-          editor.initFiles.common-lisp.text = ''
-            <<elisp_common_lisp>>
-          '';
-        };
-      nixos = { };
-    };
-  }
-#+end_src
-
-#+NAME: elisp_common_lisp
-#+begin_src emacs-lisp
-  (with-eval-after-load 'sly
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     (add-to-list 'org-babel-load-languages '(lisp . t)))
-    (setopt
-     inferior-lisp-program "sbcl"
-     org-babel-lisp-eval-fn 'sly-eval))
-#+end_src
-
-** Guix
-
-#+begin_src nix-ts :tangle modules/guix.nix :noweb yes
-  {
-    flake.aspects.guix = {
-      homeManager =
-        { pkgs, ... }:
-        {
-          home.packages = with pkgs; [
-            guix
-          ];
-        };
-      nixos = {
-        services.guix = {
-          enable = true;
-          gc = {
-            enable = true;
-            dates = "weekly";
-            extraArgs = [
-              "--delete-generations=1m"
-              "--vacuum-database"
-            ];
-          };
-        };
-      };
-    };
-  }
 #+end_src
 
 ** Terraform
@@ -1779,6 +1704,81 @@ Add support for transient compile with direnv integration.
       nixos = { };
     };
   }
+#+end_src
+
+** YAML
+
+#+begin_src nix-ts :tangle modules/yaml.nix :noweb yes
+  {
+    flake.aspects.yaml = {
+      homeManager =
+        { pkgs, ... }:
+        {
+          home.packages = with pkgs; [
+            yq
+            yaml-language-server
+          ];
+          programs.emacs.extraPackages =
+            epkgs: with epkgs; [
+              yaml
+              yaml-pro
+            ];
+          editor.initFiles.yaml.text = ''
+            <<elisp_yaml>>
+          '';
+        };
+    };
+  }
+#+end_src
+
+#+name: elisp_yaml
+#+begin_src emacs-lisp
+  (with-eval-after-load 'yaml-ts-mode
+    (require 'reformatter)
+    (require 'editorconfig)
+    (require 'dtrt-indent)
+    (add-hook 'yaml-ts-mode-hook #'eglot-ensure)
+    (defun find-yamlfmt-config ()
+      "Return the path to the nearest yamlfmt config file, or nil."
+      (let ((base (or (locate-dominating-file default-directory ".yamlfmt")
+                      (locate-dominating-file default-directory ".yamlfmt.yaml")
+                      (locate-dominating-file default-directory ".yamlfmt.yml"))))
+        (when base
+          (cl-loop for f in '(".yamlfmt" ".yamlfmt.yaml" ".yamlfmt.yml")
+                   for path = (expand-file-name f base)
+                   when (file-exists-p path) return path))))
+    (defun yamlfmt-indent-from-config (config-file)
+      "Return the indent specified in yamlfmt CONFIG-FILE, or nil."
+      (when (and config-file (executable-find "yq"))
+        (with-temp-buffer
+          (let ((exit (call-process
+                       "yq" nil t nil "-r" "-e" ".formatter.indent" config-file)))
+            (when (eq exit 0)
+              (goto-char (point-min))
+              (when (re-search-forward "\\([0-9]+\\)" nil t)
+                (string-to-number (match-string 1))))))))
+    (defun yaml-get-indent ()
+      "Get the correct YAML indent width via config, editorconfig, or dtrt."
+      (or (yamlfmt-indent-from-config (find-yamlfmt-config))
+          (dtrt-indent-get)
+          2)) ;; 2 as base default
+    (defun yamlfmt-args ()
+      "Return args for yamlfmt (nil if config sets indent, args if not)."
+      (let* ((config (find-yamlfmt-config))
+             (indent-arg (unless (and config (yamlfmt-indent-from-config config))
+                           (list "--indent" (number-to-string (yaml-get-indent))))))
+        (append indent-arg '("/dev/stdin"))))
+    (reformatter-define yaml-format
+      :program "yamlfmt"
+      :args (yamlfmt-args))
+    (defun yaml-mode-setup ()
+      (let ((indent (yaml-get-indent)))
+        (setq-local tab-width indent)
+        (setq-local indent-line-function #'indent-relative)
+        (setq-local indent-tabs-mode nil)
+        (yaml-format-on-save-mode 1)))
+    (add-hook 'yaml-ts-mode-hook #'yaml-mode-setup))
+  ;; TODO Decide on scalar editing (yaml-ts-pro?)
 #+end_src
 
 * Project

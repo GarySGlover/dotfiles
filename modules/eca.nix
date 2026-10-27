@@ -20,9 +20,10 @@
               "url": "https://next-plc.ghe.com"
             }
           }
+        },
+        "mcpServers": { }
         }
       }
-
     '';
   };
   perSystem =

@@ -120,7 +120,6 @@
         (put command 'disabled nil))
       (put 'suspend-frame 'disabled t)
     '';
-
   };
 }
 # General Settings:3 ends here

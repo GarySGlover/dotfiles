@@ -21,20 +21,22 @@
             home.packages = builtins.filter pkgs.lib.isDerivation (builtins.attrValues pkgs.nerd-fonts);
             editor.initFiles.style.text = ''
               (add-to-list 'default-frame-alist '(font . "IosevkaTerm Nerd Font-14"))
-              (add-hook 'after-init-hook (lambda ()
-                                           (setq-default truncate-lines t)
-                                           (custom-set-faces
-                                            '(variable-pitch ((t (:family "RecMonoCasual Nerd Font"))))
-                                            '(font-lock-comment-face ((t (:inherit error :foreground unspecified))))
-                                            '(mode-line ((t (:background unspecified))))
-                                            '(mode-line-inactive ((t (:background unspecified))))
-                                            '(fringe ((t (:background unspecified))))
-                                            '(line-number ((t (:background unspecified)))))))
-
+              (defun my-theme-updates (&rest args)
+                (setq-default truncate-lines t)
+                (let ((bg (face-background 'default nil t)))
+                  (custom-set-faces
+                   '(variable-pitch ((t (:family "RecMonoCasual Nerd Font"))))
+                   '(font-lock-comment-face ((t (:inherit error :foreground unspecified))))
+                   `(mode-line ((t (:background ,bg))))
+                   `(mode-line-inactive ((t (:background ,bg))))
+                   '(fringe ((t (:background unspecified))))
+                   '(line-number ((t (:background unspecified)))))))
+              (add-hook 'after-init-hook #'my-theme-updates)
+              (add-hook 'enable-theme-functions #'my-theme-updates)
+              (add-hook 'server-after-make-frame-hook #'my-theme-updates)
               (add-hook 'text-mode-hook
                         (lambda ()
                           (buffer-face-set '(:family "RecMonoCasual Nerd Font"))))
-
               (add-hook 'yaml-mode-hook
                         (lambda ()
                           (buffer-face-set '(:family "IosevkaTerm Nerd Font"))))

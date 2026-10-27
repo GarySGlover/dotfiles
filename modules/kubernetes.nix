@@ -56,16 +56,16 @@
 
       packages.sofka = pkgs.rustPlatform.buildRustPackage (finalAttrs: {
         pname = "sofka";
-        version = "0.29.3";
+        version = "0.31.8";
 
         src = pkgs.fetchFromGitHub {
           owner = "nklmilojevic";
           repo = "sofka";
           tag = "v${finalAttrs.version}";
-          hash = "sha256-y2eizcgixiU/ekFwqzLQxY+gjGjknVOtYXqjXzN4s+c=";
+          hash = "sha256-KIIc6Ls70z4mh+eUuc0YrdqU4XqtoinDRuz1uiRBHpk=";
         };
 
-        cargoHash = "sha256-4d3mCKUs0e1IM9GW3SQFwDtdtKL8tAnu/pDX3omIudA=";
+        cargoHash = "sha256-tGy7TnUmB5SIYPbdoUmn45datJKlStSOVuaDKRyRdRU=";
 
         # aws-lc-sys (the TLS client's crypto backend) builds AWS-LC's C sources
         # with cmake. Bindings are pregenerated for all four platforms this package

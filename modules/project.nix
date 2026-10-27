@@ -109,25 +109,6 @@
                                               (format "git clone --bare %s %s/.git && git -C %s/.git config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'"
                                                       url dir dir)))
                                           todo))
-                        (cmd-str (string-join commands " && ")))
-              (async-start-process
-               "gitr-clone-repos"
-               shell-file-name
-               (lambda (_process)
-                 (gitr-remember-projects (mapcar #'cadr todo)))
-               shell-command-switch cmd-str)))
-
-          (defun gitr-pull-missing-repos (repos)
-            "Clone all REPOS (a (url dir) list) as bare repositories if missing.
-          Runs as a single background job; output in a buffer.
-          On completion, calls `gitr-remember-projects' for cloned repos."
-            (when-let* ((todo (cl-remove-if (lambda (x) (file-exists-p (cl-second x))) repos))
-                        (commands (mapcar (lambda (x)
-                                            (let ((url (cl-first x))
-                                                  (dir (cl-second x)))
-                                              (format "git clone --bare %s %s/.git && git -C %s/.git config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'"
-                                                      url dir dir)))
-                                          todo))
                         (cmd-str (string-join commands " && "))
                         (buf (get-buffer-create "*gitr-clone-repos*")))
               (with-current-buffer buf (erase-buffer))
@@ -187,11 +168,6 @@
                     (azure-shell buf "devops" "project" "list" "--organization" (or org-url azdevops-org-url))
                 (azure-shell buf "devops" "project" "list")))
               buf))
-
-          ;; (azdevops-get-projects)
-          ;; (let ((azdevops-org-url "https://dev.azure.com/Next-Technology/"))
-          ;;   (azdevops-get-projects))
-          ;; (azdevops-get-projects "https://dev.azure.com/Next-Technology/")
 
           (defun gitr-add-azure-repo ()
             (interactive)

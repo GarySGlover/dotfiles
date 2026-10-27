@@ -101,9 +101,10 @@ https://eca.dev/
           "url": "https://next-plc.ghe.com"
         }
       }
+    },
+    "mcpServers": { }
     }
   }
-
 #+end_src
 
 #+begin_src nix-ts :tangle modules/eca.nix :noweb yes
@@ -627,7 +628,6 @@ https://eca.dev/
       editor.initFiles.core.text = ''
         <<elisp_core_init>>
       '';
-
     };
   }
 #+end_src
@@ -636,19 +636,46 @@ https://eca.dev/
 
 #+name: elisp_modeline
 #+begin_src emacs-lisp
-  (setq-default mode-line-format
-                '("%e"
-                  mode-line-front-space
-                  mode-line-buffer-identification
-                  (mode-line-process mode-line-process)
-                  (vc-mode vc-mode)
-                  (:eval (envrc--lighter))
-                  (flymake-mode flymake-mode-line-format)
-                  (eglot--managed-mode " ")
-                  (eglot--managed-mode eglot--mode-line-forxmat)
-                  mode-line-format-right-align
-                  (display-time-mode display-time-string)
-                  mode-line-end-spaces))
+  (setopt mode-line-collapse-minor-modes
+          '(abbrev-mode
+            auto-revert-mode
+            buffer-face-mode
+            dtrt-indent-mode
+            editorconfig-mode
+            eldoc-mode
+            meow-beacon-mode
+            meow-insert-mode
+            meow-keypad-mode
+            meow-motion-mode
+            meow-normal-mode
+            org-src-mode
+            selected-minor-mode
+            single-window-mode
+            visual-line-mode
+            whitespace-mode))
+  (use-package telephone-line
+    :config
+    (telephone-line-defsegment* my-telephone-line-minor-mode-segment ()
+      (mode-line--minor-modes))
+    (defun telephone-line-modal-face (active)
+      (cond ((not active) 'mode-line-inactive)
+            ((and meow-normal-mode (region-active-p)) 'telephone-line-evil-visual)
+            (meow-normal-mode 'telephone-line-evil-normal)
+            (meow-insert-mode 'telephone-line-evil-insert)
+            (meow-motion-mode 'telephone-line-evil-emacs)
+            (meow-keypad-mode 'telephone-line-evil-operator)
+            (meow-beacon-mode 'telephone-line-evil-replace)))
+    (setq telephone-line-lhs
+          '((evil . (telephone-line-meow-tag-segment))
+            (accent . (telephone-line-vc-segment
+                       telephone-line-process-segment))
+            (nil . (telephone-line-buffer-name-segment
+                    my-telephone-line-minor-mode-segment))))
+    (setq telephone-line-rhs
+          '((nil . ())
+            (accent . (telephone-line-misc-info-segment))
+            (evil . (telephone-line-major-mode-segment))))
+    :hook (after-init . telephone-line-mode))
   (setopt
    display-time-format "%H:%M"
    display-time-default-load-average nil)
@@ -664,29 +691,55 @@ https://eca.dev/
       programs.emacs.extraPackages =
         epkgs: with epkgs; [
           breadcrumb
+          telephone-line
         ];
     };
   }
 #+end_src
 
+** Use package
+#+name: elisp_use_package
+#+begin_src emacs-lisp
+  (require 'use-package)
+  (setopt
+   use-package-always-defer t
+   use-package-expand-minimally t)
+#+end_src
+
+#+begin_src nix-ts :tangle modules/editor/use-package.nix :noweb yes
+  {
+    flake.aspects.editor.homeManager = {
+      editor.initFiles.usePackage.text = ''
+        <<elisp_use_package>>
+      '';
+    };
+  }
+#+end_src
+
+
 ** Global Minor Modes
 
 #+name: elisp_global_minor_modes
 #+begin_src emacs-lisp
-  (add-hook 'after-init-hook
-            (lambda ()
-              (when (fboundp 'popper-mode) (popper-mode t))
-              (when (fboundp 'winner-mode) (winner-mode t))
-              (when (fboundp 'repeat-mode) (repeat-mode t))
-              (when (fboundp 'delete-selection-mode) (delete-selection-mode 1))
-              (when (fboundp 'vertico-mode) (vertico-mode t))
-              (when (fboundp 'vertico-multiform-mode) (vertico-multiform-mode t))
-              (when (fboundp 'marginalia-mode) (marginalia-mode))
-              (when (fboundp 'editorconfig-mode) (editorconfig-mode t))
-              (when (fboundp 'dtrt-indent-global-mode) (dtrt-indent-global-mode t))
-              (when (fboundp 'selected-global-mode) (selected-global-mode t))
-              (when (fboundp 'breadcrumb-mode) (breadcrumb-mode t)))
-              (when (fboundp 'single-window-mode) (single-window-mode t)))
+  (use-package emacs
+    :init
+    (defun my-init-modes ()
+      (when (fboundp 'popper-mode) (popper-mode t))
+      (when (fboundp 'winner-mode) (winner-mode t))
+      (when (fboundp 'repeat-mode) (repeat-mode t))
+      (when (fboundp 'delete-selection-mode) (delete-selection-mode 1))
+      (when (fboundp 'vertico-mode) (vertico-mode t))
+      (when (fboundp 'vertico-multiform-mode) (vertico-multiform-mode t))
+      (when (fboundp 'marginalia-mode) (marginalia-mode))
+      (when (fboundp 'editorconfig-mode) (editorconfig-mode t))
+      (when (fboundp 'dtrt-indent-global-mode) (dtrt-indent-global-mode t))
+      (when (fboundp 'selected-global-mode) (selected-global-mode t))
+      (when (fboundp 'breadcrumb-mode) (breadcrumb-mode t))
+      (when (fboundp 'single-window-mode) (single-window-mode t)))
+    :hook (after-init . my-init-modes))
+
+  (use-package popper
+    :hook (after-init . popper-mode))
 #+end_src
 
 #+begin_src nix-ts :tangle modules/editor/global-minor-modes.nix :noweb yes
@@ -828,12 +881,100 @@ https://eca.dev/
 
 #+name: elisp_navigation
 #+begin_src emacs-lisp
-    (bind-key "M-j" #'avy-goto-char-timer)
-    (bind-key "M-j" #'avy-isearch isearch-mode-map)
-    (with-eval-after-load 'avy
-      (setopt avy-style 'at-full
-              avy-single-candidate-jump nil
-              avy-all-windows-alt 'all-frames))
+  (use-package avy
+    :bind (("M-j" . avy-goto-char-timer)
+           :map isearch-mode-map
+           ("M-j" . avy-isearch))
+    :config
+    (setopt avy-style 'at-full
+            avy-single-candidate-jump nil
+            avy-all-windows-alt 'all-frames))
+
+  (use-package meow
+    :hook (after-init-hook . (lambda () (progn
+                                          (meow-setup)
+                                          (meow-global-mode 1))))
+    :config
+    (defun meow-setup ()
+      (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
+      (meow-motion-define-key
+       '("<escape>" . ignore))
+      (meow-leader-define-key
+       ;; Use SPC (0-9) for digit arguments.
+       '("1" . meow-digit-argument)
+       '("2" . meow-digit-argument)
+       '("3" . meow-digit-argument)
+       '("4" . meow-digit-argument)
+       '("5" . meow-digit-argument)
+       '("6" . meow-digit-argument)
+       '("7" . meow-digit-argument)
+       '("8" . meow-digit-argument)
+       '("9" . meow-digit-argument)
+       '("0" . meow-digit-argument)
+       '("/" . meow-keypad-describe-key)
+       '("?" . meow-cheatsheet))
+      (meow-normal-define-key
+       '("0" . meow-expand-0)
+       '("9" . meow-expand-9)
+       '("8" . meow-expand-8)
+       '("7" . meow-expand-7)
+       '("6" . meow-expand-6)
+       '("5" . meow-expand-5)
+       '("4" . meow-expand-4)
+       '("3" . meow-expand-3)
+       '("2" . meow-expand-2)
+       '("1" . meow-expand-1)
+       '("-" . negative-argument)
+       '(";" . meow-reverse)
+       '("," . meow-inner-of-thing)
+       '("." . meow-bounds-of-thing)
+       '("[" . meow-beginning-of-thing)
+       '("]" . meow-end-of-thing)
+       '("a" . meow-append)
+       '("A" . meow-open-below)
+       '("b" . meow-back-word)
+       '("B" . meow-back-symbol)
+       '("c" . meow-change)
+       '("d" . meow-delete)
+       '("D" . meow-backward-delete)
+       '("e" . meow-next-word)
+       '("E" . meow-next-symbol)
+       '("f" . meow-find)
+       '("g" . meow-cancel-selection)
+       '("G" . meow-grab)
+       '("h" . meow-left)
+       '("H" . meow-left-expand)
+       '("i" . meow-insert)
+       '("I" . meow-open-above)
+       '("j" . meow-next)
+       '("J" . meow-next-expand)
+       '("k" . meow-prev)
+       '("K" . meow-prev-expand)
+       '("l" . meow-right)
+       '("L" . meow-right-expand)
+       '("m" . meow-join)
+       '("n" . meow-search)
+       '("o" . meow-block)
+       '("O" . meow-to-block)
+       '("p" . meow-yank)
+       '("q" . meow-quit)
+       '("Q" . meow-goto-line)
+       '("r" . meow-replace)
+       '("R" . meow-swap-grab)
+       '("s" . meow-kill)
+       '("t" . meow-till)
+       '("u" . meow-undo)
+       '("U" . meow-undo-in-selection)
+       '("v" . meow-visit)
+       '("w" . meow-mark-word)
+       '("W" . meow-mark-symbol)
+       '("x" . meow-line)
+       '("X" . meow-goto-line)
+       '("y" . meow-save)
+       '("Y" . meow-sync-grab)
+       '("z" . meow-pop-selection)
+       '("'" . repeat)
+       '("<escape>" . ignore))))
 #+end_src
 
 #+begin_src nix-ts :tangle modules/editor/navigation.nix :noweb yes
@@ -845,6 +986,7 @@ https://eca.dev/
       programs.emacs.extraPackages =
         epkgs: with epkgs; [
           avy
+          meow
         ];
     };
   }
@@ -1107,16 +1249,16 @@ https://eca.dev/
 
         packages.sofka = pkgs.rustPlatform.buildRustPackage (finalAttrs: {
           pname = "sofka";
-          version = "0.29.3";
+          version = "0.31.8";
 
           src = pkgs.fetchFromGitHub {
             owner = "nklmilojevic";
             repo = "sofka";
             tag = "v${finalAttrs.version}";
-            hash = "sha256-y2eizcgixiU/ekFwqzLQxY+gjGjknVOtYXqjXzN4s+c=";
+            hash = "sha256-KIIc6Ls70z4mh+eUuc0YrdqU4XqtoinDRuz1uiRBHpk=";
           };
 
-          cargoHash = "sha256-4d3mCKUs0e1IM9GW3SQFwDtdtKL8tAnu/pDX3omIudA=";
+          cargoHash = "sha256-tGy7TnUmB5SIYPbdoUmn45datJKlStSOVuaDKRyRdRU=";
 
           # aws-lc-sys (the TLS client's crypto backend) builds AWS-LC's C sources
           # with cmake. Bindings are pregenerated for all four platforms this package
@@ -1938,25 +2080,6 @@ Add magit section hooks to display extra useful informat in the magit-status buf
                                       (format "git clone --bare %s %s/.git && git -C %s/.git config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'"
                                               url dir dir)))
                                   todo))
-                (cmd-str (string-join commands " && ")))
-      (async-start-process
-       "gitr-clone-repos"
-       shell-file-name
-       (lambda (_process)
-         (gitr-remember-projects (mapcar #'cadr todo)))
-       shell-command-switch cmd-str)))
-
-  (defun gitr-pull-missing-repos (repos)
-    "Clone all REPOS (a (url dir) list) as bare repositories if missing.
-  Runs as a single background job; output in a buffer.
-  On completion, calls `gitr-remember-projects' for cloned repos."
-    (when-let* ((todo (cl-remove-if (lambda (x) (file-exists-p (cl-second x))) repos))
-                (commands (mapcar (lambda (x)
-                                    (let ((url (cl-first x))
-                                          (dir (cl-second x)))
-                                      (format "git clone --bare %s %s/.git && git -C %s/.git config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'"
-                                              url dir dir)))
-                                  todo))
                 (cmd-str (string-join commands " && "))
                 (buf (get-buffer-create "*gitr-clone-repos*")))
       (with-current-buffer buf (erase-buffer))
@@ -2017,11 +2140,6 @@ Add magit section hooks to display extra useful informat in the magit-status buf
         (azure-shell buf "devops" "project" "list")))
       buf))
 
-  ;; (azdevops-get-projects)
-  ;; (let ((azdevops-org-url "https://dev.azure.com/Next-Technology/"))
-  ;;   (azdevops-get-projects))
-  ;; (azdevops-get-projects "https://dev.azure.com/Next-Technology/")
-
   (defun gitr-add-azure-repo ()
     (interactive)
     (when (file-exists-p gitr-db-file)
@@ -2040,20 +2158,22 @@ Add magit section hooks to display extra useful informat in the magit-status buf
 #+name: elisp_style
 #+begin_src emacs-lisp
   (add-to-list 'default-frame-alist '(font . "IosevkaTerm Nerd Font-14"))
-  (add-hook 'after-init-hook (lambda ()
-                               (setq-default truncate-lines t)
-                               (custom-set-faces
-                                '(variable-pitch ((t (:family "RecMonoCasual Nerd Font"))))
-                                '(font-lock-comment-face ((t (:inherit error :foreground unspecified))))
-                                '(mode-line ((t (:background unspecified))))
-                                '(mode-line-inactive ((t (:background unspecified))))
-                                '(fringe ((t (:background unspecified))))
-                                '(line-number ((t (:background unspecified)))))))
-
+  (defun my-theme-updates (&rest args)
+    (setq-default truncate-lines t)
+    (let ((bg (face-background 'default nil t)))
+      (custom-set-faces
+       '(variable-pitch ((t (:family "RecMonoCasual Nerd Font"))))
+       '(font-lock-comment-face ((t (:inherit error :foreground unspecified))))
+       `(mode-line ((t (:background ,bg))))
+       `(mode-line-inactive ((t (:background ,bg))))
+       '(fringe ((t (:background unspecified))))
+       '(line-number ((t (:background unspecified)))))))
+  (add-hook 'after-init-hook #'my-theme-updates)
+  (add-hook 'enable-theme-functions #'my-theme-updates)
+  (add-hook 'server-after-make-frame-hook #'my-theme-updates)
   (add-hook 'text-mode-hook
             (lambda ()
               (buffer-face-set '(:family "RecMonoCasual Nerd Font"))))
-
   (add-hook 'yaml-mode-hook
             (lambda ()
               (buffer-face-set '(:family "IosevkaTerm Nerd Font"))))
@@ -2207,7 +2327,11 @@ Add magit section hooks to display extra useful informat in the magit-status buf
   {
     flake.aspects = {
       terminal.homeManager =
-        { pkgs, inputs, ... }:
+        {
+          pkgs,
+          inputs,
+          ...
+        }:
         {
           programs.btop = {
             enable = true;

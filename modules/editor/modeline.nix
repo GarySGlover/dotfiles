@@ -2,19 +2,46 @@
 {
   flake.aspects.editor.homeManager = {
     editor.initFiles.modeline.text = ''
-      (setq-default mode-line-format
-                    '("%e"
-                      mode-line-front-space
-                      mode-line-buffer-identification
-                      (mode-line-process mode-line-process)
-                      (vc-mode vc-mode)
-                      (:eval (envrc--lighter))
-                      (flymake-mode flymake-mode-line-format)
-                      (eglot--managed-mode " ")
-                      (eglot--managed-mode eglot--mode-line-forxmat)
-                      mode-line-format-right-align
-                      (display-time-mode display-time-string)
-                      mode-line-end-spaces))
+      (setopt mode-line-collapse-minor-modes
+              '(abbrev-mode
+                auto-revert-mode
+                buffer-face-mode
+                dtrt-indent-mode
+                editorconfig-mode
+                eldoc-mode
+                meow-beacon-mode
+                meow-insert-mode
+                meow-keypad-mode
+                meow-motion-mode
+                meow-normal-mode
+                org-src-mode
+                selected-minor-mode
+                single-window-mode
+                visual-line-mode
+                whitespace-mode))
+      (use-package telephone-line
+        :config
+        (telephone-line-defsegment* my-telephone-line-minor-mode-segment ()
+          (mode-line--minor-modes))
+        (defun telephone-line-modal-face (active)
+          (cond ((not active) 'mode-line-inactive)
+                ((and meow-normal-mode (region-active-p)) 'telephone-line-evil-visual)
+                (meow-normal-mode 'telephone-line-evil-normal)
+                (meow-insert-mode 'telephone-line-evil-insert)
+                (meow-motion-mode 'telephone-line-evil-emacs)
+                (meow-keypad-mode 'telephone-line-evil-operator)
+                (meow-beacon-mode 'telephone-line-evil-replace)))
+        (setq telephone-line-lhs
+              '((evil . (telephone-line-meow-tag-segment))
+                (accent . (telephone-line-vc-segment
+                           telephone-line-process-segment))
+                (nil . (telephone-line-buffer-name-segment
+                        my-telephone-line-minor-mode-segment))))
+        (setq telephone-line-rhs
+              '((nil . ())
+                (accent . (telephone-line-misc-info-segment))
+                (evil . (telephone-line-major-mode-segment))))
+        :hook (after-init . telephone-line-mode))
       (setopt
        display-time-format "%H:%M"
        display-time-default-load-average nil)
@@ -23,6 +50,7 @@
     programs.emacs.extraPackages =
       epkgs: with epkgs; [
         breadcrumb
+        telephone-line
       ];
   };
 }

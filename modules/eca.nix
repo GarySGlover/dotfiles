@@ -9,7 +9,8 @@
         eca
       ];
     editor.initFiles.eca.text = ''
-
+      (use-package eca
+        :bind ("C-c e" . eca-transient-menu))
     '';
     xdg.configFile."eca/config.json".text = ''
       {

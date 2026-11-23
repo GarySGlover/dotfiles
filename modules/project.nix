@@ -43,7 +43,15 @@
           (defun gitr-db-save (filename)
             "Save `gitr-db' to FILENAME as a plist."
             (with-temp-buffer
-              (pp gitr-db (current-buffer))
+              (pp (-sort (lambda (a b)
+                           (-when-let* (((&plist :location la :plaform pa :name na) a)
+                                        ((&plist :location lb :plaform pb :name nb) b))
+                             (cond
+                              ((not (eq la lb)) (string< (symbol-name la) (symbol-name lb)))
+                              ((not (eq pa pb)) (string< (symbol-name pa) (symbol-name pb)))
+                              (t (string< na nb)))))
+                         gitr-db)
+                  (current-buffer))
               (write-region (point-min) (point-max) filename)))
 
           (defun gitr-db-load (filename)
@@ -79,10 +87,7 @@
                    (type (plist-get repo :type))
                    (plat (plist-get repo :platform))
                    (location (plist-get repo :location))
-                   (url (pcase plat
-                          ('azure   (gitr-azure-url name))
-                          ('github  (gitr-github-url name))
-                          ('codeberg (gitr-codeberg-url name))))
+                   (url (funcall (intern (format "gitr-%s-url" plat)) name))
                    (dir (file-name-concat
                          (expand-file-name "~/src")
                          (concat (string-replace "/" "--" name)
@@ -140,6 +145,7 @@
             (interactive)
             "Loads db and downloads repos."
             (when (file-exists-p gitr-db-file) (gitr-db-load gitr-db-file))
+            (-each gitr-db #'gitr-migrate-repo)
             (let ((repos (gitr-filter-repos-by-location gitr-db '(home work))))
               (gitr-pull-or-remember (gitr-map-repos-to-url-dirs repos))))
 
@@ -180,6 +186,30 @@
             ;; add record
             ;; save db
             ))
+
+          (defun gitr-github-next-url (repo)
+            "Return SSH GitHub URL for REPO string.
+                    REPO should be formatted as 'org/repo'."
+            (format "next-plc@next-plc.ghe.com:%s.git" repo))
+
+          (defun gitr-migrate-repo (repo)
+            (-when-let* (((&plist
+                           :name name
+                           :type type
+                           :platform plat
+                           :location location
+                           :mplatform mplat
+                           :mname mname)
+                          repo)
+                         (mrepo `(:platform ,mplat :name ,mname :type ,type :location ,location))
+                         ((url dir) (gitr-repo-url-and-dir repo))
+                         ((murl mdir) (gitr-repo-url-and-dir mrepo)))
+              (rename-file dir mdir)
+              (let ((default-directory (file-name-as-directory mdir)))
+                (call-process "git" nil nil nil "remote" "add" "legacy" url)
+                (call-process "git" nil nil nil "remote" "set-url" "origin" murl))
+              (setq gitr-db (mapcar (lambda (r) (if (equal r repo) mrepo r)) gitr-db))
+              (gitr-db-save gitr-db-file)))
         '';
       };
       nixos = { };

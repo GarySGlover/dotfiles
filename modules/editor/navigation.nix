@@ -15,6 +15,7 @@
         :hook (after-init-hook . (lambda () (progn
                                               (meow-setup)
                                               (meow-global-mode 1))))
+        :custom (meow-use-clipboard t)
         :config
         (defun meow-setup ()
           (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
@@ -78,6 +79,7 @@
            '("o" . meow-block)
            '("O" . meow-to-block)
            '("p" . meow-yank)
+           '("P" . meow-yank-pop)
            '("q" . meow-quit)
            '("Q" . meow-goto-line)
            '("r" . meow-replace)

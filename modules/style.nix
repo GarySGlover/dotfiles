@@ -1,4 +1,4 @@
-# [[file:../modules.org::*Style][Style:3]]
+# [[file:../modules.org::*Style][Style:2]]
 {
   inputs,
   ...
@@ -16,36 +16,8 @@
         {
           imports = [ inputs.stylix.homeModules.stylix ];
           config = {
-            programs.emacs.extraPackages = epkgs: with epkgs; [ show-font ];
             gtk.gtk4.theme = lib.mkOverride 999 null;
             home.packages = builtins.filter pkgs.lib.isDerivation (builtins.attrValues pkgs.nerd-fonts);
-            editor.initFiles.style.text = ''
-              (add-to-list 'default-frame-alist '(font . "IosevkaTerm Nerd Font-14"))
-              (defun my-theme-updates (&rest args)
-                (setq-default truncate-lines t)
-                (let ((bg (face-background 'default nil t)))
-                  (custom-set-faces
-                   '(variable-pitch ((t (:family "RecMonoCasual Nerd Font"))))
-                   '(font-lock-comment-face ((t (:inherit error :foreground unspecified))))
-                   `(mode-line ((t (:background ,bg))))
-                   `(mode-line-inactive ((t (:background ,bg))))
-                   '(fringe ((t (:background unspecified))))
-                   '(line-number ((t (:background unspecified)))))))
-              (add-hook 'after-init-hook #'my-theme-updates)
-              (add-hook 'enable-theme-functions #'my-theme-updates)
-              (add-hook 'server-after-make-frame-hook #'my-theme-updates)
-              (add-hook 'text-mode-hook
-                        (lambda ()
-                          (buffer-face-set '(:family "RecMonoCasual Nerd Font"))))
-              (add-hook 'yaml-mode-hook
-                        (lambda ()
-                          (buffer-face-set '(:family "IosevkaTerm Nerd Font"))))
-
-              (add-hook 'org-mode-hook
-                        (lambda ()
-                          (custom-set-faces
-                           '(org-block ((t (:family "IosevkaTerm Nerd Font")))))))
-            '';
             niri.configFiles.style.text = ''
               layout {
                 background-color "${config.lib.stylix.colors.withHashtag.base00}"
@@ -58,6 +30,14 @@
             '';
             stylix = {
               enable = true;
+              # `useGlobalPkgs = true` on the NixOS home-manager module means
+              # home-manager can't set its own `nixpkgs.overlays`/`nixpkgs.config`
+              # (it must inherit the system-level pkgs). Stylix's per-app
+              # targets (e.g. nixos-icons, gtksourceview) are implemented as
+              # overlays applied via home-manager by default, which trips the
+              # home-manager assertion. Disable that here; styling still
+              # applies to everything that doesn't rely on package overlays.
+              overlays.enable = false;
               # base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-latte.yaml";
               base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
               fonts = {
@@ -87,4 +67,4 @@
     };
   };
 }
-# Style:3 ends here
+# Style:2 ends here

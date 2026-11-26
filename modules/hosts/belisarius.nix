@@ -19,6 +19,13 @@
           config.permittedInsecurePackages = [
             "python3.13-ecdsa-0.19.1"
           ];
+          overlays = [
+            # Upstream only adds `mkEmacsWith`; it deliberately does not replace
+            # `emacs` (doing so broke nixpkgs' `emacsPackages = emacs.pkgs`,
+            # which `trivialBuild`/treesit-grammars rely on), so no stock-`emacs`
+            # shim is needed anymore.
+            inputs.fourleafclover-nix-config.overlays.default
+          ];
         };
         home-manager = {
           extraSpecialArgs = {
@@ -33,18 +40,15 @@
             home.homeDirectory = "/home/clover";
             wolf.secretsPath = ../../secrets;
             imports = with inputs.self.modules.homeManager; [
-              browser
               core
               devops
               editor
               environment
-              notes
               options
               programming
               style
               terminal
               tilingWindowManager
-              webRequests
             ];
           };
           sharedModules = (import ../../legacy-modules/users/global);

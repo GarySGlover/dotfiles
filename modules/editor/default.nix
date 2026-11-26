@@ -1,133 +1,53 @@
 # [[file:../../modules.org::*Editor][Editor:1]]
-{
-  lib,
-  ...
-}:
+{ ... }:
 {
   flake.aspects =
     { aspects, ... }:
     {
       config = {
-        options = {
-          homeManager =
-            { lib, ... }:
-            {
-              options.editor.earlyInitFiles = lib.mkOption {
-                type = lib.types.attrsOf (
-                  lib.types.submodule {
-                    options = {
-                      text = lib.mkOption {
-                        type = lib.types.str;
-                        description = "Contents of the earlyInit file.";
-                      };
-                      priority = lib.mkOption {
-                        type = lib.types.int;
-                        default = 1000;
-                        description = "Priority (default: 1000).";
-                      };
-                    };
-                  }
-                );
-                description = ''
-                  Emacs early init code files.
-                '';
-                default = { };
-              };
-              options.editor.initFiles = lib.mkOption {
-                type = lib.types.attrsOf (
-                  lib.types.submodule {
-                    options = {
-                      text = lib.mkOption {
-                        type = lib.types.str;
-                        description = "Contents of the earlyInit file.";
-                      };
-                      priority = lib.mkOption {
-                        type = lib.types.int;
-                        default = 1000;
-                        description = "Priority (default: 1000).";
-                      };
-                    };
-                  }
-                );
-                description = ''
-                  Emacs init code files.
-                '';
-                default = { };
-              };
-            };
-        };
         editor = {
           includes = with aspects; [ ];
           homeManager =
-            { pkgs, config, ... }:
+            { pkgs, ... }:
             {
               config = {
                 programs.emacs = {
                   enable = true;
-                  package = pkgs.emacs-pgtk;
+                  # The nix-wrapper-modules Emacs wrapper does not carry
+                  # `nix-support/setup-hook` from the Emacs it wraps, but that hook
+                  # (`addEmacsVars`, registered through `addEnvHooks`) is what puts a
+                  # package's dependencies on `EMACSLOADPATH` while byte-compiling it.
+                  # Without it, any package built from this Emacs' package set fails to
+                  # find its `packageRequires` — e.g. stylix's generated
+                  # `base16-stylix-theme`, which `(require 'base16-theme)`s and died
+                  # with "Cannot open load file: No such file or directory, base16-theme".
+                  # Re-wrap to graft the hook back on from stock Emacs.
+                  package =
+                    (pkgs.mkEmacsWith [
+                      {
+                        init = builtins.readFile ../../legacy-modules/users/global/editors/emacs/local.el;
+                        # `local.el' `require's these itself: dash provides the
+                        # `-when-let*'/`-each'/`-sort' macros used by the `gitr-*'
+                        # helpers, consult the completion API used by the Azure
+                        # subscription/cluster pickers.
+                        packages = with pkgs.emacsPackages; [
+                          consult
+                          dash
+                        ];
+                      }
+                    ]).wrap
+                      {
+                        drv.postInstall = ''
+                          mkdir -p $out/nix-support
+                          cp ${pkgs.emacs}/nix-support/setup-hook $out/nix-support/setup-hook
+                        '';
+                      };
                 };
                 services.emacs = {
                   enable = true;
                   defaultEditor = true;
                   startWithUserSession = "graphical";
                 };
-
-                xdg.configFile = lib.mkMerge (
-                  (lib.mapAttrsToList (name: cfg: {
-                    "emacs/init-${name}.el" = {
-                      text = lib.strings.concatLines [
-                        ";; -*- lexical-binding: t -*-"
-                        cfg.text
-                      ];
-                    };
-                  }) config.editor.initFiles)
-                  ++ (lib.mapAttrsToList (name: cfg: {
-                    "emacs/early-init-${name}.el" = {
-                      text = lib.strings.concatLines [
-                        ";; -*- lexical-binding: t -*-"
-                        cfg.text
-                      ];
-                    };
-                  }) config.editor.earlyInitFiles)
-                  ++ [
-                    {
-                      "emacs/init.el".text =
-                        let
-                          files = lib.attrValues (lib.mapAttrs (name: v: v // { inherit name; }) config.editor.initFiles);
-                          cmpP = a: b: (a.priority - b.priority) < 0;
-                          sorted = lib.sort cmpP files;
-                          mkIncludes =
-                            files:
-                            lib.concatMapStringsSep "\n" (
-                              x: ''(load (expand-file-name "init-${x.name}.el" user-emacs-directory))''
-                            ) files;
-                        in
-                        lib.strings.concatLines [
-                          ";; -*- lexical-binding: t -*-"
-                          (mkIncludes sorted)
-                        ];
-                    }
-                    {
-                      "emacs/early-init.el".text =
-                        let
-                          files = lib.attrValues (
-                            lib.mapAttrs (name: v: v // { inherit name; }) config.editor.earlyInitFiles
-                          );
-                          cmpP = a: b: (a.priority - b.priority) < 0;
-                          sorted = lib.sort cmpP files;
-                          mkIncludes =
-                            files:
-                            lib.concatMapStringsSep "\n" (
-                              x: ''(load (expand-file-name "early-init-${x.name}.el" user-emacs-directory))''
-                            ) files;
-                        in
-                        lib.strings.concatLines [
-                          ";; -*- lexical-binding: t -*-"
-                          (mkIncludes sorted)
-                        ];
-                    }
-                  ]
-                );
               };
             };
         };

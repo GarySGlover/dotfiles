@@ -7,14 +7,6 @@
         home.packages = with pkgs; [
           mermaid-cli
         ];
-        programs.emacs.extraPackages =
-          epkgs: with epkgs; [
-            mermaid-mode
-            ob-mermaid
-          ];
-        editor.initFiles.mermaid.text = ''
-
-        '';
       };
   };
 }

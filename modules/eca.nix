@@ -1,17 +1,9 @@
-# [[file:../modules.org::*ECA][ECA:3]]
+# [[file:../modules.org::*ECA][ECA:2]]
 {
   flake.aspects.editor.homeManager = { pkgs, inputs, ... }: {
     home.packages = [
       (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.eca)
     ];
-    programs.emacs.extraPackages =
-      epkgs: with epkgs; [
-        eca
-      ];
-    editor.initFiles.eca.text = ''
-      (use-package eca
-        :bind ("C-c e" . eca-transient-menu))
-    '';
     xdg.configFile."eca/config.json".text = ''
       {
         "providers": {
@@ -88,4 +80,4 @@
       });
     };
 }
-# ECA:3 ends here
+# ECA:2 ends here

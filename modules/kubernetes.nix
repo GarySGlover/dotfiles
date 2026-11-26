@@ -1,4 +1,4 @@
-# [[file:../modules.org::*Kubernetes][Kubernetes:2]]
+# [[file:../modules.org::*Kubernetes][Kubernetes:1]]
 {
   flake.aspects = {
     options = {
@@ -31,17 +31,6 @@
                 helm-dashboard
                 (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.sofka)
               ];
-              editor.initFiles.kubernetes.text = ''
-                (add-hook
-                 'after-init-hook
-                 (lambda ()
-                   (ghostel-make-exec k9s)
-                   (ghostel-make-exec sofka)))
-              '';
-              programs.emacs.extraPackages =
-                epkgs: with epkgs; [
-                  kubel
-                ];
             }
             (lib.mkIf config.kubernetes.includeKubelogin {
               home.packages = with pkgs; [ kubelogin ];
@@ -70,7 +59,13 @@
         # aws-lc-sys (the TLS client's crypto backend) builds AWS-LC's C sources
         # with cmake. Bindings are pregenerated for all four platforms this package
         # targets, so no bindgen/libclang is needed here.
+        #
+        # `dontCargoUseSystemLibs` disables nixpkgs' `cargoUseSystemLibs` hook,
+        # which otherwise sets AWS_LC_SYS_USE_SYSTEM=1/ZSTD_SYS_USE_PKG_CONFIG=1/…
+        # and expects every vendored `-sys` crate to be backed by a system
+        # library — which then fails for any library not added to buildInputs.
         nativeBuildInputs = [ pkgs.cmake ];
+        dontCargoUseSystemLibs = true;
 
         # The test suite builds a rustls-backed kube::Client (even for the "fake"
         # test cluster), which needs native root CA certs — unavailable in Nix's
@@ -91,4 +86,4 @@
       });
     };
 }
-# Kubernetes:2 ends here
+# Kubernetes:1 ends here

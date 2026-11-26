@@ -9,7 +9,6 @@
           docker
           kubernetes
           terraform
-          nginx
         ];
         homeManager = { };
         nixos = { };

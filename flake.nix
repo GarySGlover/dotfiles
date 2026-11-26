@@ -35,6 +35,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
     };
+    fourleafclover-nix-config = {
+      url = "git+https://codeberg.org/fourleafclover/nix-config.git?ref=makewith-emacs";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Emacs Packages
     transient-compile = {
@@ -105,7 +109,15 @@
                   );
                   importedOverlays = map (file: import (./legacy-modules/overlays + "/${file}") inputs) overlayFiles;
                 in
-                importedOverlays;
+                importedOverlays
+                ++ [
+                  # Upstream only adds `mkEmacsWith`; it deliberately no longer
+                  # replaces `emacs` (that broke nixpkgs' `emacsPackages =
+                  # emacs.pkgs`, used by `trivialBuild` and the
+                  # treesit-grammars setup), so the stock-`emacs` shim that used
+                  # to be needed here is gone.
+                  inputs.fourleafclover-nix-config.overlays.default
+                ];
             };
 
             extraSpecialArgs = {

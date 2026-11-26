@@ -62,35 +62,8 @@
 #+end_src
 
 * AI
-** Copilot
-#+name: elisp_copilot
-#+begin_src emacs-lisp
-  (with-eval-after-load 'copilot
-    (setopt copilot-lsp-settings '(:github-enterprise (:uri "https://next-plc.ghe.com"))))
-#+end_src
-
-#+begin_src nix-ts :tangle modules/copilot.nix :noweb yes
-  {
-    flake.aspects.editor.homeManager = {
-      programs.emacs.extraPackages =
-        epkgs: with epkgs; [
-          copilot
-        ];
-      editor.initFiles.copilot.text = ''
-        <<elisp_copilot>>
-      '';
-    };
-  }
-#+end_src
-
 ** ECA
 https://eca.dev/
-
-#+name: elisp_eca
-#+begin_src emacs-lisp
-  (use-package eca
-    :bind ("C-c e" . eca-transient-menu))
-#+end_src
 
 #+name: json_eca
 #+begin_src json
@@ -114,13 +87,6 @@ https://eca.dev/
       home.packages = [
         (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.eca)
       ];
-      programs.emacs.extraPackages =
-        epkgs: with epkgs; [
-          eca
-        ];
-      editor.initFiles.eca.text = ''
-        <<elisp_eca>>
-      '';
       xdg.configFile."eca/config.json".text = ''
         <<json_eca>>
       '';
@@ -300,8 +266,10 @@ https://eca.dev/
             config = {
               kubernetes.includeKubelogin = true;
               azure-cli.extensions = with pkgs.azure-cli.extensions; [
+                aks-preview
                 azure-devops
                 quota
+                subscription
               ];
               home.packages = [
                 (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.azure-cli.withExtensions
@@ -346,7 +314,6 @@ https://eca.dev/
             docker
             kubernetes
             terraform
-            nginx
           ];
           homeManager = { };
           nixos = { };
@@ -357,136 +324,64 @@ https://eca.dev/
 
 * Editor
 
+Almost all of our own injected elisp has been superseded by upstream's own
+Emacs config (provided via =inputs.fourleafclover-nix-config= and
+=pkgs.mkEmacsWith=). All that's left locally is
+=legacy-modules/users/global/editors/emacs/local.el=: the gitr-* repo-tracking
+helpers/magit hooks and the azure/kubernetes commands (the old
+=local-packages= Emacs package has been flattened into it, so there is no
+package to build any more).
+
 #+begin_src nix-ts :tangle modules/editor/default.nix
-  {
-    lib,
-    ...
-  }:
+  { ... }:
   {
     flake.aspects =
       { aspects, ... }:
       {
         config = {
-          options = {
-            homeManager =
-              { lib, ... }:
-              {
-                options.editor.earlyInitFiles = lib.mkOption {
-                  type = lib.types.attrsOf (
-                    lib.types.submodule {
-                      options = {
-                        text = lib.mkOption {
-                          type = lib.types.str;
-                          description = "Contents of the earlyInit file.";
-                        };
-                        priority = lib.mkOption {
-                          type = lib.types.int;
-                          default = 1000;
-                          description = "Priority (default: 1000).";
-                        };
-                      };
-                    }
-                  );
-                  description = ''
-                    Emacs early init code files.
-                  '';
-                  default = { };
-                };
-                options.editor.initFiles = lib.mkOption {
-                  type = lib.types.attrsOf (
-                    lib.types.submodule {
-                      options = {
-                        text = lib.mkOption {
-                          type = lib.types.str;
-                          description = "Contents of the earlyInit file.";
-                        };
-                        priority = lib.mkOption {
-                          type = lib.types.int;
-                          default = 1000;
-                          description = "Priority (default: 1000).";
-                        };
-                      };
-                    }
-                  );
-                  description = ''
-                    Emacs init code files.
-                  '';
-                  default = { };
-                };
-              };
-          };
           editor = {
             includes = with aspects; [ ];
             homeManager =
-              { pkgs, config, ... }:
+              { pkgs, ... }:
               {
                 config = {
                   programs.emacs = {
                     enable = true;
-                    package = pkgs.emacs-pgtk;
+                    # The nix-wrapper-modules Emacs wrapper does not carry
+                    # `nix-support/setup-hook` from the Emacs it wraps, but that hook
+                    # (`addEmacsVars`, registered through `addEnvHooks`) is what puts a
+                    # package's dependencies on `EMACSLOADPATH` while byte-compiling it.
+                    # Without it, any package built from this Emacs' package set fails to
+                    # find its `packageRequires` — e.g. stylix's generated
+                    # `base16-stylix-theme`, which `(require 'base16-theme)`s and died
+                    # with "Cannot open load file: No such file or directory, base16-theme".
+                    # Re-wrap to graft the hook back on from stock Emacs.
+                    package =
+                      (pkgs.mkEmacsWith [
+                        {
+                          init = builtins.readFile ../../legacy-modules/users/global/editors/emacs/local.el;
+                          # `local.el' `require's these itself: dash provides the
+                          # `-when-let*'/`-each'/`-sort' macros used by the `gitr-*'
+                          # helpers, consult the completion API used by the Azure
+                          # subscription/cluster pickers.
+                          packages = with pkgs.emacsPackages; [
+                            consult
+                            dash
+                          ];
+                        }
+                      ]).wrap
+                        {
+                          drv.postInstall = ''
+                            mkdir -p $out/nix-support
+                            cp ${pkgs.emacs}/nix-support/setup-hook $out/nix-support/setup-hook
+                          '';
+                        };
                   };
                   services.emacs = {
                     enable = true;
                     defaultEditor = true;
                     startWithUserSession = "graphical";
                   };
-
-                  xdg.configFile = lib.mkMerge (
-                    (lib.mapAttrsToList (name: cfg: {
-                      "emacs/init-${name}.el" = {
-                        text = lib.strings.concatLines [
-                          ";; -*- lexical-binding: t -*-"
-                          cfg.text
-                        ];
-                      };
-                    }) config.editor.initFiles)
-                    ++ (lib.mapAttrsToList (name: cfg: {
-                      "emacs/early-init-${name}.el" = {
-                        text = lib.strings.concatLines [
-                          ";; -*- lexical-binding: t -*-"
-                          cfg.text
-                        ];
-                      };
-                    }) config.editor.earlyInitFiles)
-                    ++ [
-                      {
-                        "emacs/init.el".text =
-                          let
-                            files = lib.attrValues (lib.mapAttrs (name: v: v // { inherit name; }) config.editor.initFiles);
-                            cmpP = a: b: (a.priority - b.priority) < 0;
-                            sorted = lib.sort cmpP files;
-                            mkIncludes =
-                              files:
-                              lib.concatMapStringsSep "\n" (
-                                x: ''(load (expand-file-name "init-${x.name}.el" user-emacs-directory))''
-                              ) files;
-                          in
-                          lib.strings.concatLines [
-                            ";; -*- lexical-binding: t -*-"
-                            (mkIncludes sorted)
-                          ];
-                      }
-                      {
-                        "emacs/early-init.el".text =
-                          let
-                            files = lib.attrValues (
-                              lib.mapAttrs (name: v: v // { inherit name; }) config.editor.earlyInitFiles
-                            );
-                            cmpP = a: b: (a.priority - b.priority) < 0;
-                            sorted = lib.sort cmpP files;
-                            mkIncludes =
-                              files:
-                              lib.concatMapStringsSep "\n" (
-                                x: ''(load (expand-file-name "early-init-${x.name}.el" user-emacs-directory))''
-                              ) files;
-                          in
-                          lib.strings.concatLines [
-                            ";; -*- lexical-binding: t -*-"
-                            (mkIncludes sorted)
-                          ];
-                      }
-                    ]
-                  );
                 };
               };
           };
@@ -495,542 +390,7 @@ https://eca.dev/
   }
 #+end_src
 
-** General Settings
-
-#+name: elisp_core_early_init
-#+begin_src emacs-lisp
-  ;; Ensure loading of latest package version rather than the first
-  ;; found. Will ensure doesn't load an older byte compiled version when
-  ;; there is a new package version installed.
-  (setopt load-prefer-newer t)
-
-  ;; Temporary set garbage collection to high value and set after-init-hook
-  ;; to revert to normal. Improves startup performance whilst maintaining
-  ;; resonable memory utilistation during normal operation.
-  (let ((original-gc-cons-threshold gc-cons-threshold))
-    (setopt gc-cons-threshold most-positive-fixnum)
-    (add-hook 'after-init-hook
-              (lambda ()
-                (setopt gc-cons-threshold original-gc-cons-threshold))
-              91))
-
-  ;; Disable package installs
-  (with-eval-after-load 'package
-    (fmakunbound 'package-install)
-    (fmakunbound 'package-install-file)
-    (fmakunbound 'package-install-from-buffer)
-    (fmakunbound 'package-install-from-file)
-    (fmakunbound 'package-install-selected-packages)
-    (fmakunbound 'package-reinstall)
-    (fmakunbound 'package-upgrade)
-    (fmakunbound 'package-upgrade-all)
-    (fmakunbound 'package-vc-install)
-    (fmakunbound 'package-vc-install-from-checkout)
-    (fmakunbound 'package-vc-install-selected-packages)
-    (fmakunbound 'package-vc-upgrade)
-    (fmakunbound 'package-vc-upgrade-all))
-
-  ;; Enable melpa for package searching
-  (with-eval-after-load 'package
-    (add-to-list
-     'package-archives '("melpa" . "https://melpa.org/packages/")
-     t))
-
-  ;; Disable UI elements as using Emacs only with keyboard.
-  (setopt
-   inhibit-startup-screen t
-   inhibit-splash-screen t)
-  (when (fboundp 'tool-bar-setup)
-    (advice-add 'tool-bar-setup :override #'ignore))
-  (push '(tool-bar-lines . 0) default-frame-alist)
-  (push '(menu-bar-lines . 0) default-frame-alist)
-  (push '(vertical-scroll-bars) default-frame-alist)
-  (push '(horizontal-scroll-bars) default-frame-alist)
-  (when (bound-and-true-p tooltip-mode)
-    (tooltip-mode -1))
-  (setopt
-   use-file-dialog nil
-   use-dialog-box nil)
-
-  ;; Set early background colour to help reduce startup flash
-  (when (fboundp 'cnit-with-system-colour)
-    (cnit-with-system-colour-scheme
-     (set-face-attribute
-      'default nil
-      :background "#000000"
-      :foreground "#FFFFFF")
-     (set-face-attribute
-      'default nil
-      :background "#FFFFFF"
-      :foreground "#000000")))
-#+end_src
-
-#+name: elisp_core_init
-#+begin_src elisp
-  ;; Start emacs server after when there is spare time.
-  (run-with-idle-timer 5 nil
-                       (lambda ()
-                               (unless (and (fboundp 'server-running-p) (server-running-p))
-                                 (server-start))))
-
-  ;; Short responses rather than the longer yes/no.
-  (if (boundp 'use-short-answers)
-      (setq use-short-answers t)
-    (advice-add #'yes-or-no-p :override #'y-or-n-p))
-
-  ;; Increase undo limit to help ensure not running out of undo information.
-  (setopt
-   undo-limit (* 13 160000)
-   undo-strong-limit (* 13 240000)
-   undo-outer-limit (* 13 24000000))
-
-  ;; Recursive minibuffers allows minibuffer commands in the minibuffer.
-  (setopt enable-recursive-minibuffers t)
-
-  ;; Disable bell functionality.
-  (setopt
-   visible-bell nil
-   ring-bell-function #'ignore)
-
-  ;; Improve the inbuilt help with extra contextual information
-  (bind-key [remap describe-function] #'helpful-callable)
-  (bind-key [remap describe-command] #'helpful-command)
-  (bind-key [remap describe-variable] #'helpful-variable)
-  (bind-key [remap describe-key] #'helpful-key)
-  (bind-key "C-c C-d" #'helpful-at-point 'global-map)
-
-  ;; Prevent accidental closing of Emacs
-  (setopt confirm-kill-emacs #'y-or-n-p)
-
-  ;; Tabs. Sometimes a programming language might use tabs, better to turn
-  ;; on for those languages specifically as otherwise it'll screw up most
-  ;; others.
-  (setq-default indent-tabs-mode nil)
-
-  ;; Change which commands are disabled by default.
-  ;; (pp-eval-expression '(let (result) (mapatoms (lambda (sym) (when (and (commandp sym) (get sym 'disabled)) (push (list sym (get sym 'disabled)) result)))) result))
-  (dolist (command
-           '(narrow-to-region
-             upcase-region
-             downcase-region
-             narrow-to-page
-             erase-buffer))
-    (put command 'disabled nil))
-  (put 'suspend-frame 'disabled t)
-#+end_src
-
-#+begin_src nix-ts :tangle modules/editor/core.nix :noweb yes
-  {
-    flake.aspects.editor.homeManager = {
-      programs.emacs.extraPackages = epkgs: with epkgs; [ ];
-      editor.earlyInitFiles.core.text = ''
-        <<elisp_core_early_init>>
-      '';
-      editor.initFiles.core.text = ''
-        <<elisp_core_init>>
-      '';
-    };
-  }
-#+end_src
-
-** Mode/Header line
-
-#+name: elisp_modeline
-#+begin_src emacs-lisp
-  (setopt mode-line-collapse-minor-modes
-          '(abbrev-mode
-            auto-revert-mode
-            buffer-face-mode
-            dtrt-indent-mode
-            editorconfig-mode
-            eldoc-mode
-            meow-beacon-mode
-            meow-insert-mode
-            meow-keypad-mode
-            meow-motion-mode
-            meow-normal-mode
-            org-src-mode
-            selected-minor-mode
-            single-window-mode
-            visual-line-mode
-            whitespace-mode))
-  (use-package telephone-line
-    :config
-    (telephone-line-defsegment* my-telephone-line-minor-mode-segment ()
-      (mode-line--minor-modes))
-    (defun telephone-line-modal-face (active)
-      (cond ((not active) 'mode-line-inactive)
-            ((and meow-normal-mode (region-active-p)) 'telephone-line-evil-visual)
-            (meow-normal-mode 'telephone-line-evil-normal)
-            (meow-insert-mode 'telephone-line-evil-insert)
-            (meow-motion-mode 'telephone-line-evil-emacs)
-            (meow-keypad-mode 'telephone-line-evil-operator)
-            (meow-beacon-mode 'telephone-line-evil-replace)))
-    (setq telephone-line-lhs
-          '((evil . (telephone-line-meow-tag-segment))
-            (accent . (telephone-line-vc-segment
-                       telephone-line-process-segment))
-            (nil . (telephone-line-buffer-name-segment
-                    my-telephone-line-minor-mode-segment))))
-    (setq telephone-line-rhs
-          '((nil . ())
-            (accent . (telephone-line-misc-info-segment))
-            (evil . (telephone-line-major-mode-segment))))
-    :hook (after-init . telephone-line-mode))
-  (setopt
-   display-time-format "%H:%M"
-   display-time-default-load-average nil)
-  (display-time-mode)
-#+end_src
-
-#+begin_src nix-ts :tangle modules/editor/modeline.nix :noweb yes
-  {
-    flake.aspects.editor.homeManager = {
-      editor.initFiles.modeline.text = ''
-        <<elisp_modeline>>
-      '';
-      programs.emacs.extraPackages =
-        epkgs: with epkgs; [
-          breadcrumb
-          telephone-line
-        ];
-    };
-  }
-#+end_src
-
-** Use package
-#+name: elisp_use_package
-#+begin_src emacs-lisp
-  (require 'use-package)
-  (setopt
-   use-package-always-defer t
-   use-package-expand-minimally t)
-#+end_src
-
-#+begin_src nix-ts :tangle modules/editor/use-package.nix :noweb yes
-  {
-    flake.aspects.editor.homeManager = {
-      editor.initFiles.usePackage.text = ''
-        <<elisp_use_package>>
-      '';
-    };
-  }
-#+end_src
-
-** Global Minor Modes
-
-#+name: elisp_global_minor_modes
-#+begin_src emacs-lisp
-  (use-package emacs
-    :init
-    (defun my-init-modes ()
-      (when (fboundp 'popper-mode) (popper-mode t))
-      (when (fboundp 'winner-mode) (winner-mode t))
-      (when (fboundp 'repeat-mode) (repeat-mode t))
-      (when (fboundp 'delete-selection-mode) (delete-selection-mode 1))
-      (when (fboundp 'vertico-mode) (vertico-mode t))
-      (when (fboundp 'vertico-multiform-mode) (vertico-multiform-mode t))
-      (when (fboundp 'marginalia-mode) (marginalia-mode))
-      (when (fboundp 'editorconfig-mode) (editorconfig-mode t))
-      (when (fboundp 'dtrt-indent-global-mode) (dtrt-indent-global-mode t))
-      (when (fboundp 'selected-global-mode) (selected-global-mode t))
-      (when (fboundp 'breadcrumb-mode) (breadcrumb-mode t))
-      (when (fboundp 'single-window-mode) (single-window-mode t)))
-    :hook (after-init . my-init-modes))
-
-  (use-package popper
-    :hook (after-init . popper-mode))
-#+end_src
-
-#+begin_src nix-ts :tangle modules/editor/global-minor-modes.nix :noweb yes
-  {
-    flake.aspects.editor.homeManager = {
-      editor.initFiles.global-minor-modes.text = ''
-        <<elisp_global_minor_modes>>
-      '';
-    };
-  }
-#+end_src
-
-** Casual
-#+name: elisp_casual
-#+begin_src emacs-lisp
-  (keymap-global-set "C-o" #'casual-editkit-main-tmenu)
-#+end_src
-
-#+begin_src nix-ts :tangle modules/editor/casual.nix :noweb yes
-  {
-    flake.aspects.editor.homeManager = {
-      editor.initFiles.casual.text = ''
-        <<elisp_casual>>
-      '';
-      programs.emacs.extraPackages =
-        epkgs: with epkgs; [
-          casual
-        ];
-    };
-  }
-#+end_src
-
-** Display buffer defualts
-
-#+name: elisp_display_buffer
-#+begin_src emacs-lisp
-  (with-eval-after-load 'single-window
-    (setopt
-     single-window-respect-display-buffer-alist t
-     single-window-exclude-popper t))
-#+end_src
-
-#+begin_src nix-ts :tangle modules/editor/display_buffer.nix :noweb yes
-  {
-    flake.aspects.editor.homeManager = { inputs, pkgs, ... }: {
-      editor.initFiles.display_buffer.text = ''
-        <<elisp_display_buffer>>
-      '';
-      programs.emacs.extraPackages = _: [
-        (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.emacsSingleWindow)
-      ];
-    };
-    perSystem =
-      { pkgs, ... }:
-      {
-        packages.emacsSingleWindow = pkgs.emacsPackages.melpaBuild {
-          pname = "single-window";
-          version = "1.0.1";
-          src = pkgs.fetchFromGitHub {
-            owner = "jamescherti";
-            repo = "single-window.el";
-            rev = "38483532db9c1e7a2c07a04dd9f70f9b288bca7c";
-            hash = "sha256-ZsIiCu2pzuJBv4rYRD45loI4bjJBMpnAE7ZuqXXZvU4=";
-          };
-        };
-      };
-  }
-#+end_src
-
-** Presentation
-
-#+name: elisp_presentation
-#+begin_src emacs-lisp
-  (with-eval-after-load 'org-tree-slide
-    (bind-keys
-     :map org-tree-slide-mode-map
-     ("," . org-tree-slide-move-previous-tree)
-     ("." . org-tree-slide-move-next-tree)))
-#+end_src
-
-
-#+begin_src nix-ts :tangle modules/editor/presentation.nix :noweb yes
-  {
-    flake.aspects.editor.homeManager = {
-      editor.initFiles.presentation.text = ''
-        <<elisp_presentation>>
-      '';
-      programs.emacs.extraPackages =
-        epkgs: with epkgs; [
-          org-tree-slide
-        ];
-    };
-  }
-#+end_src
-
-** Editing enhancement
-
-#+name: elisp_editing_enhancement
-#+begin_src emacs-lisp
-  (with-eval-after-load 'selected
-    (setopt
-     insert-pair-alist
-     '((?\( ?\)) (?\[ ?\]) (?\{ ?\}) (?\< ?\>) (?\" ?\") (?\' ?\') (?\` ?\') (?\= ?\=) (?\~ ?\~)))
-
-    (bind-keys
-     :map selected-keymap
-     ("(" . insert-pair)
-     ("[" . insert-pair)
-     ("{" . insert-pair)
-     ("<" . insert-pair)
-     ("\"" . insert-pair)
-     ("'" . insert-pair)
-     ("`" . insert-pair)
-     ("=" . insert-pair)
-     ("~" . insert-pair)
-     ("R" . replace-regexp)
-     ("d" . downcase-dwim)
-     ("l" . sort-lines)
-     ("r" . replace-string)
-     ("u" . upcase-dwim)
-     ("x" . exchange-point-and-mark)))
-#+end_src
-
-#+begin_src nix-ts :tangle modules/editor/enhancement.nix :noweb yes
-  {
-    flake.aspects.editor.homeManager = {
-      editor.initFiles.editingEnhancement.text = ''
-        <<elisp_editing_enhancement>>
-      '';
-      programs.emacs.extraPackages =
-        epkgs: with epkgs; [
-          selected
-        ];
-    };
-  }
-#+end_src
-
-** Navigation
-
-#+name: elisp_navigation
-#+begin_src emacs-lisp
-  (use-package avy
-    :bind (("M-j" . avy-goto-char-timer)
-           :map isearch-mode-map
-           ("M-j" . avy-isearch))
-    :config
-    (setopt avy-style 'at-full
-            avy-single-candidate-jump nil
-            avy-all-windows-alt 'all-frames))
-
-  (use-package meow
-    :hook (after-init-hook . (lambda () (progn
-                                          (meow-setup)
-                                          (meow-global-mode 1))))
-    :custom (meow-use-clipboard t)
-    :config
-    (defun meow-setup ()
-      (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
-      (meow-motion-define-key
-       '("<escape>" . ignore))
-      (meow-leader-define-key
-       ;; Use SPC (0-9) for digit arguments.
-       '("1" . meow-digit-argument)
-       '("2" . meow-digit-argument)
-       '("3" . meow-digit-argument)
-       '("4" . meow-digit-argument)
-       '("5" . meow-digit-argument)
-       '("6" . meow-digit-argument)
-       '("7" . meow-digit-argument)
-       '("8" . meow-digit-argument)
-       '("9" . meow-digit-argument)
-       '("0" . meow-digit-argument)
-       '("/" . meow-keypad-describe-key)
-       '("?" . meow-cheatsheet))
-      (meow-normal-define-key
-       '("0" . meow-expand-0)
-       '("9" . meow-expand-9)
-       '("8" . meow-expand-8)
-       '("7" . meow-expand-7)
-       '("6" . meow-expand-6)
-       '("5" . meow-expand-5)
-       '("4" . meow-expand-4)
-       '("3" . meow-expand-3)
-       '("2" . meow-expand-2)
-       '("1" . meow-expand-1)
-       '("-" . negative-argument)
-       '(";" . meow-reverse)
-       '("," . meow-inner-of-thing)
-       '("." . meow-bounds-of-thing)
-       '("[" . meow-beginning-of-thing)
-       '("]" . meow-end-of-thing)
-       '("a" . meow-append)
-       '("A" . meow-open-below)
-       '("b" . meow-back-word)
-       '("B" . meow-back-symbol)
-       '("c" . meow-change)
-       '("d" . meow-delete)
-       '("D" . meow-backward-delete)
-       '("e" . meow-next-word)
-       '("E" . meow-next-symbol)
-       '("f" . meow-find)
-       '("g" . meow-cancel-selection)
-       '("G" . meow-grab)
-       '("h" . meow-left)
-       '("H" . meow-left-expand)
-       '("i" . meow-insert)
-       '("I" . meow-open-above)
-       '("j" . meow-next)
-       '("J" . meow-next-expand)
-       '("k" . meow-prev)
-       '("K" . meow-prev-expand)
-       '("l" . meow-right)
-       '("L" . meow-right-expand)
-       '("m" . meow-join)
-       '("n" . meow-search)
-       '("o" . meow-block)
-       '("O" . meow-to-block)
-       '("p" . meow-yank)
-       '("P" . meow-yank-pop)
-       '("q" . meow-quit)
-       '("Q" . meow-goto-line)
-       '("r" . meow-replace)
-       '("R" . meow-swap-grab)
-       '("s" . meow-kill)
-       '("t" . meow-till)
-       '("u" . meow-undo)
-       '("U" . meow-undo-in-selection)
-       '("v" . meow-visit)
-       '("w" . meow-mark-word)
-       '("W" . meow-mark-symbol)
-       '("x" . meow-line)
-       '("X" . meow-goto-line)
-       '("y" . meow-save)
-       '("Y" . meow-sync-grab)
-       '("z" . meow-pop-selection)
-       '("'" . repeat)
-       '("<escape>" . ignore))))
-#+end_src
-
-#+begin_src nix-ts :tangle modules/editor/navigation.nix :noweb yes
-  {
-    flake.aspects.editor.homeManager = {
-      editor.initFiles.navigation.text = ''
-        <<elisp_navigation>>
-      '';
-      programs.emacs.extraPackages =
-        epkgs: with epkgs; [
-          avy
-          meow
-        ];
-    };
-  }
-#+end_src
-
-** +niri
-
-#+name: kdl_editor
-#+begin_src kdl  kdl_editor
-  spawn-sh-at-startup "systemctl --user restart emacs"
-#+end_src
-
-#+begin_src nix-ts :tangle modules/editor/+niri.nix :noweb yes
-  {
-    flake.aspects.editor.homeManager = {
-      niri.configFiles.editor = {
-        text = ''
-          <<kdl_editor>>
-        '';
-        priority = 2000;
-      };
-    };
-  }
-#+end_src
-
 * Direnv
-
-#+name: elisp_direnv
-#+begin_src emacs-lisp
-  (add-hook 'after-init-hook (lambda () (envrc-global-mode t)) 91)
-  (with-eval-after-load 'envrc
-    (setopt envrc-show-summary-in-minibuffer nil)
-    (define-key envrc-mode-map (kbd "C-c e") 'envrc-command-map)
-    (defun envrc-precompile ()
-      (interactive)
-      ))
-  (add-to-list
-   'display-buffer-alist
-   `(,(rx "*envrc*")
-     (display-buffer-no-window)
-     (allow-no-window . t)))
-#+end_src
 
 #+begin_src nix-ts :tangle modules/direnv.nix :noweb yes
   {
@@ -1046,49 +406,11 @@ https://eca.dev/
       home.sessionVariables = {
         DIRENV_LOG_FORMAT = "";
       };
-
-      programs.emacs.extraPackages =
-        epkgs: with epkgs; [
-          envrc
-        ];
-      editor.initFiles.direnv.text = ''
-        <<elisp_direnv>>
-      '';
     };
   }
 #+end_src
 
 * Environment
-
-#+name: elisp_environment
-#+begin_src emacs-lisp
-  (when (daemonp)
-    (require 'exec-path-from-shell)
-    (dolist (var
-             '("DISPLAY"
-               "NIRI_SOCKET"
-               "WAYLAND_DISPLAY"
-               "XCURSOR_SIZE"
-               "XCURSOR_THEME"
-               "XDG_CONFIG_HOME"
-               "XDG_CURRENT_DESKTOP"
-               "XDG_SESSION_CLASS"
-               "XDG_SESSION_DESKTOP"
-               "XDG_SESSION_TYPE"))
-      (add-to-list 'exec-path-from-shell-variables var))
-    (exec-path-from-shell-initialize))
-#+end_src
-
-#+begin_src nix-ts :tangle modules/environment/default.nix :noweb yes
-  {
-    flake.aspects.environment.homeManager = {
-      programs.emacs.extraPackages = epkgs: with epkgs; [ exec-path-from-shell ];
-      editor.initFiles.environment.text = ''
-        <<elisp_environment>>
-      '';
-    };
-  }
-#+end_src
 
 ** +niri
 
@@ -1160,41 +482,7 @@ https://eca.dev/
   }
 #+end_src
 
-* Help
-
-#+name: elisp_help
-#+begin_src emacs-lisp
-  ;; Embark for Emacs help
-  (setq prefix-help-command #'embark-prefix-help-command)
-  (bind-key "C-h C-h" #'embark-prefix-help-command help-quick-use-map)
-  (bind-key "C-h b" #'embark-bindings)
-
-  ;; Man will use pop-to-buffer which respects the display-buffer rules
-  (setopt Man-notify-method 'aggressive)
-#+end_src
-
-#+begin_src nix-ts :tangle modules/help.nix :noweb yes
-  {
-    flake.aspects = {
-      notes.homeManager = {
-        editor.initFiles.help.text = ''
-          <<elisp_help>>
-        '';
-      };
-    };
-  }
-#+end_src
-
 * Kubernetes
-
-#+name: elisp_kubernetes
-#+begin_src emacs-lisp
-  (add-hook
-   'after-init-hook
-   (lambda ()
-     (ghostel-make-exec k9s)
-     (ghostel-make-exec sofka)))
-#+end_src
 
 #+begin_src nix-ts :tangle modules/kubernetes.nix :noweb yes
   {
@@ -1229,13 +517,6 @@ https://eca.dev/
                   helm-dashboard
                   (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.sofka)
                 ];
-                editor.initFiles.kubernetes.text = ''
-                  <<elisp_kubernetes>>
-                '';
-                programs.emacs.extraPackages =
-                  epkgs: with epkgs; [
-                    kubel
-                  ];
               }
               (lib.mkIf config.kubernetes.includeKubelogin {
                 home.packages = with pkgs; [ kubelogin ];
@@ -1264,7 +545,13 @@ https://eca.dev/
           # aws-lc-sys (the TLS client's crypto backend) builds AWS-LC's C sources
           # with cmake. Bindings are pregenerated for all four platforms this package
           # targets, so no bindgen/libclang is needed here.
+          #
+          # `dontCargoUseSystemLibs` disables nixpkgs' `cargoUseSystemLibs` hook,
+          # which otherwise sets AWS_LC_SYS_USE_SYSTEM=1/ZSTD_SYS_USE_PKG_CONFIG=1/…
+          # and expects every vendored `-sys` crate to be backed by a system
+          # library — which then fails for any library not added to buildInputs.
           nativeBuildInputs = [ pkgs.cmake ];
+          dontCargoUseSystemLibs = true;
 
           # The test suite builds a rustls-backed kube::Client (even for the "fake"
           # test cluster), which needs native root CA certs — unavailable in Nix's
@@ -1287,100 +574,6 @@ https://eca.dev/
   }
 #+end_src
 
-* Nginx
-
-#+begin_src nix-ts :tangle modules/nginx.nix
-  {
-    flake.aspects.nginx.homeManager = {
-      programs.emacs.extraPackages = epkgs: with epkgs; [ nginx-mode ];
-    };
-  }
-#+end_src
-
-* Notes
-
-#+name: elisp_org_mode
-#+begin_src elisp
-  (with-eval-after-load 'org
-    ;; Org template definitions with tempel
-    (defvar org-templates
-      '((ttl & "#+title: " p n "#+author: " p n "#+language: " p n n)
-        (nm & "#+name: " p n)
-        (lnk & "[[" p "][" p "]]")
-        (bgn & "#+begin_" (s name) n r n "#+end_" name)
-        (exmpl & "#+begin_example" n> r> n> "#+end_example")
-        (cntr & "#+begin_center" n> r> n> "#+end_center")
-        (cmm & "#+begin_comment" n> r> n> "#+end_comment")
-        (mrginnte & "#+begin_marginnote" n> r> n "#+end_marginnote")
-        (qt & "#+begin_quote" n> r> n> "#+end_quote")
-        (sdnt & "#+begin_sidenote" n> r> n "#+end_sidenote")
-        (src & "#+begin_src " p n r n "#+end_src"
-             :post (org-edit-src-code))
-        (elsp & "#+begin_src emacs-lisp" n r n "#+end_src"
-              :post (org-edit-src-code))
-        (vrs & "#+begin_verse" n> r> n> "#+end_verse")
-        (rdnly ":tangle yes :tangle-mode (identity #o444) :mkdirp yes" n)
-        (cptn & "#+caption: ")
-        (drwr & ":" p ":" n r ":end:")
-        (inlsrc "src_" p "{" q "}")))
-    (add-hook 'org-mode-hook (lambda () (add-hook 'tempel-template-sources 'org-templates nil 'local)))
-
-    ;; Whitespace fix for tangled files. Required for noweb blocks with empty lines.
-    (add-hook 'org-babel-post-tangle-hook #'whitespace-cleanup)
-    (add-hook 'org-babel-post-tangle-hook #'save-buffer :append)
-
-    ;; Org source code black display rules
-    (setopt org-src-window-setup 'plain)
-
-    ;; Visual word wrap
-    (add-hook 'org-mode-hook #'visual-line-mode)
-    (add-hook 'visual-line-mode-hook #'visual-fill-column-for-vline)
-    (add-hook 'visual-line-mode-hook #'visual-wrap-prefix-mode)
-    (with-eval-after-load 'visual-fill-column
-      (setopt
-       visual-fill-column-center-text t
-       fill-column 120))
-
-    (keymap-set org-mode-map "M-o" #'casual-org-tmenu)
-    (keymap-set org-table-fedit-map "M-o" #'casual-org-table-fedit-tmenu))
-#+end_src
-
-#+name: elisp_denote
-#+begin_src emacs-lisp
-  (add-hook 'dired-mode #'denote-dired-mode)
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "n") #'denote)
-    (define-key map (kbd "r") #'denote-rename-file)
-    (define-key map (kbd "l") #'denote-link-or-create)
-    (define-key map (kbd "b") #'denote-backlinks)
-    (define-key map (kbd "d") #'denote-dired)
-    (define-key map (kbd "g") #'denote-grep)
-    (global-set-key (kbd "C-c n") map))
-  (with-eval-after-load 'denote
-    (setopt denote-directory (expand-file-name "~/nook/notes/"))
-    (denote-rename-buffer-mode 1))
-#+end_src
-
-#+name: nix_notes
-#+begin_src nix-ts :tangle modules/notes.nix :noweb yes
-  {
-    flake.aspects = {
-      notes.homeManager = {
-        editor.initFiles.notes.text = ''
-          <<elisp_org_mode>>
-          <<elisp_denote>>
-        '';
-        programs.emacs.extraPackages =
-          epkgs: with epkgs; [
-            casual
-            denote
-            visual-fill-column
-          ];
-      };
-    };
-  }
-#+end_src
-
 * Programming
 
 #+begin_src nix-ts :tangle modules/roles/programming.nix :noweb yes
@@ -1390,26 +583,13 @@ https://eca.dev/
       {
         programming = {
           includes = with aspects; [
-            common-lisp
             direnv
             go
             guix
-            json
-            markdown
             mermaid
             yaml
           ];
           homeManager = {
-            programs.emacs.extraPackages =
-              epkgs: with epkgs; [
-                reformatter
-                corfu
-                corfu-candidate-overlay
-              ];
-            editor.initFiles.programming.text = ''
-              <<elisp_prog>>
-              <<elisp_prog_transient>>
-            '';
             fonts.fontconfig.enable = true;
           };
           nixos = { };
@@ -1418,160 +598,7 @@ https://eca.dev/
   }
 #+end_src
 
-#+name: elisp_prog
-#+begin_src emacs-lisp
-  (with-eval-after-load 'whitespace
-    (setopt whitespace-style
-            '(face
-              tabs
-              trailing
-              space-before-tab
-              newline
-              indentation
-              empty
-              space-after-tab
-              missing-newline-at-eof)))
-
-  (with-eval-after-load 'indent-bars
-    (setopt indent-bars-treesit-support t))
-
-  (autoload #'corfu--in-region "corfu")
-  (setopt completion-in-region-function 'corfu--in-region)
-  (with-eval-after-load 'corfu
-    (corfu-candidate-overlay-mode t)
-    (setopt
-     corfu-cycle t
-     corfu-auto nil))
-
-  (add-hook 'prog-mode-hook
-            (lambda ()
-              (display-line-numbers-mode t)
-              (indent-bars-mode t)
-              (whitespace-mode t)))
-
-  (add-hook 'yaml-ts-mode-hook
-            (lambda ()
-              (display-line-numbers-mode t)
-              (indent-bars-mode t)
-              (whitespace-mode t)))
-
-  (global-set-key [remap imenu] #'consult-imenu)
-
-  ;; Rebind indentation to use mnemonic movements
-  (let ((km indent-rigidly-map))
-    (define-key km (kbd "<right>") nil)
-    (define-key km (kbd "<left>") nil)
-    (define-key km (kbd "TAB") nil)
-    (define-key km (kbd "S-<left>") nil)
-    (define-key km (kbd "S-<right>") nil)
-    (define-key km (kbd "f") #'indent-rigidly-right)
-    (define-key km (kbd "b") #'indent-rigidly-left)
-    (define-key km (kbd "F") #'indent-rigidly-right-to-tab-stop)
-    (define-key km (kbd "B") #'indent-rigidly-left-to-tab-stop))
-
-  (defun dtrt-indent-get ()
-    "Local init function to get the indentation using dtrt-indent lookups."
-    (let ((indent-variable (caddr (dtrt-indent--search-hook-mapping major-mode))))
-      (when indent-variable
-        (eval indent-variable))))
-#+end_src
-
-Add support for transient compile with direnv integration.
-- [X] Have to fix with-temp-buffer to work with direnv
-- [X] Run interactive so can update command
-- [X] Need to allow the shell to be interactive
-  Use =C-c C-j= with ghostel to enter interactive on demand.
-- [X] Configure binding
-#+name: elisp_prog_transient
-#+begin_src emacs-lisp
-  (bind-key "C-c a" #'transient-compile)
-  (with-eval-after-load 'transient-compile
-    (defmacro my-with-temp-process-buffer (&rest body)
-      "Like `with-temp-buffer', but always propagate `process-environment'.
-  When that var is buffer-local in the calling buffer, it is not
-  propagated by `with-temp-buffer', so we explicitly ensure that
-  happens, so that processes will be invoked consistently.  BODY is
-  as for that macro."
-      (declare (indent 0) (debug (body)))
-      (let ((p (cl-gensym)))
-        `(let ((,p process-environment))
-           (with-temp-buffer
-             (setq-local process-environment ,p)
-             ,@body))))
-
-    (defun transient-compile--shell-run (command)
-      "Run shell command and return stdout as string."
-      (transient-compile--log "Running command: %s" command)
-      (my-with-temp-process-buffer
-        (let* ((process-environment
-                (cons "LC_ALL=C" process-environment))
-               (exit-code
-                (process-file-shell-command command nil (current-buffer) nil)))
-          (transient-compile--log "Command finished with status %s" exit-code)
-          (buffer-string))))
-
-    (defun transient-compile-enhanced-group-function (target)
-      (if (string-match "^\\(.*?\\):\\(.*\\)$" target)
-          (match-string 1 target)
-        (transient-compile-default-group-function target)))
-
-    (setopt transient-compile-interactive t
-            transient-compile-group-function #'transient-compile-enhanced-group-function))
-#+end_src
-
-** Common Lisp
-
-#+begin_src nix-ts :tangle modules/common-lisp.nix :noweb yes
-  {
-    flake.aspects.common-lisp = {
-      homeManager =
-        { pkgs, ... }:
-        {
-          home.packages = with pkgs; [
-          ];
-          programs.emacs.extraPackages =
-            epkgs: with epkgs; [
-              sly
-            ];
-          editor.initFiles.common-lisp.text = ''
-            <<elisp_common_lisp>>
-          '';
-        };
-      nixos = { };
-    };
-  }
-#+end_src
-
-#+NAME: elisp_common_lisp
-#+begin_src emacs-lisp
-  (with-eval-after-load 'sly
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     (add-to-list 'org-babel-load-languages '(lisp . t)))
-    (setopt
-     inferior-lisp-program "sbcl"
-     org-babel-lisp-eval-fn 'sly-eval))
-#+end_src
-
 ** Docker
-
-#+name: elisp_docker
-#+begin_src emacs-lisp
-  (with-eval-after-load 'dockerfile-ts-mode
-      (add-hook 'dockerfile-ts-mode-hook #'eglot-ensure))
-  (with-eval-after-load 'org
-    ;; format: off
-    (defvar org-docker-templates
-            '((dockerfile_ & "#+begin_src dockerfile :tangle " (p "no" tangle) n> r> n "#+end_src"
-                           :post (org-edit-special))))
-    ;; format: on
-    (add-hook
-     'org-mode-hook
-     (lambda ()
-       (add-hook 'tempel-template-sources 'org-docker-templates nil 'local)))
-    (add-to-list
-     'org-src-lang-modes '("dockerfile" . dockerfile-ts)))
-#+end_src
 
 #+begin_src nix-ts :tangle modules/docker.nix :noweb yes
   {
@@ -1579,78 +606,11 @@ Add support for transient compile with direnv integration.
       home.packages = with pkgs; [
         docker-language-server
       ];
-      editor.initFiles.docker.text = ''
-        <<elisp_docker>>
-      '';
     };
   }
 #+end_src
 
 ** Go
-
-#+name: elisp_go
-#+begin_src emacs-lisp
-  (with-eval-after-load 'org
-    ;; format: off
-    (defvar org-go-templates
-      '((go_ & "#+begin_src go :tangle " (p "no" tangle) " :noweb " (p "no" noweb) n> r> n "#+end_src"
-             :post (org-edit-special) :doc "Org src block for Go with tangle argument")))
-    ;; format: on
-    (add-hook
-     'org-mode-hook
-     (lambda ()
-       (add-hook 'tempel-template-sources 'org-go-templates
-                 nil
-                 'local)))
-    (add-to-list 'org-src-lang-modes '("go" . go-ts))
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     (add-to-list 'org-babel-load-languages '(go . t))))
-  (with-eval-after-load 'go-ts-mode
-    (add-hook 'go-ts-mode-hook #'eglot-ensure)
-    ;; format: off
-    (defvar go-templates
-      '((imp "import " q)
-        (impn "import (" n> q n ")")
-        (pr "fmt.Printf(\"\\n" p "\\n%#v\\n\", " q ")")
-        (pl "fmt.Println(" q ")")
-        (db "Debug.Printf(\"\\n" p "\\n\\n%#v\\n\", " q ")")
-        (dl "Debug.Println(" q ")")
-        (lf "log.Printf(\"\\n%#v\\n\", " q ")")
-        (ln "log.Println(" q ")")
-        (stt "type " p " struct {" n> q n "}")
-        (inf "type " p " interface {" n> q n "}")
-        (cnt "const " p " = " q)
-        (cnst "const (" n> p " = " q n ")")
-        (vr "var " p " " q)
-        (mp "map[" p "]" q)
-        (if "if "
-            p
-          " {"
-          n>
-          p
-          n
-          "}"
-          >
-          q)
-        (el "if " p " {" n> p n "} else {" > n> p n "}" > q)
-        (elif "if " p " {" n> p n "} else if " > p " {" n> p n "}" > q)
-        (ifen "if err != nil {" n> q n "}" >)
-        (ifer "if err != " p " {" n> q n "}" >)
-        (sel "select {" n> "case " p ":" n> q n "}" >)
-        (swch "switch " p " {" n> "case " p ":" q n "}" >)
-        (fr "for " p "{" n> q n "}" >)
-        (rng "for " p ", " p " := range " p " {" n> q n "}" >)
-        (fnc "func " p "(" p ") {" n> q n "}" >)
-        (mn "func main() {" n> q n "}")
-        (in "func init() {" n> q n "}")
-        (tst "func Test" p " (t *testing.T) { " n> q n "}")))
-    ;; format: on
-    (add-hook
-     'go-ts-mode-hook
-     (lambda ()
-       (add-hook 'tempel-template-sources 'go-templates nil 'local))))
-#+end_src
 
 #+begin_src nix-ts :tangle modules/go.nix :noweb yes
   {
@@ -1659,10 +619,6 @@ Add support for transient compile with direnv integration.
         home.packages = with pkgs; [
           gopls
         ];
-        programs.emacs.extraPackages = epkgs: with epkgs; [ ob-go ];
-        editor.initFiles.go.text = ''
-          <<elisp_go>>
-        '';
       };
     };
   }
@@ -1697,64 +653,6 @@ Add support for transient compile with direnv integration.
   }
 #+end_src
 
-** JSON
-
-#+begin_src nix-ts :tangle modules/json.nix :noweb yes
-  {
-    flake.aspects.json = {
-      homeManager =
-        { pkgs, ... }:
-        {
-          home.packages = with pkgs; [ ];
-          programs.emacs.extraPackages =
-            epkgs: with epkgs; [
-              json-snatcher
-            ];
-          editor.initFiles.json.text = ''
-            <<elisp_json>>
-          '';
-        };
-    };
-  }
-#+end_src
-
-#+name: elisp_json
-#+begin_src emacs-lisp
-  (defun json-parse-whole-buffer (buffer)
-    "Parse JSON from start of the buffer."
-    (with-current-buffer buffer
-      (goto-char (point-min))
-      (json-parse-buffer
-       :object-type 'plist
-       :array-type 'list)))
-#+end_src
-
-** Markdown
-
-#+begin_src nix-ts :tangle modules/markdown.nix :noweb yes
-  {
-    flake.aspects.markdown = {
-      homeManager =
-        { pkgs, ... }:
-        {
-          home.packages = with pkgs; [
-          ];
-          programs.emacs.extraPackages =
-            epkgs: with epkgs; [
-            ];
-          editor.initFiles.markdown.text = ''
-            <<elisp_markdown>>
-          '';
-        };
-    };
-  }
-#+end_src
-
-#+name: elisp_markdown
-#+begin_src emacs-lisp
-  (require 'markdown-ts-mode)
-#+end_src
-
 ** Mermaid
 
 #+begin_src nix-ts :tangle modules/mermaid.nix :noweb yes
@@ -1766,22 +664,9 @@ Add support for transient compile with direnv integration.
           home.packages = with pkgs; [
             mermaid-cli
           ];
-          programs.emacs.extraPackages =
-            epkgs: with epkgs; [
-              mermaid-mode
-              ob-mermaid
-            ];
-          editor.initFiles.mermaid.text = ''
-            <<elisp_mermaid>>
-          '';
         };
     };
   }
-#+end_src
-
-#+name: elisp_mermaid
-#+begin_src emacs-lisp
-
 #+end_src
 
 ** Nix
@@ -1801,49 +686,13 @@ Add support for transient compile with direnv integration.
             nixd
             nixfmt
           ];
-          programs.emacs.extraPackages =
-            epkgs: with epkgs; [
-              nix-ts-mode
-            ];
-          editor.initFiles.nix.text = ''
-            <<elisp_nix>>
-          '';
         };
       nixos = { };
     };
   }
 #+end_src
 
-#+name: elisp_nix
-#+begin_src emacs-lisp
-  (with-eval-after-load 'nix-ts-mode
-    (require 'reformatter)
-    (require 'editorconfig)
-    (require 'dtrt-indent)
-    (add-hook 'nix-ts-mode-hook #'eglot-ensure)
-    (reformatter-define nix-format
-      :program "nixfmt")
-    (defun nix-ts-mode-setup ()
-      (nix-format-on-save-mode 1))
-    (add-hook 'nix-ts-mode-hook #'nix-ts-mode-setup))
-#+end_src
-
 ** Terraform
-
-#+name: kdl_terraform
-#+begin_src kdl
-  environment {
-    TF_CLI_CONFIG_FILE "${config.xdg.configHome}/terraform/.terraformrc"
-  }
-#+end_src
-
-#+name: elisp_terraform
-#+begin_src elisp
-  (with-eval-after-load 'terraform-mode
-    (setenv "TF_CLI_CONFIG_FILE" (file-name-concat "${config.xdg.configHome}" "terraform/.terraformrc"))
-    (add-hook 'terraform-mode-hook #'eglot-ensure)
-    (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode))
-#+end_src
 
 #+begin_src nix-ts :tangle modules/terraform.nix :noweb yes
   {
@@ -1859,13 +708,6 @@ Add support for transient compile with direnv integration.
           home.packages = with pkgs; [
             terraform-ls
           ];
-          programs.emacs.extraPackages =
-            epkgs: with epkgs; [
-              terraform-mode
-            ];
-          editor.initFiles.terraform.text = ''
-            <<elisp_terraform>>
-          '';
           niri.configFiles.terraform.text = ''
             <<kdl_terraform>>
           '';
@@ -1893,80 +735,23 @@ Add support for transient compile with direnv integration.
             yq
             yaml-language-server
           ];
-          programs.emacs.extraPackages =
-            epkgs: with epkgs; [
-              yaml
-              yaml-pro
-            ];
-          editor.initFiles.yaml.text = ''
-            <<elisp_yaml>>
-          '';
         };
     };
   }
 #+end_src
 
-#+name: elisp_yaml
-#+begin_src emacs-lisp
-  (with-eval-after-load 'yaml-ts-mode
-    (require 'reformatter)
-    (require 'editorconfig)
-    (require 'dtrt-indent)
-    (add-hook 'yaml-ts-mode-hook #'eglot-ensure)
-    (defun find-yamlfmt-config ()
-      "Return the path to the nearest yamlfmt config file, or nil."
-      (let ((base (or (locate-dominating-file default-directory ".yamlfmt")
-                      (locate-dominating-file default-directory ".yamlfmt.yaml")
-                      (locate-dominating-file default-directory ".yamlfmt.yml"))))
-        (when base
-          (cl-loop for f in '(".yamlfmt" ".yamlfmt.yaml" ".yamlfmt.yml")
-                   for path = (expand-file-name f base)
-                   when (file-exists-p path) return path))))
-    (defun yamlfmt-indent-from-config (config-file)
-      "Return the indent specified in yamlfmt CONFIG-FILE, or nil."
-      (when (and config-file (executable-find "yq"))
-        (with-temp-buffer
-          (let ((exit (call-process
-                       "yq" nil t nil "-r" "-e" ".formatter.indent" config-file)))
-            (when (eq exit 0)
-              (goto-char (point-min))
-              (when (re-search-forward "\\([0-9]+\\)" nil t)
-                (string-to-number (match-string 1))))))))
-    (defun yaml-get-indent ()
-      "Get the correct YAML indent width via config, editorconfig, or dtrt."
-      (or (yamlfmt-indent-from-config (find-yamlfmt-config))
-          (dtrt-indent-get)
-          2)) ;; 2 as base default
-    (defun yamlfmt-args ()
-      "Return args for yamlfmt (nil if config sets indent, args if not)."
-      (let* ((config (find-yamlfmt-config))
-             (indent-arg (unless (and config (yamlfmt-indent-from-config config))
-                           (list "--indent" (number-to-string (yaml-get-indent))))))
-        (append indent-arg '("/dev/stdin"))))
-    (reformatter-define yaml-format
-      :program "yamlfmt"
-      :args (yamlfmt-args))
-    (defun yaml-mode-setup ()
-      (let ((indent (yaml-get-indent)))
-        (setq-local tab-width indent)
-        (setq-local indent-line-function #'indent-relative)
-        (setq-local indent-tabs-mode nil)
-        (yaml-format-on-save-mode 1)))
-    (add-hook 'yaml-ts-mode-hook #'yaml-mode-setup))
-  ;; TODO Decide on scalar editing (yaml-ts-pro?)
-#+end_src
-
 * Project
 
-#+begin_src nix-ts :tangle modules/project.nix :noweb yes
+The gitr-* repo-tracking helpers and magit hooks now live directly in
+=legacy-modules/users/global/editors/emacs/local.el=, which is injected as
+an init fragment via =pkgs.mkEmacsWith= from =modules/editor/default.nix=.
+
+#+begin_src nix-ts :tangle modules/project.nix
   {
     flake.aspects = {
       programming = {
         homeManager = {
           programs.git.signing.format = null;
-          editor.initFiles.project.text = ''
-            <<elisp_magit>>
-          '';
         };
         nixos = { };
       };
@@ -1974,246 +759,7 @@ Add support for transient compile with direnv integration.
   }
 #+end_src
 
-Add magit section hooks to display extra useful informat in the magit-status buffer.
-#+name: elisp_magit
-#+begin_src emacs-lisp
-  (with-eval-after-load 'magit
-    (magit-add-section-hook 'magit-status-sections-hook
-                            'magit-insert-worktrees nil t)
-    (magit-add-section-hook 'magit-status-sections-hook
-                            'magit-insert-modules nil t)
-    (magit-add-section-hook 'magit-status-sections-hook
-                            'magit-insert-local-branches nil t)
-    (magit-add-section-hook 'magit-status-sections-hook
-                            'magit-insert-remote-branches nil t)
-    (with-eval-after-load 'project
-      (add-hook 'magit-post-clone-hook (lambda () (project-remember-projects-under default-directory)))))
-
-  (require 'cl-lib)
-
-  (defun gitr-azure-url (repo)
-    "Return SSH Azure DevOps URL for REPO string.
-  REPO should be formatted as 'ORG/PROJECT/REPO'."
-    (format "git@ssh.dev.azure.com:v3/%s" repo))
-
-  (defun gitr-codeberg-url (repo)
-    "Return SSH Codeberg URL for REPO string.
-  REPO should be formatted as 'user/repo'."
-    (format "ssh://git@codeberg.org/%s.git" repo))
-
-  (defun gitr-github-url (repo)
-    "Return SSH GitHub URL for REPO string.
-  REPO should be formatted as 'user/repo'."
-    (format "git@github.com:%s.git" repo))
-
-  (defvar gitr-db-file (expand-file-name "~/nook/repo-db")
-    "File path where the Git repo database plist is stored.")
-
-  (defvar gitr-db nil
-    "Plist of known repositories, used as an in-memory Git repo database.")
-
-  (defun gitr-db-save (filename)
-    "Save `gitr-db' to FILENAME as a plist."
-    (with-temp-buffer
-      (pp (-sort (lambda (a b)
-                   (-when-let* (((&plist :location la :plaform pa :name na) a)
-                                ((&plist :location lb :plaform pb :name nb) b))
-                     (cond
-                      ((not (eq la lb)) (string< (symbol-name la) (symbol-name lb)))
-                      ((not (eq pa pb)) (string< (symbol-name pa) (symbol-name pb)))
-                      (t (string< na nb)))))
-                 gitr-db)
-          (current-buffer))
-      (write-region (point-min) (point-max) filename)))
-
-  (defun gitr-db-load (filename)
-    "Load a plist from FILENAME into `gitr-db'."
-    (setq gitr-db
-          (with-temp-buffer
-            (insert-file-contents filename)
-            (read (current-buffer)))))
-
-  (defun gitr-make-repo (platform name location type)
-    `(:platform ,platform :name ,name :location ,location :type ,type))
-
-  (defun gitr-add-record (repo)
-    (push repo gitr-db))
-
-  (defun gitr-add-record (repo)
-    (unless (member repo gitr-db)
-      (push repo gitr-db)))
-
-  (defun gitr-filter-repos-by-location (db locations)
-    "Return repos from DB that have :name, :type, :platform and whose :location is in LOCATIONS."
-    (cl-remove-if-not
-     (lambda (repo)
-       (and (plist-get repo :name)
-            (plist-get repo :type)
-            (plist-get repo :platform)
-            (seq-contains locations (plist-get repo :location))))
-     db))
-
-  (defun gitr-repo-url-and-dir (repo)
-    "Make (url dir) pair for REPO if platform and relevant keys are present."
-    (let* ((name (plist-get repo :name))
-           (type (plist-get repo :type))
-           (plat (plist-get repo :platform))
-           (location (plist-get repo :location))
-           (url (funcall (intern (format "gitr-%s-url" plat)) name))
-           (dir (file-name-concat
-                 (expand-file-name "~/src")
-                 (concat (string-replace "/" "--" name)
-                         "__" (symbol-name location)
-                         "__" (symbol-name type)))))
-      (when (and url dir)
-        (list url dir))))
-
-  (defun gitr-map-repos-to-url-dirs (repos)
-    "Map each REPO to a (url dir) list, omitting nils."
-    (cl-loop for repo in repos
-             for result = (gitr-repo-url-and-dir repo)
-             when result
-             collect result))
-
-  (defun gitr-pull-missing-repos (repos)
-    "Clone all REPOS (a (url dir) list) as bare repositories if missing.
-  Runs as a single background job; output in a buffer.
-  On completion, calls `gitr-remember-projects' for cloned repos."
-    (when-let* ((todo (cl-remove-if (lambda (x) (file-exists-p (cl-second x))) repos))
-                (commands (mapcar (lambda (x)
-                                    (let ((url (cl-first x))
-                                          (dir (cl-second x)))
-                                      (format "git clone --bare %s %s/.git && git -C %s/.git config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'"
-                                              url dir dir)))
-                                  todo))
-                (cmd-str (string-join commands " && "))
-                (buf (get-buffer-create "*gitr-clone-repos*")))
-      (with-current-buffer buf (erase-buffer))
-      (let ((proc (start-process-shell-command
-                   "gitr-clone-repos"
-                   buf
-                   cmd-str)))
-        (set-process-sentinel
-         proc
-         (lambda (process event)
-           (when (memq (process-status process) '(exit signal))
-             (with-current-buffer (process-buffer process)
-               (goto-char (point-max))
-               (insert (format "\nProcess %s finished: %s" process event)))
-             (gitr-remember-projects (mapcar #'cadr todo))))))))
-
-  (defun gitr-remember-projects (dirs)
-    "Call `project-remember-project' for each directory in DIRS."
-    (dolist (dir dirs)
-      (when (file-exists-p dir)
-        (project-remember-projects-under dir))))
-
-  (defun gitr-pull-or-remember (repos)
-    (when-let* ((todo (cl-remove-if-not (lambda (x) (file-exists-p (cl-second x))) repos)))
-      (gitr-remember-projects (mapcar #'cadr todo)))
-    (gitr-pull-missing-repos repos))
-
-  (defun gitr-sync ()
-    (interactive)
-    "Loads db and downloads repos."
-    (when (file-exists-p gitr-db-file) (gitr-db-load gitr-db-file))
-    (-each gitr-db #'gitr-migrate-repo)
-    (let ((repos (gitr-filter-repos-by-location gitr-db '(home work))))
-      (gitr-pull-or-remember (gitr-map-repos-to-url-dirs repos))))
-
-  (defvar azdevops-org-url nil)
-
-  (defun azure-shell (output-buffer &rest args)
-    "Run azure shell synchronously, logging command to *az:log*."
-    (let* ((log-buffer (get-buffer-create "*az:log*"))
-           (cmdargs
-            (string-join (append args '("--output" "json")) " "))
-           (cmdstr (format "az %s" cmdargs)))
-      (with-current-buffer log-buffer
-        (goto-char (point-max))
-        (insert (format "\n$ %s\n" cmdstr)))
-      (save-window-excursion
-        (shell-command (format "%s %s" azure-executable cmdargs)
-                       output-buffer log-buffer))))
-
-  (defun azdevops-get-projects (&optional org-url)
-    "Get a list of azure devops projects.
-  ORG-URL should be the URI of your Azure DevOps organization, for example: https://dev.azure.com/MyOrganization/"
-    (let ((buf (get-buffer-create "*az:devops:projects*"))
-          (org (or org-url azdevops-org-url)))
-      (when (= (buffer-size buf) 0)
-        (if org
-            (azure-shell buf "devops" "project" "list" "--organization" (or org-url azdevops-org-url))
-        (azure-shell buf "devops" "project" "list")))
-      buf))
-
-  (defun gitr-add-azure-repo ()
-    (interactive)
-    (when (file-exists-p gitr-db-file)
-      (gitr-db-load gitr-db-file))
-    (azure-shell
-    ;; Get and select devops projects
-    ;; Get and select projects repo
-    ;; Convert repo to record style repo
-    ;; add record
-    ;; save db
-    ))
-
-  (defun gitr-github-next-url (repo)
-    "Return SSH GitHub URL for REPO string.
-            REPO should be formatted as 'org/repo'."
-    (format "next-plc@next-plc.ghe.com:%s.git" repo))
-
-  (defun gitr-migrate-repo (repo)
-    (-when-let* (((&plist
-                   :name name
-                   :type type
-                   :platform plat
-                   :location location
-                   :mplatform mplat
-                   :mname mname)
-                  repo)
-                 (mrepo `(:platform ,mplat :name ,mname :type ,type :location ,location))
-                 ((url dir) (gitr-repo-url-and-dir repo))
-                 ((murl mdir) (gitr-repo-url-and-dir mrepo)))
-      (rename-file dir mdir)
-      (let ((default-directory (file-name-as-directory mdir)))
-        (call-process "git" nil nil nil "remote" "add" "legacy" url)
-        (call-process "git" nil nil nil "remote" "set-url" "origin" murl))
-      (setq gitr-db (mapcar (lambda (r) (if (equal r repo) mrepo r)) gitr-db))
-      (gitr-db-save gitr-db-file)))
-#+end_src
-
 * Style
-
-#+name: elisp_style
-#+begin_src emacs-lisp
-  (add-to-list 'default-frame-alist '(font . "IosevkaTerm Nerd Font-14"))
-  (defun my-theme-updates (&rest args)
-    (setq-default truncate-lines t)
-    (let ((bg (face-background 'default nil t)))
-      (custom-set-faces
-       '(variable-pitch ((t (:family "RecMonoCasual Nerd Font"))))
-       '(font-lock-comment-face ((t (:inherit error :foreground unspecified))))
-       `(mode-line ((t (:background ,bg))))
-       `(mode-line-inactive ((t (:background ,bg))))
-       '(fringe ((t (:background unspecified))))
-       '(line-number ((t (:background unspecified)))))))
-  (add-hook 'after-init-hook #'my-theme-updates)
-  (add-hook 'enable-theme-functions #'my-theme-updates)
-  (add-hook 'server-after-make-frame-hook #'my-theme-updates)
-  (add-hook 'text-mode-hook
-            (lambda ()
-              (buffer-face-set '(:family "RecMonoCasual Nerd Font"))))
-  (add-hook 'yaml-mode-hook
-            (lambda ()
-              (buffer-face-set '(:family "IosevkaTerm Nerd Font"))))
-
-  (add-hook 'org-mode-hook
-            (lambda ()
-              (custom-set-faces
-               '(org-block ((t (:family "IosevkaTerm Nerd Font")))))))
-#+end_src
 
 #+name: kdl_style
 #+begin_src kdl
@@ -2246,17 +792,21 @@ Add magit section hooks to display extra useful informat in the magit-status buf
           {
             imports = [ inputs.stylix.homeModules.stylix ];
             config = {
-              programs.emacs.extraPackages = epkgs: with epkgs; [ show-font ];
               gtk.gtk4.theme = lib.mkOverride 999 null;
               home.packages = builtins.filter pkgs.lib.isDerivation (builtins.attrValues pkgs.nerd-fonts);
-              editor.initFiles.style.text = ''
-                <<elisp_style>>
-              '';
               niri.configFiles.style.text = ''
                 <<kdl_style>>
               '';
               stylix = {
                 enable = true;
+                # `useGlobalPkgs = true` on the NixOS home-manager module means
+                # home-manager can't set its own `nixpkgs.overlays`/`nixpkgs.config`
+                # (it must inherit the system-level pkgs). Stylix's per-app
+                # targets (e.g. nixos-icons, gtksourceview) are implemented as
+                # overlays applied via home-manager by default, which trips the
+                # home-manager assertion. Disable that here; styling still
+                # applies to everything that doesn't rely on package overlays.
+                overlays.enable = false;
                 # base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-latte.yaml";
                 base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
                 fonts = {
@@ -2326,34 +876,6 @@ Add magit section hooks to display extra useful informat in the magit-status buf
 
 * Terminal
 
-#+name: elisp_terminal
-#+begin_src emacs-lisp
-  (defmacro ghostel-make-exec (app)
-    "Define ghostel-exec-APP function to run APP in a new buffer."
-    (let ((fname (intern (format "ghostel-exec-%s" app)))
-          (bname (format "*%s*" app))
-          (appstr (if (symbolp app) (symbol-name app) app)))
-      `(defun ,fname ()
-         (interactive)
-         (require 'ghostel)
-         (when (fboundp 'ghostel-exec)
-           (with-current-buffer (generate-new-buffer ,bname)
-             (ghostel-exec (current-buffer) ,appstr)
-             (switch-to-buffer (current-buffer)))))))
-
-  (add-hook 'after-init-hook
-            (lambda () (ghostel-make-exec btop)))
-
-  (with-eval-after-load 'ghostel
-    (with-eval-after-load 'project
-      (bind-key "t" #'ghostel-project 'project-prefix-map)
-      (add-to-list 'project-switch-commands '(ghostel-project "Ghostel") t)))
-  (add-hook 'after-init-hook
-            (lambda ()
-              (require 'ghostel)
-              (ghostel-compile-global-mode t)))
-#+end_src
-
 #+begin_src nix-ts :tangle modules/terminal.nix :noweb yes
   {
     flake.aspects = {
@@ -2375,10 +897,6 @@ Add magit section hooks to display extra useful informat in the magit-status buf
             lm_sensors
             radeontop
           ];
-          programs.emacs.extraPackages = epkgs: with epkgs; [ ghostel ];
-          editor.initFiles.terminal.text = ''
-            <<elisp_terminal>>
-          '';
         };
     };
     perSystem =
@@ -2720,62 +1238,3 @@ Add magit section hooks to display extra useful informat in the magit-status buf
 #+end_src
 
 * Web
-
-** Browser
-
-#+begin_src nix-ts :tangle modules/browser.nix :noweb yes
-  {
-    flake.aspects.browser.homeManager =
-      { pkgs, ... }:
-      {
-        programs.emacs.extraPackages = epkgs: [
-          (epkgs.melpaBuild {
-            pname = "browsel";
-            version = "1";
-            commit = "1";
-            src = pkgs.fetchFromGitHub {
-              owner = "dmgerman";
-              repo = "browsel";
-              rev = "6f7e2170d20e471f67035f556098600459dee7fd";
-              sha256 = "sha256-XgLjOUCLCBfCq1nHiE9PTObkuUA2CNtOa/PzzwKDibk=";
-            };
-            packageRequires = with epkgs; [ websocket ];
-            recipe = pkgs.writeText "recipe" ''
-              (browsel
-                :repo "dmgerman/browsel"
-                :fetcher github
-                :files ("*.el"))
-            '';
-          })
-        ];
-      };
-    # perSystem =
-    # { pkgs, ... }:
-    # {
-    #   packages.browsel = pkgs.
-    # }
-  }
-#+end_src
-
-** Client
-
-#+name: elisp_webclient
-#+begin_src elisp
-  (with-eval-after-load 'org
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     (add-to-list 'org-babel-load-languages '(verb . t))))
-#+end_src
-
-#+begin_src nix-ts :tangle modules/web-client.nix :noweb yes
-  {
-    flake.aspects = {
-      webRequests.homeManager = {
-        programs.emacs.extraPackages = epkgs: with epkgs; [ verb ];
-        editor.initFiles.web-requests.text = ''
-          <<elisp_webclient>>
-        '';
-      };
-    };
-  }
-#+end_src
